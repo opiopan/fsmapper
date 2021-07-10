@@ -1,0 +1,95 @@
+local g1000 = mapper.device({
+    type = "simhid",
+    name = "SimHID G1000",
+    identifier = {name = "SimHID G1000 Virtual ComPort"},
+    modifiers = {
+        {class = "binary", modtype = "button"},
+		{class = "relative", modtype = "incdec"},
+		{name = "SW26", modtype = "button", modparam={
+	    	longpress = 4000,
+	    	doubleclick = 0,
+		}},
+		{name = "SW31", modtype = "button", modparam={longpress = 4000,}},
+		{name = "SW5", modtype = "raw"},
+    },
+})
+
+function g1000_aircraft()
+    local viewport
+
+    function initialize()
+        viewport = mapper.viewport({
+	    	name = "G1000_View",
+	    	displayno = 2,
+	    	x = 0,
+	    	y = 0,
+	    	width = -1,
+	    	height = -1,
+	    	bgcolor = "#000000",
+		})
+		viewport:register_view({
+	    	name = "PFD",
+	    	elements = {{
+				x = 0, y = 0,
+				width = -1,
+				height = -1,
+	        	object = mapper.captured_window({
+		    		name = "G1000 PFD",
+		    		omit_system_region = true;
+				})
+	    	}},
+	    	maps = {
+	        	{event=g1000.SW31.UP, action=fs2020.eventsender({event = "Mobiflight.AS1000_PFD_SOFTKEYS_1"})},
+	        	{event=g1000.EC1.INCREMENT, action=fs2020.eventsender({event = "Mobiflight.AS1000_PFD_HEADING_INC"})},
+	    	}
+		})
+		viewport:register_view({
+	    	name = "MFD",
+	    	elements = {{object = mapper.captured_window({name = "G1000 MFD"})}},
+			maps = {
+	        	{event=g1000.SW31.UP, action=fs2020.eventsender({event = "Mobiflight.AS1000_MFD_SOFTKEYS_1"})},
+	        	{event=g1000.EC1.INCREMENT, action=fs2020.eventsender({event = "Mobiflight.AS1000_MFD_HEADING_INC"})},
+			}
+		})
+
+		viewport:change_view("PFD")
+
+		function toggle_screen(event)
+			if viewport.current_view == "PFD" then
+				viewport:change_view("MFD")
+			else
+				viewport:change_view("PFD")
+			end
+		end
+
+		viewport:set_maps({
+			{event = g1000.AUX1U.DOWN, action = toggle_screen}
+			{event = g1000.AUX1D.DOWN, action = toggle_screen}
+			{event = g1000.AUX2U.DOWN, action = toggle_screen}
+			{event = g1000.AUX2D.DOWN, action = toggle_screen}
+		})
+
+		viewport:enable()
+    end
+
+	function terminate()
+		viewport:disable()
+		viewport:delete()
+		viewport = nil
+	end
+
+	return initialize, terminate
+end
+
+local terminate_aircraft_env = function () end
+
+mapper.set_primery_maps({
+    {event = fs2020.events.change_aircraft, action = function (event)
+		terminate_aircraft_env()
+		if event.value == "DA40-NG Asobo" then
+			local initialize
+			initialize, terminate_aircraft_env = g1000_aircraft()
+			initialize()
+		end
+	end},
+})
