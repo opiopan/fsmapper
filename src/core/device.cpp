@@ -15,13 +15,13 @@ static const MAPPER_PLUGIN_DEVICE_OPS* builtin_plugins[] = {
 // Plubin device cupsulized object
 //    This object is created each time "mapper.device()" is called in lua script.
 //============================================================================================
-Device::Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, sol::object&& identifier) : 
+Device::Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier) : 
     name(name), deviceClass(deviceClass), contextForPlugin(*this){
     std::unique_ptr<LUAVALUECTX> identifier_lua;
     if (identifier.get_type() == sol::type::table){
-        identifier_lua = std::make_unique<LUAVALUE_TABLE>(std::move(identifier));
+        identifier_lua = std::make_unique<LUAVALUE_TABLE>(identifier);
     }else{
-        identifier_lua = std::make_unique<LUAVALUECTX>(std::move(identifier));
+        identifier_lua = std::make_unique<LUAVALUECTX>(identifier);
     }
     if (!deviceClass.plugin().open(deviceClass, *this, identifier_lua.get())){
         std::ostringstream os;
@@ -83,6 +83,19 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
 //============================================================================================
 // Function to create a device that exporse to lua script as name "mapper.device()"
 //============================================================================================
+class Test{
+protected:
+    int dev;
+public:
+    Test() = delete;
+    Test(const Test&) = delete;
+    Test(Test&&) = delete;
+    Test(int dev):dev(dev){
+        throw MapperException("Test constractor exception");
+    };
+    ~Test() = default;
+};
+
 sol::object DeviceManager::createDevice(const sol::object &param, sol::this_state s)
 {
     sol::state_view lua(s);
@@ -92,7 +105,7 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
             throw MapperException("Function argument must be a table");
         }
         auto arg = param.as<sol::table>();
-        std::string type = arg["table"];
+        std::string type = arg["type"];
         std::string name = arg["name"];
         sol::object identifire = arg["identifier"];
         sol::object modifiers = arg["modifiers"];
@@ -104,9 +117,10 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
             os << "\"type\" parameter value is invalid or no device type is specified. [type: " << type << "]";
             throw MapperException(os.str());
         }
-        auto& deviceClass = classes.at(type);
-        auto rule = std::move(modifierManager.makeRule(modifiers));
-        auto device = std::make_shared<Device>(*deviceClass, name, rule, std::move(identifire));
+        auto &deviceClass = classes.at(type);
+        DeviceModifierRule rule;
+        modifierManager.makeRule(modifiers, rule);
+        auto device = std::make_shared<Device>(*deviceClass, name, rule, identifire);
         out["_Device"] = device;
         auto unitdefs = device->getUnitDefs();
         for (auto ix_unit = 0; ix_unit < unitdefs.size(); ix_unit++){

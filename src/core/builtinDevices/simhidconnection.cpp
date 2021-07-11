@@ -19,13 +19,14 @@ static const auto INIT_TIMEOUT = std::chrono::seconds(10);
 //============================================================================================
 //  Recognize device identifier then identify device path
 //============================================================================================
-std::string&& SimHIDConnection::identifyDevicePath (LUAVALUE identifier){
+std::string SimHIDConnection::identifyDevicePath (LUAVALUE identifier){
     auto path = luav_getItemWithKey(identifier, "path");
     if (path){
         if (luav_getType(path) != LV_STRING){
             throw Exception("\"path\" value for SimHID identifier must be string.");
         }
-        return std::move(std::string(luav_asString(path)));
+        auto rc = std::string(luav_asString(path));
+        return rc;
     }
 
 #if defined(_WIN64) || defined(_WIN32)
@@ -42,7 +43,9 @@ SimHIDConnection::SimHIDConnection(FSMAPPER_HANDLE mapper, SimHID &simhid, const
     mapper(mapper), simhid(simhid), devicePath(devicePath), status(Status::init){
     serial = std::move(std::make_unique<SerialImp>(devicePath));
     simhid_parser_init(&parser, parsedLineBuf, sizeof(parsedLineBuf));
+}
 
+void SimHIDConnection::start(){
     //-----------------------------------------------------------------------------
     // create a thread to communicate with SimHID devices
     //-----------------------------------------------------------------------------
@@ -52,7 +55,7 @@ SimHIDConnection::SimHIDConnection(FSMAPPER_HANDLE mapper, SimHID &simhid, const
             serial->write("D\r\n"); 
 
             char buf[256];
-            size_t readlen;
+            int readlen;
             while((readlen = serial->read(buf, sizeof(buf))) > 0){
                 for (int i = 0; i < readlen; i++){
                     if (simhid_parser_parse(&parser, buf[i])){

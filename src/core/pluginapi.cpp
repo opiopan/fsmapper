@@ -49,7 +49,7 @@ DLLEXPORT void fsmapper_issueEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int
 //============================================================================================
 LUAVALUECTX::LUAVALUECTX() : type(LV_NULL){};
 
-LUAVALUECTX::LUAVALUECTX(sol::object&& object): object(std::move(object)){
+LUAVALUECTX::LUAVALUECTX(const sol::object& object): object(object){
     switch (object.get_type()){
     case sol::type::lua_nil:
         type = LV_NULL;
@@ -83,7 +83,7 @@ LUAVALUECTX *LUAVALUECTX::getItemWithIndex(size_t index){
     return nullptr;
 }
 
-LUAVALUE_TABLE::LUAVALUE_TABLE(sol::object&& object) : LUAVALUECTX(std::move(object)){
+LUAVALUE_TABLE::LUAVALUE_TABLE(const sol::object& object) : LUAVALUECTX(object){
 }
 
 LUAVALUECTX* LUAVALUE_TABLE::getItemWithKey(const char *key){

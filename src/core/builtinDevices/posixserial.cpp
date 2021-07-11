@@ -6,9 +6,11 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <strings.h>
+
 #include <unistd.h>
 
 #include <memory>
+#include <sstream>
 #include "posixserial.h"
 
 static const auto COMMSPEED = B115200;
@@ -17,9 +19,10 @@ PosixSerial::PosixSerial(const char *path) : should_be_stop(false), written_len(
     // cofigure serial port
     fd_serial = open(path, O_RDWR | O_NONBLOCK);
     if (fd_serial < 0){
-        std::string msg("cannot open file: ");
-        msg += path;
-        throw SimHIDConnection::Exception(std::move(msg));
+        auto err = strerror(errno);
+        std::ostringstream os;
+        os << "cannot open file: " << err << ": " << path;
+        throw SimHIDConnection::Exception(os.str());
     }
     termios tio;
     bzero(&tio, sizeof(tio));
@@ -49,7 +52,7 @@ PosixSerial::PosixSerial(const char *path) : should_be_stop(false), written_len(
 PosixSerial::~PosixSerial(){
     stop();
 }
-size_t PosixSerial::read(void* buf, size_t len){
+int PosixSerial::read(void* buf, int len){
     while (true){
         {
             std::lock_guard lock(mutex);
@@ -60,8 +63,12 @@ size_t PosixSerial::read(void* buf, size_t len){
             continue;
         }
         if (pollfds[1].revents & POLLIN){
-            // got message to stop serial communication
-            return -1;
+            ::read(fd_pipe_in, pipebuf, sizeof(pipebuf));
+            std::lock_guard lock(mutex);
+            if (should_be_stop){
+                // got message to stop serial communication
+                return -1;
+            }
         }
         if (pollfds[0].revents & POLLOUT){
             // can send data via serial port
@@ -90,14 +97,16 @@ size_t PosixSerial::read(void* buf, size_t len){
 
 void PosixSerial::write(std::string &&data){
     std::lock_guard lock(mutex);
+    static char buf[1] = {1};
     write_buf.push(std::move(data));
+    ::write(fd_pipe_out, buf, 1);
 }
 
 void PosixSerial::stop(){
     std::lock_guard lock(mutex);
     if (!should_be_stop){
         should_be_stop = true;
-        static char buf[1] = {1};
+        static char buf[1] = {2};
         ::write(fd_pipe_out, buf, 1);
     }
 }

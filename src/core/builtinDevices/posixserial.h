@@ -25,7 +25,7 @@ protected:
         FD& operator = (FD&) = delete;
         FD& operator = (FD&&) = delete;
         FD& operator = (int fd){
-            if (fd >= 0){
+            if (this->fd >= 0){
                 close(fd);
             }
             this->fd = fd;
@@ -43,6 +43,7 @@ protected:
     std::queue<std::string> write_buf;
     size_t written_len;
     pollfd pollfds[2];
+    char pipebuf[64];
 
 public:
     PosixSerial() = delete;
@@ -50,7 +51,7 @@ public:
     PosixSerial(PosixSerial&&) = delete;
     PosixSerial(const char* path);
     virtual ~PosixSerial();
-    virtual size_t read(void* buf, size_t len);
+    virtual int read(void* buf, int len);
     virtual void write(std::string&& data);
     virtual void stop();
 };

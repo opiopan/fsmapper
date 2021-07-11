@@ -63,7 +63,7 @@ struct DeviceModifierRule {
     std::shared_ptr<DeviceModifier> raw;
 
     DeviceModifierRule() = default;
-    DeviceModifierRule(DeviceModifierRule&) = delete;
+    DeviceModifierRule(const DeviceModifierRule&) = delete;
     DeviceModifierRule(DeviceModifierRule&&) = default;
     ~DeviceModifierRule() = default;
 
@@ -101,11 +101,11 @@ protected:
 public:
     DeviceModifierManager() = delete;
     DeviceModifierManager(MapperEngine& engine);
-    DeviceModifierManager(DeviceModifierManager&) = delete;
+    DeviceModifierManager(const DeviceModifierManager&) = delete;
     DeviceModifierManager(DeviceModifierManager&&) = delete;
     ~DeviceModifierManager();
 
-    DeviceModifierRule&& makeRule(sol::object &def);
+    void makeRule(sol::object &def, DeviceModifierRule& rule);
 
     void stop();
 

@@ -385,8 +385,7 @@ public:
 //============================================================================================
 // Interpret modifier rule definition
 //============================================================================================
-DeviceModifierRule&& DeviceModifierManager::makeRule(sol::object &def){
-    DeviceModifierRule rule;
+void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule){
     rule.raw = std::make_shared<RawModifier>(*this);
     if (def.get_type() == sol::type::table){
         auto table = def.as<sol::table>();
@@ -429,7 +428,6 @@ DeviceModifierRule&& DeviceModifierManager::makeRule(sol::object &def){
             }
         }
     }
-    return std::move(rule);
 }
 
 //============================================================================================
@@ -460,7 +458,7 @@ DeviceModifierManager::DeviceModifierManager(MapperEngine &engine) : engine(engi
                 auto event_queue_size = event_queue.size();
                 auto timer_num = timers.size();
                 auto condition = [this, event_queue_size, timer_num](){
-                    return event_queue.size() > event_queue_size || timers.size() > timer_num;
+                    return event_queue.size() > event_queue_size || timers.size() > timer_num || status != Status::running;
                 };
                 if (timer_num > 0){
                     auto now = DEVICEMOD_CLOCK::now();

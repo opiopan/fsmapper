@@ -24,9 +24,9 @@ class Device{
 
 public:
     Device() = delete;
-    Device(Device&) = delete;
+    Device(const Device&) = delete;
     Device(Device&&) = delete;
-    Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, sol::object&& identifier);
+    Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier);
     virtual ~Device();
 
     operator FSMDEVICECTX* (){return &contextForPlugin;};
@@ -44,7 +44,7 @@ protected:
 
 public:
     DeviceClass() = delete;
-    DeviceClass(DeviceClass&) = delete;
+    DeviceClass(const DeviceClass&) = delete;
     DeviceClass(DeviceClass&&) = delete;
     DeviceClass(MapperEngine& engine, const MAPPER_PLUGIN_DEVICE_OPS* pluginOps);
     ~DeviceClass();

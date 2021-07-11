@@ -54,7 +54,7 @@ public:
     class SerialComm{
     public:
         virtual ~SerialComm() = default;
-        virtual size_t read(void* buf, size_t len) = 0;
+        virtual int read(void* buf, int len) = 0;
         virtual void write(std::string&& data) = 0;
         virtual void stop() = 0;
     };
@@ -94,14 +94,14 @@ protected:
     char parsedLineBuf[256];
 
 public:
-    static std::string&& identifyDevicePath (LUAVALUE identifier);
+    static std::string identifyDevicePath(LUAVALUE identifier);
 
     SimHIDConnection(FSMAPPER_HANDLE mapper, SimHID& simhid, const char* devicePath);
     SimHIDConnection() = delete;
     SimHIDConnection(const SimHIDConnection&) = delete;
     SimHIDConnection(SimHIDConnection&&) = delete;
     ~SimHIDConnection();
-    
+
     const std::string& getDevicePath() const{return devicePath;};
     FSMAPPER_HANDLE getMapper(){return mapper;};
     SimHID& getSimHID(){return simhid;};
@@ -110,6 +110,7 @@ public:
     void getUnitDef(size_t index, FSMDEVUNITDEF* def);
     void sendUnitValue(size_t index, int value);
 
+    void start();
     void stop();
 
     Device* addDevice(FSMDEVICE device);

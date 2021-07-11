@@ -37,7 +37,7 @@ protected:
 
 public:
     LUAVALUECTX();
-    LUAVALUECTX(sol::object&& object);
+    LUAVALUECTX(const sol::object& object);
     LUAVALUECTX(const LUAVALUECTX&) = delete;
     LUAVALUECTX(LUAVALUECTX&&) = delete;
     virtual ~LUAVALUECTX() = default;
@@ -55,7 +55,7 @@ protected:
 
 public:
     LUAVALUE_TABLE() = delete;
-    LUAVALUE_TABLE(sol::object&& object);
+    LUAVALUE_TABLE(const sol::object& object);
     virtual ~LUAVALUE_TABLE() = default;
 
     virtual LUAVALUECTX* getItemWithKey(const char* key);

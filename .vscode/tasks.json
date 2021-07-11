@@ -7,7 +7,7 @@
             "args": [
             ],
             "options": {
-                "cwd": "${workspaceFolder}/src/mock"
+                "cwd": "${workspaceFolder}/src/mockup"
             },
             "problemMatcher": [
                 "$gcc"

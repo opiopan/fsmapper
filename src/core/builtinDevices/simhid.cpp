@@ -31,6 +31,7 @@ public:
         std::lock_guard lock(mutex);
         if (connections.count(devicePath) == 0){
             auto connection = std::make_unique<SimHIDConnection>(mapper, *this, devicePath.c_str());
+            connection->start();
             connections.insert(std::make_pair(devicePath, std::move(connection)));
         }
         auto connection = connections.at(devicePath).get();
@@ -78,7 +79,7 @@ static bool simhid_open(FSMAPPER_HANDLE handle, FSMDEVICE device, LUAVALUE ident
 {
     try{
         auto simhid = static_cast<SimHID*>(fsmapper_getContext(handle));
-        auto devPath = std::move(SimHIDConnection::identifyDevicePath(identifier));
+        auto devPath = SimHIDConnection::identifyDevicePath(identifier);
         auto device_ctx = simhid->openDevice(device, devPath);
         fsmapper_setContextForDevice(handle, device, device_ctx);
     }catch (SimHIDConnection::Exception& e){
