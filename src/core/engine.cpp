@@ -65,18 +65,29 @@ bool MapperEngine::run(std::string&& scriptPath){
 
         initScriptingEnvAndRun();
 
+        std::unique_lock<std::mutex> lock(mutex);
         while (true){
-            Status current;
-            {
-                std::unique_lock<std::mutex> lock(mutex);
-                event.cv.wait(lock, [this]{
-                    return this->event.queue.size() > 0 ||this->status != Status::running;
-                });
-                current = status;
-            }
-            if (current != Status::running){
+            //-------------------------------------------------------------------------------
+            // wait until event occurrence
+            //-------------------------------------------------------------------------------
+            event.cv.wait(lock, [this]{
+                return this->event.queue.size() > 0 ||this->status != Status::running;
+            });
+            if (status != Status::running){
                 break;
             }
+            auto ev = std::move(event.queue.front());
+            event.queue.pop();
+
+            if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT)){
+                auto &name = event.names.at(ev->getId());
+                std::ostringstream os;
+                os << "Event occurred: " << name;
+                lock.unlock();
+                putLog(MCONSOLE_INFO, os.str());
+                lock.lock();
+            }
+            
         }
     }catch (MapperException& e){
         std::ostringstream os;

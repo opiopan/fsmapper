@@ -55,6 +55,7 @@ protected :
     Status status;
     Callback callback;
     Logger logger;
+    MAPPER_LOGMODE logmode;
 
     struct {
         std::string scriptPath;
@@ -77,8 +78,13 @@ public:
     bool stop();
     bool abort();
 
+    void setLogmode(MAPPER_LOGMODE mode){
+        std::lock_guard lock(mutex);
+        logmode = mode;
+    }
+
     Status getStatus(){
-        auto lock = std::lock_guard(mutex);
+        std::lock_guard lock(mutex);
         return status;
     };
 

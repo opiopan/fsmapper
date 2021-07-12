@@ -57,12 +57,14 @@ int PosixSerial::read(void* buf, int len){
         {
             std::lock_guard lock(mutex);
             pollfds[0].events = write_buf.size() == 0 ? POLLIN : POLLIN | POLLOUT;
+            pollfds[0].revents = 0;
         }
         if (::poll(pollfds, 2, 0) < -1){
             // may reach here by only EINTR
             continue;
         }
         if (pollfds[1].revents & POLLIN){
+            pollfds[1].revents = 0;
             ::read(fd_pipe_in, pipebuf, sizeof(pipebuf));
             std::lock_guard lock(mutex);
             if (should_be_stop){

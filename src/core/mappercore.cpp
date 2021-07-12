@@ -62,6 +62,11 @@ DLLEXPORT bool mapper_stop(MapperHandle handle){
     return handle->engine->stop();
 }
 
+DLLEXPORT bool mapper_setLogMode(MapperHandle handle, MAPPER_LOGMODE logmode){
+    handle->engine->setLogmode(logmode);
+    return true;
+}
+
 DLLEXPORT void *mapper_getHostContext(MapperHandle handle){
     return handle->hostContext;
 }

@@ -21,6 +21,10 @@
 extern "C" {
 #endif
 
+typedef uint32_t MAPPER_LOGMODE;
+#define MAPPER_LOG_DEBUG 0x1
+#define MAPPER_LOG_EVENT 0x2
+
 typedef enum mapper_event{
     MEV_CHANGE_SIMCONNECTION = 10000,
     MEV_CHANGE_AIRCRAFT,
@@ -65,6 +69,8 @@ DLLEXPORT bool mapper_terminate(MapperHandle handle);
 
 DLLEXPORT bool mapper_run(MapperHandle handle, const char* scriptPath);
 DLLEXPORT bool mapper_stop(MapperHandle handle);
+
+DLLEXPORT bool mapper_setLogMode(MapperHandle handle, MAPPER_LOGMODE logmode);
 
 DLLEXPORT void* mapper_getHostContext(MapperHandle handle);
 DLLEXPORT uint32_t mapper_getSimConnection(MapperHandle handle);

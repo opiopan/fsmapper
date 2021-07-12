@@ -164,7 +164,7 @@ ButtonModifier::~ButtonModifier(){
 std::shared_ptr<DeviceModifier> ButtonModifier::makeInstanceFitsToUnit(const char *devname, const FSMDEVUNITDEF &unit) const{
     auto instance = std::make_shared<ButtonModifier>(*this);
     if (!instance->threshold_max.has_value()){
-        instance->threshold_min = unit.minValue + (unit.maxValue - unit.minValue);
+        instance->threshold_min = unit.minValue + (unit.maxValue - unit.minValue) / 2;
         instance->threshold_max = instance->threshold_min.value() + 1;
     }else if (instance->threshold_max.value() > unit.maxValue || instance->threshold_min < unit.minValue){
         std::ostringstream os;
@@ -178,7 +178,7 @@ std::shared_ptr<DeviceModifier> ButtonModifier::makeInstanceFitsToUnit(const cha
         os << devname << ":" << unit.name << ":" << evname;
         instance->events.push_back(Event{
             instance->manager.getEngine().registerEvent(os.str()),
-            devname,
+            evname,
         });
     };
     instance->eventix.down = instance->events.size();
@@ -353,7 +353,7 @@ public:
             os << devname << ":" << unit.name << ":" << evname;
             return this->manager.getEngine().registerEvent(os.str());
         };
-        instanse->evid_decrement = new_event_id("INCREMENT");
+        instanse->evid_increment = new_event_id("INCREMENT");
         instanse->evid_decrement = new_event_id("DECTREMENT");
 
         return instanse;
@@ -391,7 +391,7 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
         auto table = def.as<sol::table>();
         for (int i = 1; i <= table.size(); i++){
             sol::object item = table[i];
-            if (item.get_type() != sol::type::table){
+            if (item.get_type() == sol::type::table){
                 auto itemdef = item.as<sol::table>();
                 std::string modtype = itemdef["modtype"];
                 sol::object modparam = itemdef["modparam"];
@@ -444,21 +444,18 @@ DeviceModifierManager::DeviceModifierManager(MapperEngine &engine) : engine(engi
                 lock.unlock();
                 item.modifier.processUnitValueChangeEvent(item.value, now);
                 lock.lock();
-            }else if (timers.size() > 0){
+            }else if (timers.size() > 0 && timers.begin()->first <= now){
                 auto most_recent = timers.begin();
-                if (most_recent->first >= now){
-                    auto target_time = most_recent->first;
-                    auto& modifier = most_recent->second;
-                    timers.erase(most_recent);
-                    lock.unlock();
-                    modifier.processTimerEvent(target_time);
-                    lock.lock();
-                }
+                auto target_time = most_recent->first;
+                auto& modifier = most_recent->second;
+                timers.erase(most_recent);
+                lock.unlock();
+                modifier.processTimerEvent(target_time);
+                lock.lock();
             }else{
-                auto event_queue_size = event_queue.size();
                 auto timer_num = timers.size();
-                auto condition = [this, event_queue_size, timer_num](){
-                    return event_queue.size() > event_queue_size || timers.size() > timer_num || status != Status::running;
+                auto condition = [this, timer_num](){
+                    return event_queue.size() > 0 || timers.size() > timer_num || status != Status::running;
                 };
                 if (timer_num > 0){
                     auto now = DEVICEMOD_CLOCK::now();

@@ -1,8 +1,11 @@
 #include <iostream>
+#include <mutex>
 #include "mappercore.h"
 
 #include <functional>
 static bool console_handler(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
+    static std::mutex mutex;
+    std::lock_guard lock(mutex);
     std::cout.write(msg, len);
     std::cout << std::endl;
     return true;
@@ -19,7 +22,8 @@ int main(int argc, char* argv[]){
     }
 
     MapperHandle mapper = mapper_init(event_handler, console_handler, nullptr);
-    mapper_run(mapper, argv[1]);
+    mapper_setLogMode(mapper, MAPPER_LOG_EVENT);
+    auto rc = mapper_run(mapper, argv[1]);
 
-    return 0;
+    return rc ? 0 : 1;
 }
