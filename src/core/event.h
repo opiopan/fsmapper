@@ -11,8 +11,7 @@
 #include <sol/sol.hpp>
 
 class Event{
-protected:
-    uint64_t id;
+public:
     enum class Type{
         null,
         bool_value,
@@ -21,6 +20,9 @@ protected:
         string_value,
         lua_value,
     } type;
+
+protected:
+    uint64_t id;
     union{
         bool boolValue;
         int64_t intValue;
@@ -137,7 +139,10 @@ public:
     };
     operator std::string&& () const{
         return std::move(std::string(this->operator const char*()));
-    }
+    };
+    operator sol::object () const{
+        return luaValue;
+    };
 
     template <class T> T getAs(){return static_cast<T>(*this);};
 };

@@ -3,6 +3,7 @@ BUILD_DIR	 = build
 
 CXXSOURCES	 = mappercore.cpp\
 		   engine.cpp \
+		   action.cpp \
 		   device.cpp \
 		   devicemodifier.cpp \
 		   pluginapi.cpp \

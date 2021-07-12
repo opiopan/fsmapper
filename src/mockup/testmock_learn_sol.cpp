@@ -57,7 +57,8 @@ static bool test(){
 
     sol::object t = lua["t"];
     sol::table table = t;
-    sol::protected_function showkv = lua["showkv"];
+    sol::object showkv_o = lua["showkv"];
+    sol::protected_function showkv = showkv_o;
     for (const auto& kv : table){
         sol::object key = kv.first;
         auto keytype = key.get_type();
@@ -153,6 +154,21 @@ static bool test(){
         lua.script("print(concat2(\"FOOBAR\"))");
     }
     lua.script("print(concat2(\"FOOBAR\"))");
+
+    std::cout << "########################################################" << std::endl;
+    sol::object luafunc_o;
+    lua["regfunc"] = [&luafunc_o](sol::object obj){
+        luafunc_o = obj;
+    };
+    lua.script(
+        "function luaf() print(\"OK OK OK\") end "
+        "regfunc(luaf)"
+    );
+    if (luafunc_o.get_type() == sol::type::function){
+        std::cout << "yes, luafunc_o is lua function" << std::endl;
+        sol::protected_function f = luafunc_o;
+        f();
+    }
 
     return true;
 }

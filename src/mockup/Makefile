@@ -1,7 +1,9 @@
 TARGET		 = testmock
+TARGET2		 = testmock_learn_sol
 BUILD_DIR	 = build
 
-CXXSOURCES	 = testmock.cpp
+CXXSOURCES	 = testmock.cpp \
+                   testmock_learn_sol.cpp
 
 CSOURCES	 = 
 
@@ -21,13 +23,18 @@ LFLAGS		+= $(LIBDIRS) $(LIBS)
 
 all: core $(BUILD_DIR)/$(TARGET)
 
+all2: all $(BUILD_DIR)/$(TARGET2)
+
 OBJS = $(addprefix $(BUILD_DIR)/,$(notdir $(CXXSOURCES:.cpp=.o)))
 vpath %.cpp $(sort $(dir $(CXXSOURCES)))
 OBJS += $(addprefix $(BUILD_DIR)/,$(notdir $(CSOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(CSOURCES)))
 
-$(BUILD_DIR)/$(TARGET): $(CORELIB) $(OBJS) Makefile
-	$(CXX) $(LFLAGS) -o $@ $(OBJS)
+$(BUILD_DIR)/$(TARGET): $(CORELIB) $(BUILD_DIR)/testmock.o Makefile
+	$(CXX) $(LFLAGS) -o $@ $(BUILD_DIR)/testmock.o
+
+$(BUILD_DIR)/$(TARGET2): $(CORELIB) $(BUILD_DIR)/testmock_learn_sol.o Makefile
+	$(CXX) $(LFLAGS) -o $@ $(BUILD_DIR)/testmock_learn_sol.o
 
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
 	$(CXX) -c $(CXXFLAGS) -o $@ $<

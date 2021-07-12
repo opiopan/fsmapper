@@ -16,8 +16,12 @@ class RawModifier : public DeviceModifier{
     uint64_t evid;
 public:
     RawModifier(const RawModifier&) = default;
-    RawModifier(DeviceModifierManager& manager) : DeviceModifier(manager){};
-    ~RawModifier() = default;
+    RawModifier(DeviceModifierManager& manager) : DeviceModifier(manager), evid(0){};
+    ~RawModifier(){
+        if (evid != 0){
+            manager.getEngine().unregisterEvent(evid);
+        }
+    };
 
     virtual size_t getEventNum() const{
         return 1;
@@ -158,6 +162,9 @@ ButtonModifier::~ButtonModifier(){
     }
     if (longpress_timer.has_value()){
         manager.cancelTimer(*this, longpress_timer.value());
+    }
+    for (auto iterator = events.begin(); iterator != events.end(); iterator++){
+        manager.getEngine().unregisterEvent(iterator->id);
     }
 }
 
@@ -340,8 +347,15 @@ protected:
 
 public:
     IncDecModifier(const IncDecModifier&) = default;
-    IncDecModifier(DeviceModifierManager& manager) : DeviceModifier(manager){};
-    ~IncDecModifier() = default;
+    IncDecModifier(DeviceModifierManager& manager) : DeviceModifier(manager), evid_increment(0), evid_decrement(0){};
+    virtual ~IncDecModifier(){
+        if (evid_increment != 0){
+            manager.getEngine().unregisterEvent(evid_increment);
+        }
+        if (evid_decrement != 0){
+            manager.getEngine().unregisterEvent(evid_decrement);
+        }
+    }
 
     virtual std::shared_ptr<DeviceModifier> makeInstanceFitsToUnit(const char *devname, const FSMDEVUNITDEF& unit) const{
         auto instanse = std::make_shared<IncDecModifier>(*this);

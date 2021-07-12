@@ -1,0 +1,68 @@
+//
+// action.h
+//  Author: Hiroshi Murayama <opiopan@gmail.com>
+//
+
+#include <functional>
+#include <optional>
+#include <engine.h>
+
+class Action{
+protected:
+    sol::object lua_object;
+
+public:
+    Action(const Action&) = delete;
+    Action(Action&&) = delete;
+    Action(const sol::object& object): lua_object(object){};
+    virtual ~Action() = default;
+
+    virtual const char* getName() = 0;
+    virtual void invoke(Event& event) = 0;
+};
+
+class NativeAction: public Action{
+public:
+    class Function {
+    public:
+        using NAME_FUNCTION = std::function<const char*()>;
+        using ACTION_FUNCTION = std::function<void (Event&)>;
+    protected:
+        NAME_FUNCTION name;
+        ACTION_FUNCTION action;
+    public:
+        Function() = delete;
+        Function(const Function&) = delete;
+        Function(Function&&) =delete;
+        Function(NAME_FUNCTION& name, ACTION_FUNCTION& action): name(name), action(action){};
+        ~Function() = default;
+        const char* getName(){return name();};
+        void invoke(Event& event){action(event);};
+    };
+
+protected:
+    Function* function;
+
+public:
+    NativeAction() = delete;
+    NativeAction(const NativeAction&) = delete;
+    NativeAction(NativeAction&&) = delete;
+    NativeAction(const sol::object& object);
+    virtual ~NativeAction() = default;
+    virtual const char* getName();
+    virtual void invoke(Event& event);
+};
+
+class LuaAction: public Action{
+protected:
+    sol::protected_function function;
+
+public:
+    LuaAction() = delete;
+    LuaAction(const NativeAction&) = delete;
+    LuaAction(NativeAction&&) = delete;
+    LuaAction(const sol::object& object);
+    virtual ~LuaAction() = default;
+    virtual const char* getName();
+    virtual void invoke(Event& event);
+};

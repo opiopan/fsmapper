@@ -38,7 +38,7 @@ function g1000_aircraft()
 		    		omit_system_region = true;
 				})
 	    	}},
-	    	maps = {
+	    	mappings = {
 	        	{event=g1000.SW31.UP, action=fs2020.eventsender({event = "Mobiflight.AS1000_PFD_SOFTKEYS_1"})},
 	        	{event=g1000.EC1.INCREMENT, action=fs2020.eventsender({event = "Mobiflight.AS1000_PFD_HEADING_INC"})},
 	    	}
@@ -46,7 +46,7 @@ function g1000_aircraft()
 		viewport:register_view({
 	    	name = "MFD",
 	    	elements = {{object = mapper.captured_window({name = "G1000 MFD"})}},
-			maps = {
+			mappings = {
 	        	{event=g1000.SW31.UP, action=fs2020.eventsender({event = "Mobiflight.AS1000_MFD_SOFTKEYS_1"})},
 	        	{event=g1000.EC1.INCREMENT, action=fs2020.eventsender({event = "Mobiflight.AS1000_MFD_HEADING_INC"})},
 			}
@@ -54,7 +54,7 @@ function g1000_aircraft()
 
 		viewport:change_view("PFD")
 
-		function toggle_screen(event)
+		function toggle_screen()
 			if viewport.current_view == "PFD" then
 				viewport:change_view("MFD")
 			else
@@ -62,7 +62,7 @@ function g1000_aircraft()
 			end
 		end
 
-		viewport:set_maps({
+		viewport:set_mappings({
 			{event = g1000.AUX1U.DOWN, action = toggle_screen}
 			{event = g1000.AUX1D.DOWN, action = toggle_screen}
 			{event = g1000.AUX2U.DOWN, action = toggle_screen}
@@ -83,10 +83,10 @@ end
 
 local terminate_aircraft_env = function () end
 
-mapper.set_primery_maps({
-    {event = fs2020.events.change_aircraft, action = function (event)
+mapper.set_primery_mappings({
+    {event = fs2020.events.change_aircraft, action = function (event, value)
 		terminate_aircraft_env()
-		if event.value == "DA40-NG Asobo" then
+		if value == "DA40-NG Asobo" then
 			local initialize
 			initialize, terminate_aircraft_env = g1000_aircraft()
 			initialize()
