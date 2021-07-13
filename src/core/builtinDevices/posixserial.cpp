@@ -59,7 +59,7 @@ int PosixSerial::read(void* buf, int len){
             pollfds[0].events = write_buf.size() == 0 ? POLLIN : POLLIN | POLLOUT;
             pollfds[0].revents = 0;
         }
-        if (::poll(pollfds, 2, 0) < -1){
+        if (::poll(pollfds, 2, -1) < -1){
             // may reach here by only EINTR
             continue;
         }

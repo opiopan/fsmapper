@@ -25,16 +25,28 @@ MapperEngine::~MapperEngine(){
 void MapperEngine::initScriptingEnvAndRun(){
     //-------------------------------------------------------------------------------
     // create 'mapper' table
-    //      mapper.print():   print message on console
-    //      mapper.device() : open device
+    //      mapper.print():                  print message on console
+    //      mapper.abort():                  abort mapper engine
+    //      mapper.device() :                open device
+    //      mapper.set_primery_mappings():   set primery mappings
+    //      mapper.set_secondary_mappings(): set primery mappings
     //-------------------------------------------------------------------------------
     auto mapper = scripting.lua.create_table();
     mapper["print"] = [this](const char* msg){
         putLog(MCONSOLE_MESSAGE, msg);
     };
+    mapper["abort"] = [this](){
+        abort();
+    };
     scripting.deviceManager = std::make_unique<DeviceManager>(*this);
     mapper["device"] = [this](const sol::object param, sol::this_state s){
         return scripting.deviceManager->createDevice(param, s);
+    };
+    mapper["set_primery_mappings"] = [this](const sol::object def){
+        setMapping("mapper.set_primery_mappings()", 0, def);
+    };
+    mapper["set_secondary_mappings"] = [this](const sol::object def){
+        setMapping("mapper.set_secondary_mappings()", 1, def);
     };
     scripting.lua["mapper"] = mapper;
 
@@ -54,18 +66,21 @@ void MapperEngine::initScriptingEnvAndRun(){
 //============================================================================================
 bool MapperEngine::run(std::string&& scriptPath){
     try{
-        {
-            std::lock_guard lock(mutex);
-            if  (status != Status::init){
-                return false;
-            }
-            status = Status::running;
-            scripting.scriptPath = std::move(scriptPath);
-        }
-
-        initScriptingEnvAndRun();
-
         std::unique_lock<std::mutex> lock(mutex);
+
+        if  (status != Status::init){
+            return false;
+        }
+        status = Status::running;
+        scripting.scriptPath = std::move(scriptPath);
+
+        //-------------------------------------------------------------------------------
+        // create environment for lua script then run
+        //-------------------------------------------------------------------------------
+        lock.unlock();
+        initScriptingEnvAndRun();
+        lock.lock();
+
         while (true){
             //-------------------------------------------------------------------------------
             // wait until event occurrence
@@ -79,19 +94,34 @@ bool MapperEngine::run(std::string&& scriptPath){
             auto ev = std::move(event.queue.front());
             event.queue.pop();
 
+            //-------------------------------------------------------------------------------
+            // identify action correspond to event
+            //-------------------------------------------------------------------------------
+            auto action = findAction(ev->getId());
             if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT)){
                 auto &name = event.names.at(ev->getId());
                 std::ostringstream os;
                 os << "Event occurred: " << name;
+                if (action){
+                    os << " -> " << action->getName();
+                }
                 lock.unlock();
                 putLog(MCONSOLE_INFO, os.str());
                 lock.lock();
             }
-            
+
+            //-------------------------------------------------------------------------------
+            // invoke action
+            //-------------------------------------------------------------------------------
+            if (action){
+                lock.unlock();
+                action->invoke(*ev.get());
+                lock.lock();
+            }
         }
     }catch (MapperException& e){
         std::ostringstream os;
-        os << "mapper-core: an error that cannot proceed event mapping occurred: " << e.getMessage();
+        os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.getMessage();
         putLog(MCONSOLE_ERROR, os.str());
         std::lock_guard lock(mutex);
         status = Status::error;
@@ -124,6 +154,14 @@ void MapperEngine::unregisterEvent(uint64_t evid){
     event.names.erase(evid);
 }
 
+const char* MapperEngine::getEventName(uint64_t evid) const{
+    if (event.names.count(evid) > 0){
+        return event.names.at(evid).c_str();
+    }else{
+        return nullptr;
+    }
+}
+
 void MapperEngine::sendEvent(Event &&ev){
     std::lock_guard lock(mutex);
     event.queue.push(std::make_unique<Event>(std::move(ev)));
@@ -137,3 +175,31 @@ std::unique_ptr<Event>&& MapperEngine::receiveEvent(){
     event.queue.pop();
     return std::move(ev);
 }
+
+//============================================================================================
+// finding action correspond to event
+//============================================================================================
+Action* MapperEngine::findAction(uint64_t evid){
+    if (mapping[0].get() && mapping[0]->count(evid) > 0){
+        return mapping[0]->at(evid).get();
+    }else if (mapping[1].get() && mapping[1]->count(evid) > 0){
+        return mapping[1]->at(evid).get();
+    }
+    return nullptr;
+}
+
+
+//============================================================================================
+// funtions to expose to Lua script
+//============================================================================================
+void MapperEngine::setMapping(const char* function_name, int level, const sol::object& mapdef){
+    try{
+        mapping[level] = std::move(createEventActionMap(*this, mapdef));
+    }catch (MapperException& e){
+        std::ostringstream os;
+        os << function_name << ": " << e.getMessage();
+        putLog(MCONSOLE_ERROR, os.str());
+        abort();
+    }
+}
+

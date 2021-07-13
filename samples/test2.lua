@@ -24,28 +24,19 @@ for k, v in pairs(g1000) do
 end
 mapper.print("g1000.SW1:")
 for k, v in pairs(g1000.SW1) do
-    mapper.print("    "..k.." = "..v)
+    mapper.print("    "..k)
 end
 mapper.print("g1000.EC1:")
 for k, v in pairs(g1000.EC1) do
-    mapper.print("    "..k.." = "..v)
-
+    mapper.print("    "..k)
 end
 mapper.print("g1000.EC1P:")
 for k, v in pairs(g1000.EC1P) do
-    mapper.print("    "..k.." = "..v)
+    mapper.print("    "..k)
 end
 mapper.print("g1000.SW2:")
 for k, v in pairs(g1000.SW2) do
-    mapper.print("    "..k.." = "..v)
-end
-
-mapper.print("mapper:")
-for k, v in pairs(mapper) do
     mapper.print("    "..k)
 end
 
-mapper.set_primery_mappings({
-    {event=g1000.SW2.DOUBLECLICK, action=function () mapper.print("Yes Yes Yes")  end },
-    {event=g1000.SW3.UP, action=function () mapper.abort() end},
-})
+foo()

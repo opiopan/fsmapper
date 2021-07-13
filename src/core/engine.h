@@ -15,6 +15,7 @@
 #include <sol/sol.hpp>
 #include "mappercore.h"
 #include "event.h"
+#include "action.h"
 #include "device.h"
 
 class DeviceManager;
@@ -70,6 +71,8 @@ protected :
         std::queue< std::unique_ptr<Event> > queue;
     }event;
 
+    std::unique_ptr<EventActionMap> mapping[2];
+
 public:
     MapperEngine(Callback callback, Logger logger);
     virtual ~MapperEngine();
@@ -94,9 +97,13 @@ public:
 
     uint64_t registerEvent(std::string&& name);
     void unregisterEvent(uint64_t evid);
+    const char* getEventName(uint64_t evid) const;
     void sendEvent(Event&& event);
 
 protected:
     void initScriptingEnvAndRun();
     std::unique_ptr<Event>&& receiveEvent();
+    Action* findAction(uint64_t evid);
+
+    void setMapping(const char* function_name, int level, const sol::object& mapdef);
 };

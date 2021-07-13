@@ -3,9 +3,17 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 
+#pragma once
+
 #include <functional>
 #include <optional>
-#include <engine.h>
+#include <map>
+#include <string>
+#include <memory>
+#include <sol/sol.hpp>
+#include "event.h"
+
+class MapperEngine;
 
 class Action{
 protected:
@@ -66,3 +74,6 @@ public:
     virtual const char* getName();
     virtual void invoke(Event& event);
 };
+
+using EventActionMap = std::map<uint64_t, std::unique_ptr<Action>>;
+std::unique_ptr<EventActionMap> createEventActionMap(const MapperEngine& engine, const sol::object &def);
