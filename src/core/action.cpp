@@ -83,7 +83,7 @@ std::unique_ptr<EventActionMap> createEventActionMap(const MapperEngine& engine,
                 sol::object action = event_action["action"];
                 if (action.get_type() == sol::type::function){
                     map->emplace(evid, std::make_unique<LuaAction>(action));
-                }else if (action.is<NativeAction::Action&>()){
+                }else if (action.is<NativeAction::Function&>()){
                     map->emplace(evid, std::make_unique<NativeAction>(action));
                 }else{
                     std::ostringstream os;

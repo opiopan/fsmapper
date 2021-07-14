@@ -51,6 +51,26 @@ void MapperEngine::initScriptingEnvAndRun(){
     scripting.lua["mapper"] = mapper;
 
     //-------------------------------------------------------------------------------
+    // test functions: will be deleted 
+    //-------------------------------------------------------------------------------
+    auto test = scripting.lua.create_table();
+    test["messenger"] = [this](const sol::object msg_o){
+        auto msg = msg_o.as<std::string>();
+        std::ostringstream os;
+        os << "show_msg(\"" << msg << "\")";
+        auto name = os.str();
+        NativeAction::Function::NAME_FUNCTION namefunc = [name](){return name.c_str();};
+        NativeAction::Function::ACTION_FUNCTION actionfunc = [msg, this](Event &){
+            std::ostringstream os;
+            os << "    " << msg;
+            putLog(MCONSOLE_MESSAGE, os.str().c_str());
+        };
+        auto action = std::make_shared<NativeAction::Function>(namefunc, actionfunc);
+        return action;
+    };
+    scripting.lua["test"] = test;
+
+    //-------------------------------------------------------------------------------
     // run the script
     //-------------------------------------------------------------------------------
     auto result = scripting.lua.safe_script_file(scripting.scriptPath, sol::script_pass_on_error);
@@ -119,15 +139,16 @@ bool MapperEngine::run(std::string&& scriptPath){
                 lock.lock();
             }
         }
+        return status == Status::stop;
     }catch (MapperException& e){
         std::ostringstream os;
         os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.getMessage();
         putLog(MCONSOLE_ERROR, os.str());
         std::lock_guard lock(mutex);
         status = Status::error;
+        return false;
     }
 
-    return status == Status::stop;
 }
 
 bool MapperEngine::stop(){

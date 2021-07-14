@@ -1,8 +1,8 @@
 #include <iostream>
 #include <mutex>
+#include <functional>
 #include "mappercore.h"
 
-#include <functional>
 static bool console_handler(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
     static std::mutex mutex;
     std::lock_guard lock(mutex);

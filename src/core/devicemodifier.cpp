@@ -27,13 +27,13 @@ public:
         return 1;
     }
     virtual Event getEvent(size_t index) const{
-        return {evid, "CHANGE"};
+        return {evid, "change"};
     }
 
     virtual std::shared_ptr<DeviceModifier> makeInstanceFitsToUnit(const char *devname, const FSMDEVUNITDEF& unit) const{
         auto instanse = std::make_shared<RawModifier>(*this);
         std::ostringstream os;
-        os << devname << ":" << unit.name << ":CHANGE";
+        os << devname << ":" << unit.name << ":change";
         instanse->evid = manager.getEngine().registerEvent(os.str());
         return instanse;
     }
@@ -189,18 +189,18 @@ std::shared_ptr<DeviceModifier> ButtonModifier::makeInstanceFitsToUnit(const cha
         });
     };
     instance->eventix.down = instance->events.size();
-    register_event("DOWN");
+    register_event("down");
     instance->eventix.up = instance->events.size();
-    register_event("UP");
+    register_event("up");
     if (doubleclick.has_value()){
         instance->eventix.singleclick = instance->events.size();
-        register_event("SINGLECLICK");
+        register_event("singleclick");
         instance->eventix.doubleclick = instance->events.size();
-        register_event("DOUBLECLICK");
+        register_event("doubleclick");
     }
     if (longpress.has_value()){
         instance->eventix.longpressed = instance->events.size();
-        register_event("LONGPRESSED");
+        register_event("longpressed");
     }
 
     return instance;
@@ -367,8 +367,8 @@ public:
             os << devname << ":" << unit.name << ":" << evname;
             return this->manager.getEngine().registerEvent(os.str());
         };
-        instanse->evid_increment = new_event_id("INCREMENT");
-        instanse->evid_decrement = new_event_id("DECTREMENT");
+        instanse->evid_increment = new_event_id("increment");
+        instanse->evid_decrement = new_event_id("decrement");
 
         return instanse;
     }
@@ -378,9 +378,9 @@ public:
     }
     virtual Event getEvent(size_t index) const{
         if (index == 0){
-            return {evid_increment, "INCREMENT"};
+            return {evid_increment, "increment"};
         }else{
-            return {evid_decrement, "DECREMENT"};
+            return {evid_decrement, "decrement"};
         }
     }
 

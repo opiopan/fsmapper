@@ -7,12 +7,11 @@ g1000 = mapper.device({
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
-		{name = "EC1P", modtype = "button", modparam={
-	    	longpress = 3000,
-		}},
-		{name = "SW2", modtype = "button", modparam={
-	    	doubleclick = 400,
-		}},
+		{name = "EC1P", modtype = "button", modparam={longpress = 2000}},
+		{name = "SW26", modtype = "button", modparam={longpress = 2000}},
+		{name = "SW31", modtype = "button", modparam={longpress = 2000}},
+		{name = "SW2", modtype = "button", modparam={doubleclick = 400,}},
+		{name = "EC9Y", modtype = "raw"},
     },
 })
 
@@ -46,6 +45,7 @@ for k, v in pairs(mapper) do
 end
 
 mapper.set_primery_mappings({
-    {event=g1000.SW2.DOUBLECLICK, action=function () mapper.print("Yes Yes Yes")  end },
-    {event=g1000.SW3.UP, action=function () mapper.abort() end},
+    {event=g1000.SW2.doubleclick, action=function () mapper.print("Yes Yes Yes")  end },
+    {event=g1000.SW3.up, action=function () mapper.abort() end},
+    {event=g1000.SW27.down, action=test.messenger("test of native action")},
 })
