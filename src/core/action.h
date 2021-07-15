@@ -33,18 +33,17 @@ class NativeAction: public Action{
 public:
     class Function {
     public:
-        using NAME_FUNCTION = std::function<const char*()>;
         using ACTION_FUNCTION = std::function<void (Event&)>;
     protected:
-        NAME_FUNCTION name;
+        std::string name;
         ACTION_FUNCTION action;
     public:
         Function() = delete;
         Function(const Function&) = delete;
         Function(Function&&) =delete;
-        Function(NAME_FUNCTION& name, ACTION_FUNCTION& action): name(name), action(action){};
+        Function(const char* name, ACTION_FUNCTION& action): name(name), action(action){};
         ~Function() = default;
-        const char* getName(){return name();};
+        const char* getName(){return name.c_str();};
         void invoke(Event& event){action(event);};
     };
 

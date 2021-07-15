@@ -59,13 +59,17 @@ void MapperEngine::initScriptingEnvAndRun(){
         std::ostringstream os;
         os << "show_msg(\"" << msg << "\")";
         auto name = os.str();
-        NativeAction::Function::NAME_FUNCTION namefunc = [name](){return name.c_str();};
         NativeAction::Function::ACTION_FUNCTION actionfunc = [msg, this](Event &){
             std::ostringstream os;
             os << "    " << msg;
             putLog(MCONSOLE_MESSAGE, os.str().c_str());
         };
-        auto action = std::make_shared<NativeAction::Function>(namefunc, actionfunc);
+        NativeAction::Function::ACTION_FUNCTION func = [msg, this](Event &){
+            std::ostringstream os;
+            os << "    " << msg;
+            putLog(MCONSOLE_MESSAGE, os.str().c_str());
+        };
+        auto action = std::make_shared<NativeAction::Function>(name.c_str(), func);
         return action;
     };
     scripting.lua["test"] = test;
@@ -159,6 +163,7 @@ bool MapperEngine::stop(){
 bool MapperEngine::abort(){
     std::lock_guard lock(mutex);
     status = Status::error;
+    event.cv.notify_all();
     return true;
 }
 
