@@ -2,3 +2,4 @@ Debug
 Release
 build
 modules/lua-5.4.3
+.vscode
