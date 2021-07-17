@@ -64,7 +64,7 @@ typedef bool (*MAPPER_CONSOLE_HANDLER)(MapperHandle mapper, MCONSOLE_MESSAGE_TYP
 typedef bool (*MAPPER_ENUM_DEVICE_FUNC)(MapperHandle mapper, void* context, const char* devtype, const char* devname);
 typedef bool (*MAPPER_ENUM_CAPUTURED_WINDOW)(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef);
 
-MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE_HANDLER logger, void *hostContext);
+DLLEXPORT MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE_HANDLER logger, void *hostContext);
 DLLEXPORT bool mapper_terminate(MapperHandle handle);
 
 DLLEXPORT bool mapper_run(MapperHandle handle, const char* scriptPath);

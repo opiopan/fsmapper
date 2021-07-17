@@ -71,11 +71,11 @@ protected:
     std::optional<DEVICEMOD_TIME> doubleclick_timer;
     std::vector<Event> events;
     struct {
-        int down;
-        int up;
-        int singleclick;
-        int doubleclick;
-        int longpressed;
+        size_t down;
+        size_t up;
+        size_t singleclick;
+        size_t doubleclick;
+        size_t longpressed;
     }eventix;
 
 public:
