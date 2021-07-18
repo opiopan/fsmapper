@@ -7,6 +7,7 @@
 #include <optional>
 #include <vector>
 #include "engine.h"
+#include "tools.h"
 #include "devicemodifier.h"
 
 //============================================================================================
@@ -407,7 +408,7 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
             sol::object item = table[i];
             if (item.get_type() == sol::type::table){
                 auto itemdef = item.as<sol::table>();
-                std::string modtype = itemdef["modtype"];
+                std::string modtype = lua_safestring(itemdef["modtype"]);
                 sol::object modparam = itemdef["modparam"];
                 std::shared_ptr<DeviceModifier> modifier;
                 if (modtype == "raw"){
@@ -419,8 +420,8 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
                 }else{
                     throw MapperException("\"modtype\" parameter is invalid or that parameter is not specified");
                 }
-                std::string classname = itemdef["class"];
-                std::string name = itemdef["name"];
+                std::string classname = lua_safestring(itemdef["class"]);
+                std::string name = lua_safestring(itemdef["name"]);
                 static const std::map<std::string, FSMDEVUNIT_VALTYPE> classname_dic{
                     {"absolute", FSMDU_TYPE_ABSOLUTE},
                     {"relative", FSMDU_TYPE_RELATIVE},

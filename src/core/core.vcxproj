@@ -187,6 +187,7 @@
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
     <ClInclude Include="pluginapi.h" />
+    <ClInclude Include="tools.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />

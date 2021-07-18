@@ -76,7 +76,7 @@ int PosixSerial::read(void* buf, int len){
             // can send data via serial port
             std::lock_guard lock(mutex);
             auto& data = write_buf.front();
-            auto result = ::write(fd_serial, data.data(), data.size() - written_len);
+            auto result = ::write(fd_serial, data.data() + written_len, data.size() - written_len);
             if (result < 0){
                 throw SimHIDConnection::Exception("Cannot send data to serial port");
             }
