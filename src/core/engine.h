@@ -17,6 +17,7 @@
 #include "event.h"
 #include "action.h"
 #include "device.h"
+#include "simhost.h"
 
 class DeviceManager;
 class DeviceModifier;
@@ -62,6 +63,7 @@ protected :
         std::string scriptPath;
         sol::state lua;
         std::unique_ptr<DeviceManager> deviceManager;
+        std::unique_ptr<SimHostManager> simhostManager;
     }scripting;
 
     struct {

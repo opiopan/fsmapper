@@ -5,6 +5,7 @@
 
 #include "engine.h"
 #include "simhost.h"
+#include "fs2020.h"
 
 static const MAPPER_SIM_CONNECTION simkind_dict[] = {MAPPER_SIM_FS2020, MAPPER_SIM_DCS};
 static const char* simname_dict[] = {"fs2020", "dcs"};
@@ -27,6 +28,10 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
     //-------------------------------------------------------------------------------
     // initialize Simulator instance correspond to each flight simulator
     //-------------------------------------------------------------------------------
+    simulators.push_back(std::make_unique<FS2020>(*this, simulators.size()));
+    for (auto& sim: simulators){
+        sim->initLuaEnv(lua);
+    }
 
     //-------------------------------------------------------------------------------
     // create a thread that schedule change aircraft event

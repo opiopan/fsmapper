@@ -57,6 +57,9 @@
     <ClInclude Include="simhost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fs2020.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -93,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="simhost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fs2020.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

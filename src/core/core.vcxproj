@@ -73,18 +73,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>fsmappercore</TargetName>
+    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>fsmappercore</TargetName>
+    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>fsmappercore</TargetName>
+    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>fsmappercore</TargetName>
+    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,16 +99,20 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,7 +125,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -126,9 +134,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -139,16 +151,20 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,7 +177,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -170,9 +186,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="action.h" />
@@ -184,6 +204,7 @@
     <ClInclude Include="devicemodifier.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="event.h" />
+    <ClInclude Include="fs2020.h" />
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
     <ClInclude Include="pluginapi.h" />
@@ -200,6 +221,7 @@
     <ClCompile Include="devicemodifier.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="fs2020.cpp" />
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="pluginapi.cpp" />
     <ClCompile Include="simhost.cpp" />

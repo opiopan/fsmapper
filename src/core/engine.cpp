@@ -30,6 +30,7 @@ void MapperEngine::initScriptingEnvAndRun(){
     //      mapper.device() :                open device
     //      mapper.set_primery_mappings():   set primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
+    //      mapper.events:                   system events table
     //-------------------------------------------------------------------------------
     auto mapper = scripting.lua.create_table();
     mapper["print"] = [this](const char* msg){
@@ -48,7 +49,16 @@ void MapperEngine::initScriptingEnvAndRun(){
     mapper["set_secondary_mappings"] = [this](const sol::object def){
         setMapping("mapper.set_secondary_mappings()", 1, def);
     };
+    auto sysevents = scripting.lua.create_table();
+    auto ev_change_aircraft = this->registerEvent("mapper:change_aircraft");
+    sysevents["change_aircraft"] = ev_change_aircraft;
+    mapper["events"] = sysevents;
     scripting.lua["mapper"] = mapper;
+
+    //-------------------------------------------------------------------------------
+    // create simulator host related environments
+    //-------------------------------------------------------------------------------
+    scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua);
 
     //-------------------------------------------------------------------------------
     // test functions: will be deleted 

@@ -82,5 +82,6 @@ public:
     std::string getAircraftName();
 
     // fuctions for each Simulator instance
+    MapperEngine& getEngine(){return engine;};
     void changeConnectivity(int simid, bool isActive, const char* aircraftName);
 };

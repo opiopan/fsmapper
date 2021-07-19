@@ -11,6 +11,7 @@
 #include <thread>
 #include <string>
 #include <map>
+#include <windows.h>
 #include <SimConnect.h>
 #include "simhost.h"
 #include "tools.h"
@@ -39,15 +40,23 @@ protected:
         operator HANDLE()const {return handle;};
     };
 
+    enum class Status{
+        connecting,
+        connected,
+        start,
+        disconnected,
+    };
+
     std::mutex mutex;
     bool shouldStop = false;    
-    bool isConnected = false;
+    Status status = Status::connecting;
     bool isActive = false;
     std::string aircraftName;
     std::thread scheduler;
 
     SimConnectHandle simconnect;
-    WinHandle event_intterrupt;
+    WinHandle event_simconnect;
+    WinHandle event_interrupt;
     std::map<std::string, SIMCONNECT_CLIENT_EVENT_ID> sim_events;
 
 public:
