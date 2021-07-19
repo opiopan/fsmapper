@@ -36,7 +36,12 @@ typedef enum mapper_event{
     MEV_FAIL_SCRIPT,
 }MAPPER_EVENT;
 
-typedef uint32_t MEVDATA_CHANGE_SIMCONNECTION;
+typedef uint32_t MAPPER_SIM_CONNECTION;
+#define MAPPER_SIM_NONE   0x0
+#define MAPPER_SIM_FS2020 0x1
+#define MAPPER_SIM_DCS    0x2
+
+typedef MAPPER_SIM_CONNECTION MEVDATA_CHANGE_SIMCONNECTION;
 typedef const char* MEVDATA_CHANGE_AIRCRAFT;
 
 typedef enum {
@@ -45,9 +50,6 @@ typedef enum {
     MCONSOLE_INFO,
     MCONSOLE_MESSAGE,
 }MCONSOLE_MESSAGE_TYPE;
-
-#define MAPPER_SIM_FS2020 0x1
-#define MAPPER_SIM_DCS    0x2
 
 typedef struct{
     uint32_t cwid;
@@ -73,7 +75,8 @@ DLLEXPORT bool mapper_stop(MapperHandle handle);
 DLLEXPORT bool mapper_setLogMode(MapperHandle handle, MAPPER_LOGMODE logmode);
 
 DLLEXPORT void* mapper_getHostContext(MapperHandle handle);
-DLLEXPORT uint32_t mapper_getSimConnection(MapperHandle handle);
+DLLEXPORT MAPPER_SIM_CONNECTION mapper_getSimConnection(MapperHandle handle);
+DLLEXPORT const char* mapper_getAircraftName(MapperHandle handle);
 DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC func, void *context);
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd);
 DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid);

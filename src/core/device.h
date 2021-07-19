@@ -9,11 +9,11 @@
 #include <vector>
 #include <map>
 #include <sol/sol.hpp>
-#include "engine.h"
 #include "pluginapi.h"
 #include "devicemodifier.h"
 
 class DeviceClass;
+class MaaperEngine;
 
 class Device{
     std::string name;

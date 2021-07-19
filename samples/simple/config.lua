@@ -84,9 +84,9 @@ end
 local terminate_aircraft_env = function () end
 
 mapper.set_primery_mappings({
-    {event = fs2020.events.change_aircraft, action = function (event, value)
+    {event = mapper.events.change_aircraft, action = function (event, value)
 		terminate_aircraft_env()
-		if value == "DA40-NG Asobo" then
+		if value.host == "fs2020" and value.aircraft == "DA40-NG Asobo" then
 			local initialize
 			initialize, terminate_aircraft_env = g1000_aircraft()
 			initialize()

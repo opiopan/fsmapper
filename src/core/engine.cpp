@@ -139,7 +139,7 @@ bool MapperEngine::run(std::string&& scriptPath){
             //-------------------------------------------------------------------------------
             if (action){
                 lock.unlock();
-                action->invoke(*ev.get());
+                action->invoke(*ev.get(), scripting.lua);
                 lock.lock();
             }
         }
@@ -214,7 +214,6 @@ Action* MapperEngine::findAction(uint64_t evid){
     return nullptr;
 }
 
-
 //============================================================================================
 // funtions to expose to Lua script
 //============================================================================================
@@ -229,3 +228,9 @@ void MapperEngine::setMapping(const char* function_name, int level, const sol::o
     }
 }
 
+//============================================================================================
+// send event to host program
+//============================================================================================
+void MapperEngine::sendHostEvent(MAPPER_EVENT event, int64_t data){
+    callback(event, data);
+}

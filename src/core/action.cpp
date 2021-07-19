@@ -18,7 +18,7 @@ const char* NativeAction::getName(){
     return function->getName();
 }
 
-void NativeAction::invoke(Event& event){
+void NativeAction::invoke(Event& event, sol::state& lua){
     function->invoke(event);
 }
 
@@ -32,10 +32,14 @@ const char* LuaAction::getName(){
     return "Lua function";
 }
 
-void LuaAction::invoke(Event &event){
+void LuaAction::invoke(Event &event, sol::state& lua){
     sol::protected_function_result result;
     auto type = event.getType();
-    if (type == Event::Type::null){
+    if (event.isArrayValue()){
+        auto table = lua.create_table();
+        event.applyToTable(table);
+        result = function(event.getId(), table);
+    }else if (type == Event::Type::null){
         result = function(event.getId());
     }else if (type == Event::Type::bool_value){
         result = function(event.getId(), event.getAs<bool>());

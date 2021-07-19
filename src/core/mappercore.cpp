@@ -75,6 +75,10 @@ DLLEXPORT uint32_t mapper_getSimConnection(MapperHandle handle){
     return 0;
 }
 
+DLLEXPORT const char* mapper_getAircraftName(MapperHandle handle){
+    return nullptr;
+}
+
 DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC func, void *context){
     return true;
 }

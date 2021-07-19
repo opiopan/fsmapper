@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <vector>
-#include "engine.h"
+#include <sol/sol.hpp>
 #include "mapperplugin.h"
 
 class MapperEngine;

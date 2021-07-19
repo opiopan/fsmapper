@@ -6,11 +6,12 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <memory>
 #include <cmath>
 #include <sol/sol.hpp>
 
-class Event{
+class EventValue{
 public:
     enum class Type{
         null,
@@ -19,10 +20,10 @@ public:
         double_value,
         string_value,
         lua_value,
-    } type;
+    };
 
 protected:
-    uint64_t id;
+    Type type;
     union{
         bool boolValue;
         int64_t intValue;
@@ -32,24 +33,23 @@ protected:
     sol::object luaValue;
 
 public:
-    Event() = delete;
-    Event(uint64_t id): id(id), type(Type::null){};
-    Event(uint64_t id, bool value): id(id), type(Type::bool_value){
+    EventValue(): type(Type::null){};
+    EventValue(bool value): type(Type::bool_value){
         unionValue.boolValue = value;
     };
-    Event(uint64_t id, int64_t value): id(id), type(Type::int_value){
+    EventValue(int64_t value): type(Type::int_value){
         unionValue.intValue = value;
     };
-    Event(uint64_t id, double value): id(id), type(Type::double_value){
+    EventValue(double value): type(Type::double_value){
         unionValue.doubleValue = value;
     };
-    Event(uint64_t id, const char* value) : id(id), type(Type::string_value){
-        stringValue.reset(new std::string(value));
+    EventValue(const char* value) : type(Type::string_value){
+        stringValue = std::make_unique<std::string>(value);
     };
-    Event(uint64_t id, std::string&& value) : id(id), type(Type::string_value){
-        stringValue.reset(new std::string(std::move(value)));
+    EventValue(std::string&& value) : type(Type::string_value){
+        stringValue = std::make_unique<std::string>(std::move(value));
     };
-    Event(uint64_t id, sol::object&& value): id(id){
+    EventValue(sol::object&& value){
         auto valtype = value.get_type();
         if (valtype == sol::type::lua_nil){
             type = Type::null;
@@ -68,17 +68,23 @@ public:
             }
         }else if (valtype == sol::type::string){
             type = Type::string_value;
-            stringValue.reset(new std::string(value.as<const char*>()));
+            stringValue = std::make_unique<std::string>(value.as<const char*>());
         }else{
             type = Type::lua_value;
             luaValue = value;
         }
     }
-    Event(Event&) = delete;
-    Event(Event&&) = default;
-    ~Event() = default;
+    EventValue(const EventValue& src){
+        type = src.type;
+        unionValue = src.unionValue;
+        if (src.stringValue.get()){
+            stringValue = std::make_unique<std::string>(*src.stringValue);
+            luaValue = src.luaValue;
+        }
+    };
+    EventValue(EventValue&&) = default;
+    ~EventValue() = default;
 
-    uint64_t getId() const{return id;};
     Type getType() const{return type;};
 
     operator bool () const{
@@ -137,14 +143,93 @@ public:
             return "";
         }
     };
-    operator std::string&& () const{
+    operator std::string () const{
         return std::move(std::string(this->operator const char*()));
     };
     operator sol::object () const{
         return luaValue;
     };
 
-    template <class T> T getAs(){return static_cast<T>(*this);};
+    template <class T> T getAs() const {return static_cast<T>(*this);};
+};
+
+
+class Event{
+public:
+    using Type = EventValue::Type;
+    using AssosiativeArray = std::map <std::string, EventValue>;
+
+protected:
+    uint64_t id;
+    EventValue value;
+	std::unique_ptr<AssosiativeArray> array;
+
+public:
+    Event() = delete;
+    Event(uint64_t id): id(id), value(){};
+    Event(uint64_t id, bool value): id(id), value(value){};
+    Event(uint64_t id, int64_t value): id(id), value(value){};
+    Event(uint64_t id, double value): id(id), value(value){};
+    Event(uint64_t id, const char* value) : id(id), value(value){};
+    Event(uint64_t id, std::string&& value) : id(id), value(std::move(value)){};
+    Event(uint64_t id, sol::object&& value): id(id), value(std::move(value)){};
+    Event(uint64_t id, AssosiativeArray&& value): id(id), array(std::make_unique<AssosiativeArray>(std::move(value))){};
+    Event(const Event&) = delete;
+    Event(Event&&) = default;
+    ~Event() = default;
+
+    uint64_t getId() const{return id;};
+    bool isArrayValue() const{return array.get();};
+    Type getType() const{return value.getType();};
+
+    operator bool () const{
+        return static_cast<bool>(value);
+    };
+    operator int64_t () const{
+        return static_cast<int64_t>(value);
+    };
+    operator double () const{
+        return static_cast<double>(value);
+    };
+    operator const char* () const{
+        return static_cast<const char*>(value);
+    };
+    operator std::string () const{
+        return std::move(std::string(this->operator const char*()));
+    };
+    operator sol::object () const{
+        return static_cast<sol::object>(value);
+    };
+    operator const AssosiativeArray& () const{
+        return *array;
+    };
+
+    template <class T> T getAs() const {return static_cast<T>(*this);};
+
+    void applyToTable(sol::table& table){
+        for (const auto& [key, value] : *array){
+            switch (value.getType()){
+            case Type::null:
+                table[key] = nullptr;
+                break;
+            case Type::bool_value:
+                table[key] = value.getAs<bool>();
+                break;
+            case Type::int_value:
+                table[key] = value.getAs<int64_t>();
+                break;
+            case Type::double_value:
+                table[key] = value.getAs<int64_t>();
+                break;
+            case Type::string_value:
+                table[key] = value.getAs<const char*>();
+                break;
+            case Type::lua_value:
+                table[key] = value.getAs<sol::object>();
+                break;
+            }
+        }
+    }
 };
 
 enum class EventID : int64_t{

@@ -45,7 +45,7 @@ for k, v in pairs(mapper) do
 end
 
 mapper.set_primery_mappings({
-    {event=g1000.SW2.doubleclick, action=function () mapper.print("Yes Yes Yes")  end },
+    {event=g1000.SW2.doubleclick, action=function (event, value) mapper.print("    do action!: eventid="..event)  end },
     {event=g1000.SW3.up, action=function () mapper.abort() end},
     {event=g1000.SW27.down, action=test.messenger("test of native action")},
 })

@@ -26,7 +26,7 @@ public:
     virtual ~Action() = default;
 
     virtual const char* getName() = 0;
-    virtual void invoke(Event& event) = 0;
+    virtual void invoke(Event& event, sol::state& lua) = 0;
 };
 
 class NativeAction: public Action{
@@ -57,7 +57,7 @@ public:
     NativeAction(const sol::object& object);
     virtual ~NativeAction() = default;
     virtual const char* getName();
-    virtual void invoke(Event& event);
+    virtual void invoke(Event& event, sol::state& lua);
 };
 
 class LuaAction: public Action{
@@ -71,7 +71,7 @@ public:
     LuaAction(const sol::object& object);
     virtual ~LuaAction() = default;
     virtual const char* getName();
-    virtual void invoke(Event& event);
+    virtual void invoke(Event& event, sol::state& lua);
 };
 
 using EventActionMap = std::map<uint64_t, std::unique_ptr<Action>>;

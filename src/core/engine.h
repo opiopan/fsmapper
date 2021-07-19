@@ -99,6 +99,7 @@ public:
     void unregisterEvent(uint64_t evid);
     const char* getEventName(uint64_t evid) const;
     void sendEvent(Event&& event);
+    void sendHostEvent(MAPPER_EVENT event, int64_t data);
 
 protected:
     void initScriptingEnvAndRun();

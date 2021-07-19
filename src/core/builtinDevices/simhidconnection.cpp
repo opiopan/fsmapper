@@ -6,8 +6,6 @@
 #include <chrono>
 #include <sstream>
 #include "simhidconnection.h"
-#include "engine.h"
-#include "pluginapi.h"
 
 #if defined(_WIN64) || defined(_WIN32)
 #   include "winserial.h"
@@ -83,7 +81,7 @@ void SimHIDConnection::start(){
             }
         }catch (Exception& e){
             fsmapper_putLog(this->mapper, FSMLOG_ERROR, e.getMessage().c_str());
-            getMapper()->engine.abort();
+            fsmapper_abort(this->mapper);
         }
         std::lock_guard lock(mutex);
         status = Status::stop;

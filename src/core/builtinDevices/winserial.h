@@ -7,31 +7,10 @@
 #include <windows.h>
 #include <queue>
 #include "simhidconnection.h"
+#include "tools.h"
 
 class WinSerial : public SimHIDConnection::SerialComm{
 protected:
-    class WinHandle{
-    protected:
-        HANDLE handle;
-    public:
-        WinHandle():handle(INVALID_HANDLE_VALUE){};
-        WinHandle(HANDLE handle):handle(handle){};
-        WinHandle(const WinHandle&) = delete;
-        WinHandle(WinHandle&&) = delete;
-        ~WinHandle(){if (handle != INVALID_HANDLE_VALUE){CloseHandle(handle);}};
-        WinHandle& operator = (WinHandle&) = delete;
-        WinHandle& operator = (WinHandle&&) = delete;
-        WinHandle& operator = (HANDLE handle){
-            if (this->handle != INVALID_HANDLE_VALUE){
-                CloseHandle(handle);
-            }
-            this->handle = handle;
-            return *this;
-        };
-        HANDLE get_handle()const {return handle;};
-        operator HANDLE()const {return handle;};
-    };
-
     std::string path;
     std::mutex mutex;
     bool should_be_stop;

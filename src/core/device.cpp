@@ -4,6 +4,7 @@
 //
 
 #include <sstream>
+#include "engine.h"
 #include "device.h"
 #include "simhid.h"
 
