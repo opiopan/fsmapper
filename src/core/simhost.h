@@ -51,7 +51,7 @@ protected:
         Connectivity(Connectivity&&) = default;
         ~Connectivity() = default;
         Connectivity& operator=(Connectivity&& src){
-            isConnected = isConnected;
+            isConnected = src.isConnected;
             aircraftName = std::move(src.aircraftName);
             return *this;
         };

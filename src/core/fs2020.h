@@ -68,5 +68,6 @@ public:
     virtual void changeActivity(bool isActive);
 
 protected:
-
+    SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
+    void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid);
 };

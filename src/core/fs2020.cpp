@@ -7,6 +7,8 @@
 #include <chrono>
 #include "engine.h"
 #include "fs2020.h"
+#include "tools.h"
+#include "action.h"
 
 static const auto CONNECTING_INTERVAL = std::chrono::milliseconds(500);
 static const auto EVENT_SIM_START = 1;
@@ -45,10 +47,17 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     return;
                 }
             }
-            status = Status::connected;
+            status = Status::start;
+            lock.unlock();
+            this->reportConnectivity(true, nullptr);
+            lock.lock();
 
-            // Request an event when the simulation starts
-            SimConnect_SubscribeToSystemEvent(simconnect, EVENT_SIM_START, "SimStart");
+            //-------------------------------------------------------------------------------
+            // Mapping client event
+            //-------------------------------------------------------------------------------
+            for (auto& [name, id] : sim_events){
+                SimConnect_MapClientEventToSimEvent(simconnect, id, name.c_str());
+            }
 
             //-------------------------------------------------------------------------------
             // process SimConnect events
@@ -73,13 +82,10 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                         if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
                             SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
                             if (evt->uEventID == EVENT_SIM_START){
-                                status = Status::start;
-                                lock.unlock();
-                                this->reportConnectivity(true, nullptr);
-                                lock.lock();
                             }
                         }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
                             status = Status::disconnected;
+                            isActive = false;
                             lock.unlock();
                             this->reportConnectivity(false, nullptr);
                             lock.lock();
@@ -87,6 +93,8 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     }
                 }
             }
+
+            ::std::this_thread::sleep_for(::std::chrono::seconds(5));
         }
     });
 }
@@ -105,10 +113,52 @@ void FS2020::changeActivity(bool isActive){
     this->isActive = isActive;
 }
 
-
 //============================================================================================
 // Create Lua scripting environment
 //============================================================================================
 void FS2020::initLuaEnv(sol::state& lua){
+    auto fs2020 = lua.create_table();
+    fs2020["send_event"] = [this](sol::object name_o){
+        auto name = std::move(lua_safestring(name_o));
+        auto event_id = this->getSimEventId(name);
+        this->sendSimEventId(event_id);
+    };
+    fs2020["event_sender"] = [this](sol::object name_o){
+        auto event_name = std::move(lua_safestring(name_o));
+        auto event_id = this->getSimEventId(event_name);
+        std::ostringstream os;
+        os << "fs2020.send_event(\"" << event_name << "\")";
+        auto func_name = os.str();
+        NativeAction::Function::ACTION_FUNCTION func = [event_id, this](Event&){
+            this->sendSimEventId(event_id);
+        };
+        return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+    };
+    lua["fs2020"] = fs2020;
+}
 
+//============================================================================================
+// SimConnect event handling functions
+//============================================================================================
+SIMCONNECT_CLIENT_EVENT_ID FS2020::getSimEventId(const std::string& event_name){
+    std::lock_guard lock(mutex);
+    if (sim_events.count(event_name) > 0){
+        return sim_events.at(event_name);
+    }else{
+        id = DINAMIC_EVENT_MIN + sim_events.size();
+        sim_events.emplace(event_name, id);
+        if (isActive && status == Status::start){
+            SimConnect_MapClientEventToSimEvent(simconnect, id, event_name.c_str());
+        }
+
+        return id;
+    }
+}
+
+void FS2020::sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid){
+    std::lock_guard lock(mutex);
+    if (isActive && status == Status::start){
+        SimConnect_TransmitClientEvent(
+            simconnect, 0, eventid, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+    }
 }

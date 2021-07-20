@@ -23,6 +23,7 @@ int main(int argc, char* argv[]){
 
     MapperHandle mapper = mapper_init(event_handler, console_handler, nullptr);
     mapper_setLogMode(mapper, MAPPER_LOG_EVENT);
+    //mapper_setLogMode(mapper, 0);
     auto rc = mapper_run(mapper, argv[1]);
 
     return rc ? 0 : 1;

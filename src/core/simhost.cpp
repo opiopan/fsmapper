@@ -31,6 +31,7 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
     simulators.push_back(std::make_unique<FS2020>(*this, simulators.size()));
     for (auto& sim: simulators){
         sim->initLuaEnv(lua);
+        connectivities.push_back(std::move(Connectivity()));
     }
 
     //-------------------------------------------------------------------------------

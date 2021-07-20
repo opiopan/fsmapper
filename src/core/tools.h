@@ -3,6 +3,8 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 
+#pragma once
+
 #include <windows.h>
 #include <sol/sol.hpp>
 
