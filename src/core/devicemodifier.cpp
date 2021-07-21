@@ -66,10 +66,12 @@ protected:
     std::optional<int> threshold_min;
     std::optional<int> longpress;
     std::optional<int> doubleclick;
+    std::optional<int> repaeat_interval;
     bool click_on_up;
     DEVICEMOD_TIME starttime;
     std::optional<DEVICEMOD_TIME> longpress_timer;
     std::optional<DEVICEMOD_TIME> doubleclick_timer;
+    std::optional<DEVICEMOD_TIME> repeat_timer;
     std::vector<Event> events;
     struct {
         size_t down;
@@ -154,6 +156,7 @@ ButtonModifier::ButtonModifier(DeviceModifierManager& manager, sol::object &para
                                       "Only \"up\" or \"down\" can be specified.");
             }
         }
+        repaeat_interval = get_number("repeat_interval");
     }
 }
 
@@ -163,6 +166,9 @@ ButtonModifier::~ButtonModifier(){
     }
     if (longpress_timer.has_value()){
         manager.cancelTimer(*this, longpress_timer.value());
+    }
+    if (repeat_timer.has_value()){
+        manager.cancelTimer(*this, repeat_timer.value());
     }
     for (auto iterator = events.begin(); iterator != events.end(); iterator++){
         manager.getEngine().unregisterEvent(iterator->id);
@@ -228,7 +234,7 @@ ButtonModifier::CoockedEvent ButtonModifier::coockEvent(int value){
 }
 
 void ButtonModifier::processUnitValueChangeEvent(int value){
-    if (longpress.has_value() || doubleclick.has_value()){
+    if (longpress.has_value() || doubleclick.has_value() || repaeat_interval.has_value()){
         manager.delegateEventProcessing(*this, value);
     }else{
         auto event = coockEvent(value);
@@ -248,6 +254,13 @@ void ButtonModifier::processUnitValueChangeEvent(int value, DEVICEMOD_TIME now){
     auto event = coockEvent(value);
     if (event == CoockedEvent::none){
         return;
+    }
+    if (repaeat_interval.has_value()){
+        if (event == CoockedEvent::down){
+            repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repaeat_interval.value()));
+        }else if (repeat_timer.has_value()){
+            manager.cancelTimer(*this, repeat_timer.value());
+        }
     }
     
     if (status == Status::off && event == CoockedEvent::down){
@@ -333,6 +346,9 @@ void ButtonModifier::processTimerEvent(DEVICEMOD_TIME timer_time){
         manager.getEngine().sendEvent(std::move(::Event(events[eventix.longpressed].id)));
         longpress_timer = std::nullopt;
         status = Status::off;
+    }else if (repeat_timer.has_value() && timer_time == repeat_timer.value()){
+        manager.getEngine().sendEvent(std::move(::Event(events[eventix.down].id)));
+        repeat_timer = manager.addTimer(*this, timer_time + DEVICEMOD_MILLISEC(repaeat_interval.value()));
     }
 };
 
