@@ -1,6 +1,8 @@
 #include <iostream>
 #include <mutex>
 #include <functional>
+#include <thread>
+#include <windows.h>
 #include "mappercore.h"
 
 static bool console_handler(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
@@ -25,6 +27,7 @@ int main(int argc, char* argv[]){
     mapper_setLogMode(mapper, MAPPER_LOG_EVENT);
     //mapper_setLogMode(mapper, 0);
     auto rc = mapper_run(mapper, argv[1]);
+    mapper_terminate(mapper);
 
-    return rc ? 0 : 1;
+    return rc;
 }

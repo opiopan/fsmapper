@@ -145,13 +145,13 @@ SIMCONNECT_CLIENT_EVENT_ID FS2020::getSimEventId(const std::string& event_name){
     if (sim_events.count(event_name) > 0){
         return sim_events.at(event_name);
     }else{
-        id = DINAMIC_EVENT_MIN + sim_events.size();
-        sim_events.emplace(event_name, id);
+        auto evid = DINAMIC_EVENT_MIN + sim_events.size();
+        sim_events.emplace(event_name, evid);
         if (isActive && status == Status::start){
-            SimConnect_MapClientEventToSimEvent(simconnect, id, event_name.c_str());
+            SimConnect_MapClientEventToSimEvent(simconnect, evid, event_name.c_str());
         }
 
-        return id;
+        return evid;
     }
 }
 

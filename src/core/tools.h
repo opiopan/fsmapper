@@ -6,6 +6,8 @@
 #pragma once
 
 #include <windows.h>
+
+#ifndef NO_SOL
 #include <sol/sol.hpp>
 
 inline std::string lua_safestring(const sol::object& object){
@@ -15,6 +17,7 @@ inline std::string lua_safestring(const sol::object& object){
         return std::string();
     }
 };
+#endif
 
 class WinHandle{
 protected:
@@ -24,11 +27,11 @@ public:
     WinHandle(HANDLE handle):handle(handle){};
     WinHandle(const WinHandle&) = delete;
     WinHandle(WinHandle&&) = delete;
-    ~WinHandle(){if (handle != INVALID_HANDLE_VALUE){CloseHandle(handle);}};
+    ~WinHandle(){if (handle != INVALID_HANDLE_VALUE && handle != nullptr){CloseHandle(handle);}};
     WinHandle& operator = (WinHandle&) = delete;
     WinHandle& operator = (WinHandle&&) = delete;
     WinHandle& operator = (HANDLE handle){
-        if (this->handle != INVALID_HANDLE_VALUE){
+        if (this->handle != INVALID_HANDLE_VALUE && handle != nullptr){
             CloseHandle(this->handle);
         }
         this->handle = handle;

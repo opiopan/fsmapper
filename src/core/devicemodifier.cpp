@@ -516,6 +516,7 @@ void DeviceModifierManager::stop(){
     std::lock_guard lock(mutex);
     if (status == Status::running){
         status = Status::stopping;
+        cv.notify_all();
     }
 }
 

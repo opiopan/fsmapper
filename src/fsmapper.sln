@@ -4,11 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{0D63B476-F135-4E42-A9F4-AB874EFA4677}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BAE570F4-EA42-43AD-81BB-613949159F81} = {BAE570F4-EA42-43AD-81BB-613949159F81}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mockup", "mockup\mockup.vcxproj", "{31A879CA-1F5A-458B-BA45-2CA963F00BBF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0D63B476-F135-4E42-A9F4-AB874EFA4677} = {0D63B476-F135-4E42-A9F4-AB874EFA4677}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hook", "hook\hook.vcxproj", "{BAE570F4-EA42-43AD-81BB-613949159F81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +39,14 @@ Global
 		{31A879CA-1F5A-458B-BA45-2CA963F00BBF}.Release|x64.Build.0 = Release|x64
 		{31A879CA-1F5A-458B-BA45-2CA963F00BBF}.Release|x86.ActiveCfg = Release|Win32
 		{31A879CA-1F5A-458B-BA45-2CA963F00BBF}.Release|x86.Build.0 = Release|Win32
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Debug|x64.ActiveCfg = Debug|x64
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Debug|x64.Build.0 = Debug|x64
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Debug|x86.ActiveCfg = Debug|Win32
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Debug|x86.Build.0 = Debug|Win32
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Release|x64.ActiveCfg = Release|x64
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Release|x64.Build.0 = Release|x64
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Release|x86.ActiveCfg = Release|Win32
+		{BAE570F4-EA42-43AD-81BB-613949159F81}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

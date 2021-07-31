@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0d63b476-f135-4e42-a9f4-ab874efa4677}</ProjectGuid>
-    <RootNamespace>core</RootNamespace>
+    <ProjectGuid>{bae570f4-ea42-43ad-81bb-613949159f81}</ProjectGuid>
+    <RootNamespace>hook</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -72,47 +72,36 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>fsmappercore</TargetName>
-    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
+    <TargetName>fsmapperhook</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>fsmappercore</TargetName>
-    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
+    <TargetName>fsmapperhook</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>fsmappercore</TargetName>
-    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
+    <TargetName>fsmapperhook</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>fsmappercore</TargetName>
-    <CustomBuildAfterTargets>BuildCompile</CustomBuildAfterTargets>
+    <TargetName>fsmapperhook</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;CORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions) NOMINMAX;NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;HOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
-      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -120,13 +109,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;CORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions) NOMINMAX;NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;HOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,37 +122,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
-      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;CORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions) NOMINMAX;NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;HOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
-      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -172,13 +147,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;CORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions) NOMINMAX;NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;HOOK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -186,50 +160,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
-      <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="action.h" />
-    <ClInclude Include="builtinDevices\simhid.h" />
-    <ClInclude Include="builtinDevices\simhidconnection.h" />
-    <ClInclude Include="builtinDevices\simhidparser.h" />
-    <ClInclude Include="builtinDevices\winserial.h" />
-    <ClInclude Include="device.h" />
-    <ClInclude Include="devicemodifier.h" />
-    <ClInclude Include="engine.h" />
-    <ClInclude Include="event.h" />
-    <ClInclude Include="fs2020.h" />
-    <ClInclude Include="mappercore.h" />
-    <ClInclude Include="mapperplugin.h" />
-    <ClInclude Include="pluginapi.h" />
-    <ClInclude Include="simhost.h" />
-    <ClInclude Include="tools.h" />
+    <ClCompile Include="hookdll.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="action.cpp" />
-    <ClCompile Include="builtinDevices\simhid.cpp" />
-    <ClCompile Include="builtinDevices\simhidconnection.cpp" />
-    <ClCompile Include="builtinDevices\simhidparser.c" />
-    <ClCompile Include="builtinDevices\winserial.cpp" />
-    <ClCompile Include="device.cpp" />
-    <ClCompile Include="devicemodifier.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="engine.cpp" />
-    <ClCompile Include="fs2020.cpp" />
-    <ClCompile Include="mappercore.cpp" />
-    <ClCompile Include="pluginapi.cpp" />
-    <ClCompile Include="simhost.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\hook\hook.vcxproj">
-      <Project>{bae570f4-ea42-43ad-81bb-613949159f81}</Project>
-    </ProjectReference>
+    <ClInclude Include="hookdll.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

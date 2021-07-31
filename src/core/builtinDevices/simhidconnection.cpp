@@ -15,7 +15,7 @@
     using SerialImp = PosixSerial;
 #endif
 
-static const auto INIT_TIMEOUT = std::chrono::seconds(10);
+static const auto INIT_TIMEOUT = std::chrono::seconds(3);
 
 //============================================================================================
 //  Recognize device identifier then identify device path
@@ -29,10 +29,6 @@ std::string SimHIDConnection::identifyDevicePath (LUAVALUE identifier){
         auto rc = std::string(luav_asString(path));
         return rc;
     }
-
-#if defined(_WIN64) || defined(_WIN32)
-#else
-#endif
 
     throw Exception("No information is specified to identify device path for SimHID device");
 }

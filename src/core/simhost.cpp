@@ -40,8 +40,8 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
     scheduler = std::thread([this](){
         std::unique_lock lock(mutex);
         while (true){
-            cv.wait(lock,[this](){return should_stop || queue.size() > 0;});
-            if (should_stop){
+            cv.wait(lock,[this](){return this->should_stop || queue.size() > 0;});
+            if (this->should_stop){
                 break;
             }
             auto msg = std::move(queue.front());
@@ -94,7 +94,7 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
 SimHostManager::~SimHostManager(){
     {
         std::lock_guard lock(mutex);
-        should_stop = false;
+        should_stop = true;
         cv.notify_all();
     }
     scheduler.join();

@@ -4,6 +4,7 @@
 //
 
 #include <sstream>
+#include "hookdll.h"
 #include "engine.h"
 
 //============================================================================================
@@ -13,10 +14,12 @@ MapperEngine::MapperEngine(Callback callback, Logger logger) :
     status(Status::init), callback(callback), logger(logger){
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
     scripting.lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
+    hookdll_startGlobalHook(nullptr, nullptr);
 }
 
 MapperEngine::~MapperEngine(){
     stop();
+    hookdll_stopGlobalHook();
 }
 
 //============================================================================================
@@ -37,6 +40,7 @@ void MapperEngine::initScriptingEnvAndRun(){
         putLog(MCONSOLE_MESSAGE, msg);
     };
     mapper["abort"] = [this](){
+        putLog(MCONSOLE_ERROR, "mapper-core: abort scripting");
         abort();
     };
     scripting.deviceManager = std::make_unique<DeviceManager>(*this);
@@ -81,6 +85,11 @@ void MapperEngine::initScriptingEnvAndRun(){
         };
         auto action = std::make_shared<NativeAction::Function>(name.c_str(), func);
         return action;
+    };
+    test["capture_window"] = [this](const sol::object num_o){
+        if (num_o.is<int64_t>()){
+            hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
+        }
     };
     scripting.lua["test"] = test;
 

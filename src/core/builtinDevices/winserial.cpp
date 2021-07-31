@@ -4,7 +4,6 @@
 //
 
 #include <sstream>
-#include "engine.h"
 #include "winserial.h"
 
 static const auto EVIX_READ = 0;
@@ -24,7 +23,7 @@ WinSerial::WinSerial(const char* path): path(path), should_be_stop(false), is_wr
     if (serial == INVALID_HANDLE_VALUE){
         std::ostringstream os;
         os << "cannot open COM port: " << path;
-        throw MapperException(os.str());
+        throw SimHIDConnection::Exception(os.str());
     }
     
     DCB dcb;
@@ -47,7 +46,7 @@ WinSerial::WinSerial(const char* path): path(path), should_be_stop(false), is_wr
     if (event_read == INVALID_HANDLE_VALUE || event_write == INVALID_HANDLE_VALUE || event_signal == INVALID_HANDLE_VALUE){
         std::ostringstream os;
         os << "failed to create event objects for COM port: " << path;
-        throw MapperException(os.str());
+        throw SimHIDConnection::Exception(os.str());
     }
 
     ::PurgeComm(serial, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
@@ -65,7 +64,7 @@ int WinSerial::read(void* buf, int len){
         if (::GetLastError() != ERROR_IO_PENDING){
             std::ostringstream os;
             os << "An error occurred when receiving data from COM port: " << path;
-            throw MapperException(os.str());
+            throw SimHIDConnection::Exception(os.str());
         }
     }else{
         return read_size;
@@ -85,7 +84,7 @@ int WinSerial::read(void* buf, int len){
                 if (::GetLastError() != ERROR_IO_PENDING){
                     std::ostringstream os;
                     os << "An error occurred when sending data via COM port: " << path;
-                    throw MapperException(os.str());
+                    throw SimHIDConnection::Exception(os.str());
                 }else{
                     is_writing = true;
                 }
@@ -109,7 +108,7 @@ int WinSerial::read(void* buf, int len){
             if (!GetOverlappedResult(serial, &ov_read, &read_size, false)){
                 std::ostringstream os;
                 os << "An error occurred when receiving data from COM port: " << path;
-                throw MapperException(os.str());
+                throw SimHIDConnection::Exception(os.str());
             }
             return read_size;
         }else if (signaled_event == EVIX_WRITE){
@@ -118,7 +117,7 @@ int WinSerial::read(void* buf, int len){
             if (!GetOverlappedResult(serial, &ov_write, &written, false)){
                 std::ostringstream os;
                 os << "An error occurred when sending data via COM port: " << path;
-                throw MapperException(os.str());
+                throw SimHIDConnection::Exception(os.str());
             }
             is_writing = false;
             written_len += written;
@@ -129,7 +128,7 @@ int WinSerial::read(void* buf, int len){
         }else{
             std::ostringstream os;
             os << "An error occurred when waiting until transfer is complete via COM port: " << path;
-            throw MapperException(os.str());
+            throw SimHIDConnection::Exception(os.str());
         }
     }
 }
