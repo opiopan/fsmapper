@@ -1,5 +1,5 @@
 //
-// caputuredwindow.h
+// hookdll.h
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 

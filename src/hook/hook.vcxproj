@@ -163,9 +163,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="apihook.cpp" />
     <ClCompile Include="hookdll.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="apihook.h" />
     <ClInclude Include="hookdll.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

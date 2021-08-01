@@ -18,9 +18,15 @@
     <ClCompile Include="hookdll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="apihook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hookdll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="apihook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
