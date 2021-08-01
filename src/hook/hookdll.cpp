@@ -214,14 +214,14 @@ public:
 
     ~LeadManager(){
         LockHolder lock(mutex);
-        for (auto item : captured_windows){
-            captured_windows_ctx[item.second].status = CapturedWindowContext::Status::FREE;
-            ::PostMessageW(item.first, controlMessage, static_cast<DWORD>(ControllMessageDword::end_capture), 0);
-        }
         should_stop = true;
         ::SetEvent(event);
         lock.unlock();
         event_receiver.join();
+        for (auto item : captured_windows){
+            captured_windows_ctx[item.second].status = CapturedWindowContext::Status::FREE;
+            ::SendMessageW(item.first, controlMessage, static_cast<DWORD>(ControllMessageDword::end_capture), 0);
+        }
         ::UnhookWindowsHookEx(hookHandle);
         ::hookHandle = 0;
     };
@@ -245,8 +245,8 @@ public:
         captured_windows.emplace(hWnd, i);
         captured_windows_ctx[i].hWnd = hWnd;
         captured_windows_ctx[i].status = CapturedWindowContext::Status::CAPTURED;
-        ::PostMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), 0);
-        ::PostMessageW(hWnd, WM_LBUTTONUP, 0, 0);
+        lock.unlock();
+        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), 0);
         return true;
     };
 
@@ -260,7 +260,8 @@ public:
         captured_windows.erase(hWnd);
         captured_windows_ctx[idx].hWnd = nullptr;
         captured_windows_ctx[idx].status = CapturedWindowContext::Status::FREE;
-        ::PostMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::end_capture), 0);
+        lock.unlock();
+        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::end_capture), 0);
         return true;
     };
 
@@ -278,7 +279,8 @@ public:
         attrs.cx = cx;
         attrs.cy = cy;
         attrs.alpha = alpha;
-        ::PostMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::change_attribute), 0);
+        lock.unlock();
+        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::change_attribute), 0);
         return true;
     };
 };

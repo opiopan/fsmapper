@@ -113,5 +113,5 @@ mapper.set_primery_mappings({
     {event=g1000.SW32.down, action=fs2020.event_sender("Mobiflight.AS1000_PFD_ENT_Push")},
 
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
-    {event=g1000.AUX2D.down, action=function () test.capture_window(0x0003070C) end},
+    {event=g1000.AUX2D.down, action=function () test.capture_window(0x000305C2) end},
 })
