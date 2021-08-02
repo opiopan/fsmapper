@@ -13,12 +13,14 @@
 MapperEngine::MapperEngine(Callback callback, Logger logger) : 
     status(Status::init), callback(callback), logger(logger){
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
-    scripting.lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
     hookdll_startGlobalHook(nullptr, nullptr);
 }
 
 MapperEngine::~MapperEngine(){
     stop();
+    mapping[0] = nullptr;
+    mapping[1] = nullptr;
+    scripting.lua_ptr = nullptr;
     hookdll_stopGlobalHook();
 }
 
@@ -26,6 +28,9 @@ MapperEngine::~MapperEngine(){
 // initialize lua scripting environment
 //============================================================================================
 void MapperEngine::initScriptingEnvAndRun(){
+    scripting.lua_ptr = std::make_unique<sol::state>();
+    scripting.lua().open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
+
     //-------------------------------------------------------------------------------
     // create 'mapper' table
     //      mapper.print():                  print message on console
@@ -35,7 +40,7 @@ void MapperEngine::initScriptingEnvAndRun(){
     //      mapper.set_secondary_mappings(): set primery mappings
     //      mapper.events:                   system events table
     //-------------------------------------------------------------------------------
-    auto mapper = scripting.lua.create_table();
+    auto mapper = scripting.lua().create_table();
     mapper["print"] = [this](const char* msg){
         putLog(MCONSOLE_MESSAGE, msg);
     };
@@ -53,21 +58,21 @@ void MapperEngine::initScriptingEnvAndRun(){
     mapper["set_secondary_mappings"] = [this](const sol::object def){
         setMapping("mapper.set_secondary_mappings()", 1, def);
     };
-    auto sysevents = scripting.lua.create_table();
+    auto sysevents = scripting.lua().create_table();
     auto ev_change_aircraft = this->registerEvent("mapper:change_aircraft");
     sysevents["change_aircraft"] = ev_change_aircraft;
     mapper["events"] = sysevents;
-    scripting.lua["mapper"] = mapper;
+    scripting.lua()["mapper"] = mapper;
 
     //-------------------------------------------------------------------------------
     // create simulator host related environments
     //-------------------------------------------------------------------------------
-    scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua);
+    scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua());
 
     //-------------------------------------------------------------------------------
     // test functions: will be deleted 
     //-------------------------------------------------------------------------------
-    auto test = scripting.lua.create_table();
+    auto test = scripting.lua().create_table();
     test["messenger"] = [this](const sol::object msg_o){
         auto msg = msg_o.as<std::string>();
         std::ostringstream os;
@@ -91,12 +96,12 @@ void MapperEngine::initScriptingEnvAndRun(){
             hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
         }
     };
-    scripting.lua["test"] = test;
+    scripting.lua()["test"] = test;
 
     //-------------------------------------------------------------------------------
     // run the script
     //-------------------------------------------------------------------------------
-    auto result = scripting.lua.safe_script_file(scripting.scriptPath, sol::script_pass_on_error);
+    auto result = scripting.lua().safe_script_file(scripting.scriptPath, sol::script_pass_on_error);
     if (!result.valid()){
         sol::error err = result;
         throw MapperException(err.what());
@@ -158,7 +163,7 @@ bool MapperEngine::run(std::string&& scriptPath){
             //-------------------------------------------------------------------------------
             if (action){
                 lock.unlock();
-                action->invoke(*ev.get(), scripting.lua);
+                action->invoke(*ev.get(), scripting.lua());
                 lock.lock();
             }
         }

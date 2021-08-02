@@ -61,9 +61,11 @@ protected :
 
     struct {
         std::string scriptPath;
-        sol::state lua;
+        std::unique_ptr<sol::state> lua_ptr;
         std::unique_ptr<DeviceManager> deviceManager;
         std::unique_ptr<SimHostManager> simhostManager;
+
+        sol::state& lua(){return *lua_ptr;};
     }scripting;
 
     struct {

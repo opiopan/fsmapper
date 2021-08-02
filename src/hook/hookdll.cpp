@@ -245,6 +245,7 @@ public:
         captured_windows.emplace(hWnd, i);
         captured_windows_ctx[i].hWnd = hWnd;
         captured_windows_ctx[i].status = CapturedWindowContext::Status::CAPTURED;
+        update_counter.from_leader++;
         lock.unlock();
         ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), 0);
         return true;
@@ -260,6 +261,7 @@ public:
         captured_windows.erase(hWnd);
         captured_windows_ctx[idx].hWnd = nullptr;
         captured_windows_ctx[idx].status = CapturedWindowContext::Status::FREE;
+        update_counter.from_leader++;
         lock.unlock();
         ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::end_capture), 0);
         return true;
@@ -296,6 +298,11 @@ static std::unique_ptr<FollowingManager> followingManager;
 
 class FollowingManager : public Manager{
 protected:
+    struct WindowContext{
+        int index;
+        HWND hWnd;
+
+    };
     std::map<HWND, int> capturedWindows;
 
 public:
