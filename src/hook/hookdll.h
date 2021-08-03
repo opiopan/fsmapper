@@ -22,7 +22,7 @@ DLLEXPORT bool hookdll_stopGlobalHook();
 
 DLLEXPORT bool hookdll_capture(HWND hWnd);
 DLLEXPORT bool hookdll_uncapture(HWND hWnd);
-DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, int alpha);
+DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, bool show);
 
 #ifdef __cplusplus
 }

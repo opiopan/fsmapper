@@ -4,13 +4,12 @@
 //
 
 #include <sstream>
-#include <chrono>
 #include "engine.h"
 #include "fs2020.h"
 #include "tools.h"
 #include "action.h"
 
-static const auto CONNECTING_INTERVAL = std::chrono::milliseconds(500);
+static const auto CONNECTING_INTERVAL = 500;
 static const auto EVENT_SIM_START = 1;
 static const auto DINAMIC_EVENT_MIN = 100;
 
@@ -41,8 +40,9 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     break;
                 }
                 lock.unlock();
-                ::std::this_thread::sleep_for(CONNECTING_INTERVAL);
+                ::WaitForSingleObject(this->event_interrupt, CONNECTING_INTERVAL);
                 lock.lock();
+                ::ResetEvent(event_interrupt);
                 if (shouldStop){
                     return;
                 }

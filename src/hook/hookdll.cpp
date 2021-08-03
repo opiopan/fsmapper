@@ -7,6 +7,9 @@
 #include <sstream>
 #include <map>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
 #include <optional>
 
 #define NO_SOL
@@ -39,7 +42,7 @@ struct CapturedWindowContext{
     int y;
     int cx;
     int cy;
-    int alpha;
+    bool show;
     HWND hWndInsertAfter;
 };
 
@@ -267,7 +270,7 @@ public:
         return true;
     };
 
-    bool changeWindowAttribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, int alpha){
+    bool changeWindowAttribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, bool show){
         LockHolder lock(mutex);
         if (captured_windows.count(hWnd) == 0){
             // specified window has not been captured yet
@@ -280,7 +283,7 @@ public:
         attrs.y = y;
         attrs.cx = cx;
         attrs.cy = cy;
-        attrs.alpha = alpha;
+        attrs.show = show;
         lock.unlock();
         ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::change_attribute), 0);
         return true;
@@ -300,15 +303,37 @@ class FollowingManager : public Manager{
 protected:
     struct WindowContext{
         int index;
-        HWND hWnd;
-
+        HWND hWndInsertAfter;
+        int x;
+        int y;
+        int cx;
+        int cy;
+        bool show;
+        LONG_PTR saved_style;
+        RECT saved_rect;
+        int change_request_num;
     };
-    std::map<HWND, int> capturedWindows;
+    struct ChangeRequest{
+        bool change_position:1;
+        bool change_visibility:1;
+        HWND hWnd;
+        HWND hWndInsertAfter;
+        int x;
+        int y;
+        int cx;
+        int cy;
+        bool show;
+    };
+    std::mutex lmutex;
+    std::condition_variable cv;
+    std::queue<ChangeRequest> queue;
+    int64_t local_count = 0;
+    bool should_stop = false;
+    std::optional<std::thread> attribute_changer;
+    std::map<HWND, WindowContext> captured_windows;
 
-public:
     HookedApi<LONG_PTR WINAPI (HWND, int, LONG_PTR)> SetWindowLongPtrW;
     HookedApi<BOOL WINAPI (HWND, HWND, int, int, int, int, UINT)> SetWindowPos;
-
 
 public:
     FollowingManager() = delete;
@@ -316,15 +341,193 @@ public:
         SetWindowLongPtrW.setHook("User32.dll", "NtUserSetWindowLongPtr", SetWindowLongPtrW_Hook);
         SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
     };
-    ~FollowingManager() = default;
+    ~FollowingManager(){
+        if (attribute_changer.has_value()){
+            std::unique_lock lock(lmutex);
+            should_stop = true;
+            lock.unlock();
+            attribute_changer.value().join();
+        }
+        std::unique_lock lock(lmutex);
+        auto itr = captured_windows.begin();
+        while (itr != captured_windows.end()){
+            auto last_count = local_count;
+            auto hWnd = itr->first;
+            lock.unlock();
+            releaseWindow(hWnd);
+            lock.lock();
+            if (last_count + 1 != local_count){
+                itr = captured_windows.begin();
+            }else{
+                itr++;
+            }
+        }
+    };
+
+    void captureWindow(HWND hWnd){
+        LockHolder glock(mutex);
+        {
+            std::unique_lock llock(lmutex);
+            if (captured_windows.count(hWnd) > 0){
+                // already captured
+                return;
+            }
+            auto i = 0;
+            for (; i < MAX_CAPTURED_WINDOW; i++){
+                if (captured_windows_ctx[i].hWnd == hWnd && 
+                    captured_windows_ctx[i].status == CapturedWindowContext::Status::CAPTURED){
+                    break;
+                }
+            }
+            if (i < MAX_CAPTURED_WINDOW){
+                local_count++;
+                WindowContext ctx;
+                ctx.index = i;
+                ctx.saved_style  = ::GetWindowLongPtrW(hWnd, GWL_STYLE);
+                ::GetWindowRect(hWnd, &ctx.saved_rect);
+                ctx.show = false;
+                ctx.x = 0;
+                ctx.y = 0;
+                ctx.cx = 0;
+                ctx.cy = 0;
+                ctx.hWndInsertAfter = nullptr;
+                ctx.change_request_num = 0;
+                captured_windows.emplace(hWnd, ctx);
+                llock.unlock();
+                glock.unlock();
+                this->SetWindowLongPtrW(
+                    hWnd, GWL_STYLE, 
+                    ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
+                this->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
+            }
+        }
+    };
+
+    void releaseWindow(HWND hWnd){
+        std::unique_lock llock(lmutex);
+        if (captured_windows.count(hWnd) == 0){
+            // specified window is not captured
+            return;
+        }
+        auto& ctx = captured_windows.at(hWnd);
+        cv.wait(llock, [&ctx](){return ctx.change_request_num == 0;});
+        auto saved_style = ctx.saved_style;
+        auto saved_rect = ctx.saved_rect;
+        captured_windows.erase(hWnd);
+        local_count++;
+        llock.unlock();
+        this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
+        this->SetWindowPos(
+            hWnd, HWND_TOP, 
+            saved_rect.left, saved_rect.top, saved_rect.right - saved_rect.left, saved_rect.bottom - saved_rect.top, 
+            SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+    };
+
+    void changeWindowAttribute(HWND hWnd){
+        LockHolder glock(mutex);
+        {
+            std::unique_lock llock(lmutex);
+            if (captured_windows.count(hWnd) == 0){
+                // specified window is not captured
+                return;
+            }
+            auto& ctx = captured_windows.at(hWnd);
+            auto& req = captured_windows_ctx[ctx.index];
+            if (req.hWnd != hWnd || req.status != CapturedWindowContext::Status::CAPTURED){
+                return;
+            }
+            ChangeRequest cr = {0};
+            cr.hWnd = hWnd;
+            if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy || req.hWndInsertAfter != ctx.hWndInsertAfter){
+                cr.change_position = true;
+                cr.x = req.x;
+                cr.y = req.y;
+                cr.cx = req.cx;
+                cr.cy = req.cy;
+                cr.hWndInsertAfter = req.hWndInsertAfter;
+            }
+            if (req.show != ctx.show){
+                cr.change_visibility = true;
+                cr.show = req.show;
+            }
+            if (!cr.change_position && !cr.change_visibility){
+                return;
+            }
+            ctx.change_request_num++;
+            queue.push(cr);
+            cv.notify_all();
+            
+            if (!attribute_changer.has_value()){
+                // create a thread to proceed change request
+                attribute_changer = std::move(std::thread([this](){
+                    std::unique_lock llock(lmutex);
+                    while (true){
+                        cv.wait(llock, [this](){return queue.size() > 0 || should_stop;});
+                        if (should_stop){
+                            return;
+                        }
+                        auto req = queue.front();
+                        queue.pop();
+                        
+                        // change window attributes
+                        llock.unlock();
+                        UINT flag = req.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
+                        if (req.change_visibility){
+                            flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
+                        }
+                        this->SetWindowPos(req.hWnd, req.hWndInsertAfter, req.x, req.y, req.cx, req.cy, flag);
+                        llock.lock();
+
+                        // notify that request was porcessed
+                        if (captured_windows.count(req.hWnd) > 0){
+                            auto& ctx = captured_windows.at(req.hWnd);
+                            ctx.change_request_num--;
+                            cv.notify_all();
+                        }
+                    }
+                }));
+            }
+        }
+    };
+
+    void closeWindow(HWND hWnd){
+        LockHolder glock(mutex);
+        {
+            std::unique_lock llock(lmutex);
+            if (captured_windows.count(hWnd) == 0){
+                // specified window is not captured
+                return;
+            }
+            auto& ctx = captured_windows.at(hWnd);
+            auto& gctx = captured_windows_ctx[ctx.index];
+            if (gctx.status == CapturedWindowContext::Status::CAPTURED){
+                gctx.status = CapturedWindowContext::Status::CLOSED;
+                update_counter.from_follower++;
+                ::SetEvent(event);
+            }
+            captured_windows.erase(hWnd);
+        }
+    };
 
 protected:
     static LONG_PTR WINAPI SetWindowLongPtrW_Hook(HWND hWnd, int nIndex, LONG_PTR dwNewLong){
-        return followingManager->SetWindowLongPtrW(hWnd, nIndex, dwNewLong);
+        std::unique_lock llock(followingManager->lmutex);
+        if (nIndex == GWL_STYLE && followingManager->captured_windows.count(hWnd) > 0){
+            return followingManager->captured_windows.at(hWnd).saved_style;
+        }else{
+            llock.unlock();
+            return followingManager->SetWindowLongPtrW(hWnd, nIndex, dwNewLong);
+        }
     };
 
     static BOOL WINAPI SetWindowPos_Hook(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags){
-        return followingManager->SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+        std::unique_lock llock(followingManager->lmutex);
+        if (followingManager->captured_windows.count(hWnd) > 0){
+            return true;
+        }else{
+            llock.unlock();
+            return followingManager->SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+        }
     };
 };
 
@@ -334,10 +537,17 @@ protected:
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode >= HC_ACTION) {
         auto* pMsg = reinterpret_cast<CWPSTRUCT*>(lParam);
-        if (followingManager && pMsg->message == followingManager->getControlMessageCode()) {
-            std::ostringstream os;
-            os << "msg: " << pMsg->message << " hWnd: "<< pMsg->hwnd << std::endl;
-            OutputDebugStringA(os.str().c_str());
+        if (pMsg->message == followingManager->getControlMessageCode()) {
+            auto type = static_cast<ControllMessageDword>(wParam);
+            if (type == ControllMessageDword::start_capture){
+                followingManager->captureWindow(pMsg->hwnd);
+            }else if (type == ControllMessageDword::end_capture){
+                followingManager->releaseWindow(pMsg->hwnd);
+            }else if (type == ControllMessageDword::change_attribute){
+                followingManager->changeWindowAttribute(pMsg->hwnd);
+            }
+        }else if (pMsg->message == WM_DESTROY){
+            followingManager->closeWindow(pMsg->hwnd);
         }
     }
     return CallNextHookEx(hookHandle, nCode, wParam, lParam);
@@ -412,9 +622,9 @@ DLLEXPORT bool hookdll_uncapture(HWND hWnd){
     }
 }
 
-DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, int alpha){
+DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, bool show){
     if (leadManager){
-        return leadManager->changeWindowAttribute(hWnd, hWndInsertAfter, x, y, cx, cy, alpha);
+        return leadManager->changeWindowAttribute(hWnd, hWndInsertAfter, x, y, cx, cy, show);
     }else{
         return false;
     }
