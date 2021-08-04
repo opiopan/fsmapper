@@ -10,12 +10,26 @@
 #include "action.h"
 
 static const auto CONNECTING_INTERVAL = 500;
-static const auto WATCH_DOG_ERROR_PERIOD = 6 * 1000;
+static const auto WATCH_DOG_ERROR_PERIOD = 10 * 1000;
+
 enum STATIC_EVENTS{
     EVENT_SIM_START = 1,
     EVENT_1SEC,
 };
 static const auto DINAMIC_EVENT_MIN = 100;
+
+enum STATIC_DATA_DEFS{
+    DATA_DEF_SYSTEM = 1,
+};
+struct SystemData{
+    char title[256];
+};
+static const auto DINAMIC_DATA_DEF_MIN = 100;
+
+enum STATIC_REQESTS{
+    REQUEST_SYSTEM_DATA = 1,
+};
+static const auto DINAMIC_REQUESt_MIN = 100;
 
 //============================================================================================
 // SimConnect event loop
@@ -54,13 +68,17 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                 }
             }
             status = Status::connected;
-            lock.unlock();
-            this->reportConnectivity(true, nullptr);
-            lock.lock();
+
+            //-------------------------------------------------------------------------------
+            // Register data definition
+            //-------------------------------------------------------------------------------
+            SimConnect_AddToDataDefinition(simconnect, DATA_DEF_SYSTEM, "Title", nullptr, SIMCONNECT_DATATYPE_STRING256);
+            SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
 
             //-------------------------------------------------------------------------------
             // Subscribe system events
             //-------------------------------------------------------------------------------
+            SimConnect_SubscribeToSystemEvent(simconnect, EVENT_SIM_START, "SimStart");
             SimConnect_SubscribeToSystemEvent(simconnect, EVENT_1SEC, "1sec");
 
             //-------------------------------------------------------------------------------
@@ -74,6 +92,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             // process SimConnect events
             //-------------------------------------------------------------------------------
             std::chrono::steady_clock::time_point watch_dog;
+            std::string aircraft_name;
             while(status != Status::disconnected){
                 if (shouldStop){
                     return;
@@ -93,12 +112,28 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     if (SUCCEEDED(rc)){
                         if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
                             SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
-                            if (evt->uEventID == EVENT_1SEC){
-                                OutputDebugStringA("WATCHDOG\n");
+                            if (evt->uEventID == EVENT_SIM_START){
+                                SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
+                            }else if (evt->uEventID == EVENT_1SEC){
                                 watch_dog = std::chrono::steady_clock::now();
-                                if (status != Status::connected){
+                                if (status == Status::connected){
+                                    status = Status::start;
                                     lock.unlock();
                                     this->reportConnectivity(true, nullptr);
+                                    lock.lock();
+                                }
+                            }
+                        }else if (pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE){
+                            auto pObjData = reinterpret_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE*>(pData);
+                            if (pObjData->dwRequestID == REQUEST_SYSTEM_DATA){
+                                auto object_id = pObjData->dwObjectID;
+                                auto data = reinterpret_cast<SystemData*>(&pObjData->dwData);
+                                std::string new_name = data->title;
+                                if (new_name != aircraft_name){
+                                    aircraft_name = std::move(new_name);
+                                    status = Status::start;
+                                    lock.unlock();
+                                    this->reportConnectivity(true, aircraft_name.c_str());
                                     lock.lock();
                                 }
                             }
@@ -110,7 +145,6 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     // check watch dog
                     auto now = std::chrono::steady_clock::now();
                     if (now - watch_dog > std::chrono::milliseconds(WATCH_DOG_ERROR_PERIOD)){
-                        OutputDebugStringA("WATCHDOG TIMED OUT\n");
                         status = Status::disconnected;
                     }
                 }
