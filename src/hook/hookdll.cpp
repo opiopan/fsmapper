@@ -194,17 +194,18 @@ public:
                         if (target.status == CapturedWindowContext::Status::CLOSED){
                             auto hWnd = target.hWnd;
                             target.status = CapturedWindowContext::Status::FREE;
-                            captured_windows.erase(itr);
+                            target.hWnd = nullptr;
+                            itr = captured_windows.erase(itr);
                             ::update_counter.from_leader++;
                             last_update_counter = ::update_counter;
-                            lock.unlock();
-                            this->callback(hWnd, this->callback_ctx);
-                            lock.lock();
+                            if (this->callback) {
+                                lock.unlock();
+                                this->callback(hWnd, this->callback_ctx);
+                                lock.lock();
+                            }
                             if (last_update_counter.from_leader != ::update_counter.from_leader ||
-                                last_update_counter.from_follower != ::update_counter.from_follower){
+                                last_update_counter.from_follower != ::update_counter.from_follower) {
                                 itr = captured_windows.begin();
-                            }else{
-                                itr++;
                             }
                         }else{
                             itr++;
@@ -345,6 +346,7 @@ public:
         if (attribute_changer.has_value()){
             std::unique_lock lock(lmutex);
             should_stop = true;
+            cv.notify_all();
             lock.unlock();
             attribute_changer.value().join();
         }
@@ -353,13 +355,12 @@ public:
         while (itr != captured_windows.end()){
             auto last_count = local_count;
             auto hWnd = itr->first;
+            itr++;
             lock.unlock();
             releaseWindow(hWnd);
             lock.lock();
             if (last_count + 1 != local_count){
                 itr = captured_windows.begin();
-            }else{
-                itr++;
             }
         }
     };
@@ -415,6 +416,15 @@ public:
         auto saved_rect = ctx.saved_rect;
         captured_windows.erase(hWnd);
         local_count++;
+        if (captured_windows.size() == 0 && attribute_changer.has_value()){
+            should_stop = true;
+            cv.notify_all();
+            auto thread = std::move(attribute_changer);
+            attribute_changer.reset();
+            llock.unlock();
+            thread->join();
+            llock.lock();
+        }
         llock.unlock();
         this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
         this->SetWindowPos(
@@ -440,15 +450,15 @@ public:
             cr.hWnd = hWnd;
             if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy || req.hWndInsertAfter != ctx.hWndInsertAfter){
                 cr.change_position = true;
-                cr.x = req.x;
-                cr.y = req.y;
-                cr.cx = req.cx;
-                cr.cy = req.cy;
-                cr.hWndInsertAfter = req.hWndInsertAfter;
+                ctx.x = cr.x = req.x;
+                ctx.y = cr.y = req.y;
+                ctx.cx = cr.cx = req.cx;
+                ctx.cy = cr.cy = req.cy;
+                ctx.hWndInsertAfter = cr.hWndInsertAfter = req.hWndInsertAfter;
             }
             if (req.show != ctx.show){
                 cr.change_visibility = true;
-                cr.show = req.show;
+                ctx.show = cr.show = req.show;
             }
             if (!cr.change_position && !cr.change_visibility){
                 return;
@@ -459,6 +469,7 @@ public:
             
             if (!attribute_changer.has_value()){
                 // create a thread to proceed change request
+                should_stop = false;
                 attribute_changer = std::move(std::thread([this](){
                     std::unique_lock llock(lmutex);
                     while (true){
@@ -537,17 +548,19 @@ protected:
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode >= HC_ACTION) {
         auto* pMsg = reinterpret_cast<CWPSTRUCT*>(lParam);
-        if (pMsg->message == followingManager->getControlMessageCode()) {
-            auto type = static_cast<ControllMessageDword>(wParam);
-            if (type == ControllMessageDword::start_capture){
-                followingManager->captureWindow(pMsg->hwnd);
-            }else if (type == ControllMessageDword::end_capture){
-                followingManager->releaseWindow(pMsg->hwnd);
-            }else if (type == ControllMessageDword::change_attribute){
-                followingManager->changeWindowAttribute(pMsg->hwnd);
+        if (followingManager){
+            if (pMsg->message == followingManager->getControlMessageCode()) {
+                auto type = static_cast<ControllMessageDword>(pMsg->wParam);
+                if (type == ControllMessageDword::start_capture){
+                    followingManager->captureWindow(pMsg->hwnd);
+                }else if (type == ControllMessageDword::end_capture){
+                    followingManager->releaseWindow(pMsg->hwnd);
+                }else if (type == ControllMessageDword::change_attribute){
+                    followingManager->changeWindowAttribute(pMsg->hwnd);
+                }
+            }else if (pMsg->message == WM_DESTROY){
+                followingManager->closeWindow(pMsg->hwnd);
             }
-        }else if (pMsg->message == WM_DESTROY){
-            followingManager->closeWindow(pMsg->hwnd);
         }
     }
     return CallNextHookEx(hookHandle, nCode, wParam, lParam);

@@ -91,9 +91,31 @@ void MapperEngine::initScriptingEnvAndRun(){
         auto action = std::make_shared<NativeAction::Function>(name.c_str(), func);
         return action;
     };
+    test["find_window"] = [this](const sol::object classname, const sol::object title){
+        if (classname.is<std::string>() && title.is<std::string>()){
+            return reinterpret_cast<int64_t>(FindWindowA(
+                classname.as<std::string>().c_str(),
+                title.as<std::string>().c_str()));
+        }
+    };
     test["capture_window"] = [this](const sol::object num_o){
         if (num_o.is<int64_t>()){
             hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
+        }
+    };
+    test["release_window"] = [this](const sol::object num_o){
+        if (num_o.is<int64_t>()){
+            hookdll_uncapture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
+        }
+    };
+    test["show_window"] = [this](const sol::object num_o, const sol::object visibility){
+        if (num_o.is<int64_t>() && visibility.is<bool>()){
+            hookdll_changeWindowAtrribute(
+                reinterpret_cast<HWND>(num_o.as<int64_t>()),
+                HWND_TOP,
+                300, 300, 400, 400,
+                visibility.as<bool>()
+            );
         }
     };
     scripting.lua()["test"] = test;

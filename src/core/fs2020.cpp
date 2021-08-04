@@ -10,7 +10,11 @@
 #include "action.h"
 
 static const auto CONNECTING_INTERVAL = 500;
-static const auto EVENT_SIM_START = 1;
+static const auto WATCH_DOG_ERROR_PERIOD = 6 * 1000;
+enum STATIC_EVENTS{
+    EVENT_SIM_START = 1,
+    EVENT_1SEC,
+};
 static const auto DINAMIC_EVENT_MIN = 100;
 
 //============================================================================================
@@ -29,6 +33,8 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
         std::unique_lock lock(mutex);
 
         while (true){
+            status = Status::connecting;
+
             //-------------------------------------------------------------------------------
             // connect to FS2020
             //-------------------------------------------------------------------------------
@@ -47,10 +53,15 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     return;
                 }
             }
-            status = Status::start;
+            status = Status::connected;
             lock.unlock();
             this->reportConnectivity(true, nullptr);
             lock.lock();
+
+            //-------------------------------------------------------------------------------
+            // Subscribe system events
+            //-------------------------------------------------------------------------------
+            SimConnect_SubscribeToSystemEvent(simconnect, EVENT_1SEC, "1sec");
 
             //-------------------------------------------------------------------------------
             // Mapping client event
@@ -62,12 +73,13 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             //-------------------------------------------------------------------------------
             // process SimConnect events
             //-------------------------------------------------------------------------------
+            std::chrono::steady_clock::time_point watch_dog;
             while(status != Status::disconnected){
                 if (shouldStop){
                     return;
                 }
                 lock.unlock();
-                auto eventix = ::WaitForMultipleObjects(2, events, false, INFINITE);
+                auto eventix = ::WaitForMultipleObjects(2, events, false, 2 * 1000);
                 lock.lock();
                 if (eventix == ix_interrupt){
                     ::ResetEvent(event_interrupt);
@@ -81,20 +93,38 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     if (SUCCEEDED(rc)){
                         if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
                             SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
-                            if (evt->uEventID == EVENT_SIM_START){
+                            if (evt->uEventID == EVENT_1SEC){
+                                OutputDebugStringA("WATCHDOG\n");
+                                watch_dog = std::chrono::steady_clock::now();
+                                if (status != Status::connected){
+                                    lock.unlock();
+                                    this->reportConnectivity(true, nullptr);
+                                    lock.lock();
+                                }
                             }
                         }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
                             status = Status::disconnected;
-                            isActive = false;
-                            lock.unlock();
-                            this->reportConnectivity(false, nullptr);
-                            lock.lock();
                         }
+                    }
+                }else if (status == Status::start){
+                    // check watch dog
+                    auto now = std::chrono::steady_clock::now();
+                    if (now - watch_dog > std::chrono::milliseconds(WATCH_DOG_ERROR_PERIOD)){
+                        OutputDebugStringA("WATCHDOG TIMED OUT\n");
+                        status = Status::disconnected;
                     }
                 }
             }
 
-            ::std::this_thread::sleep_for(::std::chrono::seconds(5));
+            isActive = false;
+            lock.unlock();
+            this->reportConnectivity(false, nullptr);
+            ::WaitForSingleObject(event_interrupt, 5 * 1000);
+            lock.lock();
+            ::ResetEvent(event_interrupt);
+            if (shouldStop){
+                return;
+            }
         }
     });
 }

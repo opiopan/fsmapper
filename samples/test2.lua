@@ -27,6 +27,30 @@ for k, v in pairs(mapper) do
     mapper.print("    "..k)
 end
 
+local capwin = 0x0
+local captured = false
+local visibility = true
+
+function toggle_win()
+    if not captured then
+        capwin = test.find_window("WIN64APP", "Win64app")
+        if capwin ~= 0 then
+            test.capture_window(capwin)
+            captured = true
+            visibility = true
+        end
+    end
+    test.show_window(capwin, visibility)
+    visibility = not visibility
+end
+
+function release_win()
+    if captured then
+        test.release_window(capwin)
+        captured = false
+    end
+end
+
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value) 
         if value.host then
@@ -35,6 +59,10 @@ mapper.set_primery_mappings({
             mapper.print("    disconnected")
         end
     end},
+
+    {event=g1000.AUX1D.down, action=function () mapper.abort() end},
+    {event=g1000.AUX2D.down, action=toggle_win},
+    {event=g1000.AUX2U.down, action=release_win},
 
     {event=g1000.EC1.increment, action=fs2020.event_sender("Mobiflight.AS1000_PFD_VOL_1_INC")},
     {event=g1000.EC1.decrement, action=fs2020.event_sender("Mobiflight.AS1000_PFD_VOL_1_DEC")},
@@ -111,7 +139,4 @@ mapper.set_primery_mappings({
     {event=g1000.SW31.down, action=fs2020.event_sender("Mobiflight.AS1000_PFD_CLR")},
     {event=g1000.SW31.longpressed, action=fs2020.event_sender("Mobiflight.AS1000_PFD_CLR_Long")},
     {event=g1000.SW32.down, action=fs2020.event_sender("Mobiflight.AS1000_PFD_ENT_Push")},
-
-    {event=g1000.AUX1D.down, action=function () mapper.abort() end},
-    {event=g1000.AUX2D.down, action=function () test.capture_window(0x000305C2) end},
 })
