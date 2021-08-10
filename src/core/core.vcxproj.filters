@@ -60,6 +60,12 @@
     <ClInclude Include="fs2020.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vieport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simplewindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -99,6 +105,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fs2020.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="simplewindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="viewport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

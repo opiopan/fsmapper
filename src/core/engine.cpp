@@ -100,7 +100,7 @@ void MapperEngine::initScriptingEnvAndRun(){
     };
     test["capture_window"] = [this](const sol::object num_o){
         if (num_o.is<int64_t>()){
-            hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
+            hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()), true);
         }
     };
     test["release_window"] = [this](const sol::object num_o){

@@ -4,6 +4,7 @@
 //
 
 #include <sstream>
+#include <stdexcept>
 #include "engine.h"
 #include "device.h"
 #include "simhid.h"
@@ -145,6 +146,7 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
         os << "mapper.device(): " << e.getMessage();
         engine.putLog(MCONSOLE_ERROR, os.str());
         engine.abort();
+        throw std::runtime_error(os.str().c_str());
     }
     return out;
 }

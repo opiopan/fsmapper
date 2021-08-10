@@ -209,7 +209,9 @@
     <ClInclude Include="mapperplugin.h" />
     <ClInclude Include="pluginapi.h" />
     <ClInclude Include="simhost.h" />
+    <ClInclude Include="simplewindow.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="vieport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
@@ -225,6 +227,9 @@
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="pluginapi.cpp" />
     <ClCompile Include="simhost.cpp" />
+    <ClCompile Include="simplewindow.cpp" />
+    <ClCompile Include="tools.cpp" />
+    <ClCompile Include="viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\hook\hook.vcxproj">

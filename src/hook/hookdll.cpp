@@ -230,7 +230,7 @@ public:
         ::hookHandle = 0;
     };
 
-    bool addCapture(HWND hWnd){
+    bool addCapture(HWND hWnd, bool hide_system_region){
         LockHolder lock(mutex);
         if (captured_windows.count(hWnd) > 0){
             // already captured
@@ -251,7 +251,7 @@ public:
         captured_windows_ctx[i].status = CapturedWindowContext::Status::CAPTURED;
         update_counter.from_leader++;
         lock.unlock();
-        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), 0);
+        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), hide_system_region);
         return true;
     };
 
@@ -365,7 +365,7 @@ public:
         }
     };
 
-    void captureWindow(HWND hWnd){
+    void captureWindow(HWND hWnd, bool hide_system_region){
         LockHolder glock(mutex);
         {
             std::unique_lock llock(lmutex);
@@ -396,9 +396,11 @@ public:
                 captured_windows.emplace(hWnd, ctx);
                 llock.unlock();
                 glock.unlock();
-                this->SetWindowLongPtrW(
-                    hWnd, GWL_STYLE, 
-                    ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
+                if (hide_system_region){
+                    this->SetWindowLongPtrW(
+                        hWnd, GWL_STYLE, 
+                        ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
+                }
                 this->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
             }
         }
@@ -552,7 +554,7 @@ LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
             if (pMsg->message == followingManager->getControlMessageCode()) {
                 auto type = static_cast<ControllMessageDword>(pMsg->wParam);
                 if (type == ControllMessageDword::start_capture){
-                    followingManager->captureWindow(pMsg->hwnd);
+                    followingManager->captureWindow(pMsg->hwnd, pMsg->lParam);
                 }else if (type == ControllMessageDword::end_capture){
                     followingManager->releaseWindow(pMsg->hwnd);
                 }else if (type == ControllMessageDword::change_attribute){
@@ -619,9 +621,9 @@ DLLEXPORT bool hookdll_stopGlobalHook(){
     return true;
 }
 
-DLLEXPORT bool hookdll_capture(HWND hWnd){
+DLLEXPORT bool hookdll_capture(HWND hWnd, bool hide_system_region){
     if (leadManager){
-        return leadManager->addCapture(hWnd);
+        return leadManager->addCapture(hWnd, hide_system_region);
     }else{
         return false;
     }

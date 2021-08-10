@@ -7,12 +7,12 @@ g1000 = mapper.device({
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
-		{name = "SW26", modtype = "button", modparam={longpress = 2000}},
-		{name = "SW31", modtype = "button", modparam={longpress = 2000}},
-		{name = "EC8U", modtype = "button", modparam={repeat_interval = 125}},
-		{name = "EC8D", modtype = "button", modparam={repeat_interval = 125}},
-		{name = "EC8R", modtype = "button", modparam={repeat_interval = 125}},
-		{name = "EC8L", modtype = "button", modparam={repeat_interval = 125}},
+        {name = "SW26", modtype = "button", modparam={longpress = 2000}},
+        {name = "SW31", modtype = "button", modparam={longpress = 2000}},
+        {name = "EC8U", modtype = "button", modparam={repeat_interval = 80}},
+        {name = "EC8D", modtype = "button", modparam={repeat_interval = 80}},
+        {name = "EC8R", modtype = "button", modparam={repeat_interval = 80}},
+        {name = "EC8L", modtype = "button", modparam={repeat_interval = 80}},
     },
 })
 
