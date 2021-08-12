@@ -27,6 +27,18 @@ for k, v in pairs(mapper) do
     mapper.print("    "..k)
 end
 
+local viewport = mapper.viewport({
+    name = "G1000_View",
+    -- displayno = 2,
+    x = 100,
+    y = 100,
+    width = 200,
+    height = 300,
+    bgcolor = "Green",
+})
+
+mapper.start_viewports()
+
 local capwin = 0x0
 local captured = false
 local visibility = true
@@ -66,8 +78,8 @@ mapper.set_primery_mappings({
     end},
 
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
-    {event=g1000.AUX2D.down, action=toggle_win},
-    {event=g1000.AUX2U.down, action=release_win},
+    {event=g1000.AUX2D.down, action=function () mapper.start_viewports() end},
+    {event=g1000.AUX2U.down, action=function () mapper.stop_viewports() end},
 
     {event=g1000.EC1.increment, action=fs2020.event_sender("Mobiflight.AS1000_PFD_VOL_1_INC")},
     {event=g1000.EC1.decrement, action=fs2020.event_sender("Mobiflight.AS1000_PFD_VOL_1_DEC")},

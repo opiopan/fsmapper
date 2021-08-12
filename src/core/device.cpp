@@ -143,7 +143,7 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
         }
     }catch (MapperException& e){
         std::ostringstream os;
-        os << "mapper.device(): " << e.getMessage();
+        os << "mapper.device(): " << e.what();
         engine.putLog(MCONSOLE_ERROR, os.str());
         engine.abort();
         throw std::runtime_error(os.str().c_str());

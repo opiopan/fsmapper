@@ -18,11 +18,11 @@ protected:
 	
 public:
 	WinBase() = default;
-    WinBase(const WinBase&) = delete;
-    WinBase(WinBase&&) = delete;
+	WinBase(const WinBase&) = delete;
+	WinBase(WinBase&&) = delete;
 	virtual ~WinBase();
-    WinBase& operator = (const WinBase&)const = delete;
-    WinBase& operator = (WinBase&&)const = delete;
+	WinBase& operator = (const WinBase&)const = delete;
+	WinBase& operator = (WinBase&&)const = delete;
 
 	bool create();
 	bool destroy();
@@ -63,7 +63,7 @@ struct WindowClassName{
 template <const WindowClassName& class_name, LONG style = WS_OVERLAPPED>
 class SimpleWindow : public WinBase{
 protected:
-    static ATOM class_atom;
+	static ATOM class_atom;
 
 public:
 	SimpleWindow() = default;
@@ -74,9 +74,9 @@ protected:
 	virtual void noticeRegisterd(ATOM atom) override {class_atom = atom;};
 	virtual void preRegisterClass(WNDCLASSA& wc) override {wc.lpszClassName = class_name;};
 	virtual void preCreateWindow(CREATESTRUCTA& cs) override{
-        cs.style = style;
-        cs.lpszClass = class_name;
-    };
+		cs.style = style;
+		cs.lpszClass = class_name;
+	};
 };
 
 template <const WindowClassName& class_name, LONG style>

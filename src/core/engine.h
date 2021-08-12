@@ -12,34 +12,19 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include <sol/sol.hpp>
 #include "mappercore.h"
 #include "event.h"
 #include "action.h"
-#include "device.h"
-#include "simhost.h"
 
 class DeviceManager;
 class DeviceModifier;
 class DeviceModifierManager;
+class SimHostManager;
+class ViewPortManager;
 
-class MapperException {
-protected:
-    std::string message;
-
-public:
-    MapperException() = delete;
-    MapperException(const char *msg) : message(msg){};
-    MapperException(std::string&& msg) : message(std::move(msg)){};
-    MapperException(const MapperException&) = default;
-    MapperException(MapperException&&) = default;
-    virtual ~MapperException() = default;
-
-    virtual MapperException& operator = (const MapperException& v) = default;
-    virtual MapperException& operator = (MapperException&&) = default;
-
-    const std::string& getMessage() const {return message;};
-};
+using MapperException = std::runtime_error;
 
 class MapperEngine {
 public:
@@ -64,8 +49,10 @@ protected :
         std::unique_ptr<sol::state> lua_ptr;
         std::unique_ptr<DeviceManager> deviceManager;
         std::unique_ptr<SimHostManager> simhostManager;
+        std::unique_ptr<ViewPortManager> viewportManager;
 
         sol::state& lua(){return *lua_ptr;};
+        bool should_gc = true;
     }scripting;
 
     struct {
@@ -99,6 +86,11 @@ public:
         logger(mtype, msg);
     };
 
+    void recommend_gc(){
+        std::lock_guard lock(mutex);
+        scripting.should_gc = true;
+    };
+
     uint64_t registerEvent(std::string&& name);
     void unregisterEvent(uint64_t evid);
     const char* getEventName(uint64_t evid) const;
@@ -112,3 +104,15 @@ protected:
 
     void setMapping(const char* function_name, int level, const sol::object& mapdef);
 };
+
+template <typename T>
+inline auto lua_c_interface(MapperEngine& engine, const char* function_name, T function){
+    try{
+        return function();
+    }catch (MapperException& e){
+        std::ostringstream os;
+        os << "[" << function_name << "()] " << e.what();
+        engine.putLog(MCONSOLE_ERROR, os.str().c_str());
+        throw std::runtime_error(os.str());
+    }
+}

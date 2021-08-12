@@ -38,7 +38,7 @@ static HWND create_main_window(){
     }
 
     auto hWnd = ::CreateWindowExA(
-          0                       // extended window style
+        0                       // extended window style
         , tWndClass.lpszClassName // pointer to registered class name
         , "Test of mapper"        // pointer to window name
         , WS_OVERLAPPEDWINDOW     // window style

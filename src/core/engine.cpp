@@ -6,6 +6,9 @@
 #include <sstream>
 #include "hookdll.h"
 #include "engine.h"
+#include "device.h"
+#include "simhost.h"
+#include "viewport.h"
 
 //============================================================================================
 // initialize / terminate environment
@@ -13,15 +16,22 @@
 MapperEngine::MapperEngine(Callback callback, Logger logger) : 
     status(Status::init), callback(callback), logger(logger){
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
-    hookdll_startGlobalHook(nullptr, nullptr);
 }
 
 MapperEngine::~MapperEngine(){
+    // stop event-action mapping thread
     stop();
+
+    // cleare all event-action maps befor delstory lua environment
+    // since action may be lua function
     mapping[0] = nullptr;
     mapping[1] = nullptr;
+    if (scripting.viewportManager){
+        scripting.viewportManager->reset_viewports();
+    }
+
+    // destory lua environment
     scripting.lua_ptr = nullptr;
-    hookdll_stopGlobalHook();
 }
 
 //============================================================================================
@@ -38,6 +48,10 @@ void MapperEngine::initScriptingEnvAndRun(){
     //      mapper.device() :                open device
     //      mapper.set_primery_mappings():   set primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
+    //      mapper.viewport():               register viewport
+    //      mapper.start_viewports():        start all viewports
+    //      mapper.stop_viewports():         stop all viewports
+    //      mapper.reset_viewports():        stop all viewports then remove all viewport definitions
     //      mapper.events:                   system events table
     //-------------------------------------------------------------------------------
     auto mapper = scripting.lua().create_table();
@@ -48,6 +62,7 @@ void MapperEngine::initScriptingEnvAndRun(){
         putLog(MCONSOLE_ERROR, "mapper-core: abort scripting");
         abort();
     };
+
     scripting.deviceManager = std::make_unique<DeviceManager>(*this);
     mapper["device"] = [this](const sol::object param, sol::this_state s){
         return scripting.deviceManager->createDevice(param, s);
@@ -58,6 +73,10 @@ void MapperEngine::initScriptingEnvAndRun(){
     mapper["set_secondary_mappings"] = [this](const sol::object def){
         setMapping("mapper.set_secondary_mappings()", 1, def);
     };
+
+    scripting.viewportManager = std::make_unique<ViewPortManager>(*this);
+    scripting.viewportManager->init_scripting_env(mapper);
+
     auto sysevents = scripting.lua().create_table();
     auto ev_change_aircraft = this->registerEvent("mapper:change_aircraft");
     sysevents["change_aircraft"] = ev_change_aircraft;
@@ -153,6 +172,16 @@ bool MapperEngine::run(std::string&& scriptPath){
 
         while (true){
             //-------------------------------------------------------------------------------
+            // collect garbage in Lua environment as needed
+            //-------------------------------------------------------------------------------
+            if (scripting.should_gc){
+                lock.unlock();
+                scripting.lua().collect_garbage();
+                lock.lock();
+                scripting.should_gc = false;
+            }
+
+            //-------------------------------------------------------------------------------
             // wait until event occurrence
             //-------------------------------------------------------------------------------
             event.cv.wait(lock, [this]{
@@ -192,7 +221,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         return status == Status::stop;
     }catch (MapperException& e){
         std::ostringstream os;
-        os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.getMessage();
+        os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.what();
         putLog(MCONSOLE_ERROR, os.str());
         std::lock_guard lock(mutex);
         status = Status::error;
@@ -268,7 +297,7 @@ void MapperEngine::setMapping(const char* function_name, int level, const sol::o
         mapping[level] = std::move(createEventActionMap(*this, mapdef));
     }catch (MapperException& e){
         std::ostringstream os;
-        os << function_name << ": " << e.getMessage();
+        os << function_name << ": " << e.what();
         putLog(MCONSOLE_ERROR, os.str());
         abort();
     }

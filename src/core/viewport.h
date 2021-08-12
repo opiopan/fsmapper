@@ -9,6 +9,8 @@
 #include <optional>
 #include <memory>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 #include <sol/sol.hpp>
 #include "tools.h"
 #include "simplewindow.h"
@@ -96,7 +98,7 @@ public:
     void setCurrentView(sol::optional<int> view_no_obj);
 
     // functions to export to ViewPortManager
-    void enable();
+    void enable(const std::vector<IntRect> displays);
     void disable();
 };
 
@@ -106,12 +108,19 @@ class ViewPortManager{
 protected:
     enum class Status{
         init,
+        ready_to_start,
+        starting,
         running,
+        suspending,
         suspended,
     };
+    std::mutex mutex;
+    std::condition_variable cv;
     MapperEngine& engine;
     Status status = Status::init;
-    std::vector<std::unique_ptr<ViewPort>> viewports;
+    std::vector<std::shared_ptr<ViewPort>> viewports;
+    std::vector<IntRect> displays;
+    uint32_t cwid_counter = 1;
 
 public:
     ViewPortManager() = delete;
@@ -122,14 +131,28 @@ public:
     ViewPortManager& operator =(const ViewPortManager&) = delete;
     ViewPortManager& operator =(ViewPortManager&&) = delete;
 
+    MapperEngine& get_engine() {return engine;};
+
     void init_scripting_env(sol::table& mapper_table);
 
     // functions to export as Lua function in mapper table
-    std::shared_ptr<ViewPort> create_view_vort(sol::object def_obj);
-    void start_view_ports();
-    void stop_view_ports();
-    void reset_view_ports();
+    std::shared_ptr<ViewPort> create_viewvort(sol::object def_obj);
+    void start_viewports();
+    void stop_viewports();
+    void reset_viewports();
 
-    // utility functions for ViewPort
-    std::optional<IntRect> transform_display_to_global(const std::optional<int>& dsiplay, bool is_relative, const FloatRect& rect);
+    // functions called from host program via mappercore API
+    void register_captured_window(uint32_t cwid, HWND hWnd);
+    void unregister_captured_window(uint32_t cwid);
+    void enable_viewports();
+    void disable_viewports();
+
+protected:
+    void change_status(Status staus){
+        this->status = status;
+        cv.notify_all();
+    };
+    void enable_viewport_primitive(std::unique_lock<std::mutex>& lock);
+    void disable_viewport_primitive(std::unique_lock<std::mutex>& lock);
+    static BOOL monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context);
 };
