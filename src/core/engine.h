@@ -113,6 +113,6 @@ inline auto lua_c_interface(MapperEngine& engine, const char* function_name, T f
         std::ostringstream os;
         os << "[" << function_name << "()] " << e.what();
         engine.putLog(MCONSOLE_ERROR, os.str().c_str());
-        throw std::runtime_error(os.str());
+        throw e;
     }
 }

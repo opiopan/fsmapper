@@ -14,7 +14,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         ::PostQuitMessage( 0 );
         break;
     }
-    return ::DefWindowProc( hWnd, uMsg, wParam, lParam );
+    return ::DefWindowProcA( hWnd, uMsg, wParam, lParam );
 }
 
 static HWND create_main_window(){

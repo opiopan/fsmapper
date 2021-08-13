@@ -85,6 +85,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
             std::ostringstream os;
             os << "Display number that is specified as viewport difinition is invalid. [viewport: " << name ;
             os << "] [display: " << *def_display_no << "]";
+            throw MapperException(std::move(os.str()));
         }else{
             auto& drect = displays[*def_display_no - 1];
             if (is_relative_coordinates){
@@ -133,12 +134,12 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
 // Viewport manager inmplementation
 //============================================================================================
 ViewPortManager::ViewPortManager(MapperEngine& engine) : engine(engine){
-    hookdll_startGlobalHook(nullptr, nullptr);
+    //hookdll_startGlobalHook(nullptr, nullptr);
 }
 
 ViewPortManager::~ViewPortManager(){
     reset_viewports();
-    hookdll_stopGlobalHook();
+    //hookdll_stopGlobalHook();
 }
 
 void ViewPortManager::init_scripting_env(sol::table& mapper_table){
@@ -188,8 +189,17 @@ void ViewPortManager::start_viewports(){
         //     return;
         // }
 
+        auto prev_status = status;
         change_status(Status::starting);
-        enable_viewport_primitive(lock);
+        lock.unlock();
+        try{
+            enable_viewport_primitive();
+        }catch (MapperException&){
+            lock.lock();
+            change_status(prev_status);
+            throw;
+        }
+        lock.lock();
         change_status(Status::running);
         lock.unlock();
         engine.sendHostEvent(MEV_START_VIEWPORTS, 0);
@@ -200,7 +210,15 @@ void ViewPortManager::stop_viewports(){
     std::unique_lock lock(mutex);
     if (status == Status::running){
         change_status(Status::suspending);
-        disable_viewport_primitive(lock);
+        lock.unlock();
+        try{
+            disable_viewport_primitive();
+        }catch (MapperException&){
+            lock.lock();
+            change_status(Status::running);
+            throw;
+        }
+        lock.lock();
         change_status(Status::suspended);
         lock.unlock();
         engine.sendHostEvent(MEV_STOP_VIEWPORTS, 0);
@@ -214,7 +232,15 @@ void ViewPortManager::reset_viewports(){
     }
     if (status == Status::running){
         change_status(Status::suspending);
-        disable_viewport_primitive(lock);
+        lock.unlock();
+        try{
+            disable_viewport_primitive();
+        }catch (MapperException&){
+            lock.lock();
+            change_status(Status::running);
+            throw;
+        }
+        lock.lock();
         change_status(Status::suspended);
     }
     if (status != Status::init){
@@ -237,7 +263,15 @@ void ViewPortManager::enable_viewports(){
     std::unique_lock lock(mutex);
     if (status == Status::ready_to_start){
         change_status(Status::starting);
-        enable_viewport_primitive(lock);
+        lock.unlock();
+        try{
+            enable_viewport_primitive();
+        }catch (MapperException&){
+            lock.lock();
+            change_status(Status::ready_to_start);
+            throw;
+        }
+        lock.lock();
         change_status(Status::running);
         lock.unlock();
         engine.sendHostEvent(MEV_START_VIEWPORTS, 0);
@@ -248,28 +282,32 @@ void ViewPortManager::disable_viewports(){
     std::unique_lock lock(mutex);
     if (status == Status::running){
         change_status(Status::suspending);
-        disable_viewport_primitive(lock);
+        lock.unlock();
+        try{
+            disable_viewport_primitive();
+        }catch (MapperException&){
+            lock.lock();
+            change_status(Status::running);
+            throw;
+        }
+        lock.lock();
         change_status(Status::ready_to_start);
         lock.unlock();
         engine.sendHostEvent(MEV_STOP_VIEWPORTS, 0);
     }
 }
 
-void ViewPortManager::enable_viewport_primitive(std::unique_lock<std::mutex>& lock){
+void ViewPortManager::enable_viewport_primitive(){
         ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
-        lock.unlock();
         for (auto& viewport : viewports){
             viewport->enable(displays);
         }
-        lock.lock();
 }
 
-void ViewPortManager::disable_viewport_primitive(std::unique_lock<std::mutex>& lock){
-        lock.unlock();
+void ViewPortManager::disable_viewport_primitive(){
         for (auto& viewport : viewports){
             viewport->disable();
         }
-        lock.lock();
 }
 
 BOOL ViewPortManager::monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context){

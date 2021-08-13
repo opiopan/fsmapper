@@ -29,12 +29,12 @@ end
 
 local viewport = mapper.viewport({
     name = "G1000_View",
-    -- displayno = 2,
-    x = 100,
-    y = 100,
-    width = 200,
-    height = 300,
-    bgcolor = "Green",
+    displayno = 1,
+    x = 0.0,
+    y = 0.0,
+    width = 1.0,
+    height = 1.0,
+    bgcolor = "LightGreen",
 })
 
 mapper.start_viewports()
@@ -76,7 +76,9 @@ mapper.set_primery_mappings({
             mapper.print("    [sim]: disconnected")
         end
     end},
+})
 
+mapper.set_secondary_mappings({
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
     {event=g1000.AUX2D.down, action=function () mapper.start_viewports() end},
     {event=g1000.AUX2U.down, action=function () mapper.stop_viewports() end},

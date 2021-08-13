@@ -6,6 +6,9 @@
 #pragma once
 
 #include <windows.h>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 
 //============================================================================================
 // Root class that represent window
@@ -16,8 +19,20 @@ class WinBase{
 protected:
 	HWND hWnd = nullptr;
 	
+	enum class Status{
+		init,
+		creating,
+		created,
+		deleting,
+	};
+	std::mutex mutex;
+	std::condition_variable cv;
+	std::thread messaging_thread;
+	Status status = Status::init;
+	UINT req_destroy_msg = 0;
+	
 public:
-	WinBase() = default;
+	WinBase();
 	WinBase(const WinBase&) = delete;
 	WinBase(WinBase&&) = delete;
 	virtual ~WinBase();
@@ -44,7 +59,7 @@ public:
 protected:
 	virtual bool isRegisterd() = 0;
 	virtual void noticeRegisterd(ATOM atom) = 0;
-	virtual void preRegisterClass(WNDCLASSA& wc) = 0;
+	virtual void preRegisterClass(WNDCLASSEXA& wc) = 0;
 	virtual void preCreateWindow(CREATESTRUCTA& cs) = 0;
 
 	virtual bool onCreate(CREATESTRUCT* pcs);
@@ -72,7 +87,7 @@ public:
 protected:
 	virtual bool isRegisterd() override {return class_atom;};
 	virtual void noticeRegisterd(ATOM atom) override {class_atom = atom;};
-	virtual void preRegisterClass(WNDCLASSA& wc) override {wc.lpszClassName = class_name;};
+	virtual void preRegisterClass(WNDCLASSEXA& wc) override {wc.lpszClassName = class_name;};
 	virtual void preCreateWindow(CREATESTRUCTA& cs) override{
 		cs.style = style;
 		cs.lpszClass = class_name;

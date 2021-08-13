@@ -50,24 +50,24 @@ protected:
     };
 
     static constexpr WindowClassName bg_window_class_name = {"mapper_viewport_bg_window"};
-    class BackgroundWindow: public SimpleWindow<bg_window_class_name>{
+    class BackgroundWindow: public SimpleWindow<bg_window_class_name, WS_POPUP>{
     protected:
-        using parent_class = SimpleWindow<bg_window_class_name>;
-        GdiObject<HBRUSH> bgbrush;
+        using parent_class = SimpleWindow<bg_window_class_name, WS_POPUP>;
+        COLORREF bgcolor;
     public:
         BackgroundWindow() = default;
         virtual ~BackgroundWindow() = default;
         void start(COLORREF bgcolor, const IntRect& rect, HWND hWndInsertAfter = nullptr){
-            bgbrush = CreateSolidBrush(bgcolor);
+            this->bgcolor = bgcolor;
             create();
             ::SetWindowPos(*this, hWndInsertAfter ? hWndInsertAfter : HWND_TOP, rect.x, rect.y, rect.width, rect.height, 0);
             showWindow(SW_SHOW);
         };
         void stop(){destroy();};
     protected:
-        virtual void preRegisterClass(WNDCLASSA& wc) override{
+        virtual void preRegisterClass(WNDCLASSEXA& wc) override{
             parent_class::preRegisterClass(wc);
-            wc.hbrBackground = bgbrush;
+            wc.hbrBackground = CreateSolidBrush(bgcolor);
         };
     };
 
@@ -148,11 +148,11 @@ public:
     void disable_viewports();
 
 protected:
-    void change_status(Status staus){
+    void change_status(Status status){
         this->status = status;
         cv.notify_all();
     };
-    void enable_viewport_primitive(std::unique_lock<std::mutex>& lock);
-    void disable_viewport_primitive(std::unique_lock<std::mutex>& lock);
+    void enable_viewport_primitive();
+    void disable_viewport_primitive();
     static BOOL monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context);
 };
