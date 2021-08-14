@@ -102,51 +102,45 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
 {
     sol::state_view lua(s);
     auto out = lua.create_table();
-    try{
-        if (param.get_type() != sol::type::table){
-            throw MapperException("Function argument must be a table");
-        }
-        auto arg = param.as<sol::table>();
-        std::string type = arg["type"];
-        std::string name = arg["name"];
-        sol::object identifire = arg["identifier"];
-        sol::object modifiers = arg["modifiers"];
-        if (name == ""){
-            throw MapperException("Device name as \"name\" parameter must be specified.");
-        }
-        if (classes.count(type) == 0){
-            std::ostringstream os;
-            os << "\"type\" parameter value is invalid or no device type is specified. [type: " << type << "]";
-            throw MapperException(os.str());
-        }
-        auto &deviceClass = classes.at(type);
-        DeviceModifierRule rule;
-        modifierManager.makeRule(modifiers, rule);
-        auto device = std::make_shared<Device>(*deviceClass, name, rule, identifire);
-        out["_Device"] = device;
-        auto unitdefs = device->getUnitDefs();
-        for (auto ix_unit = 0; ix_unit < unitdefs.size(); ix_unit++){
-            auto& unit = unitdefs[ix_unit];
-            auto unit_table = lua.create_table();
-            if (unit.direction == FSMDU_DIR_INPUT){
-                auto modifier = device->getModifiers()[ix_unit];
-                for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
-                    auto event = modifier->getEvent(ix_event);
-                    unit_table[event.name] = event.id;
-                }
-            }else{
-                unit_table["update"] = [device, ix_unit](int value){
-                    device->sendUnitValue(ix_unit, value);
-                };
-            }
-            out[unit.name] = unit_table;
-        }
-    }catch (MapperException& e){
-        std::ostringstream os;
-        os << "mapper.device(): " << e.what();
-        engine.putLog(MCONSOLE_ERROR, os.str());
-        engine.abort();
-        throw std::runtime_error(os.str().c_str());
+
+    if (param.get_type() != sol::type::table){
+        throw MapperException("Function argument must be a table");
     }
+    auto arg = param.as<sol::table>();
+    std::string type = arg["type"];
+    std::string name = arg["name"];
+    sol::object identifire = arg["identifier"];
+    sol::object modifiers = arg["modifiers"];
+    if (name == ""){
+        throw MapperException("Device name as \"name\" parameter must be specified.");
+    }
+    if (classes.count(type) == 0){
+        std::ostringstream os;
+        os << "\"type\" parameter value is invalid or no device type is specified. [type: " << type << "]";
+        throw MapperException(os.str());
+    }
+    auto &deviceClass = classes.at(type);
+    DeviceModifierRule rule;
+    modifierManager.makeRule(modifiers, rule);
+    auto device = std::make_shared<Device>(*deviceClass, name, rule, identifire);
+    out["_Device"] = device;
+    auto unitdefs = device->getUnitDefs();
+    for (auto ix_unit = 0; ix_unit < unitdefs.size(); ix_unit++){
+        auto& unit = unitdefs[ix_unit];
+        auto unit_table = lua.create_table();
+        if (unit.direction == FSMDU_DIR_INPUT){
+            auto modifier = device->getModifiers()[ix_unit];
+            for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
+                auto event = modifier->getEvent(ix_event);
+                unit_table[event.name] = event.id;
+            }
+        }else{
+            unit_table["update"] = [device, ix_unit](int value){
+                device->sendUnitValue(ix_unit, value);
+            };
+        }
+        out[unit.name] = unit_table;
+    }
+
     return out;
 }

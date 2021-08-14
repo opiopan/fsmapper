@@ -79,6 +79,7 @@ DLLEXPORT void* mapper_getHostContext(MapperHandle handle);
 DLLEXPORT MAPPER_SIM_CONNECTION mapper_getSimConnection(MapperHandle handle);
 DLLEXPORT const char* mapper_getAircraftName(MapperHandle handle);
 DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC func, void *context);
+DLLEXPORT bool mapper_enumCapturedWindows(MapperHandle handle, MAPPER_ENUM_CAPUTURED_WINDOW func, void *context);
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd);
 DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid);
 

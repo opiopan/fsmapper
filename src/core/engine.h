@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <sol/sol.hpp>
 #include "mappercore.h"
+#include "mappercore_inner.h"
 #include "event.h"
 #include "action.h"
 
@@ -96,6 +97,14 @@ public:
     const char* getEventName(uint64_t evid) const;
     void sendEvent(Event&& event);
     void sendHostEvent(MAPPER_EVENT event, int64_t data);
+
+    // interfaces for host program
+    std::vector<CapturedWindowInfo> get_captured_window_list();
+    void register_captured_window(uint32_t cwid, HWND hWnd);
+    void unregister_captured_window(uint32_t cwid);
+    void enable_viewports();
+    void disable_viewports();
+
 
 protected:
     void initScriptingEnvAndRun();

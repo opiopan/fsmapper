@@ -70,12 +70,7 @@ protected:
 //============================================================================================
 // Simple window representaion inherited from WinBase
 //============================================================================================
-struct WindowClassName{
-	const char* name;
-	operator const char* () const{return name;};
-};
-
-template <const WindowClassName& class_name, LONG style = WS_OVERLAPPED>
+template <auto& class_name, LONG style = WS_POPUP>
 class SimpleWindow : public WinBase{
 protected:
 	static ATOM class_atom;
@@ -94,5 +89,5 @@ protected:
 	};
 };
 
-template <const WindowClassName& class_name, LONG style>
+template <auto& class_name, LONG style>
 ATOM SimpleWindow<class_name, style>::class_atom = 0;

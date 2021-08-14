@@ -200,6 +200,7 @@
     <ClInclude Include="builtinDevices\simhidconnection.h" />
     <ClInclude Include="builtinDevices\simhidparser.h" />
     <ClInclude Include="builtinDevices\winserial.h" />
+    <ClInclude Include="capturedwindow.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="devicemodifier.h" />
     <ClInclude Include="engine.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="builtinDevices\simhidconnection.cpp" />
     <ClCompile Include="builtinDevices\simhidparser.c" />
     <ClCompile Include="builtinDevices\winserial.cpp" />
+    <ClCompile Include="capturedwindow.cpp" />
     <ClCompile Include="device.cpp" />
     <ClCompile Include="devicemodifier.cpp" />
     <ClCompile Include="dllmain.cpp" />

@@ -83,18 +83,34 @@ DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC f
     return true;
 }
 
+DLLEXPORT bool mapper_enumCapturedWindows(MapperHandle handle, MAPPER_ENUM_CAPUTURED_WINDOW func, void *context){
+    auto&& list = handle->engine->get_captured_window_list();
+    for (auto info : list){
+        CAPTURED_WINDOW_DEF def = {info.cwid, info.name.c_str(), nullptr, info.is_captured};
+        auto rc = func(handle, context, &def);
+        if (!rc){
+            return false;
+        }
+    }
+    return true;
+}
+
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd){
+    handle->engine->register_captured_window(cwid, hWnd);
     return true;
 }
 
 DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid){
+    handle->engine->unregister_captured_window(cwid);
     return true;
 }
 
 DLLEXPORT bool mapper_startViewPort(MapperHandle handle){
+    handle->engine->enable_viewports();
     return true;
 }
 
 DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
+    handle->engine->disable_viewports();
     return true;
 }

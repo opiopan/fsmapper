@@ -32,8 +32,8 @@ function g1000_aircraft()
 			name = "PFD",
 			elements = {{
 				x = 0, y = 0,
-				width = -1,
-				height = -1,
+				width = 1,
+				height = 1,
 				object = mapper.captured_window({
 					name = "G1000 PFD",
 					omit_system_region = true;

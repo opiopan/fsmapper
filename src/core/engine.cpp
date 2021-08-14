@@ -10,6 +10,7 @@
 #include "simhost.h"
 #include "viewport.h"
 
+
 //============================================================================================
 // initialize / terminate environment
 //============================================================================================
@@ -65,13 +66,19 @@ void MapperEngine::initScriptingEnvAndRun(){
 
     scripting.deviceManager = std::make_unique<DeviceManager>(*this);
     mapper["device"] = [this](const sol::object param, sol::this_state s){
-        return scripting.deviceManager->createDevice(param, s);
+        return lua_c_interface(*this, "mapper:device", [this, &param, s](){
+            return scripting.deviceManager->createDevice(param, s);
+        });
     };
     mapper["set_primery_mappings"] = [this](const sol::object def){
-        setMapping("mapper.set_primery_mappings()", 0, def);
+        lua_c_interface(*this, "mapper:set_primery_mappings", [this, &def](){
+            setMapping("mapper.set_primery_mappings()", 0, def);
+        });
     };
     mapper["set_secondary_mappings"] = [this](const sol::object def){
-        setMapping("mapper.set_secondary_mappings()", 1, def);
+        lua_c_interface(*this, "mapper:set_secondary_mappings", [this, &def](){
+            setMapping("mapper.set_primery_mappings()", 1, def);
+        });
     };
 
     scripting.viewportManager = std::make_unique<ViewPortManager>(*this);
@@ -281,10 +288,13 @@ std::unique_ptr<Event>&& MapperEngine::receiveEvent(){
 // finding action correspond to event
 //============================================================================================
 Action* MapperEngine::findAction(uint64_t evid){
-    if (mapping[0].get() && mapping[0]->count(evid) > 0){
-        return mapping[0]->at(evid).get();
+    auto action = scripting.viewportManager->find_action(evid);
+    if (action){
+        return action;
     }else if (mapping[1].get() && mapping[1]->count(evid) > 0){
         return mapping[1]->at(evid).get();
+    }else if (mapping[0].get() && mapping[0]->count(evid) > 0){
+        return mapping[0]->at(evid).get();
     }
     return nullptr;
 }
@@ -293,14 +303,7 @@ Action* MapperEngine::findAction(uint64_t evid){
 // funtions to expose to Lua script
 //============================================================================================
 void MapperEngine::setMapping(const char* function_name, int level, const sol::object& mapdef){
-    try{
-        mapping[level] = std::move(createEventActionMap(*this, mapdef));
-    }catch (MapperException& e){
-        std::ostringstream os;
-        os << function_name << ": " << e.what();
-        putLog(MCONSOLE_ERROR, os.str());
-        abort();
-    }
+    mapping[level] = std::move(createEventActionMap(*this, mapdef));
 }
 
 //============================================================================================
@@ -308,4 +311,41 @@ void MapperEngine::setMapping(const char* function_name, int level, const sol::o
 //============================================================================================
 void MapperEngine::sendHostEvent(MAPPER_EVENT event, int64_t data){
     callback(event, data);
+}
+
+std::vector<CapturedWindowInfo> MapperEngine::get_captured_window_list(){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        return std::move(scripting.viewportManager->get_captured_window_list());
+    }else{
+        return {};
+    }
+}
+
+void MapperEngine::register_captured_window(uint32_t cwid, HWND hWnd){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        scripting.viewportManager->register_captured_window(cwid, hWnd);
+    }
+}
+
+void MapperEngine::unregister_captured_window(uint32_t cwid){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        scripting.viewportManager->unregister_captured_window(cwid);
+    }
+}
+
+void MapperEngine::enable_viewports(){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        scripting.viewportManager->enable_viewports();
+    }
+}
+
+void MapperEngine::disable_viewports(){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        scripting.viewportManager->disable_viewports();
+    }
 }

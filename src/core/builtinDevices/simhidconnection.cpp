@@ -15,7 +15,7 @@
     using SerialImp = PosixSerial;
 #endif
 
-static const auto INIT_TIMEOUT = std::chrono::seconds(3);
+static const auto INIT_TIMEOUT = std::chrono::milliseconds(600);
 
 //============================================================================================
 //  Recognize device identifier then identify device path

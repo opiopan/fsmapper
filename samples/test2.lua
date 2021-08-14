@@ -36,6 +36,9 @@ local viewport = mapper.viewport({
     height = 1.0,
     bgcolor = "LightGreen",
 })
+viewport:set_mappings({
+    {event=g1000.EC5P.down, action=function () mapper.print("action associated with viewport") end}
+})
 
 mapper.start_viewports()
 
