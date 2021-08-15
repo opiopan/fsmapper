@@ -162,9 +162,13 @@ ViewPort::~ViewPort(){
 }
 
 void ViewPort::enable(const std::vector<IntRect> displays){
+    if (is_enable) {
+        return;
+    }
     if (views.size() == 0){
         std::ostringstream os;
         os << "no view is registerd to the viewport \"" << name << "\"";
+        throw MapperException(std::move(os.str()));
     }
     if (!def_display_no){
         region.x = std::roundf(def_region.x);
@@ -198,9 +202,17 @@ void ViewPort::enable(const std::vector<IntRect> displays){
 }
 
 void ViewPort::disable(){
-    is_enable = false;
-    views[current_view]->hide(*this);
-    bgwin.stop();
+    if (is_enable) {
+        is_enable = false;
+        views[current_view]->hide(*this);
+        bgwin.stop();
+    }
+}
+
+void ViewPort::clear(){
+    disable();
+    views.clear();
+    mappings = nullptr;
 }
 
 int ViewPort::registerView(sol::object def_obj){
@@ -401,11 +413,16 @@ void ViewPortManager::reset_viewports(){
         lock.lock();
         change_status(Status::suspended);
     }
-    if (status != Status::init){
+    for (auto& viewport : viewports){
         viewports.clear();
-        engine.recommend_gc();
-        change_status(Status::init);
-        lock.unlock();
+    }
+
+    auto prev_status = status;
+    viewports.clear();
+    engine.recommend_gc();
+    change_status(Status::init);
+    lock.unlock();
+    if (prev_status != Status::init) {
         engine.sendHostEvent(MEV_RESET_VIEWPORTS, 0);
     }
 }

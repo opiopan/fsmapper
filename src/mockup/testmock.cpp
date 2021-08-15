@@ -2,6 +2,8 @@
 #include <mutex>
 #include <functional>
 #include <thread>
+#include <map>
+#include <unordered_map>
 #include <windows.h>
 #include "mappercore.h"
 
@@ -55,18 +57,93 @@ static HWND create_main_window(){
     return hWnd;
 }
 
+class MapperInterface{
+protected:
+    std::mutex mutex;
+    std::condition_variable cv;
+    std::thread controller;
+    bool need_scan = false;
+    bool should_stop = false;
+    MapperHandle mapper = nullptr;
 
-static bool console_handler(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
-    static std::mutex mutex;
-    std::lock_guard lock(mutex);
-    std::cout.write(msg, len);
-    std::cout << std::endl;
-    return true;
-}
+public:
+    MapperInterface(){
+        mapper = mapper_init(&MapperInterface::event_handler, &MapperInterface::console_handler, this);
+        controller = std::move(std::thread([this](){
+            while (true){
+                std::unique_lock lock(mutex);
+                cv.wait(lock, [this](){return need_scan || should_stop;});
+                if (should_stop){
+                    return;
+                }else if (need_scan){
+                    need_scan = false;
+                    lock.unlock();
+                    mapper_stopViewPort(mapper);
+                    mapper_startViewPort(mapper);
+                    lock.lock();
+                }
+            }
+        }));
+    }
 
-static bool event_handler(MapperHandle mapper, MAPPER_EVENT ev, int64_t data){
-    return true;
-}
+    ~MapperInterface(){
+        {
+            std::lock_guard lock(mutex);
+            should_stop = true;
+            cv.notify_all();
+        }
+        controller.join();
+        mapper_terminate(mapper);
+    }
+
+    bool run(const char* script_path){
+        mapper_setLogMode(mapper, MAPPER_LOG_EVENT);
+        //mapper_setLogMode(mapper, 0);
+        return mapper_run(mapper, script_path);
+    }
+
+protected:
+    static bool event_handler(MapperHandle mapper, MAPPER_EVENT ev, int64_t data){
+        auto self = reinterpret_cast<MapperInterface*>(mapper_getHostContext(mapper));
+        return self->process_event(ev, data);
+    }
+
+    bool process_event(MAPPER_EVENT ev, int64_t data){
+        static const std::unordered_map<MAPPER_EVENT, const char*> evnames = {
+            {MEV_CHANGE_SIMCONNECTION, "MEV_CHANGE_SIMCONNECTION"},
+            {MEV_CHANGE_AIRCRAFT, "MEV_CHANGE_AIRCRAFT"},
+            {MEV_CHANGE_DEVICES, "MEV_CHANGE_DEVICES"},
+            {MEV_READY_TO_CAPTURE_WINDOW, "MEV_READY_TO_CAPTURE"},
+            {MEV_LOST_CAPTURED_WINDOW, "MEV_LOCST_CAPTURED_WINDOW"},
+            {MEV_START_VIEWPORTS, "MEV_START_VIEWPORTS"},
+            {MEV_STOP_VIEWPORTS, "MEV_STOP_VIEWPORTS"},
+            {MEV_RESET_VIEWPORTS, "MEV_RESET_VIEWPORTS"},
+            {MEV_FAIL_SCRIPT, "MEV_FAIL_SCRIPT"},
+        };
+
+        std::lock_guard lock(mutex);
+        std::cout << "=== " << evnames.at(ev) << " ===" << std::endl;
+
+        if (ev == MEV_READY_TO_CAPTURE_WINDOW || ev == MEV_LOST_CAPTURED_WINDOW){
+            need_scan = true;
+            cv.notify_all();
+        }
+
+        return true;
+    }
+
+    static bool console_handler(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
+        auto self = reinterpret_cast<MapperInterface*>(mapper_getHostContext(mapper));
+        return self->process_console_message(type, msg, len);
+    }
+
+    bool process_console_message(MCONSOLE_MESSAGE_TYPE type, const char *msg, size_t len){
+        std::lock_guard lock(mutex);
+        std::cout.write(msg, len);
+        std::cout << std::endl;
+        return true;
+    }
+};
 
 int main(int argc, char* argv[]){
     if (argc < 2){
@@ -77,11 +154,8 @@ int main(int argc, char* argv[]){
     auto hWnd = create_main_window();
 
     auto thread = std::thread([argv, hWnd](){
-        MapperHandle mapper = mapper_init(event_handler, console_handler, nullptr);
-        mapper_setLogMode(mapper, MAPPER_LOG_EVENT);
-        //mapper_setLogMode(mapper, 0);
-        auto rc = mapper_run(mapper, argv[1]);
-        mapper_terminate(mapper);
+        MapperInterface mapper;
+        mapper.run(argv[1]);
         ::PostMessageA(hWnd, WM_CLOSE, 0, 0);
     });
 

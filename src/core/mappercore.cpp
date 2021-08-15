@@ -21,6 +21,9 @@ struct MapperContext{
     ~MapperContext() = default;
 
     void callback(MAPPER_EVENT event, int64_t data){
+        if (callbackHandler){
+            callbackHandler(this, event, data);
+        }
     };
 
     void logger(MCONSOLE_MESSAGE_TYPE type, const std::string &msg){

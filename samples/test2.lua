@@ -28,16 +28,24 @@ for k, v in pairs(mapper) do
 end
 
 local viewport = mapper.viewport({
-    name = "G1000_View",
+    name = "G1000_Viewport",
     displayno = 1,
-    x = 0.0,
-    y = 0.0,
-    width = 1.0,
-    height = 1.0,
+    x = 0.25,
+    y = 0.25,
+    width = 0.5,
+    height = 0.5,
     bgcolor = "LightGreen",
 })
 viewport:set_mappings({
     {event=g1000.EC5P.down, action=function () mapper.print("action associated with viewport") end}
+})
+local pfd = viewport:register_view({
+    name = "PFD",
+    elements = {{object = mapper.captured_window({name = "G1000 PFD"})}},
+    mappings = {
+        {event=g1000.SW31.up, action=fs2020.event_sender({event = "Mobiflight.AS1000_MFD_SOFTKEYS_1"})},
+        {event=g1000.EC1.increment, action=fs2020.event_sender({event = "Mobiflight.AS1000_MFD_HEADING_INC"})},
+    }
 })
 
 mapper.start_viewports()
