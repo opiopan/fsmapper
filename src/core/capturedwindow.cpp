@@ -30,8 +30,10 @@ CapturedWindow::~CapturedWindow(){
 }
 
 void CapturedWindow::attach_window(HWND hwnd){
-    hwnd = hwnd;
-    hookdll_capture(hwnd, omit_system_region);
+    if (!this->hwnd){
+        this->hwnd = hwnd;
+        hookdll_capture(hwnd, omit_system_region);
+    }
 }
 
 void CapturedWindow::release_window(){

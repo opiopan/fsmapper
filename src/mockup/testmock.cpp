@@ -4,67 +4,29 @@
 #include <thread>
 #include <map>
 #include <unordered_map>
+#include <chrono>
 #include <windows.h>
 #include "mappercore.h"
 
-static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
-    switch(uMsg) {
-    case WM_CREATE:
-        ::ShowWindow(hWnd, SW_HIDE);
-        break;
-    case WM_DESTROY:
-        ::PostQuitMessage( 0 );
-        break;
-    }
-    return ::DefWindowProcA( hWnd, uMsg, wParam, lParam );
-}
-
-static HWND create_main_window(){
-    auto hInstance = ::GetModuleHandle(nullptr);
-
-    WNDCLASSEXA tWndClass;
-    tWndClass.cbSize        = sizeof(WNDCLASSEX);
-    tWndClass.style         = CS_HREDRAW | CS_VREDRAW;
-    tWndClass.lpfnWndProc   = window_proc;
-    tWndClass.cbClsExtra    = 0;
-    tWndClass.cbWndExtra    = 0;
-    tWndClass.hInstance     = hInstance; 
-    tWndClass.hIcon         = ::LoadIcon(nullptr, IDI_APPLICATION);
-    tWndClass.hCursor       = ::LoadCursor(nullptr, IDC_ARROW);
-    tWndClass.hbrBackground = reinterpret_cast<HBRUSH>( COLOR_WINDOW + 1 );
-    tWndClass.lpszMenuName  = nullptr;
-    tWndClass.lpszClassName = "testmock_main";
-    tWndClass.hIconSm       = nullptr;
-    if (::RegisterClassExA(&tWndClass) == 0) {
-        return nullptr;
-    }
-
-    auto hWnd = ::CreateWindowExA(
-        0                       // extended window style
-        , tWndClass.lpszClassName // pointer to registered class name
-        , "Test of mapper"        // pointer to window name
-        , WS_OVERLAPPEDWINDOW     // window style
-        , CW_USEDEFAULT           // horizontal position of window
-        , CW_USEDEFAULT           // vertical position of window
-        , 640                     // window width
-        , 480                     // window height
-        , nullptr                 // handle to parent or owner window
-        , nullptr                 // handle to menu, or child-window identifier
-        , hInstance               // handle to application instance
-        , nullptr                 // pointer to window-creation data
-    );
-
-    return hWnd;
-}
+static constexpr auto find_interval = std::chrono::milliseconds(1000);
+//static const std::string capture_target = "WIN64APP";
+static const std::string capture_target = "AceApp";
 
 class MapperInterface{
 protected:
     std::mutex mutex;
     std::condition_variable cv;
     std::thread controller;
-    bool need_scan = false;
     bool should_stop = false;
+    bool cw_changed = false;
+    bool finding = false;
     MapperHandle mapper = nullptr;
+
+    struct CWInfo{
+        uint32_t cwid;
+        std::string name;
+    };
+    std::map<std::string, CWInfo> cwinfo_list;
 
 public:
     MapperInterface(){
@@ -72,15 +34,45 @@ public:
         controller = std::move(std::thread([this](){
             while (true){
                 std::unique_lock lock(mutex);
-                cv.wait(lock, [this](){return need_scan || should_stop;});
+                auto condition = [this](){return should_stop || cw_changed;};
+                if (finding){
+                    cv.wait_for(lock, find_interval, condition);
+                }else{
+                    cv.wait(lock, condition);
+                }
                 if (should_stop){
                     return;
-                }else if (need_scan){
-                    need_scan = false;
+                }
+                if (cw_changed){
+                    cw_changed = false;
+                    finding = true;
+                    cwinfo_list.clear();
                     lock.unlock();
                     mapper_stopViewPort(mapper);
-                    mapper_startViewPort(mapper);
+                    mapper_enumCapturedWindows(mapper, &MapperInterface::enum_cw_callback, nullptr);
                     lock.lock();
+                }
+                if (finding){
+                    lock.unlock();
+                    std::map<LONG, HWND> targets;
+                    ::EnumWindows(&MapperInterface::enum_windows_proc, reinterpret_cast<LPARAM>(&targets));
+                    if (targets.size() >= cwinfo_list.size()){
+                        std::vector<HWND> hwnd_list;
+                        for (auto item : targets){
+                            hwnd_list.push_back(item.second);
+                        }
+                        auto idx = 0;
+                        for (auto item : cwinfo_list){
+                            mapper_captureWindow(mapper, item.second.cwid, hwnd_list[idx]);
+                            idx++;
+                        }
+                        mapper_startViewPort(mapper);
+                        lock.lock();
+                        finding = false;
+                    }else{
+                        lock.lock();
+                    }
+
                 }
             }
         }));
@@ -110,6 +102,8 @@ protected:
 
     bool process_event(MAPPER_EVENT ev, int64_t data){
         static const std::unordered_map<MAPPER_EVENT, const char*> evnames = {
+            {MEV_START_MAPPING, "MEV_START_MAPPTING"},
+            {MEV_STOP_MAPPING, "MEV_STOP_MAPPTING"},
             {MEV_CHANGE_SIMCONNECTION, "MEV_CHANGE_SIMCONNECTION"},
             {MEV_CHANGE_AIRCRAFT, "MEV_CHANGE_AIRCRAFT"},
             {MEV_CHANGE_DEVICES, "MEV_CHANGE_DEVICES"},
@@ -118,14 +112,13 @@ protected:
             {MEV_START_VIEWPORTS, "MEV_START_VIEWPORTS"},
             {MEV_STOP_VIEWPORTS, "MEV_STOP_VIEWPORTS"},
             {MEV_RESET_VIEWPORTS, "MEV_RESET_VIEWPORTS"},
-            {MEV_FAIL_SCRIPT, "MEV_FAIL_SCRIPT"},
         };
 
         std::lock_guard lock(mutex);
         std::cout << "=== " << evnames.at(ev) << " ===" << std::endl;
 
         if (ev == MEV_READY_TO_CAPTURE_WINDOW || ev == MEV_LOST_CAPTURED_WINDOW){
-            need_scan = true;
+            cw_changed = true;
             cv.notify_all();
         }
 
@@ -143,6 +136,34 @@ protected:
         std::cout << std::endl;
         return true;
     }
+
+    static bool enum_cw_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef){
+        auto self = reinterpret_cast<MapperInterface*>(mapper_getHostContext(mapper));
+        return self->enum_cw(cwdef);
+    }
+
+    bool enum_cw(CAPTURED_WINDOW_DEF* cwdef){
+        std::lock_guard lock(mutex);
+        CWInfo info = {cwdef->cwid, cwdef->name};
+        cwinfo_list[cwdef->name] = std::move(info);
+        return true;
+    }
+
+    static BOOL CALLBACK enum_windows_proc(HWND hwnd, LPARAM lParam){
+        auto& targets = *reinterpret_cast<std::map<LONG, HWND>*>(lParam);
+        char name[256];
+        name[0] = 0;
+        ::GetClassNameA(hwnd, name, sizeof(name));
+        if (capture_target == name){
+            auto rc = ::GetWindowTextA(hwnd, name, sizeof(name));
+            if (rc == 0){
+                RECT rect;
+                ::GetWindowRect(hwnd, &rect);
+                targets[rect.left] = hwnd;
+            }
+        }
+        return true;
+    }
 };
 
 int main(int argc, char* argv[]){
@@ -151,20 +172,6 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    auto hWnd = create_main_window();
-
-    auto thread = std::thread([argv, hWnd](){
-        MapperInterface mapper;
-        mapper.run(argv[1]);
-        ::PostMessageA(hWnd, WM_CLOSE, 0, 0);
-    });
-
-    MSG msg;
-    while( 0 != ::GetMessageA(&msg, NULL, 0, 0)){
-        ::TranslateMessage(&msg);
-        ::DispatchMessageA(&msg);
-    }
-
-    thread.join();
-    return msg.wParam;
+    MapperInterface mapper;
+    return mapper.run(argv[1]);
 }

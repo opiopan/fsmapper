@@ -175,6 +175,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         //-------------------------------------------------------------------------------
         lock.unlock();
         initScriptingEnvAndRun();
+        sendHostEvent(MEV_START_MAPPING, 0);
         lock.lock();
 
         while (true){
@@ -225,13 +226,19 @@ bool MapperEngine::run(std::string&& scriptPath){
                 lock.lock();
             }
         }
-        return status == Status::stop;
+        auto rc = status == Status::stop;
+        lock.unlock();
+        sendHostEvent(MEV_STOP_MAPPING, 0);
+        return rc;
     }catch (MapperException& e){
         std::ostringstream os;
         os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.what();
         putLog(MCONSOLE_ERROR, os.str());
-        std::lock_guard lock(mutex);
-        status = Status::error;
+        {
+            std::lock_guard lock(mutex);
+            status = Status::error;
+        }
+        sendHostEvent(MEV_STOP_MAPPING, 0);
         return false;
     }
 

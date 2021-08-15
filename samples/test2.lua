@@ -29,11 +29,11 @@ end
 
 local viewport = mapper.viewport({
     name = "G1000_Viewport",
-    displayno = 1,
-    x = 0.25,
-    y = 0.25,
-    width = 0.5,
-    height = 0.5,
+    displayno = 2,
+    x = 0,
+    y = 0,
+    width = 1,
+    height = 1,
     bgcolor = "LightGreen",
 })
 viewport:set_mappings({

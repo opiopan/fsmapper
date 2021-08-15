@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <queue>
 #include <optional>
+#include <chrono>
 
 #define NO_SOL
 #include "tools.h"
@@ -484,11 +485,15 @@ public:
                         
                         // change window attributes
                         llock.unlock();
-                        UINT flag = req.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
+                        UINT flag = req.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE /*| SWP_NOZORDER*/;
                         if (req.change_visibility){
                             flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
                         }
                         this->SetWindowPos(req.hWnd, req.hWndInsertAfter, req.x, req.y, req.cx, req.cy, flag);
+                        //if (req.show){
+                        //    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+                        //    this->SetWindowPos(req.hWnd, req.hWndInsertAfter, req.x, req.y, req.cx, req.cy, flag);
+                        //}
                         llock.lock();
 
                         // notify that request was porcessed

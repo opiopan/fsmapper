@@ -80,7 +80,7 @@ void ViewPort::View::show(ViewPort& viewport){
         FloatRect region;
         element->transform_to_output_region(viewport.get_output_region(), region);
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
-        element->get_object().change_window_pos(iregion, HWND_TOP, true);
+        element->get_object().change_window_pos(iregion, HWND_TOPMOST, true);
     }
 }
 
@@ -89,7 +89,7 @@ void ViewPort::View::hide(ViewPort& viewport){
         FloatRect region;
         element->transform_to_output_region(viewport.get_output_region(), region);
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
-        element->get_object().change_window_pos(iregion,HWND_TOP, false);
+        element->get_object().change_window_pos(iregion,HWND_BOTTOM, false);
     }
 }
 
@@ -252,9 +252,10 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
     lua_c_interface(manager.get_engine(), "viewport:change_view", [this, &view_no](){
         if (view_no && *view_no >= 0 && view_no < views.size()){
             if (current_view != *view_no && is_enable){
-                views[current_view]->hide(*this);
+                auto prev = current_view;
                 current_view = *view_no;
                 views[current_view]->show(*this);
+                views[prev]->hide(*this);
             }
         }else{
             throw MapperException("invalid view number is specified");
