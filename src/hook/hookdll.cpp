@@ -451,7 +451,7 @@ public:
             }
             ChangeRequest cr = {0};
             cr.hWnd = hWnd;
-            if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy || req.hWndInsertAfter != ctx.hWndInsertAfter){
+            if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy){
                 cr.change_position = true;
                 ctx.x = cr.x = req.x;
                 ctx.y = cr.y = req.y;
@@ -466,45 +466,14 @@ public:
             if (!cr.change_position && !cr.change_visibility){
                 return;
             }
-            ctx.change_request_num++;
-            queue.push(cr);
-            cv.notify_all();
-            
-            if (!attribute_changer.has_value()){
-                // create a thread to proceed change request
-                should_stop = false;
-                attribute_changer = std::move(std::thread([this](){
-                    std::unique_lock llock(lmutex);
-                    while (true){
-                        cv.wait(llock, [this](){return queue.size() > 0 || should_stop;});
-                        if (should_stop){
-                            return;
-                        }
-                        auto req = queue.front();
-                        queue.pop();
-                        
-                        // change window attributes
-                        llock.unlock();
-                        UINT flag = req.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE /*| SWP_NOZORDER*/;
-                        if (req.change_visibility){
-                            flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
-                        }
-                        this->SetWindowPos(req.hWnd, req.hWndInsertAfter, req.x, req.y, req.cx, req.cy, flag);
-                        //if (req.show){
-                        //    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-                        //    this->SetWindowPos(req.hWnd, req.hWndInsertAfter, req.x, req.y, req.cx, req.cy, flag);
-                        //}
-                        llock.lock();
 
-                        // notify that request was porcessed
-                        if (captured_windows.count(req.hWnd) > 0){
-                            auto& ctx = captured_windows.at(req.hWnd);
-                            ctx.change_request_num--;
-                            cv.notify_all();
-                        }
-                    }
-                }));
+            // change window attributes
+            llock.unlock();
+            UINT flag = cr.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE;
+            if (cr.change_visibility){
+                flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
             }
+            this->SetWindowPos(cr.hWnd, cr.hWndInsertAfter, cr.x, cr.y, cr.cx, cr.cy, flag);
         }
     };
 

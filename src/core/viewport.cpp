@@ -80,7 +80,7 @@ void ViewPort::View::show(ViewPort& viewport){
         FloatRect region;
         element->transform_to_output_region(viewport.get_output_region(), region);
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
-        element->get_object().change_window_pos(iregion, HWND_TOPMOST, true);
+        element->get_object().change_window_pos(iregion, HWND_TOP, true);
     }
 }
 
@@ -414,13 +414,15 @@ void ViewPortManager::reset_viewports(){
         lock.lock();
         change_status(Status::suspended);
     }
-    for (auto& viewport : viewports){
-        viewports.clear();
+
+    for (auto& item: captured_windows){
+        item.second->release_window();
     }
+    viewports.clear();
+    captured_windows.clear();
+    engine.recommend_gc();
 
     auto prev_status = status;
-    viewports.clear();
-    engine.recommend_gc();
     change_status(Status::init);
     lock.unlock();
     if (prev_status != Status::init) {

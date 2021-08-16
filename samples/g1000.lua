@@ -173,10 +173,6 @@ local mfd_maps = {
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = 2,
-    x = 0,
-    y = 0,
-    width = 1,
-    height = 1,
     bgcolor = "Black",
 })
 local pfd = viewport:register_view({
@@ -218,5 +214,6 @@ mapper.set_primery_mappings({
             mapper.print("    [sim]: disconnected")
         end
     end},
+    {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
 })
