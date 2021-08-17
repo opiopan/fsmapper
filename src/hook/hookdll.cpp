@@ -327,11 +327,7 @@ protected:
         bool show;
     };
     std::mutex lmutex;
-    std::condition_variable cv;
-    std::queue<ChangeRequest> queue;
     int64_t local_count = 0;
-    bool should_stop = false;
-    std::optional<std::thread> attribute_changer;
     std::map<HWND, WindowContext> captured_windows;
 
     HookedApi<LONG_PTR WINAPI (HWND, int, LONG_PTR)> SetWindowLongPtrW;
@@ -344,13 +340,6 @@ public:
         SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
     };
     ~FollowingManager(){
-        if (attribute_changer.has_value()){
-            std::unique_lock lock(lmutex);
-            should_stop = true;
-            cv.notify_all();
-            lock.unlock();
-            attribute_changer.value().join();
-        }
         std::unique_lock lock(lmutex);
         auto itr = captured_windows.begin();
         while (itr != captured_windows.end()){
@@ -414,20 +403,10 @@ public:
             return;
         }
         auto& ctx = captured_windows.at(hWnd);
-        cv.wait(llock, [&ctx](){return ctx.change_request_num == 0;});
         auto saved_style = ctx.saved_style;
         auto saved_rect = ctx.saved_rect;
         captured_windows.erase(hWnd);
         local_count++;
-        if (captured_windows.size() == 0 && attribute_changer.has_value()){
-            should_stop = true;
-            cv.notify_all();
-            auto thread = std::move(attribute_changer);
-            attribute_changer.reset();
-            llock.unlock();
-            thread->join();
-            llock.lock();
-        }
         llock.unlock();
         this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
         this->SetWindowPos(

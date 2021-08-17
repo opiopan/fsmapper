@@ -97,6 +97,7 @@ protected:
         ~View();
         void show(ViewPort& viewport);
         void hide(ViewPort& viewport);
+        HWND getBottomWnd();
         Action* findAction(uint64_t evid);
     };
 
@@ -156,7 +157,6 @@ public:
     void freeze(){is_freezed = true;};
     void enable(const std::vector<IntRect> displays);
     void disable();
-    void clear();
     Action* findAction(uint64_t evid);
 
     // functions for views

@@ -93,6 +93,14 @@ void ViewPort::View::hide(ViewPort& viewport){
     }
 }
 
+HWND ViewPort::View::getBottomWnd(){
+    if (captured_window_elements.size() > 0){
+        return captured_window_elements[captured_window_elements.size() -1 ]->get_object().get_hwnd();
+    }else{
+        return nullptr;
+    }
+}
+
 Action* ViewPort::View::findAction(uint64_t evid){
     if (mappings && mappings->count(evid)){
         return mappings->at(evid).get();
@@ -199,6 +207,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     is_enable = true;
     bgwin.start(bg_color, region);
     views[current_view]->show(*this);
+    ::SetWindowPos(bgwin, views[current_view]->getBottomWnd(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void ViewPort::disable(){
@@ -207,12 +216,6 @@ void ViewPort::disable(){
         views[current_view]->hide(*this);
         bgwin.stop();
     }
-}
-
-void ViewPort::clear(){
-    disable();
-    views.clear();
-    mappings = nullptr;
 }
 
 int ViewPort::registerView(sol::object def_obj){
@@ -256,6 +259,7 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
                 current_view = *view_no;
                 views[current_view]->show(*this);
                 views[prev]->hide(*this);
+                ::SetWindowPos(bgwin, views[current_view]->getBottomWnd(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             }
         }else{
             throw MapperException("invalid view number is specified");
