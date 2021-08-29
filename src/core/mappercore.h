@@ -51,6 +51,7 @@ typedef enum {
     MCONSOLE_WARNING,
     MCONSOLE_INFO,
     MCONSOLE_MESSAGE,
+    MCONSOLE_DEBUG,
 }MCONSOLE_MESSAGE_TYPE;
 
 typedef struct{

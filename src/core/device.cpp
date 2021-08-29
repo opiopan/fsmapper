@@ -8,9 +8,11 @@
 #include "engine.h"
 #include "device.h"
 #include "simhid.h"
+#include "dinputdev.h"
 
 static const MAPPER_PLUGIN_DEVICE_OPS* builtin_plugins[] = {
     simhid_PluginDeviceOps,
+    dinput_PluginDeviceOps,
 };
 
 //============================================================================================
@@ -85,21 +87,7 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
 //============================================================================================
 // Function to create a device that exporse to lua script as name "mapper.device()"
 //============================================================================================
-class Test{
-protected:
-    int dev;
-public:
-    Test() = delete;
-    Test(const Test&) = delete;
-    Test(Test&&) = delete;
-    Test(int dev):dev(dev){
-        throw MapperException("Test constractor exception");
-    };
-    ~Test() = default;
-};
-
-sol::object DeviceManager::createDevice(const sol::object &param, sol::this_state s)
-{
+sol::object DeviceManager::createDevice(const sol::object &param, sol::this_state s){
     sol::state_view lua(s);
     auto out = lua.create_table();
 

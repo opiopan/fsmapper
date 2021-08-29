@@ -28,6 +28,7 @@ typedef enum {
     FSMLOG_WARNING,
     FSMLOG_INFO,
     FSMLOG_MESSAGE,
+    FSMLOG_DEBUG,
 }FSMAPPER_LOG_TYPE;
 DLLEXPORT void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
 DLLEXPORT void fsmapper_abort(FSMAPPER_HANDLE mapper);

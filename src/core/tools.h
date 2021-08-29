@@ -94,4 +94,49 @@ public:
     operator T ()const {return object;};
 };
 
+template <typename T>
+class ComPtr{
+protected:
+    T* com = nullptr;
+public:
+    ComPtr() = default;
+    ComPtr(T* com) : com(com){};
+    ComPtr(const ComPtr& src) noexcept {*this = src;};
+    ComPtr(ComPtr&& src) noexcept {*this = std::move(src);};
+    ~ComPtr(){
+        if (com){
+            com->Release();
+        }
+    }
+    ComPtr& operator = (T* com){
+        this->attach(com);
+        return *this;
+    }
+    ComPtr& operator = (const ComPtr& src){
+        *this = src.com;
+        if (com){
+            com->AddRef();
+        }
+        return *this;
+    }
+    ComPtr& operator = (ComPtr&& src){
+        *this = src.com;
+        src.com = nullptr;
+        return *this;
+    }
+    void attach(T* com){
+        if (this->com){
+            this->com->Release();
+        }
+        this->com = com;
+    }
+    T* detach(){
+        auto rc = com;
+        com = nullptr;
+        return rc;
+    }
+    operator T* ()const {return com;};
+    T* operator -> ()const {return com;};
+};
+
 extern std::optional<COLORREF> webcolor_to_colorref(const std::string& color_str);

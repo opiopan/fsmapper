@@ -196,6 +196,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="action.h" />
+    <ClInclude Include="builtinDevices\dinputdev.h" />
     <ClInclude Include="builtinDevices\simhid.h" />
     <ClInclude Include="builtinDevices\simhidconnection.h" />
     <ClInclude Include="builtinDevices\simhidparser.h" />
@@ -216,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
+    <ClCompile Include="builtinDevices\dinputdev.cpp" />
     <ClCompile Include="builtinDevices\simhid.cpp" />
     <ClCompile Include="builtinDevices\simhidconnection.cpp" />
     <ClCompile Include="builtinDevices\simhidparser.c" />
