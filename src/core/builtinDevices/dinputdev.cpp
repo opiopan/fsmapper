@@ -6,17 +6,260 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
 #include <stdexcept>
 #include <sstream>
+#include <optional>
 #include <dinput.h>
 #include "dinputdev.h"
 #include "tools.h"
 
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
+
+static constexpr auto AXIS_VALUE_MAX = 1023;
+static constexpr auto AXIS_VALUE_MIN = -1023;
+
+//============================================================================================
+// Device capabilities representation
+//============================================================================================
+class DeviceCaps{
+protected:
+    struct UnitDef{
+        std::string name;
+        FSMDEVUNIT_VALTYPE valtype;
+        int max_value;
+        int min_value;
+        GUID type_guid;
+        DWORD type_and_id;
+        int buff_offset;
+        int (*unit_value)(const char* buf, int offset);
+    };
+
+    static constexpr auto AXIS_X = 0x1;
+    static constexpr auto AXIS_Y = 0x2;
+    static constexpr auto AXIS_Z = 0x4;
+    static constexpr auto AXIS_RX = 0x8;
+    static constexpr auto AXIS_RY = 0x10;
+    static constexpr auto AXIS_RZ = 0x20;
+    static constexpr auto AXIS_SLIDER1 = 0x40;
+    static constexpr auto AXIS_SLIDER2 = 0x80;
+
+    uint32_t defined_axes = 0;
+    std::vector<UnitDef> axes;
+    std::vector<UnitDef> povs;
+    std::vector<UnitDef> buttons;
+    int unit_num = 0;
+    std::unique_ptr<UnitDef* []> units;
+    int buf_size = 0;
+    std::unique_ptr<char []> last_data;
+    std::unique_ptr<char []> current_data;
+
+public:
+    DeviceCaps() = default;
+    DeviceCaps(const DeviceCaps&) = delete;
+    DeviceCaps(DeviceCaps&&) = delete;
+    ~DeviceCaps() = default;
+
+    inline int get_unit_num() const {return unit_num;}
+    inline const std::string& get_unit_name(int index) const {return units.get()[index]->name;}
+    inline FSMDEVUNIT_VALTYPE get_unit_valtype(int index) const {return units.get()[index]->valtype;}
+    inline int get_unit_max_value(int index) const {return units.get()[index]->max_value;}
+    inline int get_unit_min_value(int index) const {return units.get()[index]->min_value;}
+
+    void add_unit(const DIDEVICEOBJECTINSTANCEA* def){
+        UnitDef unit_def;
+        unit_def.type_guid = def->guidType;
+        unit_def.type_and_id = def->dwType;
+
+        if (def->dwType & DIDFT_AXIS){
+            if (def->guidType == GUID_Slider){
+                if (!(defined_axes & AXIS_SLIDER1)){
+                    defined_axes |= AXIS_SLIDER1;
+                    unit_def.name = "slider1";
+                }else if (!(defined_axes & AXIS_SLIDER2)){
+                    defined_axes |= AXIS_SLIDER2;
+                    unit_def.name = "slider2";
+                }else{
+                    throw std::runtime_error("unsupported device: there are sliders more than two");
+                }
+            }else{
+                struct AxisDef{int mask; const char* name;};
+                static const std::map<GUID_KEY, AxisDef> dict = {
+                    {GUID_XAxis, {AXIS_X, "x"}},
+                    {GUID_YAxis, {AXIS_Y, "y"}},
+                    {GUID_ZAxis, {AXIS_Z, "z"}},
+                    {GUID_RxAxis, {AXIS_RX, "rx"}},
+                    {GUID_RyAxis, {AXIS_RY, "ry"}},
+                    {GUID_RzAxis, {AXIS_RZ, "rz"}},
+                };
+                if (dict.count(def->guidType) == 0){
+                    throw std::runtime_error("unsupported device: unknown axis type");
+                }
+                auto& axis = dict.at(def->guidType);
+                defined_axes |= axis.mask;
+                unit_def.name = axis.name;
+            }
+            unit_def.valtype = FSMDU_TYPE_ABSOLUTE;
+            unit_def.max_value = AXIS_VALUE_MAX;
+            unit_def.min_value = AXIS_VALUE_MIN;
+            unit_def.unit_value = [](const char* buf, int offset) -> int{
+                return *reinterpret_cast<const LONG*>(buf + offset);
+            };
+            axes.push_back(std::move(unit_def));
+        }else if (def->dwType & DIDFT_POV){
+            std::ostringstream os;
+            os << "pov" << povs.size() + 1;
+            unit_def.name = std::move(os.str());
+            unit_def.valtype = FSMDU_TYPE_ABSOLUTE;
+            unit_def.min_value = -1;
+            unit_def.max_value = 360 * 100;
+            unit_def.unit_value = [](const char* buf, int offset) -> int{
+                return *reinterpret_cast<const DWORD*>(buf + offset);
+            };
+            povs.push_back(std::move(unit_def));
+        }else if (def->dwType & DIDFT_BUTTON){
+            std::ostringstream os;
+            os << "button" << buttons.size() + 1;
+            unit_def.name = std::move(os.str());
+            unit_def.valtype = FSMDU_TYPE_BINARY;
+            unit_def.min_value = 0;
+            unit_def.max_value = 1;
+            unit_def.unit_value = [](const char* buf, int offset) -> int{
+                auto raw = *reinterpret_cast<const BYTE*>(buf + offset);
+                return raw & 0x80 ? 1 : 0;
+            };
+            buttons.push_back(std::move(unit_def));
+        }else{
+            throw std::runtime_error("unsupported device: unknown object type");
+        }
+    }
+
+    void fix_definition(ComPtr<IDirectInputDevice8A>& dinput_device){
+        //
+        // Calculate data buffer size
+        //
+        unit_num = axes.size() + povs.size() + buttons.size();
+        units = std::make_unique<UnitDef* []>(unit_num);
+        int unitix = 0;
+        int offset = 0;
+        for (auto& unit : axes){
+            units.get()[unitix] = &unit;
+            unit.buff_offset = offset;
+            offset += sizeof(LONG);
+            unitix++;
+        }
+        for (auto& unit : povs){
+            units.get()[unitix] = &unit;
+            unit.buff_offset = offset;
+            offset += sizeof(DWORD);
+            unitix++;
+        }
+        for (auto& unit : buttons){
+            units.get()[unitix] = &unit;
+            unit.buff_offset = offset;
+            offset += sizeof(BYTE);
+            unitix++;
+        }
+        buf_size = ((offset + 3) / 4) * 4;
+        current_data = std::make_unique<char []>(buf_size);
+        last_data = std::make_unique<char []>(buf_size);
+
+        //
+        // Register data format
+        //
+        auto formats = std::make_unique<DIOBJECTDATAFORMAT []>(unit_num);
+        for (int i = 0; i < unit_num; i++){
+            auto unit = units.get()[i];
+            auto& format = formats.get()[i];
+            format.pguid = nullptr;
+            format.dwOfs = unit->buff_offset;
+            format.dwType = unit->type_and_id;
+            format.dwFlags = 0;
+        }
+        DIDATAFORMAT format;
+        format.dwSize = sizeof(format);
+        format.dwObjSize = sizeof(DIOBJECTDATAFORMAT);
+        format.dwFlags = DIDF_ABSAXIS;
+        format.dwDataSize = buf_size;
+        format.dwNumObjs = unit_num;
+        format.rgodf = formats.get();
+        auto hr = dinput_device->SetDataFormat(&format);
+        if (FAILED(hr)){
+            throw std::runtime_error("registering data format to DirectInput device failed");
+        }
+
+        //
+        // Set axis mode to absolute
+        //
+        DIPROPDWORD axismode = {0};
+        axismode.diph.dwSize = sizeof(axismode);
+        axismode.diph.dwHeaderSize = sizeof(axismode.diph);
+        axismode.diph.dwHow = DIPH_DEVICE;
+        axismode.diph.dwObj = 0;
+        axismode.dwData = DIPROPAXISMODE_ABS;
+        hr = dinput_device->SetProperty(DIPROP_AXISMODE, &axismode.diph);
+        if (FAILED(hr)){
+            throw std::runtime_error("setting axis mode of DirectInput device failed");
+        }
+
+        //
+        // Set range of each axis
+        //
+        for (auto& axis : axes){
+            DIPROPRANGE range = {0};
+            range.diph.dwSize = sizeof(range);
+            range.diph.dwHeaderSize = sizeof(range.diph);
+            range.diph.dwHow = DIPH_BYID;
+            range.diph.dwObj = axis.type_and_id;
+            range.lMax = axis.max_value;
+            range.lMin = axis.min_value;
+            hr = dinput_device->SetProperty(DIPROP_RANGE, &range.diph);
+            if (FAILED(hr)){
+                throw std::runtime_error("setting range of axis of DirectInput device failed");
+            }
+        }
+    }
+
+    template <typename TFunction>
+    void process_event(ComPtr<IDirectInputDevice8A>& dinput_device, TFunction event_callback){
+        if (FAILED(dinput_device->GetDeviceState(buf_size, current_data.get()))){
+            throw std::runtime_error("getting DirectInput device data failed");
+        }
+        for (int i = 0; i < unit_num; i++){
+            auto unit = units.get()[i];
+            auto last_val = unit->unit_value(last_data.get(), unit->buff_offset);
+            auto current_val = unit->unit_value(current_data.get(), unit->buff_offset);
+            if (last_val != current_val){
+                event_callback(i, current_val);
+            }
+        }
+        auto tmp = std::move(last_data);
+        last_data = std::move(current_data);
+        current_data = std::move(tmp);
+    }
+
+    std::string to_string(const char* device_name){
+        std::ostringstream os;
+        os << "\"" << device_name << "\" has " << unit_num << " objects:";
+        if (axes.size()){
+            os << std::endl << "    " << axes.size() << " axes : ";
+            for (auto& axis : axes){
+                os << axis.name << " ";
+            }
+        }
+        if (povs.size()){
+            os << std::endl << "    " << povs.size() << " POVs";
+        }
+        if (buttons.size()){
+            os << std::endl << "    " << buttons.size() << " buttons";
+        }
+        return std::move(os.str());
+    }
+};
 
 //============================================================================================
 // Capsulize DirectInputDevice8 interface
@@ -44,31 +287,52 @@ protected:
     std::string name;
     FSMAPPER_HANDLE mapper;
     ComPtr<IDirectInputDevice8A> dinput_device;
+    DeviceCaps device_caps;
     std::unordered_map<MapperDevice*, std::unique_ptr<MapperDevice>> mapper_devices;
-    std::vector<std::string> object_names;
+    WinHandle event;
+
+    struct CallbackContext{
+        DirectInputDevice& self;
+        std::optional<std::runtime_error> error;
+    };
 
 public:
     DirectInputDevice() = delete;
-    DirectInputDevice(const std::string& name, FSMAPPER_HANDLE mapper, IDirectInputDevice8A* dinput_device) :
-        name(name), mapper(mapper), dinput_device(dinput_device){
-        DIDEVCAPS caps;
-        caps.dwSize = sizeof(caps);
-        auto hr = dinput_device->GetCapabilities(&caps);
-        hr = dinput_device->EnumObjects(enum_object_callback, this, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
-        std::ostringstream os;
-        os << "dinput device [" << name << "] has " << object_names.size() << " objects:";
-        for (auto& oname : object_names){
-            os << std::endl << "    " << oname;
-        }
-        fsmapper_putLog(mapper, FSMLOG_DEBUG, os.str().c_str());
-    }
-    ~DirectInputDevice() = default;
     DirectInputDevice(const DirectInputDevice&) = delete;
     DirectInputDevice(DirectInputDevice&&) = delete;
     DirectInputDevice& operator = (const DirectInputDevice&) = delete;
     DirectInputDevice& operator = (DirectInputDevice&&) = delete;
 
-    const std::string& get_name(){return name;}
+    DirectInputDevice(const std::string& name, FSMAPPER_HANDLE mapper, IDirectInputDevice8A* dinput_device) :
+        name(name), mapper(mapper), dinput_device(dinput_device){
+        event = ::CreateEventA(nullptr, true, false, nullptr);
+        CallbackContext ctx = {*this, std::nullopt};
+        dinput_device->EnumObjects(enum_object_callback, &ctx, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
+        if (ctx.error){
+            throw *ctx.error;
+        }
+        device_caps.fix_definition(this->dinput_device);
+        if (FAILED(dinput_device->SetCooperativeLevel(nullptr, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE))){
+            throw std::runtime_error("setting cooperative level of DirectInput device failed");
+        }
+        if (FAILED(dinput_device->SetEventNotification(event))){
+            throw std::runtime_error("associating a event to DirectInput device failed");
+        }
+        if (FAILED(dinput_device->Acquire())){
+            throw std::runtime_error("acquiring DirectInput device failed");
+        }
+
+        auto&& caps_string = device_caps.to_string(name.c_str());
+        fsmapper_putLog(mapper, FSMLOG_DEBUG, caps_string.c_str());
+    }
+
+    ~DirectInputDevice(){
+        dinput_device->Unacquire();
+    }
+
+    const std::string& get_name() const {return name;}
+    HANDLE get_event() const {return event;}
+    
 
     MapperDevice* add_mapper_device(FSMDEVICE device_handle){
         auto device = std::make_unique<MapperDevice>(*this, device_handle);
@@ -85,11 +349,28 @@ public:
         return mapper_devices.size();
     }
 
+    const DeviceCaps& get_device_caps() const{
+        return device_caps;
+    }
+
+    void process_event(){
+        device_caps.process_event(dinput_device, [this](int index, int value){
+            for (auto& [key, device] : mapper_devices){
+                fsmapper_issueEvent(mapper, device->get_mapper_device(), index, value);
+            }
+        });
+    }
+
 protected:
     static BOOL enum_object_callback(LPCDIDEVICEOBJECTINSTANCEA lpddoi, LPVOID pvRef){
-        auto self = static_cast<DirectInputDevice*>(pvRef);
-        self->object_names.push_back(lpddoi->tszName);
-        return true;
+        auto ctx = static_cast<CallbackContext*>(pvRef);
+        try {
+            ctx->self.device_caps.add_unit(lpddoi);
+            return true;
+        }catch (std::runtime_error& e){
+            ctx->error = std::move(e);
+            return false;
+        }
     }
 };
 
@@ -103,14 +384,14 @@ protected:
 
 public:
     DirectInput(){
-    	HMODULE hModule = nullptr;
-	    ::GetModuleHandleExA(
-		    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, 
-		    reinterpret_cast<LPCSTR>(dinput_PluginDeviceOps),
-		    &hModule);
+        HMODULE hModule = nullptr;
+        ::GetModuleHandleExA(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, 
+            reinterpret_cast<LPCSTR>(dinput_PluginDeviceOps),
+            &hModule);
         IDirectInput8A* rawptr = nullptr;
-        auto hr = DirectInput8Create(hModule, DIRECTINPUT_VERSION, IID_IDirectInput8A, 
-                                     reinterpret_cast<void**>(&rawptr), nullptr);
+        auto hr = ::DirectInput8Create(hModule, DIRECTINPUT_VERSION, IID_IDirectInput8A, 
+                                    reinterpret_cast<void**>(&rawptr), nullptr);
         if (!SUCCEEDED(hr)){
             throw std::runtime_error("failed to initialize DirectInput environment");
         }
@@ -127,7 +408,6 @@ public:
     operator IDirectInput8A* () const {return dinput;}
     IDirectInput8A* operator -> () const {return dinput;}
 
-    const std::vector<DIDEVICEINSTANCEA>& get_ids() const {return device_ids;}
     void reflesh_ids(){
         device_ids.clear();
         dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enum_devices_callback, this, DIEDFL_ALLDEVICES);
@@ -148,6 +428,15 @@ public:
         throw std::runtime_error("specified direct input device is not found");
     }
 
+    std::string to_string() const{
+        std::ostringstream os;
+        os << "detected " << device_ids.size() << " DirectInput gaming devices:";
+        for (auto& id : device_ids){
+            os << std::endl << "    " << id.tszInstanceName;
+        }
+        return std::move(os.str());
+    }
+
 protected:
     static BOOL enum_devices_callback(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef){
         auto self = reinterpret_cast<DirectInput*>(pvRef);
@@ -162,8 +451,10 @@ protected:
 class DinputDev{
 protected:
     std::mutex mutex;
+    WinHandle event;
     bool should_stop;
-    std::thread poller;
+    int update_count = 1;
+    std::thread reader;
     FSMAPPER_HANDLE mapper;
     DirectInput dinput;
     std::unordered_map<std::string, std::unique_ptr<DirectInputDevice>> dinput_devices;
@@ -171,26 +462,86 @@ protected:
     
 public:
     DinputDev(FSMAPPER_HANDLE mapper) : mapper(mapper){
+        event = ::CreateEventA(nullptr, false, false, nullptr);
         dinput.reflesh_ids();
-        std::ostringstream os;
-        os << "detected " << dinput.get_ids().size() << " devices:";
-        for (auto& id : dinput.get_ids()){
-            os << std::endl << "    " << id.tszInstanceName;
-        }
-        fsmapper_putLog(mapper, FSMLOG_DEBUG, os.str().c_str());
+        auto&& debug_msg = dinput.to_string();
+        fsmapper_putLog(mapper, FSMLOG_DEBUG, debug_msg.c_str());
+
+        reader = std::move(std::thread([this]{
+            try{
+                std::unique_lock lock(mutex);
+                auto eventbuf_size = 10;
+                auto eventbuf = std::make_unique<HANDLE []>(eventbuf_size);
+                std::vector<DirectInputDevice*> devices;
+                auto last_count = 0;
+                while (true){
+                    //
+                    // maintain event list
+                    //
+                    if (last_count != update_count){
+                        last_count = update_count;
+                        if (eventbuf_size < dinput_devices.size() + 1){
+                            eventbuf_size = dinput_devices.size() + 10;
+                            eventbuf = std::make_unique<HANDLE []>(eventbuf_size);
+                        }
+                        devices.clear();
+                        auto idx = 0;
+                        eventbuf.get()[idx++] = event;
+                        for (auto& [k, device] : dinput_devices){
+                            eventbuf.get()[idx++] = device->get_event();
+                            devices.push_back(device.get());
+                        }
+                    }
+
+                    //
+                    // wait for devices to become read data or changing device set
+                    //
+                    lock.unlock();
+                    auto signaled_event = ::WaitForMultipleObjects(devices.size() + 1, eventbuf.get(), false, INFINITE);
+                    lock.lock();
+
+                    //
+                    // finish if stop request is received
+                    //
+                    if (should_stop){
+                        return;
+                    }
+
+                    //
+                    // do action according to each event
+                    //
+                    if (signaled_event == WAIT_OBJECT_0){
+                        ::ResetEvent(event);
+                    }else if (signaled_event > WAIT_OBJECT_0 && signaled_event <= WAIT_OBJECT_0 + devices.size()){
+                        auto device = devices[signaled_event - WAIT_OBJECT_0 - 1];
+                        ::ResetEvent(device->get_event());
+                        device->process_event();
+                    }
+                }
+            }catch (std::runtime_error& e){
+                fsmapper_putLog(this->mapper, FSMLOG_ERROR, e.what());
+                fsmapper_abort(this->mapper);
+            }
+        }));
     }
 
     ~DinputDev(){
         stop();
+        reader.join();
     }
 
     void stop(){
         std::unique_lock lock(mutex);
+        should_stop = true;
+        ::SetEvent(event);
     }
 
     DirectInputDevice::MapperDevice* open_device(FSMDEVICE dev_handle, const std::string& name){
+        std::unique_lock lock(mutex);
         if (dinput_devices.count(name) == 0){
             dinput_devices.emplace(name, std::move(dinput.create_device(mapper, name)));
+            update_count++;
+            ::SetEvent(event);
         }
         auto& dinput_device = dinput_devices.at(name);
         auto mapper_device = dinput_device->add_mapper_device(dev_handle);
@@ -199,10 +550,13 @@ public:
     }
 
     void close_device(DirectInputDevice::MapperDevice* mapper_device){
+        std::unique_lock lock(mutex);
         auto& dinput_device = mapper_device->get_dinput_device();
         dinput_device.remove_mapper_device(mapper_device);
         if (dinput_device.get_mapper_device_num() == 0){
             dinput_devices.erase(dinput_device.get_name());
+            update_count++;
+            ::SetEvent(event);
         }
     }
 
@@ -264,16 +618,28 @@ static bool dinputdev_close(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle){
     });
 }
 
-static size_t dinputdev_getUnitNum(FSMAPPER_HANDLE handle, FSMDEVICE device){
-    return 0;
+static size_t dinputdev_getUnitNum(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle){
+    auto device = static_cast<DirectInputDevice::MapperDevice*>(fsmapper_getContextForDevice(handle, dev_handle));
+    auto& caps = device->get_dinput_device().get_device_caps();
+    return caps.get_unit_num();
 }
 
-static bool dinputdev_getUnitDef(FSMAPPER_HANDLE handle, FSMDEVICE device, size_t index, FSMDEVUNITDEF *def){
-    return true;
+static bool dinputdev_getUnitDef(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, size_t index, FSMDEVUNITDEF *def){
+    return plugin_interface(handle, false, [handle, dev_handle, index, def](){
+        auto device = static_cast<DirectInputDevice::MapperDevice*>(fsmapper_getContextForDevice(handle, dev_handle));
+        auto& caps = device->get_dinput_device().get_device_caps();
+        def->name = caps.get_unit_name(index).c_str();
+        def->direction = FSMDU_DIR_INPUT;
+        def->type = caps.get_unit_valtype(index);
+        def->maxValue = caps.get_unit_max_value(index);
+        def->minValue = caps.get_unit_min_value(index);
+        return true;
+    });
 }
 
-static bool dinputdev_sendUnitValue(FSMAPPER_HANDLE handle, FSMDEVICE device, size_t index, int value){
-    return true;
+static bool dinputdev_sendUnitValue(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, size_t index, int value){
+    fsmapper_putLog(handle, FSMLOG_ERROR, "unsupported function");
+    return false;
 }
 
 static MAPPER_PLUGIN_DEVICE_OPS dinputdev_ops = {

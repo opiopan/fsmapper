@@ -6,6 +6,7 @@
 #pragma once
 
 #include <windows.h>
+#include <string.h>
 
 #ifndef NO_SOL
 #include <memory>
@@ -101,8 +102,12 @@ protected:
 public:
     ComPtr() = default;
     ComPtr(T* com) : com(com){};
-    ComPtr(const ComPtr& src) noexcept {*this = src;};
-    ComPtr(ComPtr&& src) noexcept {*this = std::move(src);};
+    ComPtr(const ComPtr& src) noexcept {
+        *this = src;
+    };
+    ComPtr(ComPtr&& src) noexcept {
+        *this = std::move(src);
+    };
     ~ComPtr(){
         if (com){
             com->Release();
@@ -137,6 +142,24 @@ public:
     }
     operator T* ()const {return com;};
     T* operator -> ()const {return com;};
+};
+
+struct GUID_KEY: public GUID{
+    GUID_KEY(const GUID& guid) : GUID(guid){};
+    GUID_KEY(const GUID_KEY&) = default;
+    ~GUID_KEY() = default;
+    int compare(const GUID_KEY& v) const{
+        return memcmp(this, &v, sizeof(*this));
+    }
+    bool operator < (const GUID_KEY& rval) const{
+        return compare(rval) < 0;
+    }
+    bool operator > (const GUID_KEY& rval) const{
+        return compare(rval) > 0;
+    }
+    bool operator == (const GUID_KEY& rval) const{
+        return compare(rval) == 0;
+    }
 };
 
 extern std::optional<COLORREF> webcolor_to_colorref(const std::string& color_str);
