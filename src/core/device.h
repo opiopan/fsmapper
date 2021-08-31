@@ -17,6 +17,7 @@ class MaaperEngine;
 
 class Device{
     std::string name;
+    MapperEngine& engine;
     DeviceClass& deviceClass;
     FSMDEVICECTX contextForPlugin;
     std::vector<FSMDEVUNITDEF> unitDefs;
@@ -26,7 +27,7 @@ public:
     Device() = delete;
     Device(const Device&) = delete;
     Device(Device&&) = delete;
-    Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier);
+    Device(MapperEngine& engine, DeviceClass& deviceClass, std::string& name, const DeviceModifierRule& rule, const sol::object& identifier);
     virtual ~Device();
 
     operator FSMDEVICECTX* (){return &contextForPlugin;};
@@ -35,6 +36,9 @@ public:
 
     void issueEvent(size_t unitIndex, int value);
     void sendUnitValue(size_t unitIndex, int value);
+
+    sol::object create_event_table(sol::this_state s);
+    sol::object create_upstream_id_table(sol::this_state s);
 };
 
 class DeviceClass{
@@ -65,5 +69,7 @@ public:
     DeviceManager(DeviceManager&&) = delete;
     ~DeviceManager() = default;
 
-    sol::object createDevice(const sol::object &param, sol::this_state s);
+    std::shared_ptr<Device> createDevice(const sol::object &param);
+
+    void init_scripting_env(sol::table& mapper_table);
 };

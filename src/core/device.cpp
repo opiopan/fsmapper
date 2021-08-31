@@ -19,8 +19,8 @@ static const MAPPER_PLUGIN_DEVICE_OPS* builtin_plugins[] = {
 // Plubin device cupsulized object
 //    This object is created each time "mapper.device()" is called in lua script.
 //============================================================================================
-Device::Device(DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier) : 
-    name(name), deviceClass(deviceClass), contextForPlugin(*this){
+Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier) : 
+    name(name), engine(engine), deviceClass(deviceClass), contextForPlugin(*this){
     std::unique_ptr<LUAVALUECTX> identifier_lua;
     if (identifier.get_type() == sol::type::table){
         identifier_lua = std::make_unique<LUAVALUE_TABLE>(identifier);
@@ -59,8 +59,42 @@ void Device::issueEvent(size_t unitIndex, int value){
 }
 
 void Device::sendUnitValue(size_t unitIndex, int value){
-    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+    lua_c_interface(engine, "device:send", [this, unitIndex, value](){
+        if (unitDefs.size() <= unitIndex || unitDefs[unitIndex].direction != FSMDU_DIR_OUTPUT){
+            throw MapperException("invalid upstream id");
+        }
+        deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+    });
 }
+
+sol::object Device::create_event_table(sol::this_state s){
+    sol::state_view lua(s);
+    auto out = lua.create_table();
+    for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
+        auto& unit = unitDefs[ix_unit];
+        if (unit.direction == FSMDU_DIR_INPUT){
+            auto unit_table = lua.create_table();
+            auto modifier = modifiers[ix_unit];
+            for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
+                auto event = modifier->getEvent(ix_event);
+                unit_table[event.name] = event.id;
+            }
+            out[unit.name] = unit_table;
+        }
+    }
+    return out;
+}
+
+sol::object Device::create_upstream_id_table(sol::this_state s){
+    sol::state_view lua(s);
+    auto out = lua.create_table();
+    for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
+        auto& unit = unitDefs[ix_unit];
+        out[unit.name] = ix_unit;
+    }
+    return out;
+}
+
 
 //============================================================================================
 // Device plugin coupsulized object
@@ -92,10 +126,7 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
 //============================================================================================
 // Function to create a device that exporse to lua script as name "mapper.device()"
 //============================================================================================
-sol::object DeviceManager::createDevice(const sol::object &param, sol::this_state s){
-    sol::state_view lua(s);
-    auto out = lua.create_table();
-
+std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     if (param.get_type() != sol::type::table){
         throw MapperException("Function argument must be a table");
     }
@@ -115,25 +146,23 @@ sol::object DeviceManager::createDevice(const sol::object &param, sol::this_stat
     auto &deviceClass = classes.at(type);
     DeviceModifierRule rule;
     modifierManager.makeRule(modifiers, rule);
-    auto device = std::make_shared<Device>(*deviceClass, name, rule, identifire);
-    out["_Device"] = device;
-    auto unitdefs = device->getUnitDefs();
-    for (auto ix_unit = 0; ix_unit < unitdefs.size(); ix_unit++){
-        auto& unit = unitdefs[ix_unit];
-        auto unit_table = lua.create_table();
-        if (unit.direction == FSMDU_DIR_INPUT){
-            auto modifier = device->getModifiers()[ix_unit];
-            for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
-                auto event = modifier->getEvent(ix_event);
-                unit_table[event.name] = event.id;
-            }
-        }else{
-            unit_table["update"] = [device, ix_unit](int value){
-                device->sendUnitValue(ix_unit, value);
-            };
-        }
-        out[unit.name] = unit_table;
-    }
+    auto device = std::make_shared<Device>(engine, *deviceClass, name, rule, identifire);
+    return device;
+}
 
-    return out;
+//============================================================================================
+// Define lua user type which is created when "mapper.device()" is called
+//============================================================================================
+void DeviceManager::init_scripting_env(sol::table& mapper_table){
+    mapper_table.new_usertype<Device>(
+        "device",
+        sol::call_constructor, sol::factories([this](sol::object def){
+            return lua_c_interface(engine, "mapper.device", [this, &def](){
+                return createDevice(def);
+            });
+        }),
+        "events", sol::property(&Device::create_event_table),
+        "upstream_ids", sol::property(&Device::create_upstream_id_table),
+        "send", &Device::sendUnitValue
+    );
 }

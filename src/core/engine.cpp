@@ -46,9 +46,9 @@ void MapperEngine::initScriptingEnvAndRun(){
     // create 'mapper' table
     //      mapper.print():                  print message on console
     //      mapper.abort():                  abort mapper engine
-    //      mapper.device() :                open device
     //      mapper.set_primery_mappings():   set primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
+    //      mapper.device() :                open device
     //      mapper.viewport():               register viewport
     //      mapper.start_viewports():        start all viewports
     //      mapper.stop_viewports():         stop all viewports
@@ -63,13 +63,6 @@ void MapperEngine::initScriptingEnvAndRun(){
         putLog(MCONSOLE_ERROR, "mapper-core: abort scripting");
         abort();
     };
-
-    scripting.deviceManager = std::make_unique<DeviceManager>(*this);
-    mapper["device"] = [this](const sol::object param, sol::this_state s){
-        return lua_c_interface(*this, "mapper:device", [this, &param, s](){
-            return scripting.deviceManager->createDevice(param, s);
-        });
-    };
     mapper["set_primery_mappings"] = [this](const sol::object def){
         lua_c_interface(*this, "mapper:set_primery_mappings", [this, &def](){
             setMapping("mapper.set_primery_mappings()", 0, def);
@@ -80,6 +73,9 @@ void MapperEngine::initScriptingEnvAndRun(){
             setMapping("mapper.set_primery_mappings()", 1, def);
         });
     };
+
+    scripting.deviceManager = std::make_unique<DeviceManager>(*this);
+    scripting.deviceManager->init_scripting_env(mapper);
 
     scripting.viewportManager = std::make_unique<ViewPortManager>(*this);
     scripting.viewportManager->init_scripting_env(mapper);

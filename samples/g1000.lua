@@ -1,4 +1,4 @@
-x56throttle = mapper.device({
+x56throttle_dev = mapper.device({
     name = "X56 Throttle",
     type = "dinput",
     identifier = {
@@ -9,8 +9,9 @@ x56throttle = mapper.device({
         {class = "binary", modtype = "button"},
     },
 })
+x56throttle = x56throttle_dev.events
 
-x56stick = mapper.device({
+x56stick_dev = mapper.device({
     name = "X56 Stick",
     type = "dinput",
     identifier = {
@@ -21,8 +22,9 @@ x56stick = mapper.device({
         {class = "binary", modtype = "button"},
     },
 })
+local x56stick = x56stick_dev.events
 
-g1000 = mapper.device({
+g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",
     identifier = {path = "COM3"},
@@ -37,6 +39,7 @@ g1000 = mapper.device({
         {name = "EC8L", modtype = "button", modparam={repeat_interval = 80}},
     },
 })
+local g1000 = g1000_dev.events
 
 local pfd_maps = {
     {event=g1000.EC1.increment, action=fs2020.event_sender("Mobiflight.AS1000_PFD_VOL_1_INC")},
