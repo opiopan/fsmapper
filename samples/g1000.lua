@@ -1,13 +1,25 @@
 x56throttle = mapper.device({
     name = "X56 Throttle",
     type = "dinput",
-    identifier = {name = "Saitek Pro Flight X-56 Rhino Throttle"},
+    identifier = {
+        name = "Saitek Pro Flight X-56 Rhino Throttle",
+        denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"},
+    },
+    modifiers = {
+        {class = "binary", modtype = "button"},
+    },
 })
 
 x56stick = mapper.device({
     name = "X56 Stick",
     type = "dinput",
-    identifier = {name = "Saitek Pro Flight X-56 Rhino Stick"},
+    identifier = {
+        name = "Saitek Pro Flight X-56 Rhino Stick",
+        allowlist = {"button1", "pov1"},
+    },
+    modifiers = {
+        {class = "binary", modtype = "button"},
+    },
 })
 
 g1000 = mapper.device({

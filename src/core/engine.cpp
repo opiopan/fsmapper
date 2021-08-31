@@ -209,6 +209,9 @@ bool MapperEngine::run(std::string&& scriptPath){
                 auto &name = event.names.at(ev->getId());
                 std::ostringstream os;
                 os << "Event occurred: " << name;
+                if (ev->getType() == Event::Type::int_value){
+                    os << "(" << ev->getAs<int64_t>() << ")";
+                }
                 if (action){
                     os << " -> " << action->getName();
                 }

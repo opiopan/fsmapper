@@ -43,6 +43,11 @@ Device::Device(DeviceClass &deviceClass, std::string &name, const DeviceModifier
             modifiers.push_back(nullptr);
         }
     }
+    if (!deviceClass.plugin().start(deviceClass, *this)){
+        std::ostringstream os;
+        os << "failed to start a device: [name: " << name << "] [type: " << deviceClass.plugin().name << "]";
+        throw MapperException(os.str());
+    }
 }
 
 Device::~Device(){

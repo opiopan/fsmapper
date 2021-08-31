@@ -47,6 +47,8 @@ DLLEXPORT void fsmapper_issueEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int
 //============================================================================================
 // LUA value accessor
 //============================================================================================
+static LUAVALUECTX nullobj;
+
 LUAVALUECTX::LUAVALUECTX() : type(LV_NULL){};
 
 LUAVALUECTX::LUAVALUECTX(const sol::object& object): object(object){
@@ -76,11 +78,11 @@ const char* LUAVALUECTX::getStringValue(){
 }
 
 LUAVALUECTX* LUAVALUECTX::getItemWithKey(const char* key){
-    return nullptr;
+    return &nullobj;
 }
 
 LUAVALUECTX *LUAVALUECTX::getItemWithIndex(size_t index){
-    return nullptr;
+    return &nullobj;
 }
 
 LUAVALUE_TABLE::LUAVALUE_TABLE(const sol::object& object) : LUAVALUECTX(object){
@@ -99,7 +101,7 @@ LUAVALUECTX* LUAVALUE_TABLE::getItemWithIndex(size_t index){
 LUAVALUECTX* LUAVALUE_TABLE::newchild(sol::object &&child){
     auto type = child.get_type();
     if (type == sol::type::lua_nil){
-        return nullptr;
+        return &nullobj;
     }
     else if (type == sol::type::table){
         children.push_back(std::make_unique<LUAVALUE_TABLE>(std::move(child)));
@@ -110,15 +112,15 @@ LUAVALUECTX* LUAVALUE_TABLE::newchild(sol::object &&child){
     }
 }
 
-LVTYPE luav_getType(LUAVALUE lv){
+DLLEXPORT LVTYPE luav_getType(LUAVALUE lv){
     return lv->getType();
 }
 
-bool luav_isNull(LUAVALUE lv){
+DLLEXPORT bool luav_isNull(LUAVALUE lv){
     return lv->getType() == LV_NULL;
 }
 
-bool luav_asBool(LUAVALUE lv){
+DLLEXPORT bool luav_asBool(LUAVALUE lv){
     switch (lv->getType()){
     case LV_BOOL:
         return lv->getObject().as<bool>();
@@ -131,7 +133,7 @@ bool luav_asBool(LUAVALUE lv){
     }
 }
 
-int64_t luav_asInt(LUAVALUE lv){
+DLLEXPORT int64_t luav_asInt(LUAVALUE lv){
     switch (lv->getType()){
     case LV_BOOL:
         return static_cast<int64_t>(lv->getObject().as<bool>());
@@ -142,7 +144,7 @@ int64_t luav_asInt(LUAVALUE lv){
     }
 }
 
-double luav_asDouble(LUAVALUE lv){
+DLLEXPORT double luav_asDouble(LUAVALUE lv){
     switch (lv->getType()){
     case LV_BOOL:
         return static_cast<double>(lv->getObject().as<bool>());
@@ -153,7 +155,7 @@ double luav_asDouble(LUAVALUE lv){
     }
 }
 
-const char* luav_asString(LUAVALUE lv){
+DLLEXPORT const char* luav_asString(LUAVALUE lv){
     switch (lv->getType()){
     case LV_STRING:
         return lv->getStringValue();
@@ -162,10 +164,10 @@ const char* luav_asString(LUAVALUE lv){
     }
 }
 
-LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key){
+DLLEXPORT LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key){
     return lv->getItemWithKey(key);
 }
 
-LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index){
+DLLEXPORT LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index){
     return lv->getItemWithIndex(index);
 }

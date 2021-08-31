@@ -89,6 +89,10 @@ static bool simhid_open(FSMAPPER_HANDLE handle, FSMDEVICE device, LUAVALUE ident
     return true;
 }
 
+static bool simhid_start(FSMAPPER_HANDLE handle, FSMDEVICE device){
+    return true;
+}
+
 static bool simhid_close(FSMAPPER_HANDLE handle, FSMDEVICE device){
     try{
         auto device_ctx = static_cast<SimHIDConnection::Device*>(fsmapper_getContextForDevice(handle, device));
@@ -123,6 +127,7 @@ static MAPPER_PLUGIN_DEVICE_OPS simhid_ops = {
     simhid_init,
     simhid_term,
     simhid_open,
+    simhid_start,
     simhid_close,
     simhid_getUnitNum,
     simhid_getUnitDef,

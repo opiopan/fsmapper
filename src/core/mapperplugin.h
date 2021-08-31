@@ -54,14 +54,14 @@ typedef enum {
     LV_OTHERS,
 }LVTYPE;
 
-LVTYPE luav_getType(LUAVALUE lv);
-bool luav_isNull(LUAVALUE lv);
-bool luav_asBool(LUAVALUE lv);
-int64_t luav_asInt(LUAVALUE lv);
-double luav_asDouble(LUAVALUE lv);
-const char* luav_asString(LUAVALUE lv);
-LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
-LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
+DLLEXPORT LVTYPE luav_getType(LUAVALUE lv);
+DLLEXPORT bool luav_isNull(LUAVALUE lv);
+DLLEXPORT bool luav_asBool(LUAVALUE lv);
+DLLEXPORT int64_t luav_asInt(LUAVALUE lv);
+DLLEXPORT double luav_asDouble(LUAVALUE lv);
+DLLEXPORT const char* luav_asString(LUAVALUE lv);
+DLLEXPORT LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
+DLLEXPORT LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
 
 //============================================================================================
 // Device plugin functions to export
@@ -91,6 +91,7 @@ typedef struct {
     bool (*init)(FSMAPPER_HANDLE mapper);
     bool (*term)(FSMAPPER_HANDLE mapper);
     bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier);
+    bool (*start)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     bool (*close)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     size_t (*getUnitNum)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     bool (*getUnitDef)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF* def);
