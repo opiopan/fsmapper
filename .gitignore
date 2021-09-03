@@ -2,6 +2,7 @@ Debug
 Release
 build
 modules/lua-5.4.3
+modules/vJoySDK/SDK
 .vscode
 .vs
 *.user

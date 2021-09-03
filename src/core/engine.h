@@ -24,6 +24,7 @@ class DeviceModifier;
 class DeviceModifierManager;
 class SimHostManager;
 class ViewPortManager;
+class vJoyManager;
 
 using MapperException = std::runtime_error;
 
@@ -49,8 +50,9 @@ protected :
         std::string scriptPath;
         std::unique_ptr<sol::state> lua_ptr;
         std::unique_ptr<DeviceManager> deviceManager;
-        std::unique_ptr<SimHostManager> simhostManager;
         std::unique_ptr<ViewPortManager> viewportManager;
+        std::unique_ptr<SimHostManager> simhostManager;
+        std::unique_ptr<vJoyManager> vjoyManager;
 
         sol::state& lua(){return *lua_ptr;};
         bool should_gc = true;

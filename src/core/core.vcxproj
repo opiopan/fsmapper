@@ -151,18 +151,19 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
+copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -177,7 +178,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -186,11 +187,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)</Command>
+      <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
+copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -206,6 +208,7 @@
     <ClInclude Include="devicemodifier.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="event.h" />
+    <ClInclude Include="filter.h" />
     <ClInclude Include="fs2020.h" />
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
@@ -214,6 +217,7 @@
     <ClInclude Include="simplewindow.h" />
     <ClInclude Include="tools.h" />
     <ClInclude Include="vieport.h" />
+    <ClInclude Include="vjoy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
@@ -227,6 +231,7 @@
     <ClCompile Include="devicemodifier.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="filter.cpp" />
     <ClCompile Include="fs2020.cpp" />
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="pluginapi.cpp" />
@@ -234,6 +239,7 @@
     <ClCompile Include="simplewindow.cpp" />
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="viewport.cpp" />
+    <ClCompile Include="vjoy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\hook\hook.vcxproj">

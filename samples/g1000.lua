@@ -1,29 +1,3 @@
-x56throttle_dev = mapper.device({
-    name = "X56 Throttle",
-    type = "dinput",
-    identifier = {
-        name = "Saitek Pro Flight X-56 Rhino Throttle",
-        denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"},
-    },
-    modifiers = {
-        {class = "binary", modtype = "button"},
-    },
-})
-x56throttle = x56throttle_dev.events
-
-x56stick_dev = mapper.device({
-    name = "X56 Stick",
-    type = "dinput",
-    identifier = {
-        name = "Saitek Pro Flight X-56 Rhino Stick",
-        allowlist = {"button1", "pov1"},
-    },
-    modifiers = {
-        {class = "binary", modtype = "button"},
-    },
-})
-local x56stick = x56stick_dev.events
-
 g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",
@@ -228,6 +202,26 @@ viewport:set_mappings({
 
 mapper.start_viewports()
 
+x56throttle_dev = mapper.device({
+    name = "X56 Throttle",
+    type = "dinput",
+    identifier = {
+        name = "Saitek Pro Flight X-56 Rhino Throttle",
+        denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"},
+    },
+    modifiers = {
+        {class = "binary", modtype = "button"},
+        {name = "button33", modtype = "button", modparam={follow_up = 300}},
+    },
+})
+x56throttle = x56throttle_dev.events
+
+vjoy = mapper.virtual_joystick(1)
+local throttle1 = vjoy:get_axis("rx")
+local throttle2 = vjoy:get_axis("ry")
+local airbrake_open = vjoy:get_button(1)
+local airbrake_close = vjoy:get_button(2)
+
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value) 
         if value.host then
@@ -243,4 +237,12 @@ mapper.set_primery_mappings({
     end},
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
+
+    {event=x56throttle.x.change, action=throttle1:value_setter()},
+    {event=x56throttle.y.change, action=throttle2:value_setter()},
+    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.up, action=filter.duplicator(
+        airbrake_open:value_setter(false), airbrake_close:value_setter(true)
+    )},
+    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
 })

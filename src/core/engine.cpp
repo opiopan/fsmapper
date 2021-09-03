@@ -9,6 +9,8 @@
 #include "device.h"
 #include "simhost.h"
 #include "viewport.h"
+#include "vjoy.h"
+#include "filter.h"
 
 
 //============================================================================================
@@ -53,6 +55,7 @@ void MapperEngine::initScriptingEnvAndRun(){
     //      mapper.start_viewports():        start all viewports
     //      mapper.stop_viewports():         stop all viewports
     //      mapper.reset_viewports():        stop all viewports then remove all viewport definitions
+    //      mapper.virtual_joystick():       create vJoy feeder
     //      mapper.events:                   system events table
     //-------------------------------------------------------------------------------
     auto mapper = scripting.lua().create_table();
@@ -80,6 +83,9 @@ void MapperEngine::initScriptingEnvAndRun(){
     scripting.viewportManager = std::make_unique<ViewPortManager>(*this);
     scripting.viewportManager->init_scripting_env(mapper);
 
+    scripting.vjoyManager = std::make_unique<vJoyManager>(*this);
+    scripting.vjoyManager->init_scripting_env(scripting.lua(), mapper);
+
     auto sysevents = scripting.lua().create_table();
     auto ev_change_aircraft = this->registerEvent("mapper:change_aircraft");
     sysevents["change_aircraft"] = ev_change_aircraft;
@@ -87,10 +93,15 @@ void MapperEngine::initScriptingEnvAndRun(){
     scripting.lua()["mapper"] = mapper;
 
     //-------------------------------------------------------------------------------
+    // create filters
+    //-------------------------------------------------------------------------------
+    filter_create_lua_env(*this, scripting.lua());
+
+    //-------------------------------------------------------------------------------
     // create simulator host related environments
     //-------------------------------------------------------------------------------
     scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua());
-
+    
     //-------------------------------------------------------------------------------
     // test functions: will be deleted 
     //-------------------------------------------------------------------------------
@@ -201,7 +212,8 @@ bool MapperEngine::run(std::string&& scriptPath){
             // identify action correspond to event
             //-------------------------------------------------------------------------------
             auto action = findAction(ev->getId());
-            if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT)){
+            if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
+                event.names.count(ev->getId()) > 0){
                 auto &name = event.names.at(ev->getId());
                 std::ostringstream os;
                 os << "Event occurred: " << name;

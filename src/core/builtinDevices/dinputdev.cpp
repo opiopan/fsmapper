@@ -20,8 +20,8 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-static constexpr auto AXIS_VALUE_MAX = 1023;
-static constexpr auto AXIS_VALUE_MIN = -1023;
+static constexpr auto AXIS_VALUE_MAX = JOYSTICK_AXIS_VALUE_MAX;
+static constexpr auto AXIS_VALUE_MIN = JOYSTICK_AXIS_VALUE_MIN;
 
 //============================================================================================
 // Device capabilities representation

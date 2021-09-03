@@ -72,6 +72,12 @@
     <ClInclude Include="builtinDevices\dinputdev.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vjoy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -126,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="builtinDevices\dinputdev.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vjoy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
