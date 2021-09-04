@@ -123,14 +123,16 @@ public:
                 GetVJDAxisMin(device_id, def->usage, &axis_min);
                 constexpr auto val_range = JOYSTICK_AXIS_VALUE_MAX - JOYSTICK_AXIS_VALUE_MIN;
                 const auto dev_range = axis_max - axis_min;
-                const auto bias = axis_min - static_cast<int64_t>(JOYSTICK_AXIS_VALUE_MIN) * dev_range / val_range;
+                constexpr auto val_bias = JOYSTICK_AXIS_VALUE_MIN;
+                const auto dev_bias = axis_min;
                 axes.emplace(
                     std::move(std::string(def->name)),
                     std::make_shared<vJoyDeviceUnit>(
                         *this,
                         std::move(std::string(def->name)), 
-                        [this, def, val_range, dev_range, bias](int64_t value){
-                            SetAxis(value * dev_range / val_range + bias, this->device_id, def->usage);
+                        [this, def, val_range, dev_range, val_bias, dev_bias](int64_t value){
+                            auto axisval = (value - val_bias) * dev_range / val_range + dev_bias;
+                            SetAxis(axisval, this->device_id, def->usage);
                         }));
             }
         }

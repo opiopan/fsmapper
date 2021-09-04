@@ -93,9 +93,11 @@ static val_map_type verify_map_rule(sol::object& o_list){
             if (valmap.size() != 2){
                 return val_map_type::invalid;
             }
-            auto in_type = val_map_type(valmap[1]);
-            auto out_type = val_map_type(valmap[2]);
-            if (in_type == val_map_type::int_map || out_type == val_map_type::invalid){
+            sol::object in_val = valmap[1];
+            sol::object out_val = valmap[1];
+            auto in_type = lua_numeric_type(in_val);
+            auto out_type = lua_numeric_type(out_val);
+            if (in_type == val_map_type::invalid || out_type == val_map_type::invalid){
                 return val_map_type::invalid;
             }else if (in_type == val_map_type::int_map && out_type == val_map_type::int_map){
                 valtype = (valtype == val_map_type::double_map ? val_map_type::double_map : val_map_type::int_map);
@@ -139,7 +141,7 @@ template <typename T>
 T translate_value(const value_map_set<T>& maps, T target){
     auto make_param = [](const value_map<T>& a, const value_map<T>& b, leap_parameter<T>& param){
         param.in_range = b.in - a.in;
-        param.out_range = b.out - a.in;
+        param.out_range = b.out - a.out;
         param.in_bias = a.in;
         param.out_bias = a.out;
     };
