@@ -222,12 +222,41 @@ local throttle2 = vjoy:get_axis("ry")
 local airbrake_open = vjoy:get_button(1)
 local airbrake_close = vjoy:get_button(2)
 
+local joymap_noab = {
+    {event=x56throttle.x.change, action=filter.lerp(throttle1:value_setter(),{
+        {-1023, -1023},
+        {-609, -1023},
+        {1023, 1023},
+    })},
+    {event=x56throttle.y.change, action=filter.lerp(throttle2:value_setter(),{
+        {-1023, -1023},
+        {-619, -1023},
+        {1023, 1023},
+    })},
+    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.up, action=filter.duplicator(
+        airbrake_open:value_setter(false), airbrake_close:value_setter(true)
+    )},
+    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
+}
+
+local joymap_full = {
+    {event=x56throttle.x.change, action=throttle1:value_setter()},
+    {event=x56throttle.y.change, action=throttle2:value_setter()},
+    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.up, action=filter.duplicator(
+        airbrake_open:value_setter(false), airbrake_close:value_setter(true)
+    )},
+    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
+}
+
+mapper.set_secondary_mappings(joymap_noab)
+
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value) 
         if value.host then
             if value.aircraft then
                 mapper.print("    [sim]: "..value.host.." [aircraft]: "..value.aircraft) 
-
             else
                 mapper.print("    [sim]: "..value.host.." [aircraft]:") 
             end
@@ -238,11 +267,4 @@ mapper.set_primery_mappings({
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
 
-    {event=x56throttle.x.change, action=throttle1:value_setter()},
-    {event=x56throttle.y.change, action=throttle2:value_setter()},
-    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
-    {event=x56throttle.button33.up, action=filter.duplicator(
-        airbrake_open:value_setter(false), airbrake_close:value_setter(true)
-    )},
-    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
 })

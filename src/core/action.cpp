@@ -11,7 +11,7 @@
 // C++ native action
 //============================================================================================
 NativeAction::NativeAction(const sol::object& object) : Action(object){
-    function = &object.as<Function&>();
+    function = object.as<std::shared_ptr<Function>>();
 }
 
 const char* NativeAction::getName(){
@@ -19,7 +19,7 @@ const char* NativeAction::getName(){
 }
 
 void NativeAction::invoke(Event& event, sol::state& lua){
-    function->invoke(event);
+    function->invoke(event, lua);
 }
 
 //============================================================================================

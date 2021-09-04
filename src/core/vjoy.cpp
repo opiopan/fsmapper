@@ -240,12 +240,12 @@ std::shared_ptr<NativeAction::Function> vJoyDeviceUnit::valueSetter(sol::object 
     }
     os << ")";
     if (defvalue){
-        NativeAction::Function::ACTION_FUNCTION func = [this, defvalue](Event&){
+        NativeAction::Function::ACTION_FUNCTION func = [this, defvalue](Event&, sol::state&){
             this->update(*defvalue);
         };
         return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
     }else{
-        NativeAction::Function::ACTION_FUNCTION func = [this, defvalue](Event& event){
+        NativeAction::Function::ACTION_FUNCTION func = [this, defvalue](Event& event, sol::state&){
             auto type = event.getType();
             if (type == Event::Type::bool_value){
                 this->update(event.getAs<bool>() ? 1 : 0);

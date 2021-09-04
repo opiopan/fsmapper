@@ -101,57 +101,6 @@ void MapperEngine::initScriptingEnvAndRun(){
     // create simulator host related environments
     //-------------------------------------------------------------------------------
     scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua());
-    
-    //-------------------------------------------------------------------------------
-    // test functions: will be deleted 
-    //-------------------------------------------------------------------------------
-    auto test = scripting.lua().create_table();
-    test["messenger"] = [this](const sol::object msg_o){
-        auto msg = msg_o.as<std::string>();
-        std::ostringstream os;
-        os << "show_msg(\"" << msg << "\")";
-        auto name = os.str();
-        NativeAction::Function::ACTION_FUNCTION actionfunc = [msg, this](Event &){
-            std::ostringstream os;
-            os << "    " << msg;
-            putLog(MCONSOLE_MESSAGE, os.str().c_str());
-        };
-        NativeAction::Function::ACTION_FUNCTION func = [msg, this](Event &){
-            std::ostringstream os;
-            os << "    " << msg;
-            putLog(MCONSOLE_MESSAGE, os.str().c_str());
-        };
-        auto action = std::make_shared<NativeAction::Function>(name.c_str(), func);
-        return action;
-    };
-    test["find_window"] = [this](const sol::object classname, const sol::object title){
-        if (classname.is<std::string>() && title.is<std::string>()){
-            return reinterpret_cast<int64_t>(FindWindowA(
-                classname.as<std::string>().c_str(),
-                title.as<std::string>().c_str()));
-        }
-    };
-    test["capture_window"] = [this](const sol::object num_o){
-        if (num_o.is<int64_t>()){
-            hookdll_capture(reinterpret_cast<HWND>(num_o.as<int64_t>()), true);
-        }
-    };
-    test["release_window"] = [this](const sol::object num_o){
-        if (num_o.is<int64_t>()){
-            hookdll_uncapture(reinterpret_cast<HWND>(num_o.as<int64_t>()));
-        }
-    };
-    test["show_window"] = [this](const sol::object num_o, const sol::object visibility){
-        if (num_o.is<int64_t>() && visibility.is<bool>()){
-            hookdll_changeWindowAtrribute(
-                reinterpret_cast<HWND>(num_o.as<int64_t>()),
-                HWND_TOP,
-                300, 300, 400, 400,
-                visibility.as<bool>()
-            );
-        }
-    };
-    scripting.lua()["test"] = test;
 
     //-------------------------------------------------------------------------------
     // run the script

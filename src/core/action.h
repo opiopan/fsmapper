@@ -33,7 +33,7 @@ class NativeAction: public Action{
 public:
     class Function {
     public:
-        using ACTION_FUNCTION = std::function<void (Event&)>;
+        using ACTION_FUNCTION = std::function<void (Event&, sol::state& lua)>;
     protected:
         std::string name;
         ACTION_FUNCTION action;
@@ -44,11 +44,11 @@ public:
         Function(const char* name, ACTION_FUNCTION& action): name(name), action(action){};
         ~Function() = default;
         const char* getName(){return name.c_str();};
-        void invoke(Event& event){action(event);};
+        void invoke(Event& event, sol::state& lua){action(event, lua);};
     };
 
 protected:
-    Function* function;
+    std::shared_ptr<Function> function;
 
 public:
     NativeAction() = delete;

@@ -193,7 +193,7 @@ void FS2020::initLuaEnv(sol::state& lua){
         std::ostringstream os;
         os << "fs2020.send_event(\"" << event_name << "\")";
         auto func_name = os.str();
-        NativeAction::Function::ACTION_FUNCTION func = [event_id, this](Event&){
+        NativeAction::Function::ACTION_FUNCTION func = [event_id, this](Event&, sol::state&){
             this->sendSimEventId(event_id);
         };
         return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
