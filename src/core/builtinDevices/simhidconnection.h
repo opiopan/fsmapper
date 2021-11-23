@@ -73,6 +73,11 @@ protected:
         joined,
     } status;
     std::unique_ptr<SerialComm> serial;
+    struct DeviceId{
+        std::string key;
+        std::string value;
+    };
+    std::vector<DeviceId> deviceid;
     struct UnitDef{
         UnitDef():index(-1){};
         UnitDef(size_t index, std::string& name , 
@@ -118,6 +123,7 @@ public:
     size_t deviceNum();
 
 protected:
+    void processReceivedData_I();
     void processReceivedData_D();
     void processReceivedData_S();
 };

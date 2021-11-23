@@ -48,7 +48,7 @@ void SimHIDConnection::start(){
     communicator = std::move(std::thread([this] {
         try{
             // send a D command to retrieve device definitions at first
-            serial->write("D\r\n"); 
+            serial->write("I\r\nD\r\n"); 
 
             char buf[256];
             int readlen;
@@ -60,16 +60,18 @@ void SimHIDConnection::start(){
                             std::string msg = "An error occured during parse data received from SimHID device [";
                             std::ostringstream mout(msg, std::ios_base::app);
                             mout << this->devicePath << "]: " << parser.err;
-                            fsmapper_putLog(this->mapper, FSMLOG_ERROR, msg.c_str());
+                            fsmapper_putLog(this->mapper, FSMLOG_WARNING, mout.str().c_str());
+                        }else if (cmd == 'I' || cmd == 'i'){
+                            processReceivedData_I();
                         }else if (cmd == 'D' || cmd == 'd'){
                             processReceivedData_D();
                         }else if (cmd == 'S' || cmd == 's'){
                             processReceivedData_S();
                         }else if (cmd > 0){
-                            std::string msg = "Unexpected data was received from SimHID device[";
+                            std::string msg = "Unexpected data was received from SimHID device [";
                             std::ostringstream mout(msg, std::ios_base::app);
                             mout << this->devicePath << "]";
-                            fsmapper_putLog(this->mapper, FSMLOG_WARNING, msg.c_str());
+                            fsmapper_putLog(this->mapper, FSMLOG_WARNING, mout.str().c_str());
                         }
                     }
                 }
@@ -97,6 +99,35 @@ void SimHIDConnection::start(){
     }
 }
 
+void SimHIDConnection::processReceivedData_I(){
+    std::lock_guard lock(mutex);
+
+    if (status != Status::init){
+        std::ostringstream msg;
+        msg << "Unexpected data was received from SimHID device[" << devicePath << "]";
+        fsmapper_putLog(mapper, FSMLOG_WARNING, msg.str().c_str());
+    }else if (parser.paramnum > 0){
+        auto i = 0;
+        const char* sep = "";
+        std::ostringstream key;
+        for (; i < parser.paramnum; i++){
+            key << sep << parser.params[i].strvalue;
+            if (key.str().back() == ':'){
+                break;
+            }
+            sep = " ";
+        }
+        std::ostringstream value;
+        sep = "";
+        for (i = i + 1; i <  parser.paramnum; i++){
+            value << sep << parser.params[i].strvalue;
+            sep = " ";
+        }
+        DeviceId&& id = {key.str(), value.str()};
+        deviceid.push_back(std::move(id));
+    }
+}
+
 void SimHIDConnection::processReceivedData_D(){
     // Process D command response
     //     syntax: D [<UnitName> <UnitType> <MinVal> <MaxVal>]
@@ -110,6 +141,13 @@ void SimHIDConnection::processReceivedData_D(){
     }else if (parser.paramnum == 0){
         status = Status::running;
         cv.notify_all();
+        std::ostringstream msg;
+        msg << "SimHID device [" << devicePath << "] is opened:";
+        for (auto& element : deviceid){
+            msg << std::endl;
+            msg << "    " << element.key << " " << element.value;
+        }
+        fsmapper_putLog(mapper, FSMLOG_DEBUG, msg.str().c_str());
     }else if (parser.paramnum != 4 || !parser.params[2].isNumber || !parser.params[3].isNumber){
         std::ostringstream msg;
         msg << "Received device definition data is unrecognizable format [" << devicePath << "]";

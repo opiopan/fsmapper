@@ -14,10 +14,10 @@
 // raw modifier implementation
 //============================================================================================
 class RawModifier : public DeviceModifier{
-    uint64_t evid;
+    uint64_t evid = 0;
 public:
     RawModifier(const RawModifier&) = default;
-    RawModifier(DeviceModifierManager& manager) : DeviceModifier(manager), evid(0){};
+    RawModifier(DeviceModifierManager& manager) : DeviceModifier(manager){};
     ~RawModifier(){
         if (evid != 0){
             manager.getEngine().unregisterEvent(evid);

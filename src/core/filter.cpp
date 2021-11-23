@@ -5,15 +5,18 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
 #include <sstream>
+#include <algorithm>
 #include "filter.h"
 #include "action.h"
 #include "engine.h"
+#include "tools.h"
 
 //============================================================================================
 // Utility functions
 //============================================================================================
-static std::shared_ptr<Action> generate_action(sol::object& o_function){
+static std::shared_ptr<Action> generate_action(const sol::object& o_function){
     if (o_function.is<NativeAction::Function&>()){
         return std::make_shared<NativeAction>(o_function);
     }else if (o_function.get_type() == sol::type::function){
@@ -202,6 +205,104 @@ static std::shared_ptr<NativeAction::Function> lerp(sol::object& o_action, sol::
 }
 
 //============================================================================================
+// Conditional branch
+//============================================================================================
+struct branch_condition {
+    enum class optype {exceeded, falled};
+    optype type;
+    int64_t value;
+    std::shared_ptr<Action> action;
+
+    branch_condition() = delete;
+    branch_condition(const sol::object& object){
+        if (object.get_type() == sol::type::table){
+            auto defs = object.as<sol::table>();
+            auto&& condition = lua_safestring(defs["condition"]);
+            static const std::unordered_map<std::string, optype> optype_dict ={
+                {"exceeded", optype::exceeded},
+                {"falled", optype::falled},
+            };
+            if (optype_dict.count(condition) == 0){
+                throw std::runtime_error("the value of \"condition\" parameter must be either \"exceeded\" or \"falled\"");
+            }
+            type = optype_dict.at(condition);
+            auto o_value = lua_safevalue<int64_t>(defs["value"]);
+            if (!o_value.has_value()){
+                throw std::runtime_error("\"value\" parameter is not specified or it's value is invalid");
+            }
+            value = *o_value;
+            action = generate_action(defs["action"]);
+            if (!action.get()){
+                throw std::runtime_error("the value of \"action\" parameter must be either native action or Lua function");
+            }
+        }else{
+            throw std::runtime_error("invalid type of argument, you must specify tables");
+        }
+    };
+    branch_condition(const branch_condition&) = default;
+    branch_condition& operator = (const branch_condition&) = default;
+};
+
+static std::shared_ptr<NativeAction::Function> branch(sol::variadic_args& va){
+    std::ostringstream os;
+    os << "filter.branch(";
+    const char* prefix = "";
+    std::vector<branch_condition> conds_exeeded;
+    std::vector<branch_condition> conds_falled;
+    for (sol::object arg : va){
+        branch_condition cond(arg);
+        if (cond.type == branch_condition::optype::exceeded){
+            conds_exeeded.push_back(cond);
+        }else{
+            conds_falled.push_back(cond);
+        }
+        os << prefix << cond.action->getName();
+        prefix = ", ";
+    }
+    os << ")";
+    std::sort(std::begin(conds_exeeded), std::end(conds_exeeded), [](const branch_condition& a, const branch_condition& b){
+        return a.value < b.value;
+    });
+    std::sort(std::begin(conds_falled), std::end(conds_falled), [](const branch_condition& a, const branch_condition& b){
+        return a.value > b.value;
+    });
+    int64_t last = 0;
+    int ix_exeeded = 0;
+    for (; ix_exeeded < conds_exeeded.size() && conds_exeeded[ix_exeeded].value < last; ix_exeeded++);
+    int ix_falled = 0;
+    for (; ix_falled < conds_falled.size() && conds_falled[ix_falled].value > last; ix_falled++);
+
+    NativeAction::Function::ACTION_FUNCTION func = [
+        conds_exeeded = std::move(conds_exeeded), conds_falled = std::move(conds_falled),
+        last, ix_exeeded, ix_falled
+    ](Event& event, sol::state& lua) mutable {
+        auto evtype = event.getType();
+        if (evtype == Event::Type::int_value || evtype == Event::Type::double_value || evtype == Event::Type::bool_value){
+            auto value = event.getAs<int64_t>();
+            if (value > last){
+                if (ix_exeeded < conds_exeeded.size() && conds_exeeded[ix_exeeded].value < value){
+                    conds_exeeded[ix_exeeded].action->invoke(event, lua);
+                    ix_exeeded++;
+                }
+                if (ix_falled > 0 && conds_falled[ix_falled - 1].value < value){
+                    ix_falled--;
+                }
+            }else if (value < last){
+                if (ix_falled < conds_falled.size() && conds_falled[ix_falled].value > value){
+                    conds_falled[ix_falled].action->invoke(event, lua);
+                    ix_falled++;
+                }
+                if (ix_exeeded > 0 && conds_exeeded[ix_exeeded - 1].value > value){
+                    ix_exeeded--;
+                }
+            }
+            last = value;
+        }
+    };
+    return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
+};
+
+//============================================================================================
 // Create lua scripting environment
 //============================================================================================
 void filter_create_lua_env(MapperEngine& engine, sol::state& lua){
@@ -214,8 +315,14 @@ void filter_create_lua_env(MapperEngine& engine, sol::state& lua){
     };
 
     table["lerp"] = [&engine](sol::object action, sol::object list){
-        return lua_c_interface(engine, "filter.duplicator", [&action, &list]{
+        return lua_c_interface(engine, "filter.lerp", [&action, &list]{
             return lerp(action, list);
+        });
+    };
+
+    table["branch"] = [&engine](sol::variadic_args va){
+        return lua_c_interface(engine, "filter.branch", [&va]{
+            return branch(va);
         });
     };
 }

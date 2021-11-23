@@ -36,7 +36,7 @@ local pfd_maps = {
     {event=g1000.SW4.down, action=fs2020.event_sender("Mobiflight.AP_HDG_HOLD")},
     {event=g1000.SW5.down, action=fs2020.event_sender("Mobiflight.AP_ALT_HOLD")},
     {event=g1000.SW6.down, action=fs2020.event_sender("Mobiflight.AP_NAV1_HOLD")},
-    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.???VNAV???")},
+    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS530_VNAV_Push")},
     {event=g1000.SW8.down, action=fs2020.event_sender("Mobiflight.AP_APR_HOLD")},
     {event=g1000.SW9.down, action=fs2020.event_sender("Mobiflight.AP_BC_HOLD")},
     {event=g1000.SW10.down, action=fs2020.event_sender("Mobiflight.AP_PANEL_VS_HOLD")},
@@ -114,7 +114,7 @@ local mfd_maps = {
     {event=g1000.SW4.down, action=fs2020.event_sender("Mobiflight.AP_HDG_HOLD")},
     {event=g1000.SW5.down, action=fs2020.event_sender("Mobiflight.AP_ALT_HOLD")},
     {event=g1000.SW6.down, action=fs2020.event_sender("Mobiflight.AP_NAV1_HOLD")},
-    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.???VNAV???")},
+    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS530_VNAV_Push")},
     {event=g1000.SW8.down, action=fs2020.event_sender("Mobiflight.AP_APR_HOLD")},
     {event=g1000.SW9.down, action=fs2020.event_sender("Mobiflight.AP_BC_HOLD")},
     {event=g1000.SW10.down, action=fs2020.event_sender("Mobiflight.AP_PANEL_VS_HOLD")},
@@ -211,7 +211,7 @@ x56throttle_dev = mapper.device({
     },
     modifiers = {
         {class = "binary", modtype = "button"},
-        {name = "button33", modtype = "button", modparam={follow_up = 300}},
+        {name = "button33", modtype = "button", modparam={follow_down = 300}},
     },
 })
 x56throttle = x56throttle_dev.events
@@ -221,39 +221,58 @@ local throttle1 = vjoy:get_axis("rx")
 local throttle2 = vjoy:get_axis("ry")
 local airbrake_open = vjoy:get_button(1)
 local airbrake_close = vjoy:get_button(2)
+local ab1 = vjoy:get_button(3)
+local ab2 = vjoy:get_button(4)
 
 local joymap_noab = {
-    {event=x56throttle.x.change, action=filter.lerp(throttle1:value_setter(),{
-        {-1023, -1023},
-        {-609, -1023},
-        {1023, 1023},
-    })},
-    {event=x56throttle.y.change, action=filter.lerp(throttle2:value_setter(),{
-        {-1023, -1023},
-        {-619, -1023},
-        {1023, 1023},
-    })},
-    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
-    {event=x56throttle.button33.up, action=filter.duplicator(
+    {event=x56throttle.x.change, action=filter.duplicator(
+        filter.lerp(throttle1:value_setter(),{
+            {-1023, -1023},
+            {-609, -1023},
+            {1023, 1023},
+        }),
+        filter.branch(
+            {condition="falled", value=-900, action=ab1:value_setter(true)},
+            {condition="exceeded", value=-800, action=ab1:value_setter(false)}
+        )
+    )},
+    {event=x56throttle.y.change, action=filter.duplicator(
+        filter.lerp(throttle2:value_setter(),{
+            {-1023, -1023},
+            {-619, -1023},
+            {1023, 1023},
+        }),
+        filter.branch(
+            {condition="falled", value=-900, action=ab2:value_setter(true)},
+            {condition="exceeded", value=-800, action=ab2:value_setter(false)}
+        )
+    )},
+    {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.down, action=filter.duplicator(
         airbrake_open:value_setter(false), airbrake_close:value_setter(true)
     )},
-    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
+    {event=x56throttle.button33.following_down, action=airbrake_close:value_setter(false)},
 }
 
 local joymap_full = {
     {event=x56throttle.x.change, action=throttle1:value_setter()},
     {event=x56throttle.y.change, action=throttle2:value_setter()},
-    {event=x56throttle.button33.down, action=airbrake_open:value_setter(true)},
-    {event=x56throttle.button33.up, action=filter.duplicator(
+    {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.down, action=filter.duplicator(
         airbrake_open:value_setter(false), airbrake_close:value_setter(true)
     )},
-    {event=x56throttle.button33.following_up, action=airbrake_close:value_setter(false)},
+    {event=x56throttle.button33.following_down, action=airbrake_close:value_setter(false)},
 }
 
 mapper.set_secondary_mappings(joymap_noab)
 
 mapper.set_primery_mappings({
-    {event=mapper.events.change_aircraft, action=function (event, value) 
+    {event=mapper.events.change_aircraft, action=function (event, value)
+        if value.aircraft == "Airbus A320 Neo FlyByWire" then
+            mapper.set_secondary_mappings(joymap_full)
+        else
+            mapper.set_secondary_mappings(joymap_noab)
+        end
         if value.host then
             if value.aircraft then
                 mapper.print("    [sim]: "..value.host.." [aircraft]: "..value.aircraft) 
