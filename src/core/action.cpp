@@ -64,7 +64,11 @@ void LuaAction::invoke(Event &event, sol::state& lua){
 //============================================================================================
 std::unique_ptr<EventActionMap> createEventActionMap(const MapperEngine& engine, const sol::object& def_o){
     auto map = std::make_unique<EventActionMap>();
+    addEventActionMap(engine, map, def_o);
+    return std::move(map);
+}
 
+void addEventActionMap(const MapperEngine& engine, const std::unique_ptr<EventActionMap>& map, const sol::object &def_o){
     if (def_o.get_type() == sol::type::table){
         sol::table def = def_o;
         for (int i = 1; i <= def.size(); i++){
@@ -98,6 +102,4 @@ std::unique_ptr<EventActionMap> createEventActionMap(const MapperEngine& engine,
             }
         }
     }
-
-    return std::move(map);
 }

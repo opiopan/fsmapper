@@ -76,3 +76,4 @@ public:
 
 using EventActionMap = std::map<uint64_t, std::unique_ptr<Action>>;
 std::unique_ptr<EventActionMap> createEventActionMap(const MapperEngine& engine, const sol::object &def);
+void addEventActionMap(const MapperEngine& engine, const std::unique_ptr<EventActionMap>& map, const sol::object &def);

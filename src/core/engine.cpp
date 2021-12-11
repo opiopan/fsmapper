@@ -49,7 +49,9 @@ void MapperEngine::initScriptingEnvAndRun(){
     //      mapper.print():                  print message on console
     //      mapper.abort():                  abort mapper engine
     //      mapper.set_primery_mappings():   set primery mappings
+    //      mapper.add_primery_mappings();   add primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
+    //      mapper.add_secondary_mappings(); add primery mappings
     //      mapper.device() :                open device
     //      mapper.viewport():               register viewport
     //      mapper.start_viewports():        start all viewports
@@ -71,9 +73,19 @@ void MapperEngine::initScriptingEnvAndRun(){
             setMapping("mapper.set_primery_mappings()", 0, def);
         });
     };
+    mapper["add_primery_mappings"] = [this](const sol::object def){
+        lua_c_interface(*this, "mapper:add_primery_mappings", [this, &def](){
+            addMapping("mapper.set_primery_mappings()", 0, def);
+        });
+    };
     mapper["set_secondary_mappings"] = [this](const sol::object def){
         lua_c_interface(*this, "mapper:set_secondary_mappings", [this, &def](){
             setMapping("mapper.set_primery_mappings()", 1, def);
+        });
+    };
+    mapper["add_secondary_mappings"] = [this](const sol::object def){
+        lua_c_interface(*this, "mapper:add_secondary_mappings", [this, &def](){
+            addMapping("mapper.set_primery_mappings()", 1, def);
         });
     };
 
@@ -271,6 +283,10 @@ Action* MapperEngine::findAction(uint64_t evid){
 //============================================================================================
 void MapperEngine::setMapping(const char* function_name, int level, const sol::object& mapdef){
     mapping[level] = std::move(createEventActionMap(*this, mapdef));
+}
+
+void MapperEngine::addMapping(const char* function_name, int level, const sol::object& mapdef){
+    addEventActionMap(*this, mapping[level], mapdef);
 }
 
 //============================================================================================

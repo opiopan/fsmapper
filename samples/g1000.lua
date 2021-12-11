@@ -36,7 +36,7 @@ local pfd_maps = {
     {event=g1000.SW4.down, action=fs2020.event_sender("Mobiflight.AP_HDG_HOLD")},
     {event=g1000.SW5.down, action=fs2020.event_sender("Mobiflight.AP_ALT_HOLD")},
     {event=g1000.SW6.down, action=fs2020.event_sender("Mobiflight.AP_NAV1_HOLD")},
-    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS530_VNAV_Push")},
+    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS1000_AP_VNAV_Push")},
     {event=g1000.SW8.down, action=fs2020.event_sender("Mobiflight.AP_APR_HOLD")},
     {event=g1000.SW9.down, action=fs2020.event_sender("Mobiflight.AP_BC_HOLD")},
     {event=g1000.SW10.down, action=fs2020.event_sender("Mobiflight.AP_PANEL_VS_HOLD")},
@@ -114,7 +114,7 @@ local mfd_maps = {
     {event=g1000.SW4.down, action=fs2020.event_sender("Mobiflight.AP_HDG_HOLD")},
     {event=g1000.SW5.down, action=fs2020.event_sender("Mobiflight.AP_ALT_HOLD")},
     {event=g1000.SW6.down, action=fs2020.event_sender("Mobiflight.AP_NAV1_HOLD")},
-    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS530_VNAV_Push")},
+    {event=g1000.SW7.down, action=fs2020.event_sender("Mobiflight.AS1000_AP_VNAV_Push")},
     {event=g1000.SW8.down, action=fs2020.event_sender("Mobiflight.AP_APR_HOLD")},
     {event=g1000.SW9.down, action=fs2020.event_sender("Mobiflight.AP_BC_HOLD")},
     {event=g1000.SW10.down, action=fs2020.event_sender("Mobiflight.AP_PANEL_VS_HOLD")},
@@ -210,8 +210,10 @@ x56throttle_dev = mapper.device({
         denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"},
     },
     modifiers = {
-        {class = "binary", modtype = "button"},
-        {name = "button33", modtype = "button", modparam={follow_down = 300}},
+        {name = "button33", modtype = "button", modparam={follow_down = 200}},
+        {name = "button34", modtype = "button", modparam={follow_down = 200}},
+        {name = "button35", modtype = "button", modparam={follow_down = 200}},
+        {name = "button36", modtype = "button", modparam={follow_down = 200}},
     },
 })
 x56throttle = x56throttle_dev.events
@@ -223,6 +225,36 @@ local airbrake_open = vjoy:get_button(1)
 local airbrake_close = vjoy:get_button(2)
 local ab1 = vjoy:get_button(3)
 local ab2 = vjoy:get_button(4)
+
+local marm_on = vjoy:get_button(5)
+local marm_off = vjoy:get_button(6)
+
+local eng1idle = vjoy:get_button(7)
+local eng1cut = vjoy:get_button(8)
+local eng2idle = vjoy:get_button(9)
+local eng2cut = vjoy:get_button(10)
+local eng1start = vjoy:get_button(11)
+local eng2start = vjoy:get_button(12)
+local canopy_open = vjoy:get_button(13)
+local canopy_close = vjoy:get_button(14)
+local start_aux1 = vjoy:get_button(15)
+local start_aux2 = vjoy:get_button(16)
+
+local gearup = vjoy:get_button(17)
+local geardown = vjoy:get_button(18)
+local flapup = vjoy:get_button(19)
+local flapdown = vjoy:get_button(20)
+local hookup = vjoy:get_button(21)
+local hookdown = vjoy:get_button(22)
+local llight_on = vjoy:get_button(23)
+local llight_off = vjoy:get_button(24)
+
+local aa_mode = vjoy:get_button(25)
+local ag_mode = vjoy:get_button(26)
+local arm_aux1 = vjoy:get_button(27)
+local arm_aux2 = vjoy:get_button(28)
+local arm_aux3 = vjoy:get_button(29)
+local arm_aux4 = vjoy:get_button(30)
 
 local joymap_noab = {
     {event=x56throttle.x.change, action=filter.duplicator(
@@ -264,14 +296,59 @@ local joymap_full = {
     {event=x56throttle.button33.following_down, action=airbrake_close:value_setter(false)},
 }
 
-mapper.set_secondary_mappings(joymap_noab)
+local joymap_preflight = {
+    {event=x56throttle.button6.change, action=eng1idle:value_setter()},
+    {event=x56throttle.button7.change, action=eng1cut:value_setter()},
+    {event=x56throttle.button8.change, action=eng2idle:value_setter()},
+    {event=x56throttle.button9.change, action=eng2cut:value_setter()},
+    {event=x56throttle.button10.change, action=eng1start:value_setter()},
+    {event=x56throttle.button11.change, action=eng2start:value_setter()},
+    {event=x56throttle.button18.change, action=canopy_open:value_setter()},
+    {event=x56throttle.button19.change, action=canopy_close:value_setter()},
+    {event=x56throttle.button12.change, action=start_aux1:value_setter()},
+    {event=x56throttle.button13.change, action=start_aux2:value_setter()},
+}
+
+local joymap_inflight = {
+    {event=x56throttle.button6.change, action=gearup:value_setter()},
+    {event=x56throttle.button7.change, action=geardown:value_setter()},
+    {event=x56throttle.button8.change, action=flapup:value_setter()},
+    {event=x56throttle.button9.change, action=flapdown:value_setter()},
+    {event=x56throttle.button10.change, action=hookup:value_setter()},
+    {event=x56throttle.button11.change, action=hookdown:value_setter()},
+    {event=x56throttle.button12.change, action=llight_on:value_setter()},
+    {event=x56throttle.button13.change, action=llight_on:value_setter()},
+}
+
+local joymap_combat = {
+    {event=x56throttle.button6.change, action=aa_mode:value_setter()},
+    {event=x56throttle.button7.change, action=ag_mode:value_setter()},
+    {event=x56throttle.button8.change, action=arm_aux1:value_setter()},
+    {event=x56throttle.button9.change, action=arm_aux2:value_setter()},
+    {event=x56throttle.button10.change, action=arm_aux3:value_setter()},
+    {event=x56throttle.button11.change, action=arm_aux4:value_setter()},
+}
+
+local joymap ={
+    base = joymap_noab,
+    modal = {}
+}
+
+function update_secondary_mappings()
+    mapper.set_secondary_mappings(joymap.base)
+    mapper.add_secondary_mappings(joymap.modal)
+end
+
+update_secondary_mappings()
 
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
         if value.aircraft == "Airbus A320 Neo FlyByWire" then
-            mapper.set_secondary_mappings(joymap_full)
+            joymap.base = joymap_full
+            update_secondary_mappings()
         else
-            mapper.set_secondary_mappings(joymap_noab)
+            joymap.base = joymap_noab
+            update_secondary_mappings()
         end
         if value.host then
             if value.aircraft then
@@ -283,7 +360,28 @@ mapper.set_primery_mappings({
             mapper.print("    [sim]: disconnected")
         end
     end},
+
+    {event=x56throttle.button34.down, action=function ()
+        joymap.modal = joymap_combat
+        update_secondary_mappings()
+        marm_on:set_value(true)
+    end},
+    {event=x56throttle.button34.following_down, action=marm_on:value_setter(false)},
+
+    {event=x56throttle.button35.down, action=function ()
+        joymap.modal = joymap_inflight
+        update_secondary_mappings()
+        marm_off:set_value(true)
+    end},
+    {event=x56throttle.button35.following_down, action=marm_off:value_setter(false)},
+
+    {event=x56throttle.button36.down, action=function ()
+        joymap.modal = joymap_preflight
+        update_secondary_mappings()
+        marm_off:set_value(true)
+    end},
+    {event=x56throttle.button36.following_down, action=marm_off:value_setter(false)},
+
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
-
 })

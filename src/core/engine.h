@@ -114,6 +114,7 @@ protected:
     Action* findAction(uint64_t evid);
 
     void setMapping(const char* function_name, int level, const sol::object& mapdef);
+    void addMapping(const char* function_name, int level, const sol::object& mapdef);
 };
 
 template <typename T>
