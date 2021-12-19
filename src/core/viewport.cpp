@@ -104,6 +104,8 @@ HWND ViewPort::View::getBottomWnd(){
 Action* ViewPort::View::findAction(uint64_t evid){
     if (mappings && mappings->count(evid)){
         return mappings->at(evid).get();
+    }else{
+        return nullptr;
     }
 }
 
