@@ -213,7 +213,8 @@ x56throttle_dev = mapper.device({
         {name = "button33", modtype = "button", modparam={follow_down = 200}},
         {name = "button34", modtype = "button", modparam={follow_down = 200}},
         {name = "button35", modtype = "button", modparam={follow_down = 200}},
-        {name = "button36", modtype = "button", modparam={follow_down = 200}},
+        {name = "button36", modtype = "button"},
+        {name = "button5", modtype = "button"},
     },
 })
 x56throttle = x56throttle_dev.events
@@ -317,7 +318,7 @@ local joymap_inflight = {
     {event=x56throttle.button10.change, action=hookup:value_setter()},
     {event=x56throttle.button11.change, action=hookdown:value_setter()},
     {event=x56throttle.button12.change, action=llight_on:value_setter()},
-    {event=x56throttle.button13.change, action=llight_on:value_setter()},
+    {event=x56throttle.button13.change, action=llight_off:value_setter()},
 }
 
 local joymap_combat = {
@@ -378,10 +379,9 @@ mapper.set_primery_mappings({
     {event=x56throttle.button36.down, action=function ()
         joymap.modal = joymap_preflight
         update_secondary_mappings()
-        marm_off:set_value(true)
     end},
-    {event=x56throttle.button36.following_down, action=marm_off:value_setter(false)},
 
+    {event=x56throttle.button5.down, action=toggle_view},
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
 })

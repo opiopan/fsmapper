@@ -182,7 +182,7 @@ public:
             }
         }
         if (buttons.size()){
-            os << std::endl << "    " << axes.size() << " buttons";
+            os << std::endl << "    " << buttons.size() << " buttons";
         }
         if (povs.size()){
             os << std::endl << "    " << povs.size() << " POVs";
