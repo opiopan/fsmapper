@@ -15,7 +15,7 @@ extern "C"
 /*========================================================
  Command parser
 ========================================================*/
-#define COMMAND_MAX_PARAM 10
+#define COMMAND_MAX_PARAM 32
 
 typedef enum{
     SIMHID_PARSE_INIT = 0,
