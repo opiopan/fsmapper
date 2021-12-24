@@ -13,6 +13,7 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <chrono>
 #include <sol/sol.hpp>
 #include "mappercore.h"
 #include "mappercore_inner.h"
@@ -38,6 +39,9 @@ public:
         stop,
         error,
     };
+    using CLOCK = std::chrono::steady_clock;
+    using TIME_POINT = CLOCK::time_point;
+    using MILLISEC = std::chrono::milliseconds;
 
 protected : 
     std::mutex mutex;
@@ -45,6 +49,7 @@ protected :
     Callback callback;
     Logger logger;
     MAPPER_LOGMODE logmode;
+    TIME_POINT now = CLOCK::now();
 
     struct {
         std::string scriptPath;
@@ -58,11 +63,26 @@ protected :
         bool should_gc = true;
     }scripting;
 
+    class DeferredAction{
+    protected:
+        std::shared_ptr<Action> action;
+        Event event;
+    public:
+        DeferredAction() = delete;
+        DeferredAction(const DeferredAction&) = delete;
+        DeferredAction(DeferredAction&& src): action(src.action), event(std::move(src.event)){};
+        DeferredAction(std::shared_ptr<Action> action, const Event& event): action(action), event(event){};
+        ~DeferredAction() = default;
+        std::shared_ptr<Action> get_action(){return action;};
+        Event& get_event(){return event;};
+    };
+
     struct {
         std::condition_variable cv;
         uint64_t idCounter;
         std::map<uint64_t, std::string> names;
         std::queue< std::unique_ptr<Event> > queue;
+        std::map<TIME_POINT, DeferredAction> deferred_actions;
     }event;
 
     std::unique_ptr<EventActionMap> mapping[2];
@@ -99,6 +119,8 @@ public:
     const char* getEventName(uint64_t evid) const;
     void sendEvent(Event&& event);
     void sendHostEvent(MAPPER_EVENT event, int64_t data);
+
+    void invokeActionIn(std::shared_ptr<Action> action, const Event& event, MILLISEC millisec);
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();

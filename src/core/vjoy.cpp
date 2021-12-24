@@ -208,7 +208,7 @@ public:
 
     std::shared_ptr<vJoyDeviceUnit> getButton(sol::object o_idx){
         auto idx = lua_safevalue<int64_t>(o_idx);
-        if (idx && *idx > 0 && *idx <= buttons.size()){
+        if (idx && *idx > 0 && *idx <= static_cast<int>(buttons.size())){
             return buttons[*idx];
         }else{
             return nullptr;
@@ -217,7 +217,7 @@ public:
 
     std::shared_ptr<vJoyDeviceUnit> getPov(sol::object o_idx){
         auto idx = lua_safevalue<int64_t>(o_idx);
-        if (idx && *idx > 0 && *idx <= povs.size()){
+        if (idx && *idx > 0 && *idx <= static_cast<int>(povs.size())){
             return povs[*idx];
         }else{
             return nullptr;

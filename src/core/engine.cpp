@@ -158,44 +158,80 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
 
             //-------------------------------------------------------------------------------
+            // check event queue and deferred action queue then invoke action
+            //-------------------------------------------------------------------------------
+            now = CLOCK::now();
+            bool queue_empty = true;
+            if (event.queue.size() > 0){
+                //-------------------------------------------------------------------------------
+                // process an event
+                //-------------------------------------------------------------------------------
+                queue_empty = false;
+                auto ev = std::move(event.queue.front());
+                event.queue.pop();
+                auto action = findAction(ev->getId());
+
+                if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
+                    event.names.count(ev->getId()) > 0){
+                    auto &name = event.names.at(ev->getId());
+                    std::ostringstream os;
+                    os << "Event occurred: " << name;
+                    if (ev->getType() == Event::Type::int_value){
+                        os << "(" << ev->getAs<int64_t>() << ")";
+                    }
+                    if (action){
+                        os << " -> " << action->getName();
+                    }
+                    lock.unlock();
+                    putLog(MCONSOLE_INFO, os.str());
+                    lock.lock();
+                }
+
+                if (action){
+                    lock.unlock();
+                    action->invoke(*ev, scripting.lua());
+                    lock.lock();
+                }
+            }else if (event.deferred_actions.size() > 0 && event.deferred_actions.begin()->first < now){
+                //-------------------------------------------------------------------------------
+                // process a deferred action
+                //-------------------------------------------------------------------------------
+                queue_empty = false;
+                auto& act_ev = event.deferred_actions.begin()->second;
+                auto action = act_ev.get_action();
+                auto& ev = act_ev.get_event();
+                if (logmode & MAPPER_LOG_EVENT){
+                    std::ostringstream os;
+                    os << "Deferred action execution: " << action->getName();
+                    lock.unlock();
+                    putLog(MCONSOLE_INFO, os.str());
+                    lock.lock();
+                }
+                lock.unlock();
+                action->invoke(ev, scripting.lua());
+                lock.lock();
+                event.deferred_actions.erase(event.deferred_actions.begin());
+            }
+
+            //-------------------------------------------------------------------------------
             // wait until event occurrence
             //-------------------------------------------------------------------------------
-            event.cv.wait(lock, [this]{
-                return this->event.queue.size() > 0 ||this->status != Status::running;
-            });
-            if (status != Status::running){
-                break;
-            }
-            auto ev = std::move(event.queue.front());
-            event.queue.pop();
+            if (queue_empty){
+                auto deferred_num = event.deferred_actions.size();
+                auto condition = [this, deferred_num]{
+                    return event.queue.size() > 0 || event.deferred_actions.size() > deferred_num || 
+                        status != Status::running;
+                };
 
-            //-------------------------------------------------------------------------------
-            // identify action correspond to event
-            //-------------------------------------------------------------------------------
-            auto action = findAction(ev->getId());
-            if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
-                event.names.count(ev->getId()) > 0){
-                auto &name = event.names.at(ev->getId());
-                std::ostringstream os;
-                os << "Event occurred: " << name;
-                if (ev->getType() == Event::Type::int_value){
-                    os << "(" << ev->getAs<int64_t>() << ")";
+                if (deferred_num > 0){
+                    event.cv.wait_until(lock, event.deferred_actions.begin()->first, condition);
+                }else{
+                    event.cv.wait(lock, condition);
                 }
-                if (action){
-                    os << " -> " << action->getName();
-                }
-                lock.unlock();
-                putLog(MCONSOLE_INFO, os.str());
-                lock.lock();
-            }
 
-            //-------------------------------------------------------------------------------
-            // invoke action
-            //-------------------------------------------------------------------------------
-            if (action){
-                lock.unlock();
-                action->invoke(*ev.get(), scripting.lua());
-                lock.lock();
+                if (status != Status::running){
+                    break;
+                }
             }
         }
         auto rc = status == Status::stop;
@@ -261,6 +297,20 @@ std::unique_ptr<Event>&& MapperEngine::receiveEvent(){
     auto ev = std::move(event.queue.front());
     event.queue.pop();
     return std::move(ev);
+}
+
+//============================================================================================
+// deferred action handling
+//============================================================================================
+void MapperEngine::invokeActionIn(std::shared_ptr<Action> action, const Event& ev, MILLISEC millisec){
+    std::lock_guard lock(mutex);
+    auto target = now + millisec;
+    while (event.deferred_actions.count(target)){
+        target += MILLISEC(1);
+    }
+    DeferredAction da(action, ev);
+    event.deferred_actions.emplace(target, std::move(da));
+    event.cv.notify_all();
 }
 
 //============================================================================================

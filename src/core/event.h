@@ -49,7 +49,7 @@ public:
     EventValue(std::string&& value) : type(Type::string_value){
         stringValue = std::make_unique<std::string>(std::move(value));
     };
-    EventValue(sol::object&& value){
+    EventValue(const sol::object& value){
         auto valtype = value.get_type();
         if (valtype == sol::type::lua_nil){
             type = Type::null;
@@ -75,15 +75,29 @@ public:
         }
     }
     EventValue(const EventValue& src){
+        *this = src;
+    };
+    EventValue(EventValue&& src){
+        *this = std::move(src);
+    };
+    ~EventValue() = default;
+
+    EventValue& operator = (const EventValue& src){
         type = src.type;
         unionValue = src.unionValue;
         if (src.stringValue.get()){
             stringValue = std::make_unique<std::string>(*src.stringValue);
-            luaValue = src.luaValue;
         }
-    };
-    EventValue(EventValue&&) = default;
-    ~EventValue() = default;
+        luaValue = src.luaValue;
+        return *this;
+    }
+    EventValue& operator = (EventValue&& src){
+        type = src.type;
+        unionValue = src.unionValue;
+        stringValue = std::move(src.stringValue);
+        luaValue = src.luaValue;
+        return *this;
+    }
 
     Type getType() const{return type;};
 
@@ -174,9 +188,24 @@ public:
     Event(uint64_t id, std::string&& value) : id(id), value(std::move(value)){};
     Event(uint64_t id, sol::object&& value): id(id), value(std::move(value)){};
     Event(uint64_t id, AssosiativeArray&& value): id(id), array(std::make_unique<AssosiativeArray>(std::move(value))){};
-    Event(const Event&) = delete;
-    Event(Event&&) = default;
+    Event(const Event& src){*this = src;};
+    Event(Event&& src): id(src.id), value(std::move(src.value)), array(std::move(src.array)){};
     ~Event() = default;
+
+    Event& operator = (const Event& src){
+        id = src.id;
+        value = std::move(src.value);
+        if (src.array.get()){
+            array = std::make_unique<AssosiativeArray>(*src.array);
+        }
+        return *this;
+    }
+    Event& operator = (Event&& src){
+        id = src.id;
+        value = std::move(src.value);
+        array = std::move(src.array);
+        return *this;
+    }
 
     uint64_t getId() const{return id;};
     bool isArrayValue() const{return array.get();};
