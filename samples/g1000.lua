@@ -384,4 +384,6 @@ mapper.set_primery_mappings({
     {event=x56throttle.button5.down, action=toggle_view},
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
+
+    {event=x56throttle.button29.change, action=filter.delay(500, function () mapper.print("deferred action test") end)},
 })

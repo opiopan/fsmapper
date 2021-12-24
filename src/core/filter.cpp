@@ -51,7 +51,26 @@ static std::shared_ptr<NativeAction::Function> duplicator(sol::variadic_args& va
         }
     };
     return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
-};
+}
+
+//============================================================================================
+// Deferred executor
+//============================================================================================
+static std::shared_ptr<NativeAction::Function> deferred_executor(MapperEngine& engine, sol::object millisec_o, sol::object function_o){
+    auto millisec = lua_safevalue<int>(millisec_o);
+    auto function = generate_action(function_o);
+    if (!millisec.has_value() || !function){
+        throw std::runtime_error("invalid argument, 1st parameter must be milliseconds "
+                                 "and 2nd parameter must be native action or Lua function");
+    }
+    std::ostringstream os;
+    os << "filter.delay(" << function->getName() << ")";
+
+    NativeAction::Function::ACTION_FUNCTION func = [&engine, millisec, function](Event& event, sol::state& lua){
+        engine.invokeActionIn(function, event, MapperEngine::MILLISEC(*millisec));
+    };
+    return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
+}
 
 //============================================================================================
 // interpolation filters
@@ -311,6 +330,12 @@ void filter_create_lua_env(MapperEngine& engine, sol::state& lua){
     table["duplicator"] = [&engine](sol::variadic_args va){
         return lua_c_interface(engine, "filter.duplicator", [&va]{
             return duplicator(va);
+        });
+    };
+
+    table["delay"] = [&engine](sol::object millisec, sol::object action){
+        return lua_c_interface(engine, "filter.delay", [&engine, millisec, action]{
+            return deferred_executor(engine, millisec, action);
         });
     };
 
