@@ -1,3 +1,6 @@
+tmod = require("test_module")
+tmod.print_package_path()
+
 g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",

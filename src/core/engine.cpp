@@ -4,6 +4,7 @@
 //
 
 #include <sstream>
+#include <filesystem>
 #include "hookdll.h"
 #include "engine.h"
 #include "device.h"
@@ -128,6 +129,15 @@ void MapperEngine::initScriptingEnvAndRun(){
     // create simulator host related environments
     //-------------------------------------------------------------------------------
     scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua());
+
+    //-------------------------------------------------------------------------------
+    // set package path
+    //-------------------------------------------------------------------------------
+    std::filesystem::path path(scripting.scriptPath);
+    path.remove_filename();
+    path /= "?.lua";
+    auto package = scripting.lua()["package"];
+    package["path"] = path.string();
 
     //-------------------------------------------------------------------------------
     // run the script
