@@ -12,9 +12,11 @@ fsmapper allow to:
 
 The above functions are configuread flexibly by writing a Lua scrip.
 
-## Building fsmapper
+## How to build
 1. **Requirements**<br>
-Visual Studio 2019 or later must be installed.
+Make sure that the following softwares are installed in advance.
+    - Visual Studio 2019 or later
+    - Flight Simulator 2020 SDK 
 
 2. **Downloading Source Codes**<br>
     ```shell
