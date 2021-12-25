@@ -275,6 +275,11 @@ void ViewPort::setMappings(sol::object mapdef){
     });
 }
 
+void ViewPort::addMappings(sol::object mapdef){
+    lua_c_interface(manager.get_engine(), "viewport:add_mappings", [this, &mapdef](){
+        addEventActionMap(manager.get_engine(), mappings, mapdef);
+    });
+}
 
 //============================================================================================
 // Viewport manager inmplementation
@@ -302,7 +307,8 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
         "current_view", sol::property(&ViewPort::getCurrentView),
         "change_view", &ViewPort::setCurrentView,
         "register_view", &ViewPort::registerView,
-        "set_mappings", &ViewPort::setMappings
+        "set_mappings", &ViewPort::setMappings,
+        "add_mappings", &ViewPort::addMappings
     );
     mapper_table["start_viewports"] = [this](){
         lua_c_interface(engine, "mapper.start_viewports", [this](){start_viewports();});

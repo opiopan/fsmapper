@@ -152,6 +152,7 @@ public:
     std::optional<int> getCurrentView();
     void setCurrentView(sol::optional<int> view_no_obj);
     void setMappings(sol::object mapdef);
+    void addMappings(sol::object mapdef);
 
     // functions to export to ViewPortManager
     void freeze(){is_freezed = true;};

@@ -197,6 +197,8 @@ end
 
 viewport:set_mappings({
     {event=g1000.AUX2D.down, action=toggle_view},
+})
+viewport:add_mappings({
     {event=g1000.AUX2U.down, action=toggle_view},
 })
 
