@@ -262,6 +262,7 @@ public:
 };
 
 enum class EventID : int64_t{
+    NILL = 0,
     STOP = 1000,
     CHANGE_SIMCONNECTION,
     CHANGE_AIRCRAFT,

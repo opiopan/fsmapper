@@ -385,5 +385,8 @@ mapper.set_primery_mappings({
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
 
-    {event=x56throttle.button29.change, action=filter.delay(500, function () mapper.print("deferred action test") end)},
+    {event=x56throttle.button29.change, action=filter.delay(500, function () mapper.print("    deferred action test") end)},
+    {event=x56throttle.button28.change, action=function () 
+        mapper.delay(200, function () mapper.print("    deferred Lua function test") end)
+    end},
 })

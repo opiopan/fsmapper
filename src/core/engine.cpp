@@ -48,6 +48,7 @@ void MapperEngine::initScriptingEnvAndRun(){
     // create 'mapper' table
     //      mapper.print():                  print message on console
     //      mapper.abort():                  abort mapper engine
+    //      mapper.delay():                  deferred function execution
     //      mapper.set_primery_mappings():   set primery mappings
     //      mapper.add_primery_mappings();   add primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
@@ -67,6 +68,20 @@ void MapperEngine::initScriptingEnvAndRun(){
     mapper["abort"] = [this](){
         putLog(MCONSOLE_ERROR, "mapper-core: abort scripting");
         abort();
+    };
+    mapper["delay"] = [this](const sol::object millisec_o, sol::object function_o){
+        lua_c_interface(*this, "mapper:delay", [this, millisec_o, function_o](){
+            auto millisec = lua_safevalue<int>(millisec_o);
+            if (!millisec.has_value()){
+                throw MapperException("1st parameter must be milliseconds as numeric value");
+            }
+            if (function_o.get_type() != sol::type::function){
+                throw MapperException("2nd parameter must be a Lua function");
+            }
+            auto function = std::make_shared<LuaAction>(function_o);
+            Event ev(static_cast<int64_t>(EventID::NILL));
+            invokeActionIn(function, ev, MILLISEC(*millisec));
+        });
     };
     mapper["set_primery_mappings"] = [this](const sol::object def){
         lua_c_interface(*this, "mapper:set_primery_mappings", [this, &def](){
