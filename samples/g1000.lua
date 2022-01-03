@@ -219,7 +219,8 @@ x56throttle_dev = mapper.device({
         {name = "button34", modtype = "button", modparam={follow_down = 200}},
         {name = "button35", modtype = "button", modparam={follow_down = 200}},
         {name = "button36", modtype = "button"},
-        {name = "button5", modtype = "button"},
+        {name = "button28", modtype = "button"},
+        {name = "button29", modtype = "button"},
     },
 })
 x56throttle = x56throttle_dev.events
@@ -254,6 +255,8 @@ local hookup = vjoy:get_button(21)
 local hookdown = vjoy:get_button(22)
 local llight_on = vjoy:get_button(23)
 local llight_off = vjoy:get_button(24)
+local flight_aux1 = vjoy:get_button(31)
+local flight_aux2 = vjoy:get_button(32)
 
 local aa_mode = vjoy:get_button(25)
 local ag_mode = vjoy:get_button(26)
@@ -324,6 +327,8 @@ local joymap_inflight = {
     {event=x56throttle.button11.change, action=hookdown:value_setter()},
     {event=x56throttle.button12.change, action=llight_on:value_setter()},
     {event=x56throttle.button13.change, action=llight_off:value_setter()},
+    {event=x56throttle.button18.change, action=flight_aux1:value_setter()},
+    {event=x56throttle.button19.change, action=flight_aux2:value_setter()},
 }
 
 local joymap_combat = {
@@ -386,12 +391,8 @@ mapper.set_primery_mappings({
         update_secondary_mappings()
     end},
 
-    {event=x56throttle.button5.down, action=toggle_view},
+    {event=x56throttle.button28.down, action=toggle_view},
+    {event=x56throttle.button29.down, action=toggle_view},
     {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
     {event=g1000.AUX1D.down, action=function () mapper.abort() end},
-
-    {event=x56throttle.button29.change, action=filter.delay(500, function () mapper.print("    deferred action test") end)},
-    {event=x56throttle.button28.change, action=function () 
-        mapper.delay(200, function () mapper.print("    deferred Lua function test") end)
-    end},
 })
