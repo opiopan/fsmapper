@@ -3,6 +3,8 @@ Release
 build
 modules/lua-5.4.3
 modules/vJoySDK/SDK
+src/packages
+Generated Files
 .vscode
 .vs
 *.user
