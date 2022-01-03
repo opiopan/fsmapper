@@ -15,7 +15,11 @@ The above functions are configuread flexibly by writing a Lua scrip.
 ## How to build
 1. **Requirements**<br>
 Make sure that the following softwares are installed in advance.
-    - Visual Studio 2019 or later
+    - Visual Studio 2019 or 2022 whilch is instaled with folowing workloads:
+        - Universal Windows Platform development
+        - C++ desktop development
+        - C++ game development
+    - [Windows App SDK extension for Visual Studio (C++)](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
     - Flight Simulator 2020 SDK 
 
 2. **Downloading Source Codes**<br>
