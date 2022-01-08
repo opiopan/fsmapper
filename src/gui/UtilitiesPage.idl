@@ -1,0 +1,8 @@
+namespace gui
+{
+    [default_interface]
+    runtimeclass UtilitiesPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        UtilitiesPage();
+    }
+}

@@ -1,0 +1,9 @@
+namespace gui
+{
+    [default_interface]
+    runtimeclass ConsolePage : Microsoft.UI.Xaml.Controls.Page
+    {
+        ConsolePage();
+        Int32 MyProperty;
+    }
+}

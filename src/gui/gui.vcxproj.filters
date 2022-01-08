@@ -5,6 +5,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
+    <Page Include="DashboardPage.xaml" />
+    <Page Include="ConsolePage.xaml" />
+    <Page Include="UtilitiesPage.xaml" />
+    <Page Include="SettingsPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
@@ -44,9 +48,6 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{058835d3-d05a-4fba-9b6a-ef4e12e9901a}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />

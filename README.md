@@ -28,7 +28,8 @@ Make sure that the following softwares are installed in advance.
     ```
 
 3. **Preparing dependent modules**<br>
-    Downloading and compiling Lua source codes and downloading vJoySDK will be done by following step.
+    Downloading and compiling Lua source codes and downloading vJoySDK will be done by following step.<br>
+    Note that this step and following steps must be run the terminal environment which is configured to compile AMD64 binary.
     ```shell
     $ cd fsmapper\modules
     $ .\prepare_modules.bat

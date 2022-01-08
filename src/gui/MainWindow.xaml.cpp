@@ -3,32 +3,47 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#include "DashboardPage.xaml.h"
+#include "ConsolePage.xaml.h"
+#include "UtilitiesPage.xaml.h"
+#include "SettingsPage.xaml.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace winrt::gui::implementation
 {
     MainWindow::MainWindow()
     {
         InitializeComponent();
+        this->Title(L"fsmapper");
+        pages.emplace_back(page_data(L"dashboard", xaml_typename<gui::DashboardPage>()));
+        pages.emplace_back(page_data(L"console", xaml_typename<gui::ConsolePage>()));
+        pages.emplace_back(page_data(L"utilities", xaml_typename<gui::UtilitiesPage>()));
+        pages.emplace_back(page_data(L"settings", xaml_typename<gui::SettingsPage>()));
     }
 
-    int32_t MainWindow::MyProperty()
+    void MainWindow::NavView_Loaded(
+        Windows::Foundation::IInspectable const&,
+        Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        throw hresult_not_implemented();
+        NavView().SelectedItem(NavView().MenuItems().GetAt(0));
     }
 
-    void MainWindow::MyProperty(int32_t /* value */)
+    void MainWindow::NavView_SelectionChanged(
+        NavigationView const&,
+        NavigationViewSelectionChangedEventArgs const& args)
     {
-        throw hresult_not_implemented();
-    }
-
-    void MainWindow::myButton_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        myButton().Content(box_value(L"Clicked"));
+        if (args.SelectedItemContainer()) {
+            auto tag = winrt::unbox_value_or<winrt::hstring>(
+                args.SelectedItemContainer().Tag(), L"");
+            for (auto&& page : pages) {
+                if (page.first == tag) {
+                    ContentFrame().Navigate(
+                        page.second, nullptr, args.RecommendedNavigationTransitionInfo());
+                }
+            }
+        }
     }
 }
