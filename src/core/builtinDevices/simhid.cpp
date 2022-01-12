@@ -75,8 +75,7 @@ static bool simhid_term(FSMAPPER_HANDLE handle){
     return true;
 }
 
-static bool simhid_open(FSMAPPER_HANDLE handle, FSMDEVICE device, LUAVALUE identifier)
-{
+static bool simhid_open(FSMAPPER_HANDLE handle, FSMDEVICE device, LUAVALUE identifier, LUAVALUE){
     try{
         auto simhid = static_cast<SimHID*>(fsmapper_getContext(handle));
         auto devPath = SimHIDConnection::identifyDevicePath(identifier);

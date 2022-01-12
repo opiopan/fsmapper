@@ -634,7 +634,7 @@ static bool dinputdev_term(FSMAPPER_HANDLE handle){
     });
 }
 
-static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALUE identifier)
+static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALUE identifier, LUAVALUE options)
 {
     auto make_list = [](LUAVALUE value){
         DeviceCaps::NameList list;
@@ -653,15 +653,15 @@ static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALU
         return std::move(list);
     };
 
-    return plugin_interface(handle, false, [handle, dev_handle, identifier, &make_list](){
+    return plugin_interface(handle, false, [handle, dev_handle, identifier, options, &make_list](){
         auto dinputdev = static_cast<DinputDev*>(fsmapper_getContext(handle));
         auto name = luav_getItemWithKey(identifier, "name");
         if (name){
             if (luav_getType(name) != LV_STRING){
                 throw std::runtime_error("\"name\" value for direct input device identifier must be string.");
             }
-            auto&& denylist = make_list(luav_getItemWithKey(identifier, "denylist"));
-            auto&& allowlist = make_list(luav_getItemWithKey(identifier, "allowlist"));
+            auto&& denylist = make_list(luav_getItemWithKey(options, "denylist"));
+            auto&& allowlist = make_list(luav_getItemWithKey(options, "allowlist"));
             if (denylist.size() > 0 && allowlist.size() > 0){
                 throw std::runtime_error("both of allowlist and denylist cannot be specified");
             }

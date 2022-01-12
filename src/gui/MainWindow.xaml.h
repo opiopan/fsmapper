@@ -19,6 +19,15 @@ namespace winrt::gui::implementation
     private:
         using page_data = std::pair<std::wstring, Windows::UI::Xaml::Interop::TypeName>;
         std::vector<page_data> pages;
+
+        HWND get_hwnd() {
+            HWND hwnd{ 0 };
+            auto window_native{ this->try_as<::IWindowNative>() };
+            window_native->get_WindowHandle(&hwnd);
+            return hwnd;
+        }
+        void save_window_position();
+        void restore_window_position();
     };
 }
 

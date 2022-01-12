@@ -17,7 +17,10 @@ namespace winrt::gui::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
+        //this->ExtendsContentIntoTitleBar(true);
+        //this->SetTitleBar(AppTitleBar());
         this->Title(L"fsmapper");
+
         pages.emplace_back(page_data(L"dashboard", xaml_typename<gui::DashboardPage>()));
         pages.emplace_back(page_data(L"console", xaml_typename<gui::ConsolePage>()));
         pages.emplace_back(page_data(L"utilities", xaml_typename<gui::UtilitiesPage>()));
@@ -28,6 +31,7 @@ namespace winrt::gui::implementation
         Windows::Foundation::IInspectable const&,
         Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
+        restore_window_position();
         NavView().SelectedItem(NavView().MenuItems().GetAt(0));
     }
 
@@ -45,5 +49,13 @@ namespace winrt::gui::implementation
                 }
             }
         }
+    }
+
+    void MainWindow::save_window_position()
+    {
+    }
+
+    void MainWindow::restore_window_position()
+    {
     }
 }

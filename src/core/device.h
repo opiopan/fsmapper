@@ -27,7 +27,8 @@ public:
     Device() = delete;
     Device(const Device&) = delete;
     Device(Device&&) = delete;
-    Device(MapperEngine& engine, DeviceClass& deviceClass, std::string& name, const DeviceModifierRule& rule, const sol::object& identifier);
+    Device(MapperEngine& engine, DeviceClass& deviceClass, std::string& name,
+           const DeviceModifierRule& rule, const sol::object& identifier, const sol::object& options);
     virtual ~Device();
 
     operator FSMDEVICECTX* (){return &contextForPlugin;};

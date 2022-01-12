@@ -210,14 +210,12 @@ mapper.start_viewports()
 x56throttle_dev = mapper.device({
     name = "X56 Throttle",
     type = "dinput",
-    identifier = {
-        name = "Saitek Pro Flight X-56 Rhino Throttle",
-        denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"},
-    },
+    identifier = {name = "Saitek Pro Flight X-56 Rhino Throttle"},
+    options = {denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"}},
     modifiers = {
         {name = "button33", modtype = "button", modparam={follow_down = 200}},
-        {name = "button34", modtype = "button", modparam={follow_down = 200}},
-        {name = "button35", modtype = "button", modparam={follow_down = 200}},
+        {name = "button34", modtype = "button"},
+        {name = "button35", modtype = "button"},
         {name = "button36", modtype = "button"},
         {name = "button28", modtype = "button"},
         {name = "button29", modtype = "button"},
@@ -290,7 +288,8 @@ local joymap_noab = {
     )},
     {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},
     {event=x56throttle.button33.down, action=filter.duplicator(
-        airbrake_open:value_setter(false), airbrake_close:value_setter(true)
+        airbrake_open:value_setter(false),
+        airbrake_close:value_setter(true)
     )},
     {event=x56throttle.button33.following_down, action=airbrake_close:value_setter(false)},
 }
@@ -372,19 +371,21 @@ mapper.set_primery_mappings({
         end
     end},
 
-    {event=x56throttle.button34.down, action=function ()
-        joymap.modal = joymap_combat
-        update_secondary_mappings()
-        marm_on:set_value(true)
-    end},
-    {event=x56throttle.button34.following_down, action=marm_on:value_setter(false)},
+    {event=x56throttle.button34.down, action=filter.duplicator(
+        function ()
+            joymap.modal = joymap_combat
+            update_secondary_mappings()
+            marm_on:set_value(true)
+        end,
+        filter.delay(200, marm_on:value_setter(false)))
+    },
 
     {event=x56throttle.button35.down, action=function ()
         joymap.modal = joymap_inflight
         update_secondary_mappings()
         marm_off:set_value(true)
+        mapper.delay(200, function () marm_off:set_value(false) end)
     end},
-    {event=x56throttle.button35.following_down, action=marm_off:value_setter(false)},
 
     {event=x56throttle.button36.down, action=function ()
         joymap.modal = joymap_preflight

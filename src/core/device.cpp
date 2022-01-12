@@ -19,7 +19,8 @@ static const MAPPER_PLUGIN_DEVICE_OPS* builtin_plugins[] = {
 // Plubin device cupsulized object
 //    This object is created each time "mapper.device()" is called in lua script.
 //============================================================================================
-Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name, const DeviceModifierRule& rule, const sol::object& identifier) : 
+Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name,
+               const DeviceModifierRule& rule, const sol::object& identifier, const sol::object& options) : 
     name(name), engine(engine), deviceClass(deviceClass), contextForPlugin(*this){
     std::unique_ptr<LUAVALUECTX> identifier_lua;
     if (identifier.get_type() == sol::type::table){
@@ -27,7 +28,13 @@ Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name
     }else{
         identifier_lua = std::make_unique<LUAVALUECTX>(identifier);
     }
-    if (!deviceClass.plugin().open(deviceClass, *this, identifier_lua.get())){
+    std::unique_ptr<LUAVALUECTX> options_lua;
+    if (options.get_type() == sol::type::table){
+        options_lua = std::make_unique<LUAVALUE_TABLE>(options);
+    }else{
+        options_lua = std::make_unique<LUAVALUECTX>(options);
+    }
+    if (!deviceClass.plugin().open(deviceClass, *this, identifier_lua.get(), options_lua.get())){
         std::ostringstream os;
         os << "failed to open a device: [name: " << name << "] [type: " << deviceClass.plugin().name << "]";
         throw MapperException(os.str());
@@ -135,6 +142,7 @@ std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     std::string name = arg["name"];
     sol::object identifire = arg["identifier"];
     sol::object modifiers = arg["modifiers"];
+    sol::object options = arg["options"];
     if (name == ""){
         throw MapperException("Device name as \"name\" parameter must be specified.");
     }
@@ -146,7 +154,7 @@ std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     auto &deviceClass = classes.at(type);
     DeviceModifierRule rule;
     modifierManager.makeRule(modifiers, rule);
-    auto device = std::make_shared<Device>(engine, *deviceClass, name, rule, identifire);
+    auto device = std::make_shared<Device>(engine, *deviceClass, name, rule, identifire, options);
     return device;
 }
 

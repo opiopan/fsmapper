@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    
+
     <Grid Background="Transparent">
         <Grid.Resources>
             <AcrylicBrush x:Key="NavigationViewExpandedPaneBackground" 
@@ -14,12 +14,16 @@
                           TintOpacity=".1"
                           FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
         </Grid.Resources>
-
         <NavigationView x:Name="NavView"
                         IsBackButtonVisible="Collapsed"
                         Loaded="NavView_Loaded"
                         SelectionChanged="NavView_SelectionChanged"
                         IsSettingsVisible="False">
+            <NavigationView.Header>
+                <Grid Background="Aqua" Padding="16, 0, 16, 24">
+                    <TextBlock>Header to show script status and control</TextBlock>
+                </Grid>
+            </NavigationView.Header>
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="dashboard" Content="Dashboard">
                     <NavigationViewItem.Icon>

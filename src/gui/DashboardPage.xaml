@@ -7,7 +7,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock>This is Dashboard Page</TextBlock>
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid Background="{StaticResource SystemChromeMediumLowColor}" CornerRadius="12" Padding="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Padding="10, 10, 10, 10"
+                 Text="This is a Dashboard"
+                 IsReadOnly="True"/>
+            <TextBox Padding="10, 10, 10, 10"
+                 Text="2nd field"
+                 IsReadOnly="True"/>
+        </Grid>
     </StackPanel>
 </Page>

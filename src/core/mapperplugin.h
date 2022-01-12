@@ -90,7 +90,7 @@ typedef struct {
     const char * name;
     bool (*init)(FSMAPPER_HANDLE mapper);
     bool (*term)(FSMAPPER_HANDLE mapper);
-    bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier);
+    bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
     bool (*start)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     bool (*close)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     size_t (*getUnitNum)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
