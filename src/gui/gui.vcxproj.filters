@@ -17,6 +17,8 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Models\appfs.cpp" />
+    <ClCompile Include="Models\config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

@@ -1,8 +1,15 @@
 ﻿#pragma once
 
 #include "MainWindow.g.h"
+#include <winrt/Microsoft.UI.Windowing.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
+
+namespace winrt
+{
+    using namespace Microsoft::UI::Windowing;
+    using namespace Microsoft::UI;
+}
 
 namespace winrt::gui::implementation
 {
@@ -19,6 +26,7 @@ namespace winrt::gui::implementation
     private:
         using page_data = std::pair<std::wstring, Windows::UI::Xaml::Interop::TypeName>;
         std::vector<page_data> pages;
+        winrt::event_token closing_event_token;
 
         HWND get_hwnd() {
             HWND hwnd{ 0 };
@@ -26,6 +34,8 @@ namespace winrt::gui::implementation
             window_native->get_WindowHandle(&hwnd);
             return hwnd;
         }
+
+        winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow();
         void save_window_position();
         void restore_window_position();
     };

@@ -2,6 +2,7 @@
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
+#include "Models/config.hpp"
 
 using namespace winrt;
 using namespace Windows::Foundation;
@@ -21,6 +22,7 @@ using namespace gui::implementation;
 App::App()
 {
     InitializeComponent();
+    fsmapper::init_app_config();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
     UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)

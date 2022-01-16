@@ -38,7 +38,7 @@ Make sure that the following softwares are installed in advance.
 4. **Compiling**
     ```shell
     $ cd ..\src
-    $ msbuild /p:Configuration=Release
+    $ msbuild /t:mockup /p:Configuration=Release
 
 ## Running fsmapper
 The core module as DLL to handle device operation and mapping those event to the flight simulator driven by Lua script is almost implemeted. However the GUI for this software has not been implemented yet so far.<br>
