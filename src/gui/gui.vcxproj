@@ -94,11 +94,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Models;$(ProjectDir)Views;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Models;$(ProjectDir)Views;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -109,14 +111,8 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ConsolePage.xaml.h">
-      <DependentUpon>ConsolePage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </ClInclude>
-    <ClInclude Include="DashboardPage.xaml.h">
-      <DependentUpon>DashboardPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </ClInclude>
+    <ClInclude Include="Models\appfs.hpp" />
+    <ClInclude Include="Models\config.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -124,40 +120,28 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="SettingsPage.xaml.h">
-      <DependentUpon>SettingsPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <ClInclude Include="Views\ConsolePage.xaml.h">
+      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="UtilitiesPage.xaml.h">
-      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <ClInclude Include="Views\DashboardPage.xaml.h">
+      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Views\SettingsPage.xaml.h">
+      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Views\UtilitiesPage.xaml.h">
+      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
-    <Page Include="ConsolePage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="DashboardPage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="MainWindow.xaml" />
-    <Page Include="SettingsPage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UtilitiesPage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
+    <Page Include="Views\ConsolePage.xaml" />
+    <Page Include="Views\DashboardPage.xaml" />
+    <Page Include="Views\SettingsPage.xaml" />
+    <Page Include="Views\UtilitiesPage.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ConsolePage.xaml.cpp">
-      <DependentUpon>ConsolePage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </ClCompile>
-    <ClCompile Include="DashboardPage.xaml.cpp">
-      <DependentUpon>DashboardPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </ClCompile>
     <ClCompile Include="Models\appfs.cpp" />
     <ClCompile Include="Models\config.cpp" />
     <ClCompile Include="pch.cpp">
@@ -170,13 +154,17 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="SettingsPage.xaml.cpp">
-      <DependentUpon>SettingsPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <ClCompile Include="Views\ConsolePage.xaml.cpp">
+      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="UtilitiesPage.xaml.cpp">
-      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <ClCompile Include="Views\DashboardPage.xaml.cpp">
+      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Views\SettingsPage.xaml.cpp">
+      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Views\UtilitiesPage.xaml.cpp">
+      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,26 +172,14 @@
       <SubType>Code</SubType>
       <DependentUpon>App.xaml</DependentUpon>
     </Midl>
-    <Midl Include="ConsolePage.idl">
-      <DependentUpon>ConsolePage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Midl>
-    <Midl Include="DashboardPage.idl">
-      <DependentUpon>DashboardPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Midl>
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
-    <Midl Include="SettingsPage.idl">
-      <DependentUpon>SettingsPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Midl>
-    <Midl Include="UtilitiesPage.idl">
-      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Midl>
+    <Midl Include="Views\ConsolePage.idl" />
+    <Midl Include="Views\DashboardPage.idl" />
+    <Midl Include="Views\SettingsPage.idl" />
+    <Midl Include="Views\UtilitiesPage.idl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png" />

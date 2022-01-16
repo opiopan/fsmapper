@@ -5,23 +5,53 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
-    <Page Include="DashboardPage.xaml" />
-    <Page Include="ConsolePage.xaml" />
-    <Page Include="UtilitiesPage.xaml" />
-    <Page Include="SettingsPage.xaml" />
+    <Page Include="Views\SettingsPage.xaml">
+      <Filter>Views</Filter>
+    </Page>
+    <Page Include="Views\ConsolePage.xaml">
+      <Filter>Views</Filter>
+    </Page>
+    <Page Include="Views\DashboardPage.xaml">
+      <Filter>Views</Filter>
+    </Page>
+    <Page Include="Views\UtilitiesPage.xaml">
+      <Filter>Views</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
+    <Midl Include="Views\SettingsPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\ConsolePage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\DashboardPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\UtilitiesPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Models\appfs.cpp" />
-    <ClCompile Include="Models\config.cpp" />
+    <ClCompile Include="Models\config.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Models\appfs.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Models\appfs.hpp">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Models\config.hpp">
+      <Filter>Models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
@@ -49,6 +79,12 @@
   <ItemGroup>
     <Filter Include="Assets">
       <UniqueIdentifier>{058835d3-d05a-4fba-9b6a-ef4e12e9901a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Views">
+      <UniqueIdentifier>{aff24aef-e395-4803-be1d-25b0e78fa860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models">
+      <UniqueIdentifier>{95b73d51-ec9d-46d8-b2c2-d947a40d3543}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
