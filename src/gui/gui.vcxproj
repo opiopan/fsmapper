@@ -176,10 +176,18 @@
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
-    <Midl Include="Views\ConsolePage.idl" />
-    <Midl Include="Views\DashboardPage.idl" />
-    <Midl Include="Views\SettingsPage.idl" />
-    <Midl Include="Views\UtilitiesPage.idl" />
+    <Midl Include="Views\ConsolePage.idl">
+      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="Views\DashboardPage.idl">
+      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="Views\SettingsPage.idl">
+      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="Views\UtilitiesPage.idl">
+      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
+    </Midl>
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget

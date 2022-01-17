@@ -29,7 +29,7 @@ Make sure that the following softwares are installed in advance.
 
 3. **Preparing dependent modules**<br>
     Downloading and compiling Lua source codes and downloading vJoySDK will be done by following step.<br>
-    Note that this step and following steps must be run the terminal environment which is configured to compile AMD64 binary.
+    Note that this step and following steps must be run the terminal environment which is configured to compile x64 binary.
     ```shell
     $ cd fsmapper\modules
     $ .\prepare_modules.bat
@@ -48,3 +48,12 @@ This mockup utility can be launched with Lua script path as below.
 ```shell
 $ src\x64\Release\testmock.exe samples\g1000.lua
 ```
+
+## Convenient Software
+The SimConnect SDK of Flight Simulator 2020 defines many [EVENT IDs](https://docs.flightsimulator.com/html/index.htm#t=Programming_Tools%2FSimVars%2FEvent_IDs.htm) to interact with the guages and panels of aircraft. 
+For example, ```G1000_PFD_FLIGHTPLAN_BUTTON``` is defined for the FPL button on the PFD.<br>
+It seems that outer software can invoke guages or panel operation by sending such events via SimConnect. However almost event case, Flight Simulator 2020 doesn't react even if the event are sent from outer software via SimConnect.<br>
+[MobiFlight WASM Module](https://github.com/MobiFlight/MobiFlight-WASM-Module) solves this problem.
+This WASM module allows to define user defined event and allows to invoke RPN script to operate cockpit items.<br>
+I've installed this module into the ```community``` folder of Flight Simulator 2020.
+And [sample scprits](samples) for fsmapper uses events defined by this WASM module.<br>

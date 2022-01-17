@@ -31,12 +31,10 @@ namespace winrt::gui::implementation
 
         restore_window_position();
         
-        /*
         auto app_window = GetAppWindowForCurrentWindow();
         closing_event_token = app_window.Closing([this](const auto&, const auto&) {
             save_window_position();
         });
-        */
     }
 
     void MainWindow::NavView_Loaded(
