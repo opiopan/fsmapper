@@ -5,13 +5,13 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
-    <Page Include="Views\SettingsPage.xaml">
+    <Page Include="Views\DashboardPage.xaml">
       <Filter>Views</Filter>
     </Page>
     <Page Include="Views\ConsolePage.xaml">
       <Filter>Views</Filter>
     </Page>
-    <Page Include="Views\DashboardPage.xaml">
+    <Page Include="Views\SettingsPage.xaml">
       <Filter>Views</Filter>
     </Page>
     <Page Include="Views\UtilitiesPage.xaml">
@@ -21,13 +21,25 @@
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
+    <Midl Include="Views\ConsolePage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\DashboardPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
     <Midl Include="Views\SettingsPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\UtilitiesPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="Views\DashboardPage.idl">
       <Filter>Views</Filter>
     </Midl>
     <Midl Include="Views\ConsolePage.idl">
       <Filter>Views</Filter>
     </Midl>
-    <Midl Include="Views\DashboardPage.idl">
+    <Midl Include="Views\SettingsPage.idl">
       <Filter>Views</Filter>
     </Midl>
     <Midl Include="Views\UtilitiesPage.idl">
@@ -37,10 +49,10 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Models\config.cpp">
+    <ClCompile Include="Models\appfs.cpp">
       <Filter>Models</Filter>
     </ClCompile>
-    <ClCompile Include="Models\appfs.cpp">
+    <ClCompile Include="Models\config.cpp">
       <Filter>Models</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,13 +67,13 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
-      <UniqueIdentifier>{058835d3-d05a-4fba-9b6a-ef4e12e9901a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Views">
-      <UniqueIdentifier>{aff24aef-e395-4803-be1d-25b0e78fa860}</UniqueIdentifier>
+      <UniqueIdentifier>{8b952566-f559-4b46-af59-bebb8cbe1c24}</UniqueIdentifier>
     </Filter>
     <Filter Include="Models">
-      <UniqueIdentifier>{95b73d51-ec9d-46d8-b2c2-d947a40d3543}</UniqueIdentifier>
+      <UniqueIdentifier>{b6b8f88d-9573-48df-9f95-7d6e43f162ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Views">
+      <UniqueIdentifier>{ff4c665c-01da-41a7-a78c-9b2654aa6fe1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -10,15 +10,35 @@
     <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top">
         <Grid Background="{StaticResource SystemChromeMediumLowColor}" CornerRadius="12" Padding="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <Rectangle Fill="Red" Width="80" Height="22"/>
+            <Rectangle Fill="blue" Width="50" Height="22"/>
+            <!--
             <TextBox Padding="10, 10, 10, 10"
                  Text="This is a Dashboard"
                  IsReadOnly="True"/>
             <TextBox Padding="10, 10, 10, 10"
                  Text="2nd field"
                  IsReadOnly="True"/>
+            -->
+        </Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="44"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Rectangle Fill="Red" Width="44"/>
+            <Rectangle Fill="Blue" Grid.Row="1"/>
+            <Rectangle Fill="Green" Grid.Column="1"/>
+            <Rectangle Fill="Orange" Grid.Row="1" Grid.Column="1"/>
+            <Rectangle Fill="Purple" Width="44"/>
+            <Rectangle Fill="Yellow" Grid.Row="1"/>
         </Grid>
     </StackPanel>
 </Page>

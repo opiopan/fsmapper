@@ -6,11 +6,12 @@
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Interop.h>
+
+#include "config.hpp"
 #include "DashboardPage.xaml.h"
 #include "ConsolePage.xaml.h"
 #include "UtilitiesPage.xaml.h"
 #include "SettingsPage.xaml.h"
-#include "Models/config.hpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -20,9 +21,8 @@ namespace winrt::gui::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
-        //this->ExtendsContentIntoTitleBar(true);
-        //this->SetTitleBar(AppTitleBar());
-        this->Title(L"fsmapper");
+        this->ExtendsContentIntoTitleBar(true);
+        this->SetTitleBar(AppTitleBar());
 
         pages.emplace_back(page_data(L"dashboard", xaml_typename<gui::DashboardPage>()));
         pages.emplace_back(page_data(L"console", xaml_typename<gui::ConsolePage>()));
@@ -30,7 +30,7 @@ namespace winrt::gui::implementation
         pages.emplace_back(page_data(L"settings", xaml_typename<gui::SettingsPage>()));
 
         restore_window_position();
-        
+
         auto app_window = GetAppWindowForCurrentWindow();
         closing_event_token = app_window.Closing([this](const auto&, const auto&) {
             save_window_position();
@@ -61,7 +61,7 @@ namespace winrt::gui::implementation
     }
 
     winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow() {
-        HWND hwnd{nullptr};
+        HWND hwnd{ nullptr };
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
         auto winid = winrt::GetWindowIdFromWindow(hwnd);
         auto app_window = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(winid);
@@ -70,11 +70,11 @@ namespace winrt::gui::implementation
 
     void MainWindow::save_window_position()
     {
-        HWND hwnd{nullptr};
+        HWND hwnd{ nullptr };
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
         RECT rect;
         ::GetWindowRect(hwnd, &rect);
-        fsmapper::rect crect{rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top};
+        fsmapper::rect crect{ rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top };
         fsmapper::app_config.set_window_rect(crect);
         fsmapper::app_config.save();
     }

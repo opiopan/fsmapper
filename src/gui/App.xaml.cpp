@@ -2,7 +2,7 @@
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
-#include "Models/config.hpp"
+#include "config.hpp"
 
 using namespace winrt;
 using namespace Windows::Foundation;
