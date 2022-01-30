@@ -5,16 +5,16 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
-    <Page Include="Views\DashboardPage.xaml">
+    <Page Include="ConsolePage.xaml">
       <Filter>Views</Filter>
     </Page>
-    <Page Include="Views\ConsolePage.xaml">
+    <Page Include="DashboardPage.xaml">
       <Filter>Views</Filter>
     </Page>
-    <Page Include="Views\SettingsPage.xaml">
+    <Page Include="SettingsPage.xaml">
       <Filter>Views</Filter>
     </Page>
-    <Page Include="Views\UtilitiesPage.xaml">
+    <Page Include="UtilitiesPage.xaml">
       <Filter>Views</Filter>
     </Page>
   </ItemGroup>
@@ -43,6 +43,18 @@
       <Filter>Views</Filter>
     </Midl>
     <Midl Include="Views\UtilitiesPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="ConsolePage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="DashboardPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="SettingsPage.idl">
+      <Filter>Views</Filter>
+    </Midl>
+    <Midl Include="UtilitiesPage.idl">
       <Filter>Views</Filter>
     </Midl>
   </ItemGroup>

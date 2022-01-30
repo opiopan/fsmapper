@@ -111,6 +111,12 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConsolePage.xaml.h">
+      <DependentUpon>ConsolePage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="DashboardPage.xaml.h">
+      <DependentUpon>DashboardPage.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="Models\appfs.hpp" />
     <ClInclude Include="Models\config.hpp" />
     <ClInclude Include="pch.h" />
@@ -120,28 +126,28 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Views\ConsolePage.xaml.h">
-      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
+    <ClInclude Include="SettingsPage.xaml.h">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Views\DashboardPage.xaml.h">
-      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="Views\SettingsPage.xaml.h">
-      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="Views\UtilitiesPage.xaml.h">
-      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
+    <ClInclude Include="UtilitiesPage.xaml.h">
+      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
+    <Page Include="ConsolePage.xaml" />
+    <Page Include="DashboardPage.xaml" />
     <Page Include="MainWindow.xaml" />
-    <Page Include="Views\ConsolePage.xaml" />
-    <Page Include="Views\DashboardPage.xaml" />
-    <Page Include="Views\SettingsPage.xaml" />
-    <Page Include="Views\UtilitiesPage.xaml" />
+    <Page Include="SettingsPage.xaml" />
+    <Page Include="UtilitiesPage.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConsolePage.xaml.cpp">
+      <DependentUpon>ConsolePage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="DashboardPage.xaml.cpp">
+      <DependentUpon>DashboardPage.xaml</DependentUpon>
+    </ClCompile>
     <ClCompile Include="Models\appfs.cpp" />
     <ClCompile Include="Models\config.cpp" />
     <ClCompile Include="pch.cpp">
@@ -154,17 +160,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Views\ConsolePage.xaml.cpp">
-      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
+    <ClCompile Include="SettingsPage.xaml.cpp">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Views\DashboardPage.xaml.cpp">
-      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="Views\SettingsPage.xaml.cpp">
-      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="Views\UtilitiesPage.xaml.cpp">
-      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
+    <ClCompile Include="UtilitiesPage.xaml.cpp">
+      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,21 +176,21 @@
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
-    <Midl Include="Views\ConsolePage.idl">
+    <Midl Include="ConsolePage.idl">
       <SubType>Code</SubType>
-      <DependentUpon>Views\ConsolePage.xaml</DependentUpon>
+      <DependentUpon>ConsolePage.xaml</DependentUpon>
 	</Midl>
-    <Midl Include="Views\DashboardPage.idl">
-      <SubType>Code</SubType>
-      <DependentUpon>Views\DashboardPage.xaml</DependentUpon>
+    <Midl Include="DashboardPage.idl">
+	  <SubType>Code</SubType>
+	  <DependentUpon>DashboardPage.xaml</DependentUpon>
 	</Midl>
-    <Midl Include="Views\SettingsPage.idl">
+    <Midl Include="SettingsPage.idl">
       <SubType>Code</SubType>
-      <DependentUpon>Views\SettingsPage.xaml</DependentUpon>
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
 	</Midl>
-    <Midl Include="Views\UtilitiesPage.idl">
+    <Midl Include="UtilitiesPage.idl">
       <SubType>Code</SubType>
-      <DependentUpon>Views\UtilitiesPage.xaml</DependentUpon>
+      <DependentUpon>UtilitiesPage.xaml</DependentUpon>
 	</Midl>
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
