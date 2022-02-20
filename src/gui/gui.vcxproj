@@ -94,17 +94,23 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Views;$(ProjectDir)\Models;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fsmappercore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Views;$(ProjectDir)\Models;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fsmappercore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -117,8 +123,7 @@
     <ClInclude Include="DashboardPage.xaml.h">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Models\appfs.hpp" />
-    <ClInclude Include="Models\config.hpp" />
+    <ClInclude Include="Models.Mapper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -132,6 +137,9 @@
     <ClInclude Include="UtilitiesPage.xaml.h">
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Utilities\appfs.hpp" />
+    <ClInclude Include="Utilities\config.hpp" />
+    <ClInclude Include="Utilities\encoding.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -148,8 +156,7 @@
     <ClCompile Include="DashboardPage.xaml.cpp">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Models\appfs.cpp" />
-    <ClCompile Include="Models\config.cpp" />
+    <ClCompile Include="Models.Mapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -166,6 +173,8 @@
     <ClCompile Include="UtilitiesPage.xaml.cpp">
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Utilities\appfs.cpp" />
+    <ClCompile Include="Utilities\config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -179,19 +188,20 @@
     <Midl Include="ConsolePage.idl">
       <SubType>Code</SubType>
       <DependentUpon>ConsolePage.xaml</DependentUpon>
-	</Midl>
+    </Midl>
     <Midl Include="DashboardPage.idl">
-	  <SubType>Code</SubType>
-	  <DependentUpon>DashboardPage.xaml</DependentUpon>
-	</Midl>
+      <SubType>Code</SubType>
+      <DependentUpon>DashboardPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="Models.idl" />
     <Midl Include="SettingsPage.idl">
       <SubType>Code</SubType>
       <DependentUpon>SettingsPage.xaml</DependentUpon>
-	</Midl>
+    </Midl>
     <Midl Include="UtilitiesPage.idl">
       <SubType>Code</SubType>
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
-	</Midl>
+    </Midl>
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget

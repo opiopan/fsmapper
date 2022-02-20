@@ -12,17 +12,13 @@ using namespace Microsoft::UI::Xaml::Navigation;
 using namespace gui;
 using namespace gui::implementation;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+winrt::gui::Models::Mapper App::mapper{nullptr};
 
-/// <summary>
-/// Initializes the singleton application object.  This is the first line of authored code
-/// executed, and as such is the logical equivalent of main() or WinMain().
-/// </summary>
 App::App()
 {
     InitializeComponent();
     fsmapper::init_app_config();
+    mapper = winrt::make<gui::Models::implementation::Mapper>();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
     UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)

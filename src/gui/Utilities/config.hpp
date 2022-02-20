@@ -13,6 +13,18 @@ namespace fsmapper{
         int32_t top;
         int32_t width;
         int32_t height;
+
+        rect() = default;
+        rect(const rect&) = default;
+
+        bool operator == (const rect& rval){
+            return left == rval.left && top == rval.top && 
+                   width == rval.width && height == rval.height;
+        }
+
+        bool operator != (const rect& rval){
+            return !(*this == rval);
+        }
     };
 
     class config{

@@ -14,11 +14,12 @@
                           TintOpacity=".1"
                           FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
         </Grid.Resources>
-        <StackPanel Grid.Row="0" Height="35" Orientation="Horizontal" 
+        <StackPanel Grid.Row="0" Height="28" Orientation="Horizontal" 
                     Spacing="15" x:Name="AppTitleBar" 
                     HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Top">
-            <TextBlock VerticalAlignment="Center" Text="fsmapper" />
+                    VerticalAlignment="Top"
+                    Padding="15, 0, 5, 0">
+            <TextBlock VerticalAlignment="Center" Text="{StaticResource AppName}"/>
         </StackPanel>
         <NavigationView x:Name="NavView"
                         Grid.Row="1"

@@ -4,7 +4,6 @@
     <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="MainWindow.xaml" />
     <Page Include="ConsolePage.xaml">
       <Filter>Views</Filter>
     </Page>
@@ -17,22 +16,13 @@
     <Page Include="UtilitiesPage.xaml">
       <Filter>Views</Filter>
     </Page>
+    <Page Include="MainWindow.xaml">
+      <Filter>Views</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
-    <Midl Include="Views\ConsolePage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\DashboardPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\SettingsPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\UtilitiesPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
     <Midl Include="Views\DashboardPage.idl">
       <Filter>Views</Filter>
     </Midl>
@@ -57,24 +47,36 @@
     <Midl Include="UtilitiesPage.idl">
       <Filter>Views</Filter>
     </Midl>
+    <Midl Include="Models.idl">
+      <Filter>Models</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Models\appfs.cpp">
-      <Filter>Models</Filter>
+    <ClCompile Include="Utilities\appfs.cpp">
+      <Filter>Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="Models\config.cpp">
+    <ClCompile Include="Utilities\config.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Models.Mapper.cpp">
       <Filter>Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Models\appfs.hpp">
+    <ClInclude Include="Utilities\appfs.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\config.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Models.Mapper.h">
       <Filter>Models</Filter>
     </ClInclude>
-    <ClInclude Include="Models\config.hpp">
-      <Filter>Models</Filter>
+    <ClInclude Include="Utilities\encoding.hpp">
+      <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +85,12 @@
     </Filter>
     <Filter Include="Models">
       <UniqueIdentifier>{b6b8f88d-9573-48df-9f95-7d6e43f162ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{2a3d1877-8d6b-4b64-938a-b06f0761a225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ViewModels">
+      <UniqueIdentifier>{04ea6bbf-7105-49b5-976f-57555e19a293}</UniqueIdentifier>
     </Filter>
     <Filter Include="Views">
       <UniqueIdentifier>{ff4c665c-01da-41a7-a78c-9b2654aa6fe1}</UniqueIdentifier>

@@ -10,6 +10,10 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            <x:String x:Key="AppName">fsmapper</x:String>
+            <SolidColorBrush x:Key="MyBrush" Color="Yellow"/>
         </ResourceDictionary>
+        <!--
+        -->
     </Application.Resources>
 </Application>
