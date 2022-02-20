@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "MainWindow.g.h"
+#include "ViewModels.MainWindowViewModel.h"
 #include <winrt/Microsoft.UI.Windowing.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -16,6 +17,8 @@ namespace winrt::gui::implementation
     struct MainWindow : MainWindowT<MainWindow>
     {
         MainWindow();
+        winrt::gui::ViewModels::MainWindowViewModel ViewModel(){return view_model;}
+
         void NavView_Loaded(
             Windows::Foundation::IInspectable const&,
             Microsoft::UI::Xaml::RoutedEventArgs const&);
@@ -24,6 +27,7 @@ namespace winrt::gui::implementation
             NavigationViewSelectionChangedEventArgs const& args);
 
     private:
+        static winrt::gui::ViewModels::MainWindowViewModel view_model;
         using page_data = std::pair<std::wstring, Windows::UI::Xaml::Interop::TypeName>;
         std::vector<page_data> pages;
         winrt::event_token closing_event_token;

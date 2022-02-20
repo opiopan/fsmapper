@@ -50,6 +50,9 @@
     <Midl Include="Models.idl">
       <Filter>Models</Filter>
     </Midl>
+    <Midl Include="ViewModels.idl">
+      <Filter>ViewModels</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -62,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="Models.Mapper.cpp">
       <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewModels.MainWindowViewModel.cpp">
+      <Filter>ViewModels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="Utilities\encoding.hpp">
       <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewModels.MainWindowViewModel.h">
+      <Filter>ViewModels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

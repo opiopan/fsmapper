@@ -4,6 +4,11 @@
 #include "MainWindow.xaml.h"
 #include "config.hpp"
 
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#include <winrt/Microsoft.UI.Windowing.h>
+#include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Microsoft::UI::Xaml;
@@ -13,6 +18,7 @@ using namespace gui;
 using namespace gui::implementation;
 
 winrt::gui::Models::Mapper App::mapper{nullptr};
+winrt::Microsoft::UI::Xaml::Window App::window{nullptr};
 
 App::App()
 {
@@ -31,6 +37,14 @@ App::App()
     });
 #endif
 }
+
+HWND App::TopWindowHandle() {
+    HWND hwnd{ nullptr };
+    auto const& window = TopWindow();
+    window.try_as<IWindowNative>()->get_WindowHandle(&hwnd);
+    return hwnd;
+}
+
 
 /// <summary>
 /// Invoked when the application is launched normally by the end user.  Other entry points

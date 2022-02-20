@@ -19,8 +19,8 @@ namespace tools{
 
     template <typename STR_FROM, typename STR_TO, int TRANSLATE(const STR_FROM*, STR_TO*, int)>
     class base_translator{
-        static constexpr auto  initial_buf_size = 0x40; // must be power of two
-        static constexpr auto  initial_buf_size_mask = ~(initial_buf_size - 1);
+        static constexpr auto initial_buf_size = 0x40; // must be power of two
+        static constexpr auto initial_buf_size_mask = ~(initial_buf_size - 1);
         static constexpr auto initial_element_num_in_int32 = initial_buf_size / (sizeof(int32_t) / sizeof(char));
         static constexpr auto initial_element_num = initial_buf_size / (sizeof(STR_TO) / sizeof(char));
 

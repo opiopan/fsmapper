@@ -43,17 +43,41 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Tag="settings" Content="Settings" Icon="Setting"/>
             </NavigationView.FooterMenuItems>
-            <Frame x:Name="ContentFrame" Padding="16,0,16,24" IsTabStop="True">
-                <Frame.ContentTransitions>
-                    <TransitionCollection>
-                        <NavigationThemeTransition>
-                            <NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                                <DrillInNavigationTransitionInfo />
-                            </NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                        </NavigationThemeTransition>
-                    </TransitionCollection>
-                </Frame.ContentTransitions>
-            </Frame>
+
+            <Grid Grid.RowDefinitions="Auto,*">
+                <StackPanel Grid.Row="0" Height="80" Orientation="Horizontal" Padding="0, 0, 0, 20"
+                            Spacing="9" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                    <TextBlock Text="Lua Script:" Padding="20, 0, 0, 0" VerticalAlignment="Center" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Background="{StaticResource SystemChromeMediumLowColor}" 
+                                Height="30">
+                        <Ellipse Height="15" Width="15" Fill="DarkGreen" VerticalAlignment="Center" Margin="10, 0, 10, 0"/>
+                        <TextBlock Text="G1000.lua" Padding="0, 0, 10, 0" 
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   MinWidth="150"/>
+                    </StackPanel>
+                    <Button IsEnabled="True" Click="{x:Bind ViewModel.ClickOpenButton}">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                    </Button>
+                    <Button Width="100" Margin="60,0,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
+                            <TextBlock Text="Run"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <Frame x:Name="ContentFrame" Padding="16,0,16,24" IsTabStop="True" Grid.Row="1">
+                    <Frame.ContentTransitions>
+                        <TransitionCollection>
+                            <NavigationThemeTransition>
+                                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                                    <DrillInNavigationTransitionInfo />
+                                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                            </NavigationThemeTransition>
+                        </TransitionCollection>
+                    </Frame.ContentTransitions>
+                </Frame>
+            </Grid>
+            
         </NavigationView>
     </Grid>
 </Window>

@@ -140,6 +140,7 @@
     <ClInclude Include="Utilities\appfs.hpp" />
     <ClInclude Include="Utilities\config.hpp" />
     <ClInclude Include="Utilities\encoding.hpp" />
+    <ClInclude Include="ViewModels.MainWindowViewModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -175,6 +176,7 @@
     </ClCompile>
     <ClCompile Include="Utilities\appfs.cpp" />
     <ClCompile Include="Utilities\config.cpp" />
+    <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -202,6 +204,7 @@
       <SubType>Code</SubType>
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </Midl>
+    <Midl Include="ViewModels.idl" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget

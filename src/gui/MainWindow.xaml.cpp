@@ -19,12 +19,17 @@ using namespace Microsoft::UI::Xaml;
 
 namespace winrt::gui::implementation
 {
+    winrt::gui::ViewModels::MainWindowViewModel MainWindow::view_model{nullptr};
+
     MainWindow::MainWindow(){
         InitializeComponent();
+
         this->ExtendsContentIntoTitleBar(true);
         this->SetTitleBar(AppTitleBar());
         auto appname = Application::Current().Resources().Lookup(winrt::box_value(L"AppName"));
         this->Title(unbox_value<winrt::hstring>(appname));
+
+        view_model = winrt::make<winrt::gui::ViewModels::implementation::MainWindowViewModel>();
 
         pages.emplace_back(page_data(L"dashboard", xaml_typename<gui::DashboardPage>()));
         pages.emplace_back(page_data(L"console", xaml_typename<gui::ConsolePage>()));

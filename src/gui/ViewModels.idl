@@ -1,0 +1,9 @@
+namespace gui.ViewModels{
+    runtimeclass MainWindowViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
+        MainWindowViewModel();
+
+        String ScriptName{get;};
+
+        Windows.Foundation.IAsyncAction ClickOpenButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+    }
+}

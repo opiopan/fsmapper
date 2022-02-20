@@ -1,8 +1,10 @@
+import "ViewModels.idl";
 namespace gui
 {
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
+        gui.ViewModels.MainWindowViewModel ViewModel{get;};
     }
 }

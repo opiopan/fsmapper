@@ -52,13 +52,12 @@ namespace winrt::gui::Models::implementation{
     }
 
     Mapper::~Mapper(){
+        StopScript();
         std::unique_lock lock(mutex);
-        if (status == MapperStatus::running){
-            should_stop = true;
-            cv.notify_all();
-            lock.unlock();
-            script_runner.join();
-        }
+        should_stop = true;
+        cv.notify_all();
+        lock.unlock();
+        script_runner.join();
     }
 
     //============================================================================================
