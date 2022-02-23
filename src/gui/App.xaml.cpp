@@ -40,8 +40,7 @@ App::App()
 
 HWND App::TopWindowHandle() {
     HWND hwnd{ nullptr };
-    auto const& window = TopWindow();
-    window.try_as<IWindowNative>()->get_WindowHandle(&hwnd);
+    TopWindow().try_as<IWindowNative>()->get_WindowHandle(&hwnd);
     return hwnd;
 }
 

@@ -196,6 +196,14 @@ bool MapperEngine::run(std::string&& scriptPath){
                 event.queue.pop();
                 auto action = findAction(ev->getId());
 
+                if (ev->getId() == static_cast<int64_t>(EventID::STOP)){
+                    status = Status::stop;
+                    lock.unlock();
+                    putLog(MCONSOLE_INFO, "mapper-core: a request to stopp mapping has been received");
+                    lock.lock();
+                    break;
+                }
+
                 if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
                     event.names.count(ev->getId()) > 0){
                     auto &name = event.names.at(ev->getId());

@@ -23,18 +23,6 @@
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
-    <Midl Include="Views\DashboardPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\ConsolePage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\SettingsPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
-    <Midl Include="Views\UtilitiesPage.idl">
-      <Filter>Views</Filter>
-    </Midl>
     <Midl Include="ConsolePage.idl">
       <Filter>Views</Filter>
     </Midl>
@@ -86,6 +74,9 @@
     </ClInclude>
     <ClInclude Include="ViewModels.MainWindowViewModel.h">
       <Filter>ViewModels</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\tools.hpp">
+      <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

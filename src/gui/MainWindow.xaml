@@ -14,6 +14,10 @@
                           TintOpacity=".1"
                           FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
         </Grid.Resources>
+
+        <!--=========================================================================
+          Window title bar
+        ==========================================================================-->
         <StackPanel Grid.Row="0" Height="28" Orientation="Horizontal" 
                     Spacing="15" x:Name="AppTitleBar" 
                     HorizontalAlignment="Stretch" 
@@ -21,12 +25,16 @@
                     Padding="15, 0, 5, 0">
             <TextBlock VerticalAlignment="Center" Text="{StaticResource AppName}"/>
         </StackPanel>
+
         <NavigationView x:Name="NavView"
                         Grid.Row="1"
                         IsBackButtonVisible="Collapsed"
                         Loaded="NavView_Loaded"
                         SelectionChanged="NavView_SelectionChanged"
                         IsSettingsVisible="False">
+            <!--=========================================================================
+              Navigation menu definition
+            ==========================================================================-->
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="dashboard" Content="Dashboard">
                     <NavigationViewItem.Icon>
@@ -45,26 +53,39 @@
             </NavigationView.FooterMenuItems>
 
             <Grid Grid.RowDefinitions="Auto,*">
+                <!--=========================================================================
+                  Scripting control pane
+                ==========================================================================-->
                 <StackPanel Grid.Row="0" Height="80" Orientation="Horizontal" Padding="0, 0, 0, 20"
-                            Spacing="9" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                            Spacing="9" HorizontalAlignment="Right" VerticalAlignment="Top">
                     <TextBlock Text="Lua Script:" Padding="20, 0, 0, 0" VerticalAlignment="Center" FontWeight="Bold"/>
                     <StackPanel Orientation="Horizontal" Background="{StaticResource SystemChromeMediumLowColor}" 
                                 Height="30">
-                        <Ellipse Height="15" Width="15" Fill="DarkGreen" VerticalAlignment="Center" Margin="10, 0, 10, 0"/>
-                        <TextBlock Text="G1000.lua" Padding="0, 0, 10, 0" 
+                        <Ellipse Height="15" Width="15"
+                                 Fill="{x:Bind ViewModel.ScriptStatusBrush, Mode=OneWay}"
+                                 VerticalAlignment="Center" Margin="10, 0, 10, 0"/>
+                        <TextBlock Text="{x:Bind ViewModel.ScriptName, Mode=OneWay}" Padding="0, 0, 10, 0" 
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
                                    MinWidth="150"/>
                     </StackPanel>
-                    <Button IsEnabled="True" Click="{x:Bind ViewModel.ClickOpenButton}">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                    <Button IsEnabled="{x:Bind ViewModel.OpenButtonIsEnabled, Mode=OneWay}"
+                            Click="{x:Bind ViewModel.ClickOpenButton}">
+                        <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
                     </Button>
-                    <Button Width="100" Margin="60,0,0,0">
+                    <Button Width="80" Margin="60,0,18,0"
+                            IsEnabled="{x:Bind ViewModel.StartStopButtonIsEnabled, Mode=OneWay}"
+                            Click="{x:Bind ViewModel.ClickStartStopButton}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
-                            <TextBlock Text="Run"/>
+                            <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets"
+                                      Glyph="{x:Bind ViewModel.StartStopButtonIcon, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.StartStopButtonLabel, Mode=OneWay}"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
+
+                <!--=========================================================================
+                  Placefolder for views corresponds to each menu item
+                ==========================================================================-->
                 <Frame x:Name="ContentFrame" Padding="16,0,16,24" IsTabStop="True" Grid.Row="1">
                     <Frame.ContentTransitions>
                         <TransitionCollection>
@@ -76,8 +97,8 @@
                         </TransitionCollection>
                     </Frame.ContentTransitions>
                 </Frame>
+
             </Grid>
-            
         </NavigationView>
     </Grid>
 </Window>

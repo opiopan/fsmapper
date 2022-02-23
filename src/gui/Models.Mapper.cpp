@@ -32,7 +32,6 @@ namespace winrt::gui::Models::implementation{
         script_path = fsmapper::app_config.get_script_path().c_str();
 
         scheduler = scheduler_proc();
-        mapper = mapper_init(event_callback, message_callback, this);
         script_runner = std::move(std::thread([this]{
             std::unique_lock lock(mutex);
             while (true){
@@ -44,6 +43,8 @@ namespace winrt::gui::Models::implementation{
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();
+                mapper_terminate(mapper);
+                mapper = nullptr;
                 status = result ? MapperStatus::stop : MapperStatus::error;
                 dirty_properties |= property_status;
                 cv.notify_all();
@@ -98,10 +99,13 @@ namespace winrt::gui::Models::implementation{
     }
 
     void Mapper::ScriptPath(hstring const& value){
-        std::lock_guard lock{mutex};
-        update_property(script_path, value, L"ScriptPath");
-        std::filesystem::path path(value.c_str());
-        fsmapper::app_config.set_script_path(std::move(path));
+        std::unique_lock lock{ mutex };
+            if (status != MapperStatus::running){
+            std::filesystem::path path(value.c_str());
+            fsmapper::app_config.set_script_path(std::move(path));
+            update_property(lock, script_path, value, L"ScriptPath");
+            update_property(lock, status, MapperStatus::stop, L"Status");
+        }
     }
 
     winrt::gui::Models::MapperStatus Mapper::Status(){
@@ -125,6 +129,7 @@ namespace winrt::gui::Models::implementation{
     void Mapper::RunScript(){
         std::lock_guard lock{mutex};
         if (status != MapperStatus::running){
+            mapper = mapper_init(event_callback, message_callback, this);
             status = MapperStatus::running;
             dirty_properties |= property_status;
             cv.notify_all();

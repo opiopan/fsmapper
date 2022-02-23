@@ -45,19 +45,23 @@ namespace winrt::gui::Models::implementation{
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
-        template <typename T>
-        void update_property(T& variable, const T& value, const wchar_t* name){
+        template <typename LOCK, typename T>
+        void update_property(LOCK& lock, T& variable, const T& value, const wchar_t* name){
             if (variable != value){
                 variable = value;
+                lock.unlock();
                 property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+                lock.lock();
             }
         }
 
-        template <typename T>
-        void update_property(T& variable, T&& value, const wchar_t* name){
+        template <typename LOCK, typename T>
+        void update_property(LOCK& lock, T& variable, T&& value, const wchar_t* name){
             if (variable != value){
                 variable = std::move(value);
+                lock.unlock();
                 property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+                lock.lock();
             }
         }
 

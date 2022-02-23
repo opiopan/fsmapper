@@ -3,7 +3,13 @@ namespace gui.ViewModels{
         MainWindowViewModel();
 
         String ScriptName{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush ScriptStatusBrush{get;};
+        Boolean OpenButtonIsEnabled{get;};
+        Boolean StartStopButtonIsEnabled{get;};
+        String StartStopButtonIcon{get;};
+        String StartStopButtonLabel{get;};
 
         Windows.Foundation.IAsyncAction ClickOpenButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ClickStartStopButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 }

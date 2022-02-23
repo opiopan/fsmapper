@@ -2,7 +2,7 @@ namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
     enum Simulators {none = 0, fs2020, dcs};
 
-	runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
+    runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
         String ScriptPath;

@@ -11,7 +11,10 @@
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
             <x:String x:Key="AppName">fsmapper</x:String>
-            <SolidColorBrush x:Key="MyBrush" Color="Yellow"/>
+            <SolidColorBrush x:Key="ScriptStatusColorStop" Color="DarkGreen"/>
+            <SolidColorBrush x:Key="ScriptStatusColorRunning" Color="#00d000"/>
+            <SolidColorBrush x:Key="ScriptStatusColorErrorLight" Color="Red"/>
+            <SolidColorBrush x:Key="ScriptStatusColorErrorDark" Color="DarkRed"/>
         </ResourceDictionary>
         <!--
         -->

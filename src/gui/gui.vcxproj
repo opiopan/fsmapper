@@ -140,6 +140,7 @@
     <ClInclude Include="Utilities\appfs.hpp" />
     <ClInclude Include="Utilities\config.hpp" />
     <ClInclude Include="Utilities\encoding.hpp" />
+    <ClInclude Include="Utilities\tools.hpp" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
   </ItemGroup>
   <ItemGroup>
