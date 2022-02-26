@@ -48,6 +48,7 @@ DLLEXPORT MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE
 
 DLLEXPORT bool mapper_terminate(MapperHandle handle){
     handle->engine->stop();
+    handle->engine->inhibitCallback();
     delete handle;
     return true;
 }

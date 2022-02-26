@@ -141,6 +141,7 @@
     <ClInclude Include="Utilities\config.hpp" />
     <ClInclude Include="Utilities\encoding.hpp" />
     <ClInclude Include="Utilities\tools.hpp" />
+    <ClInclude Include="ViewModels.DashboardPageViewModel.h" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +178,7 @@
     </ClCompile>
     <ClCompile Include="Utilities\appfs.cpp" />
     <ClCompile Include="Utilities\config.cpp" />
+    <ClCompile Include="ViewModels.DashboardPageViewModel.cpp" />
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -215,6 +217,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\dcslogo.png" />
+    <Image Include="Assets\fs2020logo.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -57,6 +57,9 @@
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp">
       <Filter>ViewModels</Filter>
     </ClCompile>
+    <ClCompile Include="ViewModels.DashboardPageViewModel.cpp">
+      <Filter>ViewModels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -77,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="Utilities\tools.hpp">
       <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewModels.DashboardPageViewModel.h">
+      <Filter>ViewModels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -101,5 +107,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\fs2020logo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\dcslogo.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
 </Project>

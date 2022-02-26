@@ -1,15 +1,22 @@
-﻿#pragma once
+﻿//
+// DashboardPage.xml.h
+//  Author: Hiroshi Murayama <opiopan@gmail.com>
+//
+#pragma once
 
 #include "DashboardPage.g.h"
 
 namespace winrt::gui::implementation
 {
-    struct DashboardPage : DashboardPageT<DashboardPage>
-    {
+    struct DashboardPage : DashboardPageT<DashboardPage>{
         DashboardPage();
 
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
+        winrt::gui::ViewModels::DashboardPageViewModel ViewModel(){
+            return view_model;
+        }
+
+    protected:
+        winrt::gui::ViewModels::DashboardPageViewModel view_model{nullptr};
     };
 }
 

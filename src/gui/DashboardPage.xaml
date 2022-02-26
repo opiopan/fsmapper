@@ -7,38 +7,86 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-        <Grid Background="{StaticResource SystemChromeMediumLowColor}" CornerRadius="12" Padding="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Rectangle Grid.Column="0" Fill="Red" Width="80" Height="22"/>
-            <Rectangle Grid.Column="1" Fill="blue" Width="50" Height="22"/>
-            <!--
-            <TextBox Padding="10, 10, 10, 10"
-                 Text="This is a Dashboard"
-                 IsReadOnly="True"/>
-            <TextBox Padding="10, 10, 10, 10"
-                 Text="2nd field"
-                 IsReadOnly="True"/>
-            -->
-        </Grid>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="44"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Rectangle Fill="Red" Width="44"/>
-            <Rectangle Fill="Blue" Grid.Row="1"/>
-            <Rectangle Fill="Green" Grid.Column="1"/>
-            <Rectangle Fill="Orange" Grid.Row="1" Grid.Column="1"/>
-            <Rectangle Fill="Purple" Width="44"/>
-            <Rectangle Fill="Yellow" Grid.Row="1"/>
-        </Grid>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Connected simulator pane-->
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
+                    Background="{StaticResource SystemChromeMediumLowColor}"
+                    Height="50"  VerticalAlignment="Center"
+                    CornerRadius="10" Padding="12, 0, 12, 0">
+            <TextBlock FontSize="24" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
+            <Image Source="/Assets/fs2020logo.png" Height="26" Margin="16, 0, 0, 0"/>
+            <TextBlock Margin="16, 0, 0, 0" VerticalAlignment="Center" Text="Flight Simulator 2020 []"/>
+        </StackPanel>
+
+        <!-- Viewport pane-->
+        <StackPanel Grid.Row="1" Orientation="Vertical"
+                    Background="{StaticResource SystemChromeMediumLowColor}"
+                    CornerRadius="10"
+                    Margin="0,16,8,0"
+                    Padding="12, 8, 12, 12">
+            <Grid Grid.ColumnDefinitions="Auto,*,Auto">
+                <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
+                <Button Content="Activate Viewports" Grid.Column="2"/>
+            </Grid>
+
+            <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                       Text="1 viewport is defined:"/>
+            <TextBlock LineHeight="22" Margin="20,4,0,0"
+                       Text="- G1000 Viewport [contains 2 views]"/>
+
+            <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                       Text="2 captured windows are defined (0/2 captured):"/>
+        </StackPanel>
+
+        <!-- Stack for the other informations-->
+        <ScrollViewer Grid.Row="1" Grid.Column="1">
+            <StackPanel Orientation="Vertical"
+                        Margin="8,16,0,0">
+
+                <!-- Device pane-->
+                <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
+                            Visibility="Visible"
+                            CornerRadius="10"
+                            Padding="12, 8, 12, 12"
+                            Margin="0,0,0,16">
+                    <TextBlock FontSize="24">Devices</TextBlock>
+                    <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                       Text="2 devices are opend:"/>
+                    <TextBlock LineHeight="22" Margin="20,4,0,0"
+                               Text="- SimHID G1000 [simhid]&#10;- Saitek Pro Flight X-56 Rhino Throttle"/>
+                </StackPanel>
+
+                <!-- Mappings pane-->
+                <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
+                            CornerRadius="10"
+                            Padding="12, 8, 12, 12"
+                            Margin="0,0,0,16">
+                    <TextBlock FontSize="24">Mappings</TextBlock>
+                    <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                       Text="120 event-action mappings are registered:"/>
+                    <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primery) :"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>
+
+                        <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Text="4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Text="16"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Text="4"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Text="1100"/>
+                    </Grid>
+
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>

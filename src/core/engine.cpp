@@ -376,7 +376,9 @@ void MapperEngine::addMapping(const char* function_name, int level, const sol::o
 // send event to host program
 //============================================================================================
 void MapperEngine::sendHostEvent(MAPPER_EVENT event, int64_t data){
-    callback(event, data);
+    if (!callback_is_inhibited){
+        callback(event, data);
+    }
 }
 
 std::vector<CapturedWindowInfo> MapperEngine::get_captured_window_list(){

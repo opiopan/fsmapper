@@ -56,7 +56,7 @@
                 <!--=========================================================================
                   Scripting control pane
                 ==========================================================================-->
-                <StackPanel Grid.Row="0" Height="80" Orientation="Horizontal" Padding="0, 0, 0, 20"
+                <StackPanel Grid.Row="0" Height="50" Orientation="Horizontal" Padding="0, 0, 0, 0"
                             Spacing="9" HorizontalAlignment="Right" VerticalAlignment="Top">
                     <TextBlock Text="Lua Script:" Padding="20, 0, 0, 0" VerticalAlignment="Center" FontWeight="Bold"/>
                     <StackPanel Orientation="Horizontal" Background="{StaticResource SystemChromeMediumLowColor}" 
@@ -86,7 +86,7 @@
                 <!--=========================================================================
                   Placefolder for views corresponds to each menu item
                 ==========================================================================-->
-                <Frame x:Name="ContentFrame" Padding="16,0,16,24" IsTabStop="True" Grid.Row="1">
+                <Frame x:Name="ContentFrame" Padding="24,8,16,16" IsTabStop="True" Grid.Row="1">
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition>

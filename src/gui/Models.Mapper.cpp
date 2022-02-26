@@ -158,10 +158,31 @@ namespace winrt::gui::Models::implementation{
     // mapper core callbaack functions
     //============================================================================================
     bool Mapper::event_callback(MapperHandle mapper, MAPPER_EVENT event, int64_t data){
+        auto self = reinterpret_cast<Mapper*>(mapper_getHostContext(mapper));
+        return self->proc_event(event, data);
+    }
+
+    bool Mapper::proc_event(MAPPER_EVENT event, int64_t data){
+        std::unique_lock lock(mutex);
+        if (event == MEV_CHANGE_SIMCONNECTION){
+            active_sim = static_cast<gui::Models::Simulators>(data);
+            dirty_properties |= property_active_sim;
+            cv.notify_all();
+        }else if (event == MEV_CHANGE_AIRCRAFT){
+            tools::utf8_to_utf16_translator name(reinterpret_cast<const char*>(data));
+            aircraft_name = name;
+            dirty_properties |= property_aircraft_name;
+            cv.notify_all();
+        }
         return true;
     }
 
     bool Mapper::message_callback(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len){
+        auto self = reinterpret_cast<Mapper*>(mapper_getHostContext(mapper));
+        return self->proc_message(type, msg, len);
+    }
+
+    bool Mapper::proc_message(MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len){
         return true;
     }
 

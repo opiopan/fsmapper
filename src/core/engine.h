@@ -46,6 +46,7 @@ public:
 protected : 
     std::mutex mutex;
     Status status;
+    bool callback_is_inhibited = false;
     Callback callback;
     Logger logger;
     MAPPER_LOGMODE logmode;
@@ -95,6 +96,11 @@ public:
     bool stop();
     bool abort();
 
+    void inhibitCallback(){
+        std::lock_guard lock(mutex);
+        callback_is_inhibited = true;
+    }
+
     void setLogmode(MAPPER_LOGMODE mode){
         std::lock_guard lock(mutex);
         logmode = mode;
@@ -106,7 +112,9 @@ public:
     };
 
     void putLog(MCONSOLE_MESSAGE_TYPE mtype, const std::string& msg){
-        logger(mtype, msg);
+        if (!callback_is_inhibited){
+            logger(mtype, msg);
+        }
     };
 
     void recommend_gc(){

@@ -66,7 +66,9 @@ namespace winrt::gui::Models::implementation{
         }
 
         static bool event_callback(MapperHandle mapper, MAPPER_EVENT event, int64_t data);
+        bool proc_event(MAPPER_EVENT event, int64_t data);
         static bool message_callback(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len);
+        bool proc_message(MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len);
         static bool enum_device_callback(MapperHandle mapper, void* context, const char* devtype, const char* devname);
         static bool enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef);
 
