@@ -17,8 +17,7 @@ using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 using App = winrt::gui::implementation::App;
 
-namespace winrt::gui::ViewModels::implementation
-{
+namespace winrt::gui::ViewModels::implementation{
     //============================================================================================
     // Object constructor / destructor
     //============================================================================================

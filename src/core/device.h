@@ -13,6 +13,7 @@
 #include "devicemodifier.h"
 
 class DeviceClass;
+class DeviceManager;
 class MaaperEngine;
 
 class Device{
@@ -44,6 +45,7 @@ public:
 
 class DeviceClass{
 protected:
+    DeviceManager& manager;
     const MAPPER_PLUGIN_DEVICE_OPS* pluginOps;
     FSMAPPERCTX contextForPlugin;
 
@@ -51,11 +53,12 @@ public:
     DeviceClass() = delete;
     DeviceClass(const DeviceClass&) = delete;
     DeviceClass(DeviceClass&&) = delete;
-    DeviceClass(MapperEngine& engine, const MAPPER_PLUGIN_DEVICE_OPS* pluginOps);
+    DeviceClass(MapperEngine& engine, DeviceManager& manager, const MAPPER_PLUGIN_DEVICE_OPS* pluginOps);
     ~DeviceClass();
 
     operator FSMAPPERCTX* (){return &contextForPlugin;};
     const MAPPER_PLUGIN_DEVICE_OPS& plugin(){return *pluginOps;};
+    DeviceManager& get_manager(){return manager;}
 };
 
 class DeviceManager{
@@ -63,6 +66,24 @@ protected:
     MapperEngine& engine;
     DeviceModifierManager modifierManager;
     std::map<std::string, std::unique_ptr<DeviceClass>> classes;
+    struct DeviceInfo{
+        std::string device_class;
+        const Device* device;
+        DeviceInfo(const char* devclass, const Device* object) : device_class(devclass), device(object){}
+        DeviceInfo(const DeviceInfo& src) : device_class(src.device_class), device(src.device){}
+        DeviceInfo(DeviceInfo&& src) : device_class(std::move(src.device_class)), device(src.device){}
+        DeviceInfo& operator = (const DeviceInfo& src){
+            device_class = src.device_class;
+            device = src.device;
+            return *this;
+        }
+        DeviceInfo& operator = (DeviceInfo&& src){
+            device_class = std::move(src.device_class);
+            device = src.device;
+            return *this;
+        }
+    };
+    std::map<std::string, DeviceInfo> ids;
 
 public:    
     DeviceManager(MapperEngine& engine);
@@ -71,6 +92,7 @@ public:
     ~DeviceManager() = default;
 
     std::shared_ptr<Device> createDevice(const sol::object &param);
+    void removeDevice(const char* name);
 
     void init_scripting_env(sol::table& mapper_table);
 };

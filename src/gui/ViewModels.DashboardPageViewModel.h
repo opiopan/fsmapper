@@ -1,27 +1,39 @@
+//
+// ViewModels.DashboardPageViewModel.h
+//  Author: Hiroshi Murayama <opiopan@gmail.com>
+//
 #pragma once
 #include "ViewModels.DashboardPageViewModel.g.h"
 #include "Models.Mapper.h"
 
-namespace winrt::gui::ViewModels::implementation
-{
-    struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel>
-    {
+#include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
+#include <string>
+
+namespace winrt::gui::ViewModels::implementation{
+    struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel>{
         DashboardPageViewModel();
+        ~DashboardPageViewModel();
 
         bool SimIconIsVisible();
-        hstring SimIconSource();
+        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource();
         hstring SimString();
-        
-        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
-        void PropertyChanged(winrt::event_token const& token) noexcept;
+
+        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
+            return property_changed.add(handler);
+        }
+        void PropertyChanged(winrt::event_token const& token) noexcept{
+            return property_changed.remove(token);
+        }
 
     protected:
         winrt::gui::Models::Mapper mapper{nullptr};
         winrt::event_token token_for_mapper;
+        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[3];
 
         bool sim_icon_is_visible;
-        hstring sim_icon_source;
-        hstring sim_string;
+        winrt::gui::Models::Simulators sim_type;
+        std::wstring sim_name;
+        std::wstring aircraft_name;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -45,11 +57,11 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
         }
 
+        void reflect_mapper_ActiveSim();
+        void reflect_mapper_AircraftName();
     };
 }
-namespace winrt::gui::ViewModels::factory_implementation
-{
-    struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel, implementation::DashboardPageViewModel>
-    {
+namespace winrt::gui::ViewModels::factory_implementation{
+    struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel, implementation::DashboardPageViewModel>{
     };
 }

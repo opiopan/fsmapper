@@ -42,6 +42,9 @@ public:
     using CLOCK = std::chrono::steady_clock;
     using TIME_POINT = CLOCK::time_point;
     using MILLISEC = std::chrono::milliseconds;
+    static constexpr auto UPDATED_DEVICES = 0x1;
+    static constexpr auto UPDATED_MAPPINGS = 0x2;
+    static constexpr auto UPDATED_VJOY = 0x4;
 
 protected : 
     std::mutex mutex;
@@ -62,6 +65,8 @@ protected :
 
         sol::state& lua(){return *lua_ptr;};
         bool should_gc = true;
+
+        uint32_t updated_flags = 0;
     }scripting;
 
     class DeferredAction{
@@ -129,6 +134,11 @@ public:
     void sendHostEvent(MAPPER_EVENT event, int64_t data);
 
     void invokeActionIn(std::shared_ptr<Action> action, const Event& event, MILLISEC millisec);
+
+    void notifyUpdate(uint32_t flag){
+        std::lock_guard lock(mutex);
+        scripting.updated_flags |= flag;
+    }
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();

@@ -55,10 +55,13 @@ Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name
         os << "failed to start a device: [name: " << name << "] [type: " << deviceClass.plugin().name << "]";
         throw MapperException(os.str());
     }
+    engine.notifyUpdate(engine.UPDATED_DEVICES);
 }
 
 Device::~Device(){
+    deviceClass.get_manager().removeDevice(name.c_str());
     deviceClass.plugin().close(deviceClass, *this);
+    engine.notifyUpdate(engine.UPDATED_DEVICES);
 }
 
 void Device::issueEvent(size_t unitIndex, int value){
@@ -102,13 +105,12 @@ sol::object Device::create_upstream_id_table(sol::this_state s){
     return out;
 }
 
-
 //============================================================================================
 // Device plugin coupsulized object
 //    This object is created correspoinding to each plugin befor running lua script once.
 //============================================================================================
-DeviceClass::DeviceClass(MapperEngine& engine, const MAPPER_PLUGIN_DEVICE_OPS* pluginOps): 
-    pluginOps(pluginOps), contextForPlugin(engine, pluginOps->name){
+DeviceClass::DeviceClass(MapperEngine& engine, DeviceManager& manager, const MAPPER_PLUGIN_DEVICE_OPS* pluginOps): 
+    manager(manager), pluginOps(pluginOps), contextForPlugin(engine, pluginOps->name){
     if (!pluginOps->init(*this)){
         std::ostringstream os;
         os << "failed to initalize device plugin: [plugin name: " << pluginOps->name << "]" << std::endl;
@@ -126,7 +128,8 @@ DeviceClass::~DeviceClass(){
 DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierManager(engine){
     for (int i = 0; i < sizeof(builtin_plugins) / sizeof(builtin_plugins[0]); i++){
         auto plugin = builtin_plugins[i];
-        classes.emplace(plugin->name, std::move(std::make_unique<DeviceClass>(engine, plugin)));
+        auto device_class = std::make_unique<DeviceClass>(engine, *this, plugin);
+        classes.emplace(plugin->name, std::move(device_class));
     }
 }
 
@@ -146,6 +149,11 @@ std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     if (name == ""){
         throw MapperException("Device name as \"name\" parameter must be specified.");
     }
+    if (ids.count(name)){
+        std::ostringstream os;
+        os << "Device name \"" << name << "\" is already used.";
+        throw MapperException(os.str());
+    }
     if (classes.count(type) == 0){
         std::ostringstream os;
         os << "\"type\" parameter value is invalid or no device type is specified. [type: " << type << "]";
@@ -155,8 +163,14 @@ std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     DeviceModifierRule rule;
     modifierManager.makeRule(modifiers, rule);
     auto device = std::make_shared<Device>(engine, *deviceClass, name, rule, identifire, options);
+    ids.emplace(name, std::move(DeviceInfo(type.c_str(), device.get())));
     return device;
 }
+
+void DeviceManager::removeDevice(const char* name){
+    ids.erase(name);
+}
+
 
 //============================================================================================
 // Define lua user type which is created when "mapper.device()" is called

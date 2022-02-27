@@ -14,6 +14,7 @@ static const auto* CONFIG_WINDOW_LEFT = "window_left";
 static const auto* CONFIG_WINDOW_WIDTH = "window_width";
 static const auto* CONFIG_WINDOW_HEIGHT = "window_height";
 static const auto* CONFIG_SCRIPT_PATH = "script_path";
+static const auto* CONFIG_STARTING_SCRIPT_AT_START = "starting_script_at_start";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -26,6 +27,7 @@ class config_imp : public config{
 
     rect window_rect = {0, 0, -1, -1};
     std::filesystem::path script_path;
+    bool is_starting_script_at_start_up{true};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -92,6 +94,7 @@ public:
         std::string path;
         reflect_string(data, CONFIG_SCRIPT_PATH, path);
         script_path = path;
+        reflect_bool(data, CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up);
     }
 
     void save() override{
@@ -102,6 +105,7 @@ public:
                 {CONFIG_WINDOW_WIDTH, window_rect.width},
                 {CONFIG_WINDOW_HEIGHT, window_rect.height},
                 {CONFIG_SCRIPT_PATH, script_path.string()},
+                {CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -122,6 +126,12 @@ public:
     void set_script_path(std::filesystem::path&& path) override{
         update_value(script_path, std::move(path));
     }
+    bool get_is_starting_script_at_start_up(){
+        return is_starting_script_at_start_up;
+    };
+    void set_is_starting_script_at_start_up(bool value){
+        update_value(is_starting_script_at_start_up, value);
+    };
 };
 
 static config_imp the_config;

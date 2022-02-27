@@ -50,6 +50,10 @@ namespace winrt::gui::Models::implementation{
                 cv.notify_all();
             }
         }));
+
+        if (fsmapper::app_config.get_is_starting_script_at_start_up()){
+            RunScript();
+        }
     }
 
     Mapper::~Mapper(){

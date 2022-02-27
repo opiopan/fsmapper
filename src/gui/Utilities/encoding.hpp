@@ -51,6 +51,8 @@ namespace tools{
         const STR_TO* get() const noexcept {return buf;}
         operator const STR_TO* () const noexcept {return buf;}
 
+        int size(){return str_len;}
+
         bool translate(const STR_FROM* from){
             bool succeeded = false;
             while (!succeeded){
@@ -82,7 +84,7 @@ namespace tools{
                     ((size * sizeof(STR_TO) + initial_buf_size - 1) & initial_buf_size_mask) / sizeof(STR_TO);
                 dynamic_buf = std::move(std::unique_ptr<STR_TO>(new STR_TO[newsize]));
                 buf = dynamic_buf.get();
-                buf_len = newsize;
+                buf_len = static_cast<int>(newsize);
                 str_len = 0;
             }
         }

@@ -9,7 +9,7 @@
 #include <winrt/Microsoft.UI.Xaml.h>
 
 namespace tools{
-    winrt::Windows::Foundation::IInspectable AppResource(const wchar_t* name){
+    inline winrt::Windows::Foundation::IInspectable AppResource(const wchar_t* name){
         return winrt::Microsoft::UI::Xaml::Application::Current().Resources().Lookup(winrt::box_value(name));
     }
 }

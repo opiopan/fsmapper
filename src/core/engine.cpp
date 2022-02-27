@@ -247,6 +247,20 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
 
             //-------------------------------------------------------------------------------
+            // notify events if needed
+            //-------------------------------------------------------------------------------
+            if (scripting.updated_flags){
+                if (scripting.updated_flags & UPDATED_DEVICES){
+                    sendHostEvent(MEV_CHANGE_DEVICES, 0);
+                }else if (scripting.updated_flags & UPDATED_MAPPINGS){
+                    sendHostEvent(MEV_CHANGE_MAPPINGS, 0);
+                }else if (scripting.updated_flags & UPDATED_VJOY){
+                    sendHostEvent(MEV_CHANGE_VJOY, 0);
+                }
+                scripting.updated_flags = 0;
+            }
+
+            //-------------------------------------------------------------------------------
             // wait until event occurrence
             //-------------------------------------------------------------------------------
             if (queue_empty){

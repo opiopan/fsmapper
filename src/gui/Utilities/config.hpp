@@ -35,6 +35,8 @@ namespace fsmapper{
         virtual void set_window_rect(const rect& rect) = 0;
         virtual const std::filesystem::path& get_script_path() = 0;
         virtual void set_script_path(std::filesystem::path&& path) = 0;
+        virtual bool get_is_starting_script_at_start_up() = 0;
+        virtual void set_is_starting_script_at_start_up(bool value) = 0;
     };
 
     void init_app_config();
