@@ -395,6 +395,17 @@ void MapperEngine::sendHostEvent(MAPPER_EVENT event, int64_t data){
     }
 }
 
+std::vector<MapperEngine::DeviceInfo> MapperEngine::get_device_list(){
+    std::lock_guard lock(mutex);
+    std::vector<DeviceInfo> array;
+    if (status == Status::running) {
+        for (auto [key, value] : scripting.deviceManager->getDeviceInfor()) {
+            array.emplace_back(key.c_str(), value.device_class);
+        }
+    }
+	return array;
+}
+
 std::vector<CapturedWindowInfo> MapperEngine::get_captured_window_list(){
     std::lock_guard lock(mutex);
     if (status == Status::running){

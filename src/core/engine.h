@@ -142,6 +142,12 @@ public:
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();
+    struct DeviceInfo {
+        std::string device_name;
+        const char* class_name;
+        DeviceInfo(const char* dname, const char* cname) : device_name(dname), class_name(cname){}
+    };
+    std::vector<DeviceInfo> get_device_list();
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
     void enable_viewports();

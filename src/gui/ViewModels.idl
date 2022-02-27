@@ -1,3 +1,5 @@
+import "Models.idl";
+
 namespace gui.ViewModels{
     runtimeclass MainWindowViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         MainWindowViewModel();
@@ -16,8 +18,11 @@ namespace gui.ViewModels{
     runtimeclass DashboardPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         DashboardPageViewModel();
 
+        gui.Models.Mapper Mapper{get;};
         Boolean SimIconIsVisible{get;};
         Microsoft.UI.Xaml.Media.Imaging.BitmapImage SimIconSource{get;};
         String SimString{get;};
+        String DeviceSummary{get;};
+        String DeviceDetail{get;};
     }
 }

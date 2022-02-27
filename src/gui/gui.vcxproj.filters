@@ -60,6 +60,9 @@
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp">
       <Filter>ViewModels</Filter>
     </ClCompile>
+    <ClCompile Include="Models.Device.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -83,6 +86,9 @@
     </ClInclude>
     <ClInclude Include="ViewModels.DashboardPageViewModel.h">
       <Filter>ViewModels</Filter>
+    </ClInclude>
+    <ClInclude Include="Models.Device.h">
+      <Filter>Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

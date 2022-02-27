@@ -63,9 +63,9 @@
                             Margin="0,0,0,16">
                     <TextBlock FontSize="24">Devices</TextBlock>
                     <TextBlock FontWeight="Bold" Margin="0,12,0,0"
-                       Text="2 devices are opend:"/>
+                       Text="{x:Bind ViewModel.DeviceSummary, Mode=OneWay}"/>
                     <TextBlock LineHeight="22" Margin="20,4,0,0"
-                               Text="- SimHID G1000 [simhid]&#10;- Saitek Pro Flight X-56 Rhino Throttle"/>
+                               Text="{x:Bind ViewModel.DeviceDetail, Mode=OneWay}"/>
                 </StackPanel>
 
                 <!-- Mappings pane-->

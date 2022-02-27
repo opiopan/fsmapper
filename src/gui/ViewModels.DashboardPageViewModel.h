@@ -14,9 +14,12 @@ namespace winrt::gui::ViewModels::implementation{
         DashboardPageViewModel();
         ~DashboardPageViewModel();
 
+        winrt::gui::Models::Mapper Mapper();
         bool SimIconIsVisible();
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource();
         hstring SimString();
+        hstring DeviceSummary();
+        hstring DeviceDetail();
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -28,12 +31,15 @@ namespace winrt::gui::ViewModels::implementation{
     protected:
         winrt::gui::Models::Mapper mapper{nullptr};
         winrt::event_token token_for_mapper;
+        winrt::event_token token_for_devices;
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[3];
 
         bool sim_icon_is_visible;
         winrt::gui::Models::Simulators sim_type;
         std::wstring sim_name;
         std::wstring aircraft_name;
+        hstring device_summary;
+        hstring device_detail;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -59,6 +65,7 @@ namespace winrt::gui::ViewModels::implementation{
 
         void reflect_mapper_ActiveSim();
         void reflect_mapper_AircraftName();
+        void reflect_devices();
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation{

@@ -3,6 +3,7 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 #pragma once
+#include "Models.Device.h"
 #include "Models.Mapper.g.h"
 
 #include <mutex>
@@ -12,6 +13,8 @@
 
 namespace winrt::gui::Models::implementation{
     struct Mapper : MapperT<Mapper>{
+        using DeviceCollection = winrt::Windows::Foundation::Collections::IObservableVector<winrt::gui::Models::Device>;
+
         Mapper();
         virtual ~Mapper();
 
@@ -20,6 +23,7 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::MapperStatus Status();
         winrt::gui::Models::Simulators ActiveSim();
         hstring AircraftName();
+        DeviceCollection Devices();
 
         void RunScript();
         void StopScript();
@@ -34,6 +38,7 @@ namespace winrt::gui::Models::implementation{
         bool should_stop {false};
         MapperHandle mapper {nullptr};
         uint32_t dirty_properties {0};
+        bool need_update_devices {false};
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler;
         std::thread script_runner;
@@ -42,6 +47,7 @@ namespace winrt::gui::Models::implementation{
         gui::Models::MapperStatus status {gui::Models::MapperStatus::stop};
         gui::Models::Simulators active_sim {gui::Models::Simulators::none};
         winrt::hstring aircraft_name;
+        DeviceCollection devices {nullptr};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -76,8 +82,7 @@ namespace winrt::gui::Models::implementation{
     };
 }
 
-namespace winrt::gui::Models::factory_implementation
-{
+namespace winrt::gui::Models::factory_implementation{
     struct Mapper : MapperT<Mapper, implementation::Mapper>{
     };
 }

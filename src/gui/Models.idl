@@ -2,6 +2,13 @@ namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
     enum Simulators {none = 0, fs2020, dcs};
 
+    runtimeclass Device {
+        Device(String cname, String dname);
+
+        String ClassName{get;};
+        String DeviceName{get;};
+    }
+
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
@@ -9,6 +16,7 @@ namespace gui.Models{
         MapperStatus Status{get;};
         Simulators ActiveSim{get;};
         String AircraftName{get;};
+        Windows.Foundation.Collections.IObservableVector<Device> Devices{get;};
 
         void RunScript();
         void StopScript();

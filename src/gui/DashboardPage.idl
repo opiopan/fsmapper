@@ -1,12 +1,10 @@
 import "ViewModels.idl";
 
-namespace gui
-{
+namespace gui{
     [default_interface]
-    runtimeclass DashboardPage : Microsoft.UI.Xaml.Controls.Page
-    {
+    runtimeclass DashboardPage : Microsoft.UI.Xaml.Controls.Page{
         DashboardPage();
-
+	
         gui.ViewModels.DashboardPageViewModel ViewModel{get;};
     }
 }

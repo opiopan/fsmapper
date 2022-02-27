@@ -62,27 +62,22 @@ public:
 };
 
 class DeviceManager{
-protected:
-    MapperEngine& engine;
-    DeviceModifierManager modifierManager;
-    std::map<std::string, std::unique_ptr<DeviceClass>> classes;
+public:
     struct DeviceInfo{
-        std::string device_class;
+        const char* device_class;
         const Device* device;
         DeviceInfo(const char* devclass, const Device* object) : device_class(devclass), device(object){}
         DeviceInfo(const DeviceInfo& src) : device_class(src.device_class), device(src.device){}
-        DeviceInfo(DeviceInfo&& src) : device_class(std::move(src.device_class)), device(src.device){}
         DeviceInfo& operator = (const DeviceInfo& src){
             device_class = src.device_class;
             device = src.device;
             return *this;
         }
-        DeviceInfo& operator = (DeviceInfo&& src){
-            device_class = std::move(src.device_class);
-            device = src.device;
-            return *this;
-        }
     };
+protected:
+    MapperEngine& engine;
+    DeviceModifierManager modifierManager;
+    std::map<std::string, std::unique_ptr<DeviceClass>> classes;
     std::map<std::string, DeviceInfo> ids;
 
 public:    
@@ -93,6 +88,8 @@ public:
 
     std::shared_ptr<Device> createDevice(const sol::object &param);
     void removeDevice(const char* name);
+
+    const std::map<std::string, DeviceInfo>& getDeviceInfor(){return ids;}
 
     void init_scripting_env(sol::table& mapper_table);
 };

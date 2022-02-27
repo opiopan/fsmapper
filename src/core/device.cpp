@@ -163,7 +163,7 @@ std::shared_ptr<Device> DeviceManager::createDevice(const sol::object &param){
     DeviceModifierRule rule;
     modifierManager.makeRule(modifiers, rule);
     auto device = std::make_shared<Device>(engine, *deviceClass, name, rule, identifire, options);
-    ids.emplace(name, std::move(DeviceInfo(type.c_str(), device.get())));
+    ids.emplace(name, std::move(DeviceInfo(deviceClass->plugin().name, device.get())));
     return device;
 }
 
