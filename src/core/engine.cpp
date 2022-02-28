@@ -256,6 +256,8 @@ bool MapperEngine::run(std::string&& scriptPath){
                     sendHostEvent(MEV_CHANGE_MAPPINGS, 0);
                 }else if (scripting.updated_flags & UPDATED_VJOY){
                     sendHostEvent(MEV_CHANGE_VJOY, 0);
+                }else if (scripting.updated_flags & UPDATED_VIEWPORTS){
+                    sendHostEvent(MEV_CHANGE_VIEWPORTS, 0);
                 }
                 scripting.updated_flags = 0;
             }
@@ -380,10 +382,12 @@ Action* MapperEngine::findAction(uint64_t evid){
 //============================================================================================
 void MapperEngine::setMapping(const char* function_name, int level, const sol::object& mapdef){
     mapping[level] = std::move(createEventActionMap(*this, mapdef));
+    notifyUpdate(UPDATED_MAPPINGS);
 }
 
 void MapperEngine::addMapping(const char* function_name, int level, const sol::object& mapdef){
     addEventActionMap(*this, mapping[level], mapdef);
+    notifyUpdate(UPDATED_MAPPINGS);
 }
 
 //============================================================================================
@@ -440,5 +444,18 @@ void MapperEngine::disable_viewports(){
     std::lock_guard lock(mutex);
     if (status == Status::running){
         scripting.viewportManager->disable_viewports();
+    }
+}
+
+MAPPINGS_STAT MapperEngine::get_mapping_stat(){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        auto&& vstat = scripting.viewportManager->get_mappings_stat();
+        return {
+            static_cast<int>(mapping[0]->size()), 
+            static_cast<int>(mapping[1]->size()), 
+            vstat.first, vstat.second};
+    }else{
+        return {0, 0, 0, 0};
     }
 }

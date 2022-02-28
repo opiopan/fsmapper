@@ -63,6 +63,9 @@
     <ClCompile Include="Models.Device.cpp">
       <Filter>Models</Filter>
     </ClCompile>
+    <ClCompile Include="Models.MappingsStat.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -88,6 +91,9 @@
       <Filter>ViewModels</Filter>
     </ClInclude>
     <ClInclude Include="Models.Device.h">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Models.MappingsStat.h">
       <Filter>Models</Filter>
     </ClInclude>
   </ItemGroup>

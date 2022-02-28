@@ -35,6 +35,8 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_ActiveSim();
             }else if (name == L"AircraftName"){
                 reflect_mapper_AircraftName();
+            }else if (name == L"MappingsInfo"){
+                reflect_mapper_MappingsInfo();
             }
         });
         token_for_devices = mapper.Devices().VectorChanged([this](auto const&, auto const&){
@@ -43,11 +45,13 @@ namespace winrt::gui::ViewModels::implementation{
 
         reflect_mapper_ActiveSim();
         reflect_mapper_AircraftName();
+        reflect_mapper_MappingsInfo();
         reflect_devices();
     }
 
     DashboardPageViewModel::~DashboardPageViewModel(){
         mapper.PropertyChanged(token_for_mapper);
+        mapper.Devices().VectorChanged(token_for_devices);
     }
 
     //============================================================================================
@@ -106,6 +110,25 @@ namespace winrt::gui::ViewModels::implementation{
         }
     }
 
+    void DashboardPageViewModel:: reflect_mapper_MappingsInfo(){
+        auto stat = mapper.MappingsInfo();
+        auto sum = stat.Primery() + stat.Secondary() + stat.Viewports() + stat.Views();
+        update_property(mappings_detail_is_visible, sum > 0, L"MappingsDetailIsVisible");
+        update_property(mappings_detail_primery, stat.Primery(), L"MappingsDetailPrimery");
+        update_property(mappings_detail_secondary, stat.Secondary(), L"MappingsDetailSecondary");
+        update_property(mappings_detail_viewports, stat.Viewports(), L"MappingsDetailViewports");
+        update_property(mappings_detail_views, stat.Views(), L"MappingsDetailViews");
+        std::wostringstream os;
+        if (sum == 0) {
+            os << L"No event-action mapping is registerd.";
+        }else if (sum == 1){
+            os << L"1 event-action mapping is registerd:";
+        }else{
+            os << sum << " event-action mappings are registerd:";
+        }
+        update_property(mappings_summary, std::move(hstring(std::move(os.str()))), L"MappingsSummary");
+    }
+
     void DashboardPageViewModel::reflect_devices(){
         auto devices = mapper.Devices();
         auto size = devices.Size();
@@ -128,5 +151,6 @@ namespace winrt::gui::ViewModels::implementation{
             sep = L"\n";
         }
         update_property(device_detail, std::move(hstring(os.str())), L"DeviceDetail");
+        update_property(device_detail_is_visible, devices.Size() > 0, L"DeviceDetailIsVisible");
     }
 }

@@ -227,7 +227,10 @@ int ViewPort::registerView(sol::object def_obj){
                                   "You may need to call mapper.reset_viewports().");
         }
         auto view = std::make_unique<View>(manager.get_engine(), def_obj);
+        mappings_num_for_views += view->getMappingsNum();
         views.push_back(std::move(view));
+        manager.get_engine().notifyUpdate(MapperEngine::UPDATED_VIEWPORTS);
+        manager.get_engine().notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
         return views.size() - 1;
     });
 }
@@ -244,6 +247,9 @@ Action* ViewPort::findAction(uint64_t evid){
     return nullptr;
 }
 
+std::pair<int, int> ViewPort::getMappingsStat(){
+    return {mappings->size(), mappings_num_for_views};
+}
 
 std::optional<int> ViewPort::getCurrentView(){
     if (views.size() > 0){
@@ -272,12 +278,14 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
 void ViewPort::setMappings(sol::object mapdef){
     lua_c_interface(manager.get_engine(), "viewport:set_mappings", [this, &mapdef](){
         mappings = std::move(createEventActionMap(manager.get_engine(), mapdef));
+        manager.get_engine().notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
     });
 }
 
 void ViewPort::addMappings(sol::object mapdef){
     lua_c_interface(manager.get_engine(), "viewport:add_mappings", [this, &mapdef](){
         addEventActionMap(manager.get_engine(), mappings, mapdef);
+        manager.get_engine().notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
     });
 }
 
@@ -301,7 +309,7 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
         "viewport",
         sol::call_constructor, sol::factories([this](sol::object def){
             return lua_c_interface(engine, "mapper.viewport", [this, &def](){
-                return create_viewvort(def);
+                return create_viewport(def);
             });
         }),
         "current_view", sol::property(&ViewPort::getCurrentView),
@@ -347,11 +355,12 @@ Action* ViewPortManager::find_action(uint64_t evid){
 }
 
 
-std::shared_ptr<ViewPort> ViewPortManager::create_viewvort(sol::object def_obj){
+std::shared_ptr<ViewPort> ViewPortManager::create_viewport(sol::object def_obj){
     std::lock_guard lock(mutex);
     if (status == Status::init){
         auto viewport = std::make_shared<ViewPort>(*this, def_obj);
         viewports.push_back(viewport);
+        engine.notifyUpdate(engine.UPDATED_VIEWPORTS);
         return viewport;
     }else{
         throw MapperException("Viewport definitions are fixed by calling mapper.start_viewports(). "
@@ -562,4 +571,16 @@ void ViewPortManager::process_close_event(HWND hWnd){
             return;
         }
     }
+}
+
+std::pair<int, int> ViewPortManager::get_mappings_stat(){
+    std::lock_guard lock{mutex};
+    int for_viewports{0};
+    int for_views{0};
+    for (auto& viewport : viewports){
+        auto&& stat = viewport->getMappingsStat();
+        for_viewports += stat.first;
+        for_views += stat.second;
+    }
+    return {for_viewports, for_views};
 }

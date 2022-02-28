@@ -20,6 +20,13 @@ namespace winrt::gui::ViewModels::implementation{
         hstring SimString();
         hstring DeviceSummary();
         hstring DeviceDetail();
+        bool DeviceDetailIsVisible(){return device_detail_is_visible;}
+        hstring MappingsSummary(){return mappings_summary;}
+        int32_t MappingsDetailPrimery(){return mappings_detail_primery;}
+        int32_t MappingsDetailSecondary(){return mappings_detail_secondary;}
+        int32_t MappingsDetailViewports(){return mappings_detail_viewports;}
+        int32_t MappingsDetailViews(){return mappings_detail_views;}
+        bool MappingsDetailIsVisible(){return mappings_detail_is_visible;}
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -40,6 +47,13 @@ namespace winrt::gui::ViewModels::implementation{
         std::wstring aircraft_name;
         hstring device_summary;
         hstring device_detail;
+        bool device_detail_is_visible{false};
+        hstring mappings_summary;
+        int32_t mappings_detail_primery{0};
+        int32_t mappings_detail_secondary{0};
+        int32_t mappings_detail_viewports{0};
+        int32_t mappings_detail_views{0};
+        bool mappings_detail_is_visible{false};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -65,6 +79,7 @@ namespace winrt::gui::ViewModels::implementation{
 
         void reflect_mapper_ActiveSim();
         void reflect_mapper_AircraftName();
+        void reflect_mapper_MappingsInfo();
         void reflect_devices();
     };
 }

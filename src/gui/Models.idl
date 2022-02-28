@@ -9,6 +9,15 @@ namespace gui.Models{
         String DeviceName{get;};
     }
 
+    runtimeclass MappingsStat{
+        MappingsStat();
+
+        Int32 Primery;
+        Int32 Secondary;
+        Int32 Viewports;
+        Int32 Views;
+    }
+
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
@@ -17,6 +26,7 @@ namespace gui.Models{
         Simulators ActiveSim{get;};
         String AircraftName{get;};
         Windows.Foundation.Collections.IObservableVector<Device> Devices{get;};
+        MappingsStat MappingsInfo{get;};
 
         void RunScript();
         void StopScript();

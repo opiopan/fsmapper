@@ -44,7 +44,8 @@ public:
     using MILLISEC = std::chrono::milliseconds;
     static constexpr auto UPDATED_DEVICES = 0x1;
     static constexpr auto UPDATED_MAPPINGS = 0x2;
-    static constexpr auto UPDATED_VJOY = 0x4;
+    static constexpr auto UPDATED_VIEWPORTS = 0x4;
+    static constexpr auto UPDATED_VJOY = 0x8;
 
 protected : 
     std::mutex mutex;
@@ -152,8 +153,8 @@ public:
     void unregister_captured_window(uint32_t cwid);
     void enable_viewports();
     void disable_viewports();
-
-
+    MAPPINGS_STAT get_mapping_stat();
+    
 protected:
     void initScriptingEnvAndRun();
     std::unique_ptr<Event>&& receiveEvent();

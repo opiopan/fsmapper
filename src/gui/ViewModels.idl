@@ -24,5 +24,12 @@ namespace gui.ViewModels{
         String SimString{get;};
         String DeviceSummary{get;};
         String DeviceDetail{get;};
+        Boolean DeviceDetailIsVisible{get;};
+        String MappingsSummary{get;};
+        Int32 MappingsDetailPrimery{get;};
+        Int32 MappingsDetailSecondary{get;};
+        Int32 MappingsDetailViewports{get;};
+        Int32 MappingsDetailViews{get;};
+        Boolean MappingsDetailIsVisible{get;};
     }
 }

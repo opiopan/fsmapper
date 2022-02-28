@@ -4,6 +4,7 @@
 //
 #pragma once
 #include "Models.Device.h"
+#include "Models.MappingsStat.h"
 #include "Models.Mapper.g.h"
 
 #include <mutex>
@@ -24,6 +25,7 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::Simulators ActiveSim();
         hstring AircraftName();
         DeviceCollection Devices();
+        winrt::gui::Models::MappingsStat MappingsInfo(){return mappings_info;}
 
         void RunScript();
         void StopScript();
@@ -48,6 +50,7 @@ namespace winrt::gui::Models::implementation{
         gui::Models::Simulators active_sim {gui::Models::Simulators::none};
         winrt::hstring aircraft_name;
         DeviceCollection devices {nullptr};
+        winrt::gui::Models::MappingsStat mappings_info{nullptr};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 

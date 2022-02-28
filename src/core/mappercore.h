@@ -35,6 +35,7 @@ typedef enum mapper_event{
     MEV_CHANGE_VJOY,
     MEV_READY_TO_CAPTURE_WINDOW,
     MEV_LOST_CAPTURED_WINDOW,
+    MEV_CHANGE_VIEWPORTS,
     MEV_START_VIEWPORTS,
     MEV_STOP_VIEWPORTS,
     MEV_RESET_VIEWPORTS,
@@ -61,7 +62,14 @@ typedef struct{
     const char *name;
     const char *description;
     bool isCaptured;
-} CAPTURED_WINDOW_DEF;
+}CAPTURED_WINDOW_DEF;
+
+typedef struct{
+    int num_primery;
+    int num_secondary;
+    int num_for_viewports;
+    int num_for_views;
+}MAPPINGS_STAT;
 
 struct MapperContext;
 typedef struct MapperContext* MapperHandle;
@@ -82,6 +90,8 @@ DLLEXPORT bool mapper_setLogMode(MapperHandle handle, MAPPER_LOGMODE logmode);
 DLLEXPORT void* mapper_getHostContext(MapperHandle handle);
 DLLEXPORT MAPPER_SIM_CONNECTION mapper_getSimConnection(MapperHandle handle);
 DLLEXPORT const char* mapper_getAircraftName(MapperHandle handle);
+DLLEXPORT MAPPINGS_STAT mapper_getMappingsStat(MapperHandle handle);
+
 DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC func, void *context);
 DLLEXPORT bool mapper_enumCapturedWindows(MapperHandle handle, MAPPER_ENUM_CAPUTURED_WINDOW func, void *context);
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd);

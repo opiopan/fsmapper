@@ -65,6 +65,7 @@
                     <TextBlock FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.DeviceSummary, Mode=OneWay}"/>
                     <TextBlock LineHeight="22" Margin="20,4,0,0"
+                               Visibility="{x:Bind ViewModel.DeviceDetailIsVisible, Mode=OneWay}"
                                Text="{x:Bind ViewModel.DeviceDetail, Mode=OneWay}"/>
                 </StackPanel>
 
@@ -75,17 +76,22 @@
                             Margin="0,0,0,16">
                     <TextBlock FontSize="24">Mappings</TextBlock>
                     <TextBlock FontWeight="Bold" Margin="0,12,0,0"
-                       Text="120 event-action mappings are registered:"/>
-                    <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0">
+                       Text="{x:Bind ViewModel.MappingsSummary, Mode=OneWay}"/>
+                    <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"
+                          Visibility="{x:Bind ViewModel.MappingsDetailIsVisible, Mode=OneWay}">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primery) :"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>
 
-                        <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Text="4"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Text="16"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Text="4"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Text="1100"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" 
+                                   Text="{x:Bind ViewModel.MappingsDetailPrimery, Mode=OneWay}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
+                                   Text="{x:Bind ViewModel.MappingsDetailSecondary, Mode=OneWay}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"
+                                   Text="{x:Bind ViewModel.MappingsDetailViewports, Mode=OneWay}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"
+                                   Text="{x:Bind ViewModel.MappingsDetailViews, Mode=OneWay}"/>
                     </Grid>
 
                 </StackPanel>

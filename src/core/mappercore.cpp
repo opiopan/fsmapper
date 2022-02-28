@@ -83,6 +83,10 @@ DLLEXPORT const char* mapper_getAircraftName(MapperHandle handle){
     return nullptr;
 }
 
+DLLEXPORT MAPPINGS_STAT mapper_getMappingsStat(MapperHandle handle){
+    return handle->engine->get_mapping_stat();
+}
+
 DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC func, void *context){
     auto&& list = handle->engine->get_device_list();
     for (auto info : list){

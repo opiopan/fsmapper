@@ -18,12 +18,14 @@ static constexpr auto property_script_path   = 1 << 0;
 static constexpr auto property_status        = 1 << 1;
 static constexpr auto property_active_sim    = 1 << 2;
 static constexpr auto property_aircraft_name = 1 << 3;
+static constexpr auto property_mappings_info = 1 << 4;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
     L"Status",
     L"ActiveSim",
     L"AircraftName",
+    L"MappingsInfo",
     nullptr
 };
 
@@ -37,6 +39,7 @@ namespace winrt::gui::Models::implementation{
         script_path = fsmapper::app_config.get_script_path().c_str();
         mapper = mapper_init(event_callback, message_callback, this);
         devices = winrt::single_threaded_observable_vector<gui::Models::Device>();
+        mappings_info = winrt::make<winrt::gui::Models::implementation::MappingsStat>();
 
         scheduler = scheduler_proc();
         script_runner = std::move(std::thread([this]{
@@ -55,7 +58,8 @@ namespace winrt::gui::Models::implementation{
                 status = result ? MapperStatus::stop : MapperStatus::error;
                 active_sim = gui::Models::Simulators::none;
                 aircraft_name = L"";
-                dirty_properties |= property_status | property_active_sim | property_aircraft_name;
+                dirty_properties |= property_status | property_active_sim | property_aircraft_name |
+                                    property_mappings_info;
                 need_update_devices = true;
                 cv.notify_all();
             }
@@ -88,6 +92,14 @@ namespace winrt::gui::Models::implementation{
                 break;
             }
             if (dirty_properties){
+                if (dirty_properties & property_mappings_info){
+                    auto&& stat = ::mapper_getMappingsStat(mapper);
+                    mappings_info.Primery(stat.num_primery);
+                    mappings_info.Secondary(stat.num_secondary);
+                    mappings_info.Viewports(stat.num_for_viewports);
+                    mappings_info.Views(stat.num_for_views);
+                }
+
                 for (auto i = 0; property_names[i]; i++){
                     if (dirty_properties & (1 << i)){
                         lock.unlock();
@@ -210,6 +222,9 @@ namespace winrt::gui::Models::implementation{
             cv.notify_all();
         }else if (event == MEV_CHANGE_DEVICES){
             need_update_devices = true;
+            cv.notify_all();
+        }else if (event == MEV_CHANGE_MAPPINGS){
+            dirty_properties |= property_mappings_info;
             cv.notify_all();
         }
         return true;

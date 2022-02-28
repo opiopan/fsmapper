@@ -99,6 +99,7 @@ protected:
         void hide(ViewPort& viewport);
         HWND getBottomWnd();
         Action* findAction(uint64_t evid);
+        int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
     };
 
     static constexpr auto bg_window_class_name = "mapper_viewport_bg_window";
@@ -137,6 +138,7 @@ protected:
     int current_view = 0;
     BackgroundWindow bgwin;
     std::unique_ptr<EventActionMap> mappings;
+    int mappings_num_for_views{0};
 
 public:
     ViewPort() = delete;
@@ -159,6 +161,7 @@ public:
     void enable(const std::vector<IntRect> displays);
     void disable();
     Action* findAction(uint64_t evid);
+    std::pair<int, int> getMappingsStat();
 
     // functions for views
     const IntRect& get_output_region() const {return region;};
@@ -199,7 +202,7 @@ public:
     Action* find_action(uint64_t evid);
 
     // functions to export as Lua function in mapper table
-    std::shared_ptr<ViewPort> create_viewvort(sol::object def_obj);
+    std::shared_ptr<ViewPort> create_viewport(sol::object def_obj);
     void start_viewports();
     void stop_viewports();
     void reset_viewports();
@@ -212,6 +215,7 @@ public:
     void unregister_captured_window(uint32_t cwid);
     void enable_viewports();
     void disable_viewports();
+    std::pair<int, int> get_mappings_stat();
 
 protected:
     void change_status(Status status){
