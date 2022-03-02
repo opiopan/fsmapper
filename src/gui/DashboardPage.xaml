@@ -74,7 +74,7 @@
                             CornerRadius="10"
                             Padding="12, 8, 12, 12"
                             Margin="0,0,0,16">
-                    <TextBlock FontSize="24">Mappings</TextBlock>
+                    <TextBlock FontSize="24">Mapping definitions</TextBlock>
                     <TextBlock FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.MappingsSummary, Mode=OneWay}"/>
                     <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"

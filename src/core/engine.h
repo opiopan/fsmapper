@@ -35,6 +35,7 @@ public:
     typedef std::function<void(MCONSOLE_MESSAGE_TYPE, const std::string &)> Logger;
     enum class Status{
         init,
+        prepare_to_run,
         running,
         stop,
         error,

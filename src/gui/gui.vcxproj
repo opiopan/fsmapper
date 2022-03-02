@@ -123,9 +123,7 @@
     <ClInclude Include="DashboardPage.xaml.h">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Models.Device.h" />
     <ClInclude Include="Models.Mapper.h" />
-    <ClInclude Include="Models.MappingsStat.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -161,9 +159,7 @@
     <ClCompile Include="DashboardPage.xaml.cpp">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Models.Device.cpp" />
     <ClCompile Include="Models.Mapper.cpp" />
-    <ClCompile Include="Models.MappingsStat.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

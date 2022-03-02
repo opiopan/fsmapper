@@ -3,8 +3,8 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 #pragma once
-#include "Models.Device.h"
-#include "Models.MappingsStat.h"
+#include "Models.Device.g.h"
+#include "Models.MappingsStat.g.h"
 #include "Models.Mapper.g.h"
 
 #include <mutex>
@@ -12,9 +12,63 @@
 #include <thread>
 #include "mappercore.h"
 
+//============================================================================================
+// Device
+//============================================================================================
+namespace winrt::gui::Models::implementation{
+    struct Device : DeviceT<Device>{
+        Device(hstring const& cname, hstring const& dname) : class_name(cname), device_name(dname){}
+        hstring ClassName(){return class_name;}
+        hstring DeviceName(){return device_name;}
+    protected:
+        hstring class_name;
+        hstring device_name;
+    };
+}
+
+namespace winrt::gui::Models::factory_implementation{
+    struct Device : DeviceT<Device, implementation::Device>{
+    };
+}
+
+//============================================================================================
+// MappingStat
+//============================================================================================
+namespace winrt::gui::Models::implementation
+{
+    struct MappingsStat : MappingsStatT<MappingsStat>
+    {
+        MappingsStat() = default;
+
+        int32_t Primery(){return primery;}
+        void Primery(int32_t value){primery = value;}
+        int32_t Secondary(){return secondary;}
+        void Secondary(int32_t value){secondary = value;}
+        int32_t Viewports(){return viewports;}
+        void Viewports(int32_t value){viewports = value;}
+        int32_t Views(){return views;}
+        void Views(int32_t value){views = value;}
+        
+    protected:
+        int32_t primery{0};
+        int32_t secondary{0};
+        int32_t viewports{0};
+        int32_t views{0};
+    };
+}
+namespace winrt::gui::Models::factory_implementation
+{
+    struct MappingsStat : MappingsStatT<MappingsStat, implementation::MappingsStat>
+    {
+    };
+}
+
+//============================================================================================
+// Mapper
+//============================================================================================
 namespace winrt::gui::Models::implementation{
     struct Mapper : MapperT<Mapper>{
-        using DeviceCollection = winrt::Windows::Foundation::Collections::IObservableVector<winrt::gui::Models::Device>;
+        using DeviceCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Device>;
 
         Mapper();
         virtual ~Mapper();
@@ -25,7 +79,7 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::Simulators ActiveSim();
         hstring AircraftName();
         DeviceCollection Devices();
-        winrt::gui::Models::MappingsStat MappingsInfo(){return mappings_info;}
+        winrt::gui::Models::MappingsStat MappingsInfo();
 
         void RunScript();
         void StopScript();
@@ -40,10 +94,10 @@ namespace winrt::gui::Models::implementation{
         bool should_stop {false};
         MapperHandle mapper {nullptr};
         uint32_t dirty_properties {0};
-        bool need_update_devices {false};
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler;
         std::thread script_runner;
+        std::thread mapper_observer;
 
         winrt::hstring script_path;
         gui::Models::MapperStatus status {gui::Models::MapperStatus::stop};

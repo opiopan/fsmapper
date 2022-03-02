@@ -160,7 +160,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         if  (status != Status::init){
             return false;
         }
-        status = Status::running;
+        status = Status::prepare_to_run;
         scripting.scriptPath = std::move(scriptPath);
 
         //-------------------------------------------------------------------------------
@@ -170,6 +170,8 @@ bool MapperEngine::run(std::string&& scriptPath){
         initScriptingEnvAndRun();
         sendHostEvent(MEV_START_MAPPING, 0);
         lock.lock();
+
+        status = Status::running;
 
         while (true){
             //-------------------------------------------------------------------------------
@@ -252,11 +254,14 @@ bool MapperEngine::run(std::string&& scriptPath){
             if (scripting.updated_flags){
                 if (scripting.updated_flags & UPDATED_DEVICES){
                     sendHostEvent(MEV_CHANGE_DEVICES, 0);
-                }else if (scripting.updated_flags & UPDATED_MAPPINGS){
+                }
+                if (scripting.updated_flags & UPDATED_MAPPINGS){
                     sendHostEvent(MEV_CHANGE_MAPPINGS, 0);
-                }else if (scripting.updated_flags & UPDATED_VJOY){
+                }
+                if (scripting.updated_flags & UPDATED_VJOY){
                     sendHostEvent(MEV_CHANGE_VJOY, 0);
-                }else if (scripting.updated_flags & UPDATED_VIEWPORTS){
+                }
+                if (scripting.updated_flags & UPDATED_VIEWPORTS){
                     sendHostEvent(MEV_CHANGE_VIEWPORTS, 0);
                 }
                 scripting.updated_flags = 0;
@@ -451,10 +456,9 @@ MAPPINGS_STAT MapperEngine::get_mapping_stat(){
     std::lock_guard lock(mutex);
     if (status == Status::running){
         auto&& vstat = scripting.viewportManager->get_mappings_stat();
-        return {
-            static_cast<int>(mapping[0]->size()), 
-            static_cast<int>(mapping[1]->size()), 
-            vstat.first, vstat.second};
+        auto primery = static_cast<int>(mapping[0].get() ? mapping[0]->size() : 0);
+        auto secondary = static_cast<int>(mapping[1].get() ? mapping[1]->size() : 0);
+        return {primery, secondary, vstat.first, vstat.second};
     }else{
         return {0, 0, 0, 0};
     }

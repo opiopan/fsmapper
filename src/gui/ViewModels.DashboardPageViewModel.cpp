@@ -37,10 +37,9 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_AircraftName();
             }else if (name == L"MappingsInfo"){
                 reflect_mapper_MappingsInfo();
+            }else if (name == L"Devices"){
+                reflect_devices();
             }
-        });
-        token_for_devices = mapper.Devices().VectorChanged([this](auto const&, auto const&){
-            reflect_devices();            
         });
 
         reflect_mapper_ActiveSim();
@@ -51,7 +50,6 @@ namespace winrt::gui::ViewModels::implementation{
 
     DashboardPageViewModel::~DashboardPageViewModel(){
         mapper.PropertyChanged(token_for_mapper);
-        mapper.Devices().VectorChanged(token_for_devices);
     }
 
     //============================================================================================

@@ -25,7 +25,7 @@ namespace gui.Models{
         MapperStatus Status{get;};
         Simulators ActiveSim{get;};
         String AircraftName{get;};
-        Windows.Foundation.Collections.IObservableVector<Device> Devices{get;};
+        Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
 
         void RunScript();

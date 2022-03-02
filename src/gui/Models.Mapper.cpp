@@ -5,6 +5,8 @@
 #include "pch.h"
 #include "Models.Mapper.h"
 #include "Models.Mapper.g.cpp"
+#include "Models.Device.g.cpp"
+#include "Models.MappingsStat.g.cpp"
 
 #include "config.hpp"
 #include "encoding.hpp"
@@ -19,6 +21,7 @@ static constexpr auto property_status        = 1 << 1;
 static constexpr auto property_active_sim    = 1 << 2;
 static constexpr auto property_aircraft_name = 1 << 3;
 static constexpr auto property_mappings_info = 1 << 4;
+static constexpr auto property_devices       = 1 << 5;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -26,6 +29,7 @@ static const wchar_t* property_names[] = {
     L"ActiveSim",
     L"AircraftName",
     L"MappingsInfo",
+    L"Devices",
     nullptr
 };
 
@@ -38,10 +42,18 @@ namespace winrt::gui::Models::implementation{
     Mapper::Mapper(){
         script_path = fsmapper::app_config.get_script_path().c_str();
         mapper = mapper_init(event_callback, message_callback, this);
-        devices = winrt::single_threaded_observable_vector<gui::Models::Device>();
+        devices = winrt::single_threaded_vector<gui::Models::Device>();
         mappings_info = winrt::make<winrt::gui::Models::implementation::MappingsStat>();
 
+
+        //-----------------------------------------------------------------------------------------
+        // coroutine to issue property change events
+        //-----------------------------------------------------------------------------------------
         scheduler = scheduler_proc();
+
+        //-----------------------------------------------------------------------------------------
+        // start scripting thread
+        //-----------------------------------------------------------------------------------------
         script_runner = std::move(std::thread([this]{
             std::unique_lock lock(mutex);
             while (true){
@@ -59,12 +71,10 @@ namespace winrt::gui::Models::implementation{
                 active_sim = gui::Models::Simulators::none;
                 aircraft_name = L"";
                 dirty_properties |= property_status | property_active_sim | property_aircraft_name |
-                                    property_mappings_info;
-                need_update_devices = true;
+                                    property_mappings_info | property_devices;
                 cv.notify_all();
             }
         }));
-
         if (fsmapper::app_config.get_is_starting_script_at_start_up()){
             RunScript();
         }
@@ -87,7 +97,7 @@ namespace winrt::gui::Models::implementation{
         std::unique_lock lock{mutex};
 
         while (true){
-            cv.wait(lock, [this]{return should_stop || dirty_properties || need_update_devices;});
+            cv.wait(lock, [this]{return should_stop || dirty_properties;});
             if (should_stop){
                 break;
             }
@@ -98,6 +108,18 @@ namespace winrt::gui::Models::implementation{
                     mappings_info.Secondary(stat.num_secondary);
                     mappings_info.Viewports(stat.num_for_viewports);
                     mappings_info.Views(stat.num_for_views);
+                }
+                if (dirty_properties & property_devices){
+                    enum_device_context data;
+                    mapper_enumDevices(mapper, enum_device_callback, &data);
+                    devices.Clear();
+                    tools::utf8_to_utf16_translator cname, dname;
+                    for (auto& entry : data) {
+                        cname = entry.first.c_str();
+                        dname = entry.second.c_str();
+                        auto device = winrt::make<gui::Models::implementation::Device>(hstring(cname), hstring(dname));
+                        devices.Append(device);
+                    }
                 }
 
                 for (auto i = 0; property_names[i]; i++){
@@ -110,23 +132,6 @@ namespace winrt::gui::Models::implementation{
                     }
                 }
                 dirty_properties = 0;
-            }
-            if (need_update_devices){
-                enum_device_context data;
-                mapper_enumDevices(mapper, enum_device_callback, &data);
-                lock.unlock();
-                co_await ui_thread;
-                devices.Clear();
-                tools::utf8_to_utf16_translator cname, dname;
-                for (auto& entry : data) {
-                    cname = entry.first.c_str();
-                    dname = entry.second.c_str();
-                    auto device = winrt::make<gui::Models::implementation::Device>(hstring(cname), hstring(dname));
-                    devices.Append(device);
-                }
-                co_await winrt::resume_background();
-                lock.lock();
-                need_update_devices = false;
             }
         }
 
@@ -170,6 +175,12 @@ namespace winrt::gui::Models::implementation{
         std::lock_guard lock{mutex};
         return devices;
     }
+
+    winrt::gui::Models::MappingsStat Mapper::MappingsInfo(){
+        std::lock_guard lock{mutex};
+        return mappings_info;
+    }
+
 
     //============================================================================================
     // Funcions exported as runtime class
@@ -221,7 +232,7 @@ namespace winrt::gui::Models::implementation{
             dirty_properties |= property_aircraft_name;
             cv.notify_all();
         }else if (event == MEV_CHANGE_DEVICES){
-            need_update_devices = true;
+            dirty_properties |= property_devices;
             cv.notify_all();
         }else if (event == MEV_CHANGE_MAPPINGS){
             dirty_properties |= property_mappings_info;
