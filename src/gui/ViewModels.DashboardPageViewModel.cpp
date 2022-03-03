@@ -37,15 +37,17 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_AircraftName();
             }else if (name == L"MappingsInfo"){
                 reflect_mapper_MappingsInfo();
+            }else if (name == L"Viewports"){
+                reflect_mapper_Viewports();
             }else if (name == L"Devices"){
-                reflect_devices();
+                reflect_mapper_Devices();
             }
         });
 
         reflect_mapper_ActiveSim();
         reflect_mapper_AircraftName();
         reflect_mapper_MappingsInfo();
-        reflect_devices();
+        reflect_mapper_Devices();
     }
 
     DashboardPageViewModel::~DashboardPageViewModel(){
@@ -127,7 +129,39 @@ namespace winrt::gui::ViewModels::implementation{
         update_property(mappings_summary, std::move(hstring(std::move(os.str()))), L"MappingsSummary");
     }
 
-    void DashboardPageViewModel::reflect_devices(){
+    void DashboardPageViewModel::reflect_mapper_Viewports(){
+        auto viewports = mapper.Viewports();
+        auto size = viewports.Size();
+        std::wostringstream os_summary;
+        if (size == 0) {
+            os_summary << L"No viewport found.";
+        }else if (size == 1){
+            os_summary << L"1 viewport is defined:";
+        }else{
+            os_summary << size << L" viewports are defined:";
+        }
+        update_property(viewport_summary, std::move(hstring(os_summary.str())), L"ViewportSummary");
+
+        std::wostringstream os_detail;
+        const wchar_t* sep = L"";
+        for (auto& viewport: viewports){
+            os_detail << sep << "- " << viewport.Name().c_str() << "  [";
+            auto viewnum = viewport.Views().Size();
+            if (viewnum == 0) {
+                os_detail << L"with no view]";
+            }else if (viewnum == 1){
+                os_detail << L"contains 1 view]";
+            }else{
+                os_detail << L"contains " << viewnum << L"views]";
+            }
+            sep = L"\n";
+        }
+        update_property(viewport_detail, std::move(hstring(os_detail.str())), L"ViewportDetail");
+        update_property(viewport_detail_is_visible, size > 0, L"ViewportDetailIsVisible");
+    }
+
+
+    void DashboardPageViewModel::reflect_mapper_Devices(){
         auto devices = mapper.Devices();
         auto size = devices.Size();
         hstring summary;
@@ -144,7 +178,7 @@ namespace winrt::gui::ViewModels::implementation{
 
         std::wostringstream os;
         const wchar_t* sep = L"";
-        for (auto device : devices) {
+        for (auto& device : devices) {
             os << sep << L"- " << device.DeviceName().c_str() << L"  [" << device.ClassName().c_str() << L"]";
             sep = L"\n";
         }

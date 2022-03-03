@@ -468,7 +468,7 @@ std::shared_ptr<CapturedWindow> ViewPortManager::create_captured_window(sol::obj
 ViewPortManager::cw_info_list ViewPortManager::get_captured_window_list(){
     std::lock_guard lock(mutex);
     cw_info_list list;
-    for (auto cw : captured_windows){
+    for (auto& cw : captured_windows){
         CapturedWindowInfo cwinfo = {cw.first, cw.second->get_name(), cw.second->get_hwnd() != 0};
         list.push_back(std::move(cwinfo));
     }
@@ -496,6 +496,19 @@ void ViewPortManager::unregister_captured_window(uint32_t cwid){
     }else{
         throw MapperException("specified captured window no longer exits");
     }
+}
+
+ViewPortManager::vp_info_list ViewPortManager::get_viewport_list(){
+    std::lock_guard lock(mutex);
+    vp_info_list list;
+    for (auto& viewport : viewports){
+        std::vector<std::string> views;
+        for (auto& view : viewport->views){
+            views.emplace_back(view->name);
+        }
+        list.emplace_back(viewport->name.c_str(), std::move(views));
+    }
+    return list;
 }
 
 void ViewPortManager::enable_viewports(){

@@ -7,6 +7,8 @@
 #include "Models.Mapper.g.cpp"
 #include "Models.Device.g.cpp"
 #include "Models.MappingsStat.g.cpp"
+#include "Models.View.g.cpp"
+#include "Models.Viewport.g.cpp"
 
 #include "config.hpp"
 #include "encoding.hpp"
@@ -22,6 +24,8 @@ static constexpr auto property_active_sim    = 1 << 2;
 static constexpr auto property_aircraft_name = 1 << 3;
 static constexpr auto property_mappings_info = 1 << 4;
 static constexpr auto property_devices       = 1 << 5;
+static constexpr auto property_viewport_mode = 1 << 6;
+static constexpr auto property_viewports     = 1 << 7;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -30,21 +34,30 @@ static const wchar_t* property_names[] = {
     L"AircraftName",
     L"MappingsInfo",
     L"Devices",
+    L"ViewportMode",
+    L"Viewports",
     nullptr
 };
 
-using enum_device_context = std::vector<std::pair<std::string, std::string>>;
 
 namespace winrt::gui::Models::implementation{
+    using enum_device_context = std::vector<std::pair<std::string, std::string>>;
+    struct enum_viewport_context {
+        Mapper::ViewportCollection viewports;
+        hstring viewport_name;
+        Mapper::ViewCollection views;
+        tools::utf8_to_utf16_translator translator;
+    };
+
     //============================================================================================
     // Object constructor / destructor
     //============================================================================================
     Mapper::Mapper(){
         script_path = fsmapper::app_config.get_script_path().c_str();
         mapper = mapper_init(event_callback, message_callback, this);
+        viewports = winrt::single_threaded_vector<gui::Models::Viewport>();
         devices = winrt::single_threaded_vector<gui::Models::Device>();
         mappings_info = winrt::make<winrt::gui::Models::implementation::MappingsStat>();
-
 
         //-----------------------------------------------------------------------------------------
         // coroutine to issue property change events
@@ -71,7 +84,7 @@ namespace winrt::gui::Models::implementation{
                 active_sim = gui::Models::Simulators::none;
                 aircraft_name = L"";
                 dirty_properties |= property_status | property_active_sim | property_aircraft_name |
-                                    property_mappings_info | property_devices;
+                                    property_mappings_info | property_viewports | property_devices;
                 cv.notify_all();
             }
         }));
@@ -109,6 +122,7 @@ namespace winrt::gui::Models::implementation{
                     mappings_info.Viewports(stat.num_for_viewports);
                     mappings_info.Views(stat.num_for_views);
                 }
+
                 if (dirty_properties & property_devices){
                     enum_device_context data;
                     mapper_enumDevices(mapper, enum_device_callback, &data);
@@ -119,6 +133,18 @@ namespace winrt::gui::Models::implementation{
                         dname = entry.second.c_str();
                         auto device = winrt::make<gui::Models::implementation::Device>(hstring(cname), hstring(dname));
                         devices.Append(device);
+                    }
+                }
+
+                if (dirty_properties & property_viewports){
+                    viewports.Clear();
+                    enum_viewport_context ctx;
+                    ctx.viewports = viewports;
+                    ctx.views = nullptr;
+                    mapper_enumViewport(mapper, enum_viewport_callback, &ctx);
+                    if (ctx.views != nullptr && ctx.views.Size() > 0) {
+                        auto viewport = winrt::make<gui::Models::implementation::Viewport>(ctx.viewport_name, ctx.views);
+                        viewports.Append(viewport);
                     }
                 }
 
@@ -169,6 +195,16 @@ namespace winrt::gui::Models::implementation{
     hstring Mapper::AircraftName(){
         std::lock_guard lock{mutex};
         return aircraft_name;
+    }
+
+    winrt::gui::Models::ViewportStatus Mapper::ViewportMode(){
+        std::lock_guard lock{mutex};
+        return viewport_mode;
+    }
+
+    Mapper::ViewportCollection Mapper::Viewports(){
+        std::lock_guard lock{mutex};
+        return viewports;
     }
 
     Mapper::DeviceCollection Mapper::Devices(){
@@ -237,6 +273,9 @@ namespace winrt::gui::Models::implementation{
         }else if (event == MEV_CHANGE_MAPPINGS){
             dirty_properties |= property_mappings_info;
             cv.notify_all();
+        }else if (event == MEV_CHANGE_VIEWPORTS){
+            dirty_properties |= property_viewports;
+            cv.notify_all();
         }
         return true;
     }
@@ -253,6 +292,23 @@ namespace winrt::gui::Models::implementation{
     bool Mapper::enum_device_callback(MapperHandle mapper, void* context, const char* devtype, const char* devname){
         auto list = reinterpret_cast<enum_device_context*>(context);
         list->emplace_back(devtype, devname);
+        return true;
+    }
+
+    bool Mapper::enum_viewport_callback(MapperHandle mapper, void* context_addr, VIEWPORT_DEF* vpdef){
+        auto context = reinterpret_cast<enum_viewport_context*>(context_addr);
+        if (vpdef->viewid == 0) {
+            if (!context->viewport_name.empty()) {
+                auto viewport = winrt::make<gui::Models::implementation::Viewport>(context->viewport_name, context->views);
+                context->viewports.Append(viewport);
+            }
+            context->translator.translate(vpdef->viewport_name);
+            context->viewport_name = hstring(context->translator);
+            context->views = winrt::single_threaded_vector<gui::Models::View>();
+        }
+        context->translator.translate(vpdef->view_name);
+        auto view = winrt::make<gui::Models::implementation::View>(vpdef->viewid, hstring(context->translator));
+        context->views.Append(view);
         return true;
     }
 

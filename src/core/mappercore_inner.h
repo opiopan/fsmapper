@@ -12,3 +12,9 @@ struct CapturedWindowInfo{
     std::string name;
     bool is_captured;
 };
+
+struct ViewportInfo{
+    std::string name;
+    std::vector<std::string> views;
+    ViewportInfo(const char* name, std::vector<std::string>&& views) : name(name), views(std::move(views)){}
+};

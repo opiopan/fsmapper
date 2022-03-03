@@ -150,6 +150,7 @@ public:
         DeviceInfo(const char* dname, const char* cname) : device_name(dname), class_name(cname){}
     };
     std::vector<DeviceInfo> get_device_list();
+    std::vector<ViewportInfo> get_viewport_list();
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
     void enable_viewports();

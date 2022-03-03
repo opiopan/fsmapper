@@ -88,6 +88,7 @@ protected:
         std::unique_ptr<EventActionMap> mappings;
 
     public:
+        friend ViewPortManager;
         View() = delete;
         View(const View&) = delete;
         View(View&&) = delete;
@@ -141,6 +142,7 @@ protected:
     int mappings_num_for_views{0};
 
 public:
+    friend ViewPortManager;
     ViewPort() = delete;
     ViewPort(const ViewPort&) = delete;
     ViewPort(ViewPort&&) = delete;
@@ -213,6 +215,8 @@ public:
     cw_info_list get_captured_window_list();
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
+    using vp_info_list = std::vector<ViewportInfo>;
+    vp_info_list get_viewport_list();
     void enable_viewports();
     void disable_viewports();
     std::pair<int, int> get_mappings_stat();

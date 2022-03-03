@@ -31,5 +31,8 @@ namespace gui.ViewModels{
         Int32 MappingsDetailViewports{get;};
         Int32 MappingsDetailViews{get;};
         Boolean MappingsDetailIsVisible{get;};
+        String ViewportSummary{get;};
+        String ViewportDetail{get;};
+        Boolean ViewportDetailIsVisible{get;};
     }
 }

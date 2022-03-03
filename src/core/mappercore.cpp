@@ -110,6 +110,23 @@ DLLEXPORT bool mapper_enumCapturedWindows(MapperHandle handle, MAPPER_ENUM_CAPUT
     return true;
 }
 
+DLLEXPORT bool mapper_enumViewport(MapperHandle handle, MAPPER_ENUM_VIEWPORT_FUNC func, void* context){
+    auto&& list = handle->engine->get_viewport_list();
+    for (auto viewport : list){
+        VIEWPORT_DEF def;
+        def.viewport_name = viewport.name.c_str();
+        def.viewid = 0;
+        for (auto view : viewport.views){
+            def.view_name = view.c_str();
+            if (!func(handle, context, &def)){
+                return false;
+            }
+            def.viewid++;
+        }
+    }
+    return true;
+}
+
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd){
     handle->engine->register_captured_window(cwid, hWnd);
     return true;

@@ -1,6 +1,7 @@
 namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
     enum Simulators {none = 0, fs2020, dcs};
+    enum ViewportStatus {none = 0, prepared, stop, working};
 
     runtimeclass Device {
         Device(String cname, String dname);
@@ -18,6 +19,20 @@ namespace gui.Models{
         Int32 Views;
     }
 
+    runtimeclass View {
+        View(Int32 id, String name);
+
+        Int32 Id{get;};
+        String Name{get;};
+    }
+
+    runtimeclass Viewport {
+        Viewport(String name, Object views);
+
+        String Name{get;};
+        Windows.Foundation.Collections.IVector<View> Views{get;};
+    }
+
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
@@ -25,6 +40,8 @@ namespace gui.Models{
         MapperStatus Status{get;};
         Simulators ActiveSim{get;};
         String AircraftName{get;};
+        ViewportStatus ViewportMode{get;};
+        Windows.Foundation.Collections.IVector<Viewport> Viewports{get;};
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
 

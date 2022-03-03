@@ -5,6 +5,8 @@
 #pragma once
 #include "Models.Device.g.h"
 #include "Models.MappingsStat.g.h"
+#include "Models.View.g.h"
+#include "Models.Viewport.g.h"
 #include "Models.Mapper.g.h"
 
 #include <mutex>
@@ -34,10 +36,8 @@ namespace winrt::gui::Models::factory_implementation{
 //============================================================================================
 // MappingStat
 //============================================================================================
-namespace winrt::gui::Models::implementation
-{
-    struct MappingsStat : MappingsStatT<MappingsStat>
-    {
+namespace winrt::gui::Models::implementation{
+    struct MappingsStat : MappingsStatT<MappingsStat>{
         MappingsStat() = default;
 
         int32_t Primery(){return primery;}
@@ -56,9 +56,49 @@ namespace winrt::gui::Models::implementation
         int32_t views{0};
     };
 }
-namespace winrt::gui::Models::factory_implementation
-{
-    struct MappingsStat : MappingsStatT<MappingsStat, implementation::MappingsStat>
+namespace winrt::gui::Models::factory_implementation{
+    struct MappingsStat : MappingsStatT<MappingsStat, implementation::MappingsStat>{
+    };
+}
+
+//============================================================================================
+// View
+//============================================================================================
+namespace winrt::gui::Models::implementation{
+    struct View : ViewT<View>{
+        View(int32_t id, hstring const& name) : id(id), name(name){}
+
+        int32_t Id(){return id;}
+        hstring Name(){return name;}
+
+    protected:
+        int32_t id;
+        hstring name;
+    };
+}
+namespace winrt::gui::Models::factory_implementation{
+    struct View : ViewT<View, implementation::View>{
+    };
+}
+
+//============================================================================================
+// Viewport
+//============================================================================================
+namespace winrt::gui::Models::implementation{
+    struct Viewport : ViewportT<Viewport>{
+        using ViewList = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
+        Viewport(hstring const& name, winrt::Windows::Foundation::IInspectable const& views) : name(name), views(views.as<ViewList>()){}
+
+        hstring Name(){return name;}
+        ViewList Views(){return views;}
+
+    protected:
+        hstring name;
+        ViewList views;
+    };
+}
+namespace winrt::gui::Models::factory_implementation{
+    struct Viewport : ViewportT<Viewport, implementation::Viewport>
     {
     };
 }
@@ -69,6 +109,8 @@ namespace winrt::gui::Models::factory_implementation
 namespace winrt::gui::Models::implementation{
     struct Mapper : MapperT<Mapper>{
         using DeviceCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Device>;
+        using ViewCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
+        using ViewportCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Viewport>;
 
         Mapper();
         virtual ~Mapper();
@@ -78,6 +120,8 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::MapperStatus Status();
         winrt::gui::Models::Simulators ActiveSim();
         hstring AircraftName();
+        winrt::gui::Models::ViewportStatus ViewportMode();
+        ViewportCollection Viewports();
         DeviceCollection Devices();
         winrt::gui::Models::MappingsStat MappingsInfo();
 
@@ -103,6 +147,8 @@ namespace winrt::gui::Models::implementation{
         gui::Models::MapperStatus status {gui::Models::MapperStatus::stop};
         gui::Models::Simulators active_sim {gui::Models::Simulators::none};
         winrt::hstring aircraft_name;
+        winrt::gui::Models::ViewportStatus viewport_mode{winrt::gui::Models::ViewportStatus::none};
+        ViewportCollection viewports {nullptr};
         DeviceCollection devices {nullptr};
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
 
@@ -133,6 +179,7 @@ namespace winrt::gui::Models::implementation{
         static bool message_callback(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len);
         bool proc_message(MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len);
         static bool enum_device_callback(MapperHandle mapper, void* context, const char* devtype, const char* devname);
+        static bool enum_viewport_callback(MapperHandle mapper, void* context, VIEWPORT_DEF* vpdef);
         static bool enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef);
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler_proc();

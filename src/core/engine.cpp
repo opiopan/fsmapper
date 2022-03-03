@@ -438,6 +438,15 @@ void MapperEngine::unregister_captured_window(uint32_t cwid){
     }
 }
 
+std::vector<ViewportInfo> MapperEngine::get_viewport_list(){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        return std::move(scripting.viewportManager->get_viewport_list());
+    }else{
+        return {};
+    }
+}
+
 void MapperEngine::enable_viewports(){
     std::lock_guard lock(mutex);
     if (status == Status::running){
