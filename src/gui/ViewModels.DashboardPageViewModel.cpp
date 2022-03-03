@@ -55,34 +55,6 @@ namespace winrt::gui::ViewModels::implementation{
     }
 
     //============================================================================================
-    // Properties of runtime class
-    //============================================================================================
-    winrt::gui::Models::Mapper DashboardPageViewModel::Mapper(){
-        return mapper;
-    }
-
-    bool DashboardPageViewModel::SimIconIsVisible(){
-        return sim_icon_is_visible;
-    }
-
-    Media::Imaging::BitmapImage DashboardPageViewModel::SimIconSource(){
-        return logo_images[static_cast<int>(sim_type)];
-    }
-
-    hstring DashboardPageViewModel::SimString(){
-        return hstring(sim_name + aircraft_name);
-    }
-
-    hstring DashboardPageViewModel::DeviceSummary(){
-        return device_summary;
-    }
-
-    hstring DashboardPageViewModel::DeviceDetail(){
-        return device_detail;
-    }
-
-
-    //============================================================================================
     // Reflecting model properties
     //============================================================================================
     void DashboardPageViewModel::reflect_mapper_ActiveSim(){
@@ -110,7 +82,7 @@ namespace winrt::gui::ViewModels::implementation{
         }
     }
 
-    void DashboardPageViewModel:: reflect_mapper_MappingsInfo(){
+    void DashboardPageViewModel::reflect_mapper_MappingsInfo(){
         auto stat = mapper.MappingsInfo();
         auto sum = stat.Primery() + stat.Secondary() + stat.Viewports() + stat.Views();
         update_property(mappings_detail_is_visible, sum > 0, L"MappingsDetailIsVisible");

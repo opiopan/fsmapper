@@ -14,12 +14,14 @@ namespace winrt::gui::ViewModels::implementation{
         DashboardPageViewModel();
         ~DashboardPageViewModel();
 
-        winrt::gui::Models::Mapper Mapper();
-        bool SimIconIsVisible();
-        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource();
-        hstring SimString();
-        hstring DeviceSummary();
-        hstring DeviceDetail();
+        winrt::gui::Models::Mapper Mapper(){return mapper;}
+        bool SimIconIsVisible(){return sim_icon_is_visible;}
+        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource(){
+            return logo_images[static_cast<int>(sim_type)];
+        }
+        hstring SimString(){return hstring(sim_name + aircraft_name);}
+        hstring DeviceSummary(){return device_summary;}
+        hstring DeviceDetail(){return device_detail;}
         bool DeviceDetailIsVisible(){return device_detail_is_visible;}
         hstring MappingsSummary(){return mappings_summary;}
         int32_t MappingsDetailPrimery(){return mappings_detail_primery;}
