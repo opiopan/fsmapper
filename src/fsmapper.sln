@@ -16,6 +16,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hook", "hook\hook.vcxproj", "{BAE570F4-EA42-43AD-81BB-613949159F81}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui\gui.vcxproj", "{8B952566-F559-4B46-AF59-BEBB8CBE1C24}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0D63B476-F135-4E42-A9F4-AB874EFA4677} = {0D63B476-F135-4E42-A9F4-AB874EFA4677}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

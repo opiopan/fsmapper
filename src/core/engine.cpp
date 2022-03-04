@@ -41,7 +41,7 @@ MapperEngine::~MapperEngine(){
 //============================================================================================
 // initialize lua scripting environment
 //============================================================================================
-void MapperEngine::initScriptingEnvAndRun(){
+void MapperEngine::initScriptingEnv(){
     scripting.lua_ptr = std::make_unique<sol::state>();
     scripting.lua().open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
 
@@ -139,15 +139,6 @@ void MapperEngine::initScriptingEnvAndRun(){
     auto package = scripting.lua()["package"];
     package["path"] = path.string();
 
-    //-------------------------------------------------------------------------------
-    // run the script
-    //-------------------------------------------------------------------------------
-    auto result = scripting.lua().safe_script_file(scripting.scriptPath, sol::script_pass_on_error);
-    if (!result.valid()){
-        sol::error err = result;
-        throw MapperException(err.what());
-    }
-
 }
 
 //============================================================================================
@@ -160,18 +151,25 @@ bool MapperEngine::run(std::string&& scriptPath){
         if  (status != Status::init){
             return false;
         }
-        status = Status::prepare_to_run;
         scripting.scriptPath = std::move(scriptPath);
 
         //-------------------------------------------------------------------------------
-        // create environment for lua script then run
+        // create environment for lua script
         //-------------------------------------------------------------------------------
+        initScriptingEnv();
+
+        //-------------------------------------------------------------------------------
+        // run the script
+        //-------------------------------------------------------------------------------
+        status = Status::running;
         lock.unlock();
-        initScriptingEnvAndRun();
+        auto result = scripting.lua().safe_script_file(scripting.scriptPath, sol::script_pass_on_error);
+        if (!result.valid()){
+            sol::error err = result;
+            throw MapperException(err.what());
+        }
         sendHostEvent(MEV_START_MAPPING, 0);
         lock.lock();
-
-        status = Status::running;
 
         while (true){
             //-------------------------------------------------------------------------------

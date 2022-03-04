@@ -158,7 +158,7 @@ public:
     MAPPINGS_STAT get_mapping_stat();
     
 protected:
-    void initScriptingEnvAndRun();
+    void initScriptingEnv();
     std::unique_ptr<Event>&& receiveEvent();
     Action* findAction(uint64_t evid);
 
