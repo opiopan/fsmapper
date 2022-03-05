@@ -7,6 +7,7 @@
 #include "Models.MappingsStat.g.h"
 #include "Models.View.g.h"
 #include "Models.Viewport.g.h"
+#include "Models.CapturedWindow.g.h"
 #include "Models.Mapper.g.h"
 
 #include <mutex>
@@ -104,6 +105,65 @@ namespace winrt::gui::Models::factory_implementation{
 }
 
 //============================================================================================
+// CapturedWindow
+//============================================================================================
+namespace winrt::gui::Models::implementation
+{
+    struct CapturedWindow : CapturedWindowT<CapturedWindow>{
+        CapturedWindow() = delete;
+        CapturedWindow(winrt::Windows::Foundation::IInspectable const& mapper, uint32_t cwid, hstring const& name, hstring const& description) : 
+            mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())), cwid(cwid), name(name), description(description){}
+
+        uint32_t Cwid(){return cwid;}
+        hstring Name(){return name;}
+        hstring Descriptioin(){return description;}
+        bool IsCaptured(){return is_captured;}
+        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource Image(){return image;}
+
+        winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
+            return property_changed.add(handler);
+        }
+        void PropertyChanged(winrt::event_token const& token) noexcept{
+            return property_changed.remove(token);
+        }
+
+    protected:
+        winrt::weak_ref<winrt::gui::Models::Mapper> mapper;
+        uint32_t cwid;
+        hstring name;
+        hstring description;
+        bool is_captured {false};
+        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource image{nullptr};
+
+        winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
+
+        template <typename T>
+        void update_property(T& variable, const T& value, const wchar_t* name){
+            if (variable != value){
+                variable = value;
+                property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+            }
+        }
+
+        template <typename T>
+        void update_property(T& variable, T&& value, const wchar_t* name){
+            if (variable != value){
+                variable = std::move(value);
+                property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+            }
+        }
+
+        void update_property(const wchar_t* name){
+            property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+        }
+    };
+}
+namespace winrt::gui::Models::factory_implementation{
+    struct CapturedWindow : CapturedWindowT<CapturedWindow, implementation::CapturedWindow>{
+    };
+}
+
+//============================================================================================
 // Mapper
 //============================================================================================
 namespace winrt::gui::Models::implementation{
@@ -124,6 +184,8 @@ namespace winrt::gui::Models::implementation{
         ViewportCollection Viewports();
         DeviceCollection Devices();
         winrt::gui::Models::MappingsStat MappingsInfo();
+
+        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource NullWindowImage();
 
         void RunScript();
         void StopScript();
@@ -151,6 +213,8 @@ namespace winrt::gui::Models::implementation{
         ViewportCollection viewports {nullptr};
         DeviceCollection devices {nullptr};
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
+
+        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource null_window_image{nullptr};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 

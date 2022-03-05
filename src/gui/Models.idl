@@ -33,6 +33,16 @@ namespace gui.Models{
         Windows.Foundation.Collections.IVector<View> Views{get;};
     }
 
+    runtimeclass CapturedWindow : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
+        CapturedWindow(Object mapper, UInt32 cwid, String name, String description);
+
+        UInt32 Cwid{get;};
+        String Name{get;};
+        String Descriptioin{get;};
+        Boolean IsCaptured{get;};
+        Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource Image{get;};
+    }
+
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
@@ -44,6 +54,8 @@ namespace gui.Models{
         Windows.Foundation.Collections.IVector<Viewport> Viewports{get;};
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
+
+        Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource NullWindowImage{get;};
 
         void RunScript();
         void StopScript();

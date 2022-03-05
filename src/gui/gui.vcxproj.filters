@@ -51,14 +51,14 @@
     <ClCompile Include="Utilities\config.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="Models.Mapper.cpp">
-      <Filter>Models</Filter>
-    </ClCompile>
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp">
       <Filter>ViewModels</Filter>
     </ClCompile>
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp">
       <Filter>ViewModels</Filter>
+    </ClCompile>
+    <ClCompile Include="Models.cpp">
+      <Filter>Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -68,9 +68,6 @@
     </ClInclude>
     <ClInclude Include="Utilities\config.hpp">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="Models.Mapper.h">
-      <Filter>Models</Filter>
     </ClInclude>
     <ClInclude Include="Utilities\encoding.hpp">
       <Filter>Utilities</Filter>
@@ -83,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="ViewModels.DashboardPageViewModel.h">
       <Filter>ViewModels</Filter>
+    </ClInclude>
+    <ClInclude Include="Models.h">
+      <Filter>Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,12 +3,13 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 #include "pch.h"
-#include "Models.Mapper.h"
+#include "Models.h"
 #include "Models.Mapper.g.cpp"
 #include "Models.Device.g.cpp"
 #include "Models.MappingsStat.g.cpp"
 #include "Models.View.g.cpp"
 #include "Models.Viewport.g.cpp"
+#include "Models.CapturedWindow.g.cpp"
 
 #include "config.hpp"
 #include "encoding.hpp"
@@ -217,6 +218,9 @@ namespace winrt::gui::Models::implementation{
         return mappings_info;
     }
 
+    winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource Mapper::NullWindowImage(){
+        return null_window_image;
+    }
 
     //============================================================================================
     // Funcions exported as runtime class

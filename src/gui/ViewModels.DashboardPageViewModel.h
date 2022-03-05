@@ -4,7 +4,7 @@
 //
 #pragma once
 #include "ViewModels.DashboardPageViewModel.g.h"
-#include "Models.Mapper.h"
+#include "Models.h"
 
 #include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
 #include <string>

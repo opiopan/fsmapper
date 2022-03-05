@@ -123,7 +123,7 @@
     <ClInclude Include="DashboardPage.xaml.h">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Models.Mapper.h" />
+    <ClInclude Include="Models.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -159,7 +159,7 @@
     <ClCompile Include="DashboardPage.xaml.cpp">
       <DependentUpon>DashboardPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Models.Mapper.cpp" />
+    <ClCompile Include="Models.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

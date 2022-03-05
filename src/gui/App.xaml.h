@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "App.xaml.g.h"
-#include "Models.Mapper.h"
+#include "Models.h"
 
 namespace winrt::gui::implementation
 {

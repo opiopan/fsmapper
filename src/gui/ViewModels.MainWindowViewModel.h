@@ -4,7 +4,7 @@
 //
 #pragma once
 #include "ViewModels.MainWindowViewModel.g.h"
-#include "Models.Mapper.h"
+#include "Models.h"
 
 namespace winrt::gui::ViewModels::implementation
 {
