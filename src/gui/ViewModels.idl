@@ -34,5 +34,7 @@ namespace gui.ViewModels{
         String ViewportSummary{get;};
         String ViewportDetail{get;};
         Boolean ViewportDetailIsVisible{get;};
+        Boolean CapturedWindowsIsVisible{get;};
+        String CapturedWindowsSummary{get;};
     }
 }

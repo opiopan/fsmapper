@@ -116,13 +116,19 @@ namespace winrt::gui::Models::implementation
                        uint32_t cwid, hstring const& name, hstring const& description) : 
             mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())),
             cwid(cwid), name(name), description(description),
-            image(mapper.as<winrt::gui::Models::Mapper>().NullWindowImage()){}
+            image(mapper.as<winrt::gui::Models::Mapper>().NullWindowImage()){
+            update_status_string();
+        }
 
         uint32_t Cwid(){return cwid;}
         hstring Name(){return name;}
-        hstring Descriptioin(){return description;}
+        hstring Description(){return description;}
+        hstring StatusString(){return status_string;}
         bool IsCaptured(){return is_captured;}
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
+
+        winrt::Windows::Foundation::IAsyncAction ToggleCapture(
+            winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -136,8 +142,10 @@ namespace winrt::gui::Models::implementation
         uint32_t cwid;
         hstring name;
         hstring description;
+        hstring status_string;
         bool is_captured {false};
         winrt::Microsoft::UI::Xaml::Media::ImageSource image;
+        winrt::Microsoft::UI::WindowId window_id;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -157,9 +165,11 @@ namespace winrt::gui::Models::implementation
             }
         }
 
-        void update_property(const wchar_t* name){
-            property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+        void update_property(const wchar_t* nm){
+            property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{nm});
         }
+
+        void update_status_string();
     };
 }
 namespace winrt::gui::Models::factory_implementation{

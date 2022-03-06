@@ -32,6 +32,8 @@ namespace winrt::gui::ViewModels::implementation{
         hstring ViewportSummary(){return viewport_summary;}
         hstring ViewportDetail(){return viewport_detail;}
         bool ViewportDetailIsVisible(){return viewport_detail_is_visible;}
+        bool CapturedWindowsIsVisible(){return captured_windows_is_visible;}
+        hstring CapturedWindowsSummary(){return captured_windows_summary;}
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -43,6 +45,7 @@ namespace winrt::gui::ViewModels::implementation{
     protected:
         winrt::gui::Models::Mapper mapper{nullptr};
         winrt::event_token token_for_mapper;
+        winrt::event_token token_for_captured_windows;
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[3];
 
         bool sim_icon_is_visible;
@@ -60,7 +63,9 @@ namespace winrt::gui::ViewModels::implementation{
         bool mappings_detail_is_visible{false};
         hstring viewport_summary;
         hstring viewport_detail;
-        bool viewport_detail_is_visible;
+        bool viewport_detail_is_visible{false};
+        bool captured_windows_is_visible{false};
+        hstring captured_windows_summary;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -89,6 +94,7 @@ namespace winrt::gui::ViewModels::implementation{
         void reflect_mapper_MappingsInfo();
         void reflect_mapper_Viewports();
         void reflect_mapper_Devices();
+        void reflect_mapper_CapturedWindows();
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation{

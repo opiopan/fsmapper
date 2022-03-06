@@ -48,7 +48,14 @@ static const wchar_t* property_names[] = {
 
 namespace winrt::gui::Models::implementation{
     using enum_device_context = std::vector<std::pair<std::string, std::string>>;
-    using enum_captured_windows_context = std::vector<CAPTURED_WINDOW_DEF>;
+    struct captured_window_def{
+        uint32_t cwid;
+        std::string name;
+        std::string description;
+        captured_window_def(uint32_t cwid, const char* name, const char* description):
+            cwid(cwid), name(name), description(description ? description : "") {}
+    };
+    using enum_captured_windows_context = std::vector<captured_window_def>;
     struct enum_viewport_context {
         Mapper::ViewportCollection viewports;
         hstring viewport_name;
@@ -69,7 +76,7 @@ namespace winrt::gui::Models::implementation{
 
         auto device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         auto source = winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasImageSource(device, 40, 30, 96);
-        auto ds = source.CreateDrawingSession(winrt::Microsoft::UI::Colors::Black());
+        auto ds = source.CreateDrawingSession(winrt::Microsoft::UI::Colors::DarkSlateBlue());
         ds.Close();
         null_window_image = source;
 
@@ -171,9 +178,9 @@ namespace winrt::gui::Models::implementation{
                     captured_windows.Clear();
                     tools::utf8_to_utf16_translator translator;
                     for (const auto& def : cw_list) {
-                        translator = def.name;
+                        translator = def.name.c_str();
                         auto name = hstring(translator);
-                        translator = def.description;
+                        translator = def.description.c_str();
                         auto description = hstring(translator);
                         auto cw = winrt::make<winrt::gui::Models::implementation::CapturedWindow>(
                            *this, def.cwid, name, description);
@@ -337,13 +344,13 @@ namespace winrt::gui::Models::implementation{
         return true;
     }
 
-    bool Mapper::enum_device_callback(MapperHandle mapper, void* context, const char* devtype, const char* devname){
+    bool Mapper::enum_device_callback(MapperHandle, void* context, const char* devtype, const char* devname){
         auto list = reinterpret_cast<enum_device_context*>(context);
         list->emplace_back(devtype, devname);
         return true;
     }
 
-    bool Mapper::enum_viewport_callback(MapperHandle mapper, void* context_addr, VIEWPORT_DEF* vpdef){
+    bool Mapper::enum_viewport_callback(MapperHandle, void* context_addr, VIEWPORT_DEF* vpdef){
         auto context = reinterpret_cast<enum_viewport_context*>(context_addr);
         if (vpdef->viewid == 0) {
             if (!context->viewport_name.empty()) {
@@ -360,9 +367,9 @@ namespace winrt::gui::Models::implementation{
         return true;
     }
 
-    bool Mapper::enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef){
+    bool Mapper::enum_captured_window_callback(MapperHandle, void* context, CAPTURED_WINDOW_DEF* cwdef){
         auto list = reinterpret_cast<enum_captured_windows_context*>(context);
-        list->emplace_back(*cwdef);
+        list->emplace_back(cwdef->cwid, cwdef->name, cwdef->description);
         return true;
     }
 }

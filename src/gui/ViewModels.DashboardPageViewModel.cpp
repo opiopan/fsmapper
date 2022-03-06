@@ -44,10 +44,15 @@ namespace winrt::gui::ViewModels::implementation{
             }
         });
 
+        token_for_captured_windows = mapper.CapturedWindows().VectorChanged([this](auto const&, auto const&){
+            reflect_mapper_CapturedWindows();
+        });
+
         reflect_mapper_ActiveSim();
         reflect_mapper_AircraftName();
         reflect_mapper_MappingsInfo();
         reflect_mapper_Devices();
+        reflect_mapper_CapturedWindows();
     }
 
     DashboardPageViewModel::~DashboardPageViewModel(){
@@ -116,7 +121,7 @@ namespace winrt::gui::ViewModels::implementation{
 
         std::wostringstream os_detail;
         const wchar_t* sep = L"";
-        for (auto& viewport: viewports){
+        for (auto const& viewport: viewports){
             os_detail << sep << "- " << viewport.Name().c_str() << "  [";
             auto viewnum = viewport.Views().Size();
             if (viewnum == 0) {
@@ -150,11 +155,28 @@ namespace winrt::gui::ViewModels::implementation{
 
         std::wostringstream os;
         const wchar_t* sep = L"";
-        for (auto& device : devices) {
+        for (auto const& device : devices) {
             os << sep << L"- " << device.DeviceName().c_str() << L"  [" << device.ClassName().c_str() << L"]";
             sep = L"\n";
         }
         update_property(device_detail, std::move(hstring(os.str())), L"DeviceDetail");
         update_property(device_detail_is_visible, devices.Size() > 0, L"DeviceDetailIsVisible");
+    }
+
+    void DashboardPageViewModel::reflect_mapper_CapturedWindows(){
+        auto cw_num = mapper.CapturedWindows().Size();
+        std::wostringstream os;
+        auto captured_num = 0;
+        for (auto const& cw : mapper.CapturedWindows()) {
+            captured_num += cw.IsCaptured() ? 1 : 0;
+        }
+        if (cw_num == 1) {
+            os << "1 captured window is defined (";
+        }else if (cw_num > 1){
+            os << cw_num << " captured windows are defined (";
+        }
+        os << captured_num << "/" << cw_num << " captured):";
+        update_property(captured_windows_summary, std::move(hstring(os.str())), L"CapturedWindowsSummary");
+        update_property(captured_windows_is_visible, cw_num > 0, L"CapturedWindowsIsVisible");
     }
 }

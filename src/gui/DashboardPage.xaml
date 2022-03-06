@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources></Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -31,26 +33,47 @@
         </StackPanel>
 
         <!-- Viewport pane-->
-        <StackPanel Grid.Row="1" Orientation="Vertical"
-                    Background="{StaticResource SystemChromeMediumLowColor}"
-                    CornerRadius="10"
-                    Margin="0,16,8,0"
-                    Padding="12, 8, 12, 12">
-            <Grid Grid.ColumnDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="1" Grid.RowDefinitions="Auto, Auto, Auto, Auto, *"
+              Background="{StaticResource SystemChromeMediumLowColor}"
+              CornerRadius="10"
+              Margin="0,16,8,0"
+              Padding="12, 8, 12, 12">
+            <Grid Grid.Row="0" Grid.ColumnDefinitions="Auto,*,Auto">
                 <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
                 <Button Content="Activate Viewports" Grid.Column="2"/>
             </Grid>
 
-            <TextBlock FontWeight="Bold" Margin="0,12,0,0"
+            <TextBlock Grid.Row="1" FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.ViewportSummary, Mode=OneWay}"/>
-            <TextBlock LineHeight="22" Margin="20,4,0,0"
+            <TextBlock Grid.Row="2" LineHeight="22" Margin="20,4,0,0"
                        Visibility="{x:Bind ViewModel.ViewportDetailIsVisible, Mode=OneWay}"
                        Text="{x:Bind ViewModel.ViewportDetail, Mode=OneWay}"/>
 
-            <TextBlock FontWeight="Bold" Margin="0,12,0,0"
-                       Text="2 captured windows are defined (0/2 captured):"/>
-            <Image Height="60" Width="40" Source="{x:Bind ViewModel.Mapper.NullWindowImage, Mode=OneWay}"/>
-        </StackPanel>
+            <TextBlock Grid.Row="3" FontWeight="Bold" Margin="0,24,0,8"
+                       Text="{x:Bind ViewModel.CapturedWindowsSummary, Mode=OneWay}"
+                       Visibility="{x:Bind ViewModel.CapturedWindowsIsVisible, Mode=OneWay}"/>
+
+            <ScrollViewer Grid.Row="4" Margin="20,4,0,0">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Mapper.CapturedWindows, Mode=OneWay}">
+                    <DataTemplate x:DataType="local:Models.CapturedWindow">
+                        <Button Height="76" HorizontalAlignment="Stretch"
+                                CornerRadius="10"
+                                HorizontalContentAlignment="Left"
+                                Padding="12, 0, 12, 0" Margin="0, 0, 0, 12"
+                                Click="{x:Bind ToggleCapture}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{x:Bind Image, Mode=OneWay}"
+                                       Width="80" Height="60" Margin="0, 0, 12, 0"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="Bold"/>
+                                    <TextBlock Text="{x:Bind StatusString}" Margin="10,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </Grid>
 
         <!-- Stack for the other informations-->
         <ScrollViewer Grid.Row="1" Grid.Column="1">

@@ -38,9 +38,12 @@ namespace gui.Models{
 
         UInt32 Cwid{get;};
         String Name{get;};
-        String Descriptioin{get;};
+        String Description{get;};
+        String StatusString{get;};
         Boolean IsCaptured{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image{get;};
+
+        Windows.Foundation.IAsyncAction ToggleCapture(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
