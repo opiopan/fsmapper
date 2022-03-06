@@ -57,7 +57,10 @@
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp">
       <Filter>ViewModels</Filter>
     </ClCompile>
-    <ClCompile Include="Models.cpp">
+    <ClCompile Include="Models.CapturedWindow.cpp">
+      <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Models.Mapper.cpp">
       <Filter>Models</Filter>
     </ClCompile>
   </ItemGroup>

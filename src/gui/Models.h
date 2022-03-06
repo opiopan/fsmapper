@@ -1,5 +1,5 @@
 //
-// Models.Mapper.h
+// Models.h
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 #pragma once
@@ -88,7 +88,8 @@ namespace winrt::gui::Models::factory_implementation{
 namespace winrt::gui::Models::implementation{
     struct Viewport : ViewportT<Viewport>{
         using ViewList = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
-        Viewport(hstring const& name, winrt::Windows::Foundation::IInspectable const& views) : name(name), views(views.as<ViewList>()){}
+        Viewport(hstring const& name, winrt::Windows::Foundation::IInspectable const& views) :
+            name(name), views(views.as<ViewList>()){}
 
         hstring Name(){return name;}
         ViewList Views(){return views;}
@@ -111,14 +112,17 @@ namespace winrt::gui::Models::implementation
 {
     struct CapturedWindow : CapturedWindowT<CapturedWindow>{
         CapturedWindow() = delete;
-        CapturedWindow(winrt::Windows::Foundation::IInspectable const& mapper, uint32_t cwid, hstring const& name, hstring const& description) : 
-            mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())), cwid(cwid), name(name), description(description){}
+        CapturedWindow(winrt::Windows::Foundation::IInspectable const& mapper,
+                       uint32_t cwid, hstring const& name, hstring const& description) : 
+            mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())),
+            cwid(cwid), name(name), description(description),
+            image(mapper.as<winrt::gui::Models::Mapper>().NullWindowImage()){}
 
         uint32_t Cwid(){return cwid;}
         hstring Name(){return name;}
         hstring Descriptioin(){return description;}
         bool IsCaptured(){return is_captured;}
-        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource Image(){return image;}
+        winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -133,7 +137,7 @@ namespace winrt::gui::Models::implementation
         hstring name;
         hstring description;
         bool is_captured {false};
-        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource image{nullptr};
+        winrt::Microsoft::UI::Xaml::Media::ImageSource image;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -171,6 +175,7 @@ namespace winrt::gui::Models::implementation{
         using DeviceCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Device>;
         using ViewCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
         using ViewportCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Viewport>;
+        using CapturedWindowCollection = winrt::Windows::Foundation::Collections::IObservableVector<winrt::gui::Models::CapturedWindow>;
 
         Mapper();
         virtual ~Mapper();
@@ -182,10 +187,11 @@ namespace winrt::gui::Models::implementation{
         hstring AircraftName();
         winrt::gui::Models::ViewportStatus ViewportMode();
         ViewportCollection Viewports();
+        CapturedWindowCollection CapturedWindows();
         DeviceCollection Devices();
         winrt::gui::Models::MappingsStat MappingsInfo();
 
-        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource NullWindowImage();
+        winrt::Microsoft::UI::Xaml::Media::ImageSource NullWindowImage();
 
         void RunScript();
         void StopScript();
@@ -211,10 +217,11 @@ namespace winrt::gui::Models::implementation{
         winrt::hstring aircraft_name;
         winrt::gui::Models::ViewportStatus viewport_mode{winrt::gui::Models::ViewportStatus::none};
         ViewportCollection viewports {nullptr};
+        CapturedWindowCollection captured_windows{nullptr};
         DeviceCollection devices {nullptr};
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
 
-        winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource null_window_image{nullptr};
+		winrt::Microsoft::UI::Xaml::Media::ImageSource null_window_image{ nullptr };
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 

@@ -49,6 +49,7 @@
 
             <TextBlock FontWeight="Bold" Margin="0,12,0,0"
                        Text="2 captured windows are defined (0/2 captured):"/>
+            <Image Height="60" Width="40" Source="{x:Bind ViewModel.Mapper.NullWindowImage, Mode=OneWay}"/>
         </StackPanel>
 
         <!-- Stack for the other informations-->

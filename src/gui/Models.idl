@@ -40,7 +40,7 @@ namespace gui.Models{
         String Name{get;};
         String Descriptioin{get;};
         Boolean IsCaptured{get;};
-        Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource Image{get;};
+        Microsoft.UI.Xaml.Media.ImageSource Image{get;};
     }
 
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
@@ -52,10 +52,11 @@ namespace gui.Models{
         String AircraftName{get;};
         ViewportStatus ViewportMode{get;};
         Windows.Foundation.Collections.IVector<Viewport> Viewports{get;};
+        Windows.Foundation.Collections.IObservableVector<CapturedWindow> CapturedWindows{get;};
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
 
-        Microsoft.UI.Xaml.Media.Imaging.SoftwareBitmapSource NullWindowImage{get;};
+        Microsoft.UI.Xaml.Media.ImageSource NullWindowImage{get;};
 
         void RunScript();
         void StopScript();

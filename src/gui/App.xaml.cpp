@@ -24,7 +24,6 @@ App::App()
 {
     InitializeComponent();
     fsmapper::init_app_config();
-    mapper = winrt::make<gui::Models::implementation::Mapper>();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
     UnhandledException([this](IInspectable const&, UnhandledExceptionEventArgs const& e)
@@ -52,6 +51,7 @@ HWND App::TopWindowHandle() {
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+    mapper = winrt::make<gui::Models::implementation::Mapper>();
     window = make<MainWindow>();
     window.Activate();
 }

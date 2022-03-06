@@ -9,24 +9,29 @@
 #include "Models.MappingsStat.g.cpp"
 #include "Models.View.g.cpp"
 #include "Models.Viewport.g.cpp"
-#include "Models.CapturedWindow.g.cpp"
 
+#include "App.xaml.h"
 #include "config.hpp"
 #include "encoding.hpp"
+#include "tools.hpp"
 
 #include <memory>
 #include <vector>
 
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+
 using namespace winrt::gui::Models;
 
-static constexpr auto property_script_path   = 1 << 0;
-static constexpr auto property_status        = 1 << 1;
-static constexpr auto property_active_sim    = 1 << 2;
-static constexpr auto property_aircraft_name = 1 << 3;
-static constexpr auto property_mappings_info = 1 << 4;
-static constexpr auto property_devices       = 1 << 5;
-static constexpr auto property_viewport_mode = 1 << 6;
-static constexpr auto property_viewports     = 1 << 7;
+static constexpr auto property_script_path      = 1 << 0;
+static constexpr auto property_status           = 1 << 1;
+static constexpr auto property_active_sim       = 1 << 2;
+static constexpr auto property_aircraft_name    = 1 << 3;
+static constexpr auto property_mappings_info    = 1 << 4;
+static constexpr auto property_devices          = 1 << 5;
+static constexpr auto property_viewport_mode    = 1 << 6;
+static constexpr auto property_viewports        = 1 << 7;
+static constexpr auto property_captured_windows = 1 << 8;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -37,12 +42,13 @@ static const wchar_t* property_names[] = {
     L"Devices",
     L"ViewportMode",
     L"Viewports",
+    L"CapturedWindows",
     nullptr
 };
 
-
 namespace winrt::gui::Models::implementation{
     using enum_device_context = std::vector<std::pair<std::string, std::string>>;
+    using enum_captured_windows_context = std::vector<CAPTURED_WINDOW_DEF>;
     struct enum_viewport_context {
         Mapper::ViewportCollection viewports;
         hstring viewport_name;
@@ -57,8 +63,15 @@ namespace winrt::gui::Models::implementation{
         script_path = fsmapper::app_config.get_script_path().c_str();
         mapper = mapper_init(event_callback, message_callback, this);
         viewports = winrt::single_threaded_vector<gui::Models::Viewport>();
+        captured_windows = winrt::single_threaded_observable_vector<gui::Models::CapturedWindow>();
         devices = winrt::single_threaded_vector<gui::Models::Device>();
         mappings_info = winrt::make<winrt::gui::Models::implementation::MappingsStat>();
+
+        auto device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
+        auto source = winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasImageSource(device, 40, 30, 96);
+        auto ds = source.CreateDrawingSession(winrt::Microsoft::UI::Colors::Black());
+        ds.Close();
+        null_window_image = source;
 
         //-----------------------------------------------------------------------------------------
         // coroutine to issue property change events
@@ -85,7 +98,8 @@ namespace winrt::gui::Models::implementation{
                 active_sim = gui::Models::Simulators::none;
                 aircraft_name = L"";
                 dirty_properties |= property_status | property_active_sim | property_aircraft_name |
-                                    property_mappings_info | property_viewports | property_devices;
+                                    property_mappings_info | property_viewports | property_devices |
+                                    property_captured_windows;
                 cv.notify_all();
             }
         }));
@@ -149,6 +163,27 @@ namespace winrt::gui::Models::implementation{
                     }
                 }
 
+                if (dirty_properties & property_captured_windows){
+                    enum_captured_windows_context cw_list;
+                    mapper_enumCapturedWindows(mapper, enum_captured_window_callback, &cw_list);
+                    lock.unlock();
+                    co_await ui_thread;
+                    captured_windows.Clear();
+                    tools::utf8_to_utf16_translator translator;
+                    for (const auto& def : cw_list) {
+                        translator = def.name;
+                        auto name = hstring(translator);
+                        translator = def.description;
+                        auto description = hstring(translator);
+                        auto cw = winrt::make<winrt::gui::Models::implementation::CapturedWindow>(
+                           *this, def.cwid, name, description);
+                        captured_windows.Append(cw);
+                    }
+                    co_await winrt::resume_background();
+                    lock.lock();
+                    dirty_properties &= ~property_captured_windows;
+                }
+
                 for (auto i = 0; property_names[i]; i++){
                     if (dirty_properties & (1 << i)){
                         lock.unlock();
@@ -208,6 +243,11 @@ namespace winrt::gui::Models::implementation{
         return viewports;
     }
 
+    Mapper::CapturedWindowCollection Mapper::CapturedWindows(){
+        std::lock_guard lock{mutex};
+        return captured_windows;
+    }
+
     Mapper::DeviceCollection Mapper::Devices(){
         std::lock_guard lock{mutex};
         return devices;
@@ -218,7 +258,8 @@ namespace winrt::gui::Models::implementation{
         return mappings_info;
     }
 
-    winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource Mapper::NullWindowImage(){
+    winrt::Microsoft::UI::Xaml::Media::ImageSource Mapper::NullWindowImage(){
+        std::lock_guard lock{mutex};
         return null_window_image;
     }
 
@@ -280,6 +321,9 @@ namespace winrt::gui::Models::implementation{
         }else if (event == MEV_CHANGE_VIEWPORTS){
             dirty_properties |= property_viewports;
             cv.notify_all();
+        }else if (event == MEV_READY_TO_CAPTURE_WINDOW || event == MEV_RESET_VIEWPORTS){
+            dirty_properties |= property_captured_windows;
+            cv.notify_all();
         }
         return true;
     }
@@ -317,6 +361,8 @@ namespace winrt::gui::Models::implementation{
     }
 
     bool Mapper::enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef){
+        auto list = reinterpret_cast<enum_captured_windows_context*>(context);
+        list->emplace_back(*cwdef);
         return true;
     }
 }
