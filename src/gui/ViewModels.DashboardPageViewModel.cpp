@@ -56,6 +56,7 @@ namespace winrt::gui::ViewModels::implementation{
     }
 
     DashboardPageViewModel::~DashboardPageViewModel(){
+        mapper.CapturedWindows().VectorChanged(token_for_captured_windows);
         mapper.PropertyChanged(token_for_mapper);
     }
 

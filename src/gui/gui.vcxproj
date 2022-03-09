@@ -143,6 +143,7 @@
     <ClInclude Include="Utilities\tools.hpp" />
     <ClInclude Include="ViewModels.DashboardPageViewModel.h" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
+    <ClInclude Include="WindowPicker.h" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -181,6 +182,7 @@
     <ClCompile Include="Utilities\config.cpp" />
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp" />
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
+    <ClCompile Include="WindowPicker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -209,6 +211,7 @@
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </Midl>
     <Midl Include="ViewModels.idl" />
+    <Midl Include="WindowPicker.idl" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget

@@ -41,6 +41,9 @@
     <Midl Include="ViewModels.idl">
       <Filter>ViewModels</Filter>
     </Midl>
+    <Midl Include="WindowPicker.idl">
+      <Filter>Dialogs</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -62,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="Models.Mapper.cpp">
       <Filter>Models</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowPicker.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +93,9 @@
     <ClInclude Include="Models.h">
       <Filter>Models</Filter>
     </ClInclude>
+    <ClInclude Include="WindowPicker.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -103,6 +112,9 @@
     </Filter>
     <Filter Include="Views">
       <UniqueIdentifier>{ff4c665c-01da-41a7-a78c-9b2654aa6fe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialogs">
+      <UniqueIdentifier>{b9b43f3d-0ca4-4b81-9547-d4edbf6ef64b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
