@@ -17,6 +17,8 @@
             <SolidColorBrush x:Key="ScriptStatusColorErrorDark" Color="DarkRed"/>
             <BitmapImage x:Key="SimLogoFS2020" UriSource="/Assets/fs2020logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
+            <x:Double x:Key="ContentDialogMaxWidth">5000</x:Double>
+            <x:Double x:Key="ContentDialogMaxHeight">5000</x:Double>
         </ResourceDictionary>
         <!--
         -->

@@ -8,6 +8,7 @@
 
 #include "App.xaml.h"
 #include "tools.hpp"
+#include "WindowPickerDialog.h"
 
 #include <shobjidl.h>
 #include <winrt/Microsoft.UI.Interop.h>
@@ -38,12 +39,15 @@ namespace winrt::gui::Models::implementation{
         // auto item = co_await picker.PickSingleItemAsync();
         // if (item) {
         // }
-        auto dialog = winrt::Microsoft::UI::Xaml::Controls::ContentDialog();
-        dialog.Title(winrt::box_value(L"Test dialog"));
-        dialog.Content(winrt::box_value(L"This is test of ContentDialog on WinRT/C++."));
-        dialog.CloseButtonText(L"Close");
-        dialog.XamlRoot(App::TopWindow().Content().XamlRoot());
-        auto result = co_await dialog.ShowAsync();
+
+        // auto dialog = winrt::Microsoft::UI::Xaml::Controls::ContentDialog();
+        // dialog.Title(winrt::box_value(L"Test dialog"));
+        // dialog.Content(winrt::box_value(L"This is test of ContentDialog on WinRT/C++."));
+        // dialog.CloseButtonText(L"Close");
+        // dialog.XamlRoot(App::TopWindow().Content().XamlRoot());
+        // auto result = co_await dialog.ShowAsync();
+
+        auto result = co_await winrt::gui::PickWindowAsync(name);
     }
 
 }

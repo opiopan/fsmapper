@@ -97,7 +97,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fsmappercore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fsmappercore.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -109,7 +109,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fsmappercore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fsmappercore.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -143,7 +143,9 @@
     <ClInclude Include="Utilities\tools.hpp" />
     <ClInclude Include="ViewModels.DashboardPageViewModel.h" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
-    <ClInclude Include="WindowPicker.h" />
+    <ClInclude Include="WindowPickerDialog.h">
+	  <DependentUpon>WindowPickerDialog.xaml</DependentUpon>
+	</ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -152,6 +154,9 @@
     <Page Include="MainWindow.xaml" />
     <Page Include="SettingsPage.xaml" />
     <Page Include="UtilitiesPage.xaml" />
+    <Page Include="WindowPickerDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConsolePage.xaml.cpp">
@@ -182,7 +187,9 @@
     <ClCompile Include="Utilities\config.cpp" />
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp" />
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
-    <ClCompile Include="WindowPicker.cpp" />
+    <ClCompile Include="WindowPickerDialog.cpp">
+	  <DependentUpon>WindowPickerDialog.xaml</DependentUpon>
+	</ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -211,7 +218,9 @@
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </Midl>
     <Midl Include="ViewModels.idl" />
-    <Midl Include="WindowPicker.idl" />
+    <Midl Include="WindowPickerDialog.idl">
+	  <DependentUpon>WindowPickerDialog.xaml</DependentUpon>
+	</Midl>
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
        Tools extension to be activated for this project even if the Windows App SDK Nuget

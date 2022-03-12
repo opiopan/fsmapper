@@ -1,0 +1,40 @@
+namespace gui
+{
+    runtimeclass WindowItem : Microsoft.UI.Xaml.Data.INotifyPropertyChanged{
+        WindowItem(WindowPickerViewModel model, UInt64 hwnd, String name);
+
+        UInt64 hWnd{get;};
+        String Name{get;};
+        Microsoft.UI.Xaml.Media.ImageSource Image;
+        Microsoft.UI.Xaml.Media.SolidColorBrush Background;
+
+        void TryTap(Object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs args);
+        void TryDoubleTap(Object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs args);
+    }
+
+    runtimeclass WindowPickerViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged{
+        WindowPickerViewModel(String target);
+
+        WindowItem SelectedItem{get;};
+        Windows.Foundation.Collections.IObservableVector<WindowItem> WindowItems{get;};
+        String Title{get;};
+        Boolean IsSelected{get;};
+
+        Single BoundsWidth{get;};
+        Single BoundsHeight{get;};
+
+        void ClickCaptureButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ClickCancelButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+
+        void TrySelect(WindowItem item);
+        void DecideSelection(WindowItem item);
+
+        Windows.Foundation.IAsyncOperation<WindowItem> PickWindowAsync();
+    }
+
+    runtimeclass WindowPickerDialog : Microsoft.UI.Xaml.Controls.ContentDialog{
+        WindowPickerDialog(WindowPickerViewModel view_model);
+
+        WindowPickerViewModel ViewModel{get;};
+    }
+}

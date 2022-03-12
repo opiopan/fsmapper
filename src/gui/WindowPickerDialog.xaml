@@ -1,0 +1,53 @@
+﻿<ContentDialog
+    x:Class="gui.WindowPickerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:gui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    CornerRadius="15">
+
+    <Grid Grid.RowDefinitions="Auto,*,Auto" Grid.ColumnDefinitions="*"
+          RowSpacing="20"
+          Width="{x:Bind ViewModel.BoundsWidth, Mode=OneWay}"
+          Height="{x:Bind ViewModel.BoundsHeight, Mode=OneWay}">
+        <TextBlock Text="{x:Bind ViewModel.Title}" FontSize="26"/>
+        <ScrollViewer Grid.Row="1">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.WindowItems}" HorizontalAlignment="Center">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout Orientation="Horizontal" 
+                                       MinColumnSpacing="0" MinRowSpacing="0"/>
+                </ItemsRepeater.Layout>
+                <DataTemplate x:DataType="local:WindowItem">
+                    <StackPanel Background="{x:Bind Background, Mode=OneWay}"
+                                IsTapEnabled="True" Tapped="{x:Bind TryTap}"
+                                IsDoubleTapEnabled="True" DoubleTapped="{x:Bind TryDoubleTap}">
+                        <Button Background="Transparent" BorderBrush="Transparent"
+                            Padding="20, 5, 20, 20">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center"
+                                        Spacing="6">
+                                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis"
+                                           HorizontalAlignment="Center"/>
+                                <Image Height="150" Source="{x:Bind Image, Mode=OneWay}"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Spacing="16">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Width" Value="100"/>
+                </Style>
+            </StackPanel.Resources>
+            <Button Content="Capture" FontWeight="Bold" 
+                    Click="{x:Bind ViewModel.ClickCaptureButton}"
+                    IsEnabled="{x:Bind ViewModel.IsSelected, Mode=OneWay}"/>
+            <Button Content="Cancel" Click="{x:Bind ViewModel.ClickCancelButton}"/>
+        </StackPanel>
+    </Grid>
+</ContentDialog>

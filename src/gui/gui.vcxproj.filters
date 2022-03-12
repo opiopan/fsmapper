@@ -19,6 +19,9 @@
     <Page Include="MainWindow.xaml">
       <Filter>Views</Filter>
     </Page>
+    <Page Include="WindowPickerDialog.xaml">
+      <Filter>Dialogs</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
@@ -41,7 +44,7 @@
     <Midl Include="ViewModels.idl">
       <Filter>ViewModels</Filter>
     </Midl>
-    <Midl Include="WindowPicker.idl">
+    <Midl Include="WindowPickerDialog.idl">
       <Filter>Dialogs</Filter>
     </Midl>
   </ItemGroup>
@@ -66,7 +69,7 @@
     <ClCompile Include="Models.Mapper.cpp">
       <Filter>Models</Filter>
     </ClCompile>
-    <ClCompile Include="WindowPicker.cpp">
+    <ClCompile Include="WindowPickerDialog.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -93,7 +96,7 @@
     <ClInclude Include="Models.h">
       <Filter>Models</Filter>
     </ClInclude>
-    <ClInclude Include="WindowPicker.h">
+    <ClInclude Include="WindowPickerDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
