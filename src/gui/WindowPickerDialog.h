@@ -18,7 +18,11 @@ namespace winrt::gui::implementation{
     struct WindowItem : WindowItemT<WindowItem>{
         WindowItem() = delete;
         WindowItem(winrt::gui::WindowPickerViewModel const& model, uint64_t hwnd, hstring const& name, uint32_t width, uint32_t height) :
-            view_model(winrt::make_weak(model)), hwnd(hwnd), name(name), width(width), height(height){}
+            view_model(winrt::make_weak(model)), hwnd(hwnd), name(name), width(width), height(height){
+            capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
+            start_capture();
+        }
+        ~WindowItem(){stop_capture();}
 
         uint64_t hWnd(){return hwnd;}
         hstring Name(){return name;}
@@ -66,6 +70,21 @@ namespace winrt::gui::implementation{
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush background{nullptr};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
+
+        //------------------------------------------------------------------
+        // Window image capturing context & functions
+        //------------------------------------------------------------------
+        struct {
+            winrt::Microsoft::Graphics::Canvas::CanvasDevice canvas_device{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{nullptr};
+            winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool frame_pool{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
+            winrt::event_token token;
+        }capturing;
+
+        winrt::Windows::Foundation::IAsyncAction start_capture();
+        void stop_capture();
+        winrt::Windows::Foundation::IAsyncAction process_captured_frame(winrt::weak_ref<winrt::gui::WindowItem> weak_self);
     };
 }
 namespace winrt::gui::factory_implementation{
@@ -143,23 +162,6 @@ namespace winrt::gui::implementation{
             update_property(bounds_width, min(width - 150.f, 1200.f), L"BoundsWidth");
             update_property(bounds_height, min(height - 150.f, 900.f), L"BoundsHeight");
         }
-
-        //------------------------------------------------------------------
-        // Window image capturing context & functions
-        //------------------------------------------------------------------
-        struct {
-            winrt::Microsoft::Graphics::Canvas::CanvasDevice canvas_device{nullptr};
-            winrt::Windows::Foundation::Collections::IIterator<winrt::gui::WindowItem> iterator{nullptr};
-            winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{nullptr};
-            winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool frame_pool{nullptr};
-            winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
-            winrt::event_token token;
-        }capturing;
-
-        void init_capture();
-        void start_capture();
-        void stop_capture();
-        winrt::Windows::Foundation::IAsyncAction process_captured_frame();
     };
 }
 namespace winrt::gui::factory_implementation{

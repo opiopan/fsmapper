@@ -56,7 +56,6 @@ namespace winrt::gui::implementation{
         blank_image = source;
         normal_brush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush(winrt::Microsoft::UI::Colors::Transparent());
         selected_brush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush(winrt::Microsoft::UI::Colors::LightSkyBlue());
-        capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         std::wostringstream os;
         os << L"Select a window to capture for \"" << target.c_str() << L"\"";
@@ -71,7 +70,6 @@ namespace winrt::gui::implementation{
     }
 
     WindowPickerViewModel::~WindowPickerViewModel(){
-        stop_capture();
         App::TopWindow().SizeChanged(token_sizechanged);
     }
 
@@ -124,12 +122,6 @@ namespace winrt::gui::implementation{
         }
 
         //------------------------------------------------------------------
-        // Start window image capturing
-        //------------------------------------------------------------------
-        init_capture();
-        start_capture();
-
-        //------------------------------------------------------------------
         // Show dialog to specify a window
         //------------------------------------------------------------------
         dialog = winrt::make<winrt::gui::implementation::WindowPickerDialog>(*this);
@@ -178,69 +170,68 @@ namespace winrt::gui::implementation{
     //============================================================================================
     // Window image capturing
     //============================================================================================
-        void WindowPickerViewModel::init_capture(){
-            stop_capture();
-            capturing.iterator = window_items.First();
-        }
+    winrt::Windows::Foundation::IAsyncAction WindowItem::start_capture(){
+        winrt::apartment_context ui_thread;
+        co_await winrt::resume_background();
+        co_await ui_thread;
 
-        void WindowPickerViewModel::start_capture(){
-            stop_capture();
-            if (capturing.iterator){
-                const auto factory = get_activation_factory<winrt::Windows::Graphics::Capture::GraphicsCaptureItem>();
-                const auto interop = factory.as<IGraphicsCaptureItemInterop>();
-                interop->CreateForWindow(
-                    reinterpret_cast<HWND>((*capturing.iterator).hWnd()),
-                    winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
-                    reinterpret_cast<void**>(winrt::put_abi(capturing.item)));
-                if (capturing.item){
-                    capturing.frame_pool = winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool::Create(
-                        capturing.canvas_device,
-                        winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized,
-                        2, capturing.item.Size());
-                    capturing.token = capturing.frame_pool.FrameArrived([this, hwnd = (*capturing.iterator).hWnd()](auto const&, auto const&){
-                        if (hwnd == (*capturing.iterator).hWnd()){
-                            process_captured_frame();
-                        }
-                    });
-                    capturing.session = capturing.frame_pool.CreateCaptureSession(capturing.item);
-                    capturing.session.StartCapture();
-                }else{
-                    capturing.iterator++;
-                    start_capture();
+        const auto factory = get_activation_factory<winrt::Windows::Graphics::Capture::GraphicsCaptureItem>();
+        const auto interop = factory.as<IGraphicsCaptureItemInterop>();
+        interop->CreateForWindow(
+            reinterpret_cast<HWND>(hwnd),
+            winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
+            reinterpret_cast<void**>(winrt::put_abi(capturing.item)));
+        if (capturing.item){
+            capturing.frame_pool = winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool::Create(
+                capturing.canvas_device,
+                winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized,
+                2, capturing.item.Size());
+            
+            winrt::gui::WindowItem self{*this};
+            winrt::weak_ref<winrt::gui::WindowItem> weak_self = winrt::make_weak(self);
+            capturing.token = capturing.frame_pool.FrameArrived([this, weak_self](auto const&, auto const&){
+                if (weak_self.get()){
+                    process_captured_frame(weak_self);
                 }
-            }
+            });
+            capturing.session = capturing.frame_pool.CreateCaptureSession(capturing.item);
+            capturing.session.IsCursorCaptureEnabled(false);
+            capturing.session.StartCapture();
         }
+    }
 
-        void WindowPickerViewModel::stop_capture(){
-            if (capturing.session) {
-                capturing.session.Close();
-            }
-            if (capturing.frame_pool) {
-                capturing.frame_pool.FrameArrived(capturing.token);
-                capturing.frame_pool.Close();
-            }
-            capturing.item = nullptr;
-            capturing.frame_pool = nullptr;
-            capturing.session = nullptr;
+    void WindowItem::stop_capture(){
+        if (capturing.session) {
+            capturing.session.Close();
         }
+        if (capturing.frame_pool) {
+            capturing.frame_pool.FrameArrived(capturing.token);
+            capturing.frame_pool.Close();
+        }
+        capturing.item = nullptr;
+        capturing.frame_pool = nullptr;
+        capturing.session = nullptr;
+    }
 
-        winrt::Windows::Foundation::IAsyncAction WindowPickerViewModel::process_captured_frame(){
+    winrt::Windows::Foundation::IAsyncAction WindowItem::process_captured_frame(winrt::weak_ref<winrt::gui::WindowItem> weak_self){
+        if (capturing.frame_pool) {
             auto frame = capturing.frame_pool.TryGetNextFrame();
             auto surface = frame.Surface();
             auto bitmap = co_await winrt::Windows::Graphics::Imaging::SoftwareBitmap::CreateCopyFromSurfaceAsync(surface);
-            if (bitmap) {
+            if (bitmap && weak_self.get()) {
                 auto displayable_image = winrt::Windows::Graphics::Imaging::SoftwareBitmap::Convert(
-                    bitmap, 
-                    winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 
+                    bitmap,
+                    winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8,
                     winrt::Windows::Graphics::Imaging::BitmapAlphaMode::Premultiplied);
                 if (displayable_image) {
                     auto source = winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource();
                     co_await source.SetBitmapAsync(displayable_image);
-                    (*capturing.iterator).Image(source);
+                    if (weak_self.get()){
+                        Image(source);
+                    }
                 }
             }
-
-            capturing.iterator++;
-            start_capture();
+            //stop_capture();
         }
+    }
 }
