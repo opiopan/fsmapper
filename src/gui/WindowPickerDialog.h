@@ -8,17 +8,22 @@
 #include "WindowPickerViewModel.g.h"
 #include "WindowPickerDialog.g.h"
 
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Windows.Graphics.Capture.h>
+
 //============================================================================================
 // WindowItem
 //============================================================================================
 namespace winrt::gui::implementation{
     struct WindowItem : WindowItemT<WindowItem>{
         WindowItem() = delete;
-        WindowItem(winrt::gui::WindowPickerViewModel const& view_model, uint64_t hwnd, hstring const& name):
-            view_model(winrt::make_weak(view_model)), hwnd(hwnd), name(name){}
+        WindowItem(winrt::gui::WindowPickerViewModel const& model, uint64_t hwnd, hstring const& name, uint32_t width, uint32_t height) :
+            view_model(winrt::make_weak(model)), hwnd(hwnd), name(name), width(width), height(height){}
 
         uint64_t hWnd(){return hwnd;}
         hstring Name(){return name;}
+        uint32_t Width(){return width;}
+        uint32_t Height(){return height;}
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
         void Image(winrt::Microsoft::UI::Xaml::Media::ImageSource const& value){
             image = value;
@@ -54,7 +59,9 @@ namespace winrt::gui::implementation{
     protected:
         winrt::weak_ref<winrt::gui::WindowPickerViewModel> view_model;
         uint64_t hwnd{0};
-        hstring name{0};
+        hstring name;
+        uint32_t width;
+        uint32_t height;
         winrt::Microsoft::UI::Xaml::Media::ImageSource image{nullptr};
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush background{nullptr};
 
@@ -136,6 +143,23 @@ namespace winrt::gui::implementation{
             update_property(bounds_width, min(width - 150.f, 1200.f), L"BoundsWidth");
             update_property(bounds_height, min(height - 150.f, 900.f), L"BoundsHeight");
         }
+
+        //------------------------------------------------------------------
+        // Window image capturing context & functions
+        //------------------------------------------------------------------
+        struct {
+            winrt::Microsoft::Graphics::Canvas::CanvasDevice canvas_device{nullptr};
+            winrt::Windows::Foundation::Collections::IIterator<winrt::gui::WindowItem> iterator{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{nullptr};
+            winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool frame_pool{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
+            winrt::event_token token;
+        }capturing;
+
+        void init_capture();
+        void start_capture();
+        void stop_capture();
+        winrt::Windows::Foundation::IAsyncAction process_captured_frame();
     };
 }
 namespace winrt::gui::factory_implementation{

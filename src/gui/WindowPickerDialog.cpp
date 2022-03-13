@@ -18,6 +18,11 @@
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 #include <winrt/Microsoft.Graphics.DirectX.h>
+#include <Windows.Graphics.Capture.Interop.h>
+#include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Windows.Graphics.Imaging.h>
+#include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
+
 
 constexpr auto MINIMUM_ENABLE_WINDOW_SIZE = 64;
 constexpr auto MAX_ENABLE_WINDOW_RATIO = 20;
@@ -51,6 +56,7 @@ namespace winrt::gui::implementation{
         blank_image = source;
         normal_brush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush(winrt::Microsoft::UI::Colors::Transparent());
         selected_brush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush(winrt::Microsoft::UI::Colors::LightSkyBlue());
+        capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
 
         std::wostringstream os;
         os << L"Select a window to capture for \"" << target.c_str() << L"\"";
@@ -65,6 +71,7 @@ namespace winrt::gui::implementation{
     }
 
     WindowPickerViewModel::~WindowPickerViewModel(){
+        stop_capture();
         App::TopWindow().SizeChanged(token_sizechanged);
     }
 
@@ -108,12 +115,23 @@ namespace winrt::gui::implementation{
         // Build up window collection object
         //------------------------------------------------------------------
         for (auto& window : win_list){
-            auto item = winrt::make<WindowItem>(*this, reinterpret_cast<uint64_t>(window.hwnd), std::move(hstring(window.title)));
+            auto item = winrt::make<WindowItem>(
+                *this, reinterpret_cast<uint64_t>(window.hwnd), std::move(hstring(window.title)),
+                window.width, window.height);
             item.Image(blank_image);
             item.Background(normal_brush);
             window_items.Append(item);
         }
 
+        //------------------------------------------------------------------
+        // Start window image capturing
+        //------------------------------------------------------------------
+        init_capture();
+        start_capture();
+
+        //------------------------------------------------------------------
+        // Show dialog to specify a window
+        //------------------------------------------------------------------
         dialog = winrt::make<winrt::gui::implementation::WindowPickerDialog>(*this);
         dialog.XamlRoot(App::TopWindow().Content().XamlRoot());
         co_await dialog.ShowAsync();
@@ -156,4 +174,73 @@ namespace winrt::gui::implementation{
         selected_item = item;
         dialog.Hide();
     }
+
+    //============================================================================================
+    // Window image capturing
+    //============================================================================================
+        void WindowPickerViewModel::init_capture(){
+            stop_capture();
+            capturing.iterator = window_items.First();
+        }
+
+        void WindowPickerViewModel::start_capture(){
+            stop_capture();
+            if (capturing.iterator){
+                const auto factory = get_activation_factory<winrt::Windows::Graphics::Capture::GraphicsCaptureItem>();
+                const auto interop = factory.as<IGraphicsCaptureItemInterop>();
+                interop->CreateForWindow(
+                    reinterpret_cast<HWND>((*capturing.iterator).hWnd()),
+                    winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
+                    reinterpret_cast<void**>(winrt::put_abi(capturing.item)));
+                if (capturing.item){
+                    capturing.frame_pool = winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool::Create(
+                        capturing.canvas_device,
+                        winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized,
+                        2, capturing.item.Size());
+                    capturing.token = capturing.frame_pool.FrameArrived([this, hwnd = (*capturing.iterator).hWnd()](auto const&, auto const&){
+                        if (hwnd == (*capturing.iterator).hWnd()){
+                            process_captured_frame();
+                        }
+                    });
+                    capturing.session = capturing.frame_pool.CreateCaptureSession(capturing.item);
+                    capturing.session.StartCapture();
+                }else{
+                    capturing.iterator++;
+                    start_capture();
+                }
+            }
+        }
+
+        void WindowPickerViewModel::stop_capture(){
+            if (capturing.session) {
+                capturing.session.Close();
+            }
+            if (capturing.frame_pool) {
+                capturing.frame_pool.FrameArrived(capturing.token);
+                capturing.frame_pool.Close();
+            }
+            capturing.item = nullptr;
+            capturing.frame_pool = nullptr;
+            capturing.session = nullptr;
+        }
+
+        winrt::Windows::Foundation::IAsyncAction WindowPickerViewModel::process_captured_frame(){
+            auto frame = capturing.frame_pool.TryGetNextFrame();
+            auto surface = frame.Surface();
+            auto bitmap = co_await winrt::Windows::Graphics::Imaging::SoftwareBitmap::CreateCopyFromSurfaceAsync(surface);
+            if (bitmap) {
+                auto displayable_image = winrt::Windows::Graphics::Imaging::SoftwareBitmap::Convert(
+                    bitmap, 
+                    winrt::Windows::Graphics::Imaging::BitmapPixelFormat::Bgra8, 
+                    winrt::Windows::Graphics::Imaging::BitmapAlphaMode::Premultiplied);
+                if (displayable_image) {
+                    auto source = winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource();
+                    co_await source.SetBitmapAsync(displayable_image);
+                    (*capturing.iterator).Image(source);
+                }
+            }
+
+            capturing.iterator++;
+            start_capture();
+        }
 }

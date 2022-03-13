@@ -1,10 +1,12 @@
 namespace gui
 {
     runtimeclass WindowItem : Microsoft.UI.Xaml.Data.INotifyPropertyChanged{
-        WindowItem(WindowPickerViewModel model, UInt64 hwnd, String name);
+        WindowItem(WindowPickerViewModel model, UInt64 hwnd, String name, UInt32 width, UInt32 height);
 
         UInt64 hWnd{get;};
         String Name{get;};
+        UInt32 Width{get;};
+        UInt32 Height{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image;
         Microsoft.UI.Xaml.Media.SolidColorBrush Background;
 
