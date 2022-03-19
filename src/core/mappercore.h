@@ -108,6 +108,11 @@ DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid);
 DLLEXPORT bool mapper_startViewPort(MapperHandle handle);
 DLLEXPORT bool mapper_stopViewPort(MapperHandle handle);
 
+//
+// Stateless tool functions
+//
+DLLEXPORT HWND mapper_tools_PickWindow();
+
 #ifdef __cplusplus
 }
 #endif

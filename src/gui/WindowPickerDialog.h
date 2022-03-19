@@ -11,23 +11,30 @@
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Windows.Graphics.Capture.h>
 
+#include <sstream>
+
 //============================================================================================
 // WindowItem
 //============================================================================================
 namespace winrt::gui::implementation{
     struct WindowItem : WindowItemT<WindowItem>{
         WindowItem() = delete;
-        WindowItem(winrt::gui::WindowPickerViewModel const& model, uint64_t hwnd, hstring const& name, uint32_t width, uint32_t height) :
-            view_model(winrt::make_weak(model)), hwnd(hwnd), name(name), width(width), height(height){
+        WindowItem(winrt::gui::WindowPickerViewModel const& model, uint64_t hwnd, hstring const& name) :
+            view_model(winrt::make_weak(model)), hwnd(hwnd), name(name){
             capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
-            start_capture();
+            prepare_capture();
         }
         ~WindowItem(){stop_capture();}
 
         uint64_t hWnd(){return hwnd;}
-        hstring Name(){return name;}
-        uint32_t Width(){return width;}
-        uint32_t Height(){return height;}
+        hstring Name(){
+            std::wostringstream os;
+            os << std::hex << hwnd << " : " << name.c_str();
+            return hstring(os.str());
+        }
+        bool IsCapturable(){
+            return static_cast<bool>(capturing.item);
+        }
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
         void Image(winrt::Microsoft::UI::Xaml::Media::ImageSource const& value){
             image = value;
@@ -53,6 +60,8 @@ namespace winrt::gui::implementation{
             }
         }
 
+        void StartCapture(){start_capture();}
+
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
         }
@@ -64,8 +73,6 @@ namespace winrt::gui::implementation{
         winrt::weak_ref<winrt::gui::WindowPickerViewModel> view_model;
         uint64_t hwnd{0};
         hstring name;
-        uint32_t width;
-        uint32_t height;
         winrt::Microsoft::UI::Xaml::Media::ImageSource image{nullptr};
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush background{nullptr};
 
@@ -82,8 +89,10 @@ namespace winrt::gui::implementation{
             winrt::event_token token;
         }capturing;
 
-        winrt::Windows::Foundation::IAsyncAction start_capture();
+        void prepare_capture();
+        void start_capture();
         void stop_capture();
+
         winrt::Windows::Foundation::IAsyncAction process_captured_frame(winrt::weak_ref<winrt::gui::WindowItem> weak_self);
     };
 }

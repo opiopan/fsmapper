@@ -140,5 +140,8 @@
     <ClCompile Include="filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windowpicker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

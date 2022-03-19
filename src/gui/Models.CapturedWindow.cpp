@@ -9,6 +9,7 @@
 #include "App.xaml.h"
 #include "tools.hpp"
 #include "WindowPickerDialog.h"
+#include "mappercore.h"
 
 #include <shobjidl.h>
 #include <winrt/Microsoft.UI.Interop.h>
@@ -33,11 +34,15 @@ namespace winrt::gui::Models::implementation{
     }
 
     winrt::Windows::Foundation::IAsyncAction CapturedWindow::ToggleCapture(
-        winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args){
-        auto result = co_await winrt::gui::PickWindowAsync(name);
-        if (result) {
-            auto name = result.Name();
-        }
+        winrt::Windows::Foundation::IInspectable, winrt::Microsoft::UI::Xaml::RoutedEventArgs){
+        // auto result = co_await winrt::gui::PickWindowAsync(name);
+        // if (result) {
+        //     auto name = result.Name();
+        // }
+        winrt::apartment_context ui_thread;
+        co_await winrt::resume_background();
+        auto hwnd = mapper_tools_PickWindow();
+        co_await ui_thread;
     }
 
 }

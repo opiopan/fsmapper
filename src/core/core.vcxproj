@@ -240,6 +240,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="viewport.cpp" />
     <ClCompile Include="vjoy.cpp" />
+    <ClCompile Include="windowpicker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\hook\hook.vcxproj">

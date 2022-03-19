@@ -114,11 +114,13 @@ namespace winrt::gui::implementation{
         //------------------------------------------------------------------
         for (auto& window : win_list){
             auto item = winrt::make<WindowItem>(
-                *this, reinterpret_cast<uint64_t>(window.hwnd), std::move(hstring(window.title)),
-                window.width, window.height);
-            item.Image(blank_image);
-            item.Background(normal_brush);
-            window_items.Append(item);
+                *this, reinterpret_cast<uint64_t>(window.hwnd), std::move(hstring(window.title)));
+            if (item.IsCapturable()){
+                item.Image(blank_image);
+                item.Background(normal_brush);
+                item.StartCapture();
+                window_items.Append(item);
+            }
         }
 
         //------------------------------------------------------------------
@@ -170,17 +172,20 @@ namespace winrt::gui::implementation{
     //============================================================================================
     // Window image capturing
     //============================================================================================
-    winrt::Windows::Foundation::IAsyncAction WindowItem::start_capture(){
-        winrt::apartment_context ui_thread;
-        co_await winrt::resume_background();
-        co_await ui_thread;
-
+    void WindowItem::prepare_capture(){
+        auto namestr = name.c_str();
         const auto factory = get_activation_factory<winrt::Windows::Graphics::Capture::GraphicsCaptureItem>();
         const auto interop = factory.as<IGraphicsCaptureItemInterop>();
-        interop->CreateForWindow(
-            reinterpret_cast<HWND>(hwnd),
-            winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
-            reinterpret_cast<void**>(winrt::put_abi(capturing.item)));
+        try{
+			interop->CreateForWindow(
+				reinterpret_cast<HWND>(hwnd),
+				winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
+				reinterpret_cast<void**>(winrt::put_abi(capturing.item)));
+        }catch(...){
+        }
+    }
+
+    void WindowItem::start_capture(){
         if (capturing.item){
             capturing.frame_pool = winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool::Create(
                 capturing.canvas_device,
@@ -231,7 +236,7 @@ namespace winrt::gui::implementation{
                     }
                 }
             }
-            //stop_capture();
+            stop_capture();
         }
     }
 }

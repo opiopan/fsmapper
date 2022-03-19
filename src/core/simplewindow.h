@@ -9,6 +9,51 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include <functional>
+
+//============================================================================================
+// WinDispatcher: abstract message pump
+//============================================================================================
+class WinDispatcher{
+protected:
+	static ATOM class_atom;
+	std::mutex mutex;
+	std::condition_variable cv;
+	std::thread dispatcher;
+	HWND controller {0};
+	UINT invoke1_msg {0};
+	UINT invoke2_msg {0};
+	using dispatchable1 = std::function<void()>;
+	using dispatchable2 = std::function<void(void*)>;
+
+public:
+	WinDispatcher();
+	WinDispatcher(const WinDispatcher&) = delete;
+	WinDispatcher(WinDispatcher&&) = delete;
+	~WinDispatcher();
+	void stop();
+
+	template <typename DISPATCHABLE>
+	void invoke(DISPATCHABLE function) const{
+		dispatchable1 function_obj{function};
+		::SendMessageA(
+			controller, invoke1_msg,
+			0,
+			reinterpret_cast<LPARAM>(&function_obj));
+	}
+
+	template <typename DISPATCHABLE>
+	void invoke(DISPATCHABLE function, void* context) const{
+		dispatchable2 function_obj{function};
+		::SendMessageA(
+			controller, invoke2_msg,
+			reinterpret_cast<WPARAM>(context),
+			reinterpret_cast<LPARAM>(&function_obj));
+	}
+
+protected:
+	static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	
+};
 
 //============================================================================================
 // Root class that represent window
@@ -17,22 +62,11 @@
 //============================================================================================
 class WinBase{
 protected:
+	const WinDispatcher& dispatcher;
 	HWND hWnd = nullptr;
-	
-	enum class Status{
-		init,
-		creating,
-		created,
-		deleting,
-	};
-	std::mutex mutex;
-	std::condition_variable cv;
-	std::thread messaging_thread;
-	Status status = Status::init;
-	UINT req_destroy_msg = 0;
-	
+
 public:
-	WinBase();
+	WinBase(const WinDispatcher& dispatcher);
 	WinBase(const WinBase&) = delete;
 	WinBase(WinBase&&) = delete;
 	virtual ~WinBase();
@@ -76,7 +110,7 @@ protected:
 	static ATOM class_atom;
 
 public:
-	SimpleWindow() = default;
+	SimpleWindow(const WinDispatcher& dispatcher) : WinBase(dispatcher){}
 	virtual ~SimpleWindow() = default;
 
 protected:

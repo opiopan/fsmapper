@@ -4,12 +4,108 @@
 //
 
 #include "simplewindow.h"
+#include <stdexcept>
 
 //============================================================================================
-// constract / destract instance
+// Message pumping thread abstraction
 //============================================================================================
-WinBase::WinBase(){
-	req_destroy_msg = ::RegisterWindowMessageA("MAPPER_CORE_REQ_DESTROY_WINDOW");
+ATOM WinDispatcher::class_atom {0};
+
+WinDispatcher::WinDispatcher(){
+	static const char* class_name = "WinDispatcher";
+	invoke1_msg = ::RegisterWindowMessageA("MAPPER_CORE_INVOKE1");
+	invoke2_msg = ::RegisterWindowMessageA("MAPPER_CORE_INVOKE2");
+	HMODULE hModule = nullptr;
+	::GetModuleHandleExA(
+		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, 
+		reinterpret_cast<LPCSTR>(WinDispatcher::windowProc),
+		&hModule);
+	if (!class_atom){
+		WNDCLASSEXA wc ={0};
+		wc.cbSize = sizeof(wc);
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+		wc.lpfnWndProc = WinDispatcher::windowProc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = sizeof(*this);
+		wc.hInstance = hModule;
+		wc.lpszClassName = class_name;
+		class_atom = ::RegisterClassExA(&wc);
+		if (!class_atom){
+			throw std::runtime_error("failed to register window class for the dispatcher");
+		}
+	}
+	dispatcher = std::move(std::thread([this, hModule](){
+		{
+			std::lock_guard lock(mutex);
+			controller = ::CreateWindowExA(
+				0,           // ExStyle
+				class_name,  // Class
+				nullptr,     // Name
+				WS_POPUP,    // Style
+				0, 0, 0, 0,  // Geometory
+				nullptr,     // hwndParent
+				nullptr,     // hMenu
+				hModule,     // hInstance
+				this);       // CreateParam
+			cv.notify_all();
+		}
+		MSG msg;
+		while(::GetMessageA(&msg, NULL, 0, 0) != 0){
+			::TranslateMessage(&msg);
+			::DispatchMessageA(&msg);
+		}
+	}));
+
+	std::unique_lock lock(mutex);
+	cv.wait(lock, [this](){return controller != 0;});
+}
+
+WinDispatcher::~WinDispatcher(){
+	stop();
+	dispatcher.join();
+}
+
+void WinDispatcher::stop(){
+	std::lock_guard lock(mutex);
+	if (controller){
+		invoke([this](){
+			::DestroyWindow(controller);
+		});
+		controller = nullptr;
+	}
+}
+
+LRESULT CALLBACK WinDispatcher::windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
+	if (uMsg == WM_CREATE){
+		auto pcs = reinterpret_cast<CREATESTRUCT*>(lParam);
+		auto win = reinterpret_cast<WinBase*>(pcs->lpCreateParams);
+		::SetWindowLongPtrA(hWnd, 0, reinterpret_cast<LONG_PTR>(pcs->lpCreateParams));
+		return 0;
+	}else{
+		auto self = reinterpret_cast<WinDispatcher*>(::GetWindowLongPtrA(hWnd, 0));
+		if (self == nullptr){
+			return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}else{
+			if (uMsg == WM_DESTROY){
+				::PostQuitMessage(0);
+				return 0;
+			}else if (uMsg == self->invoke1_msg){
+				auto function = reinterpret_cast<dispatchable1*>(lParam);
+				(*function)();
+			}else if (uMsg == self->invoke2_msg){
+				auto function = reinterpret_cast<dispatchable2*>(lParam);
+				(*function)(reinterpret_cast<void*>(wParam));
+			}else{
+				return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+			}
+		}
+	}
+}
+
+//============================================================================================
+// WinBase: constract / destract instance
+//============================================================================================
+WinBase::WinBase(const WinDispatcher& dispatcher) : dispatcher(dispatcher){
 }
 
 WinBase::~WinBase()
@@ -21,14 +117,8 @@ WinBase::~WinBase()
 // Window creation / delstraction
 //============================================================================================
 bool WinBase::create(){
-	{
-		std::lock_guard lock(mutex);
-		if (status == Status::init){
-			status = Status::creating;
-			cv.notify_all();
-		}else{
-			return false;
-		}
+	if (hWnd){
+		return false;
 	}
 
 	HMODULE hModule = nullptr;
@@ -56,9 +146,6 @@ bool WinBase::create(){
 		
 		ATOM atom = ::RegisterClassExA(&wc);
 		if (atom == NULL){
-			std::lock_guard lock(mutex);
-			status = Status::init;
-			cv.notify_all();
 			return false;
 		}
 		noticeRegisterd(atom);
@@ -80,52 +167,23 @@ bool WinBase::create(){
 
 	preCreateWindow(cs);
 
-	messaging_thread = std::move(std::thread([this, &cs](){
+	dispatcher.invoke([this, cs](){
 		hWnd = ::CreateWindowExA(
 			cs.dwExStyle, cs.lpszClass, cs.lpszName, cs.style,
 			cs.x, cs.y, cs.cx, cs.cy, cs.hwndParent,
 			cs.hMenu, cs.hInstance, cs.lpCreateParams);
-		
-		{
-			std::lock_guard lock(mutex);
-			status = Status::created;
-			cv.notify_all();
-		}
-
-		MSG msg;
-		while( 0 != ::GetMessageA(&msg, NULL, 0, 0)){
-			::TranslateMessage(&msg);
-			::DispatchMessageA(&msg);
-		}
-	}));
-
-	std::unique_lock lock(mutex);
-	cv.wait(lock, [this](){return status != Status::creating;});
+	});
 
 	return hWnd;
 }
 
 bool WinBase::destroy(){
-	std::unique_lock lock(mutex);
-	if (status == Status::init){
-		return true;
-	}else if (status == Status::creating){
-		cv.wait(lock, [this](){return status == Status::created;});
-	}else if (status == Status::deleting){
-		cv.wait(lock, [this](){return status == Status::init;});
-		return true;
+	if (hWnd){
+		dispatcher.invoke([this](){
+			::DestroyWindow(hWnd);
+		});
+		hWnd = nullptr;
 	}
-
-	status = Status::deleting;
-	PostMessageA(hWnd, req_destroy_msg, 0, 0);
-
-	lock.unlock();
-	messaging_thread.join();
-	lock.lock();
-
-	status = Status::init;
-	hWnd = nullptr;
-	cv.notify_all();
 
 	return true;
 }
@@ -154,7 +212,6 @@ LRESULT CALLBACK WinBase::windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 LRESULT WinBase::messageProc(UINT uMsg, WPARAM wParam, LPARAM lParam){
 	if (uMsg == WM_DESTROY){
 		if (onDestroy()){
-			::PostQuitMessage(0);
 			return 0;
 		}else{
 			return -1;
@@ -162,8 +219,6 @@ LRESULT WinBase::messageProc(UINT uMsg, WPARAM wParam, LPARAM lParam){
 	}else if (uMsg == WM_PAINT){
 		onPaint();
 		return 0;
-	}else if (uMsg == req_destroy_msg){
-		::DestroyWindow(hWnd);
 	}else{
 		return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
 	}
