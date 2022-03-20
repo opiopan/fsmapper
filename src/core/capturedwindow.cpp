@@ -19,7 +19,7 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     }else{
         throw MapperException("varid name is not specified for the captured window");
     }
-    auto omit_system_region = lua_safevalue<bool>(def["obit_system_region"]);
+    auto omit_system_region = lua_safevalue<bool>(def["omit_system_region"]);
     if (omit_system_region){
         this->omit_system_region = *omit_system_region;
     }

@@ -7,6 +7,11 @@
 #include "mappercore.h"
 #include "engine.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
+#include <gdiplus.h>
+
 //============================================================================================
 // MapperContext implementation that hold engine object
 //============================================================================================
@@ -145,4 +150,29 @@ DLLEXPORT bool mapper_startViewPort(MapperHandle handle){
 DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
     handle->engine->disable_viewports();
     return true;
+}
+
+//============================================================================================
+// mapper core tools API imprementation
+//============================================================================================
+struct MapperToolsContext{
+    uint64_t token;
+    Gdiplus::GdiplusStartupInput input;
+    Gdiplus::GdiplusStartupOutput output;
+};
+
+DLLEXPORT MapperToolsHandle mapper_tools_init(){
+    auto handle = std::make_unique<MapperToolsContext>();
+    if (Gdiplus::GdiplusStartup(&handle->token, &handle->input, &handle->output) == Gdiplus::Ok){
+        return handle.release();
+    }else{
+        return nullptr;
+    }
+}
+
+DLLEXPORT void mapper_tools_terminate(MapperToolsHandle handle){
+    if (handle){
+        Gdiplus::GdiplusShutdown(handle->token);
+        delete handle;
+    }
 }

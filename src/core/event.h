@@ -194,7 +194,7 @@ public:
 
     Event& operator = (const Event& src){
         id = src.id;
-        value = std::move(src.value);
+        value = src.value;
         if (src.array.get()){
             array = std::make_unique<AssosiativeArray>(*src.array);
         }

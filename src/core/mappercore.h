@@ -111,7 +111,11 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle);
 //
 // Stateless tool functions
 //
-DLLEXPORT HWND mapper_tools_PickWindow();
+struct MapperToolsContext;
+typedef struct MapperToolsContext* MapperToolsHandle;
+DLLEXPORT MapperToolsHandle mapper_tools_init();
+DLLEXPORT void mapper_tools_terminate(MapperToolsHandle handle);
+DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd);
 
 #ifdef __cplusplus
 }

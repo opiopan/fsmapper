@@ -18,30 +18,6 @@
 #include "simplewindow.h"
 #include "action.h"
 
-template <typename T> 
-struct RectangleBase{
-    T x = 0;
-    T y = 0;
-    T width = 0;
-    T height = 0;
-
-    RectangleBase() = default;
-    RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
-    RectangleBase(const RectangleBase& src){*this = src;};
-    ~RectangleBase() = default;
-
-    RectangleBase& operator = (const RectangleBase& src){
-        x = src.x;
-        y = src.y;
-        width = src.width;
-        height = src.height;
-        return *this;
-    };
-};
-
-using IntRect = RectangleBase<int>;
-using FloatRect = RectangleBase<float>;
-
 class MapperEngine;
 class ViewPortManager;
 class CapturedWindow;

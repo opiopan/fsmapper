@@ -196,6 +196,7 @@ LRESULT CALLBACK WinBase::windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		auto pcs = reinterpret_cast<CREATESTRUCT*>(lParam);
 		auto win = reinterpret_cast<WinBase*>(pcs->lpCreateParams);
 		::SetWindowLongPtrA(hWnd, 0, reinterpret_cast<LONG_PTR>(pcs->lpCreateParams));
+		win->hWnd = hWnd;
 		return win->onCreate(pcs) ? 0 : -1;
 	}else{
 		auto win = reinterpret_cast<WinBase*>(::GetWindowLongPtrA(hWnd, 0));

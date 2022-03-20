@@ -11,6 +11,7 @@
 #ifndef NO_SOL
 #include <memory>
 #include <optional>
+#include <algorithm>
 #include <sol/sol.hpp>
 
 inline std::string lua_safestring(const sol::object& object){
@@ -95,6 +96,46 @@ public:
     operator T ()const {return object;};
 };
 
+class WinDC{
+protected:
+    HWND hwnd;
+    HDC hdc;
+public:
+    WinDC(HWND hwnd = nullptr) : hwnd(hwnd), hdc(::GetDC(hwnd)){}
+    WinDC() = delete;
+    WinDC(const WinDC&) = delete;
+    ~WinDC(){close();}
+    WinDC& operator = (const WinDC&) = delete;
+    HDC get()const {return hdc;}
+    operator HDC ()const {return hdc;}
+    void close(){
+        if (hdc){
+            ::ReleaseDC(hwnd, hdc);
+            hwnd = nullptr;
+            hdc = nullptr;
+        }
+    }
+};
+
+class MemDC{
+protected:
+    HDC hdc;
+public:
+    MemDC(HDC dc = nullptr) : hdc(::CreateCompatibleDC(dc)){}
+    MemDC() = delete;
+    MemDC(const MemDC&) = delete;
+    ~MemDC(){close();}
+    MemDC& operator = (const MemDC&) = delete;
+    HDC get()const {return hdc;}
+    operator HDC ()const {return hdc;}
+    void close(){
+        if (hdc){
+            ::DeleteDC(hdc);
+            hdc = nullptr;
+        }
+    }
+};
+
 template <typename T>
 class ComPtr{
 protected:
@@ -161,5 +202,51 @@ struct GUID_KEY: public GUID{
         return compare(rval) == 0;
     }
 };
+
+#ifndef NO_SOL
+template <typename T> 
+struct RectangleBase{
+    T x = 0;
+    T y = 0;
+    T width = 0;
+    T height = 0;
+
+    RectangleBase() = default;
+    RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
+    RectangleBase(const RectangleBase& src){*this = src;};
+    ~RectangleBase() = default;
+
+    RectangleBase& operator = (const RectangleBase& src){
+        x = src.x;
+        y = src.y;
+        width = src.width;
+        height = src.height;
+        return *this;
+    };
+
+    bool pointIsInRectangle(T tx, T ty){
+        return tx >= x && tx <= x + width &&
+               ty >= y && ty <= y + height;
+    }
+
+    RectangleBase intersect(const RectangleBase& src){
+        auto right = x + width;
+        auto bottom = y + height;
+        auto src_right = src.x + src.width;
+        auto src_bottom = src.y + src.height;
+        auto new_x = std::max(x, src.x);
+        auto new_y = std::max(y, src.y);
+        auto new_right = std::min(right, src_right);
+        auto new_bottom = std::min(bottom, src_bottom);
+        return {new_x,
+                new_y,
+                std::max(0, new_right - new_x),
+                std::max(0, new_bottom - new_y)};
+    }
+};
+
+using IntRect = RectangleBase<int>;
+using FloatRect = RectangleBase<float>;
+#endif
 
 extern std::optional<COLORREF> webcolor_to_colorref(const std::string& color_str);

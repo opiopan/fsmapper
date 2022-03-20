@@ -205,6 +205,10 @@ namespace winrt::gui::Models::implementation{
 
         void RunScript();
         void StopScript();
+        void CaptureWindow(uint32_t Cwid, uint64_t hWnd);
+        void ReleaseWindow(uint32_t Cwid);
+        void StartViewports();
+        void StopViewports();
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
@@ -215,6 +219,7 @@ namespace winrt::gui::Models::implementation{
         std::condition_variable cv;
         bool should_stop {false};
         MapperHandle mapper {nullptr};
+        MapperToolsHandle mapper_tools {nullptr};
         uint32_t dirty_properties {0};
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler;

@@ -69,6 +69,7 @@ namespace winrt::gui::Models::implementation{
     Mapper::Mapper(){
         script_path = fsmapper::app_config.get_script_path().c_str();
         mapper = mapper_init(event_callback, message_callback, this);
+        mapper_tools = mapper_tools_init();
         viewports = winrt::single_threaded_vector<gui::Models::Viewport>();
         captured_windows = winrt::single_threaded_observable_vector<gui::Models::CapturedWindow>();
         devices = winrt::single_threaded_vector<gui::Models::Device>();
@@ -122,6 +123,7 @@ namespace winrt::gui::Models::implementation{
         cv.notify_all();
         lock.unlock();
         script_runner.join();
+        mapper_tools_terminate(mapper_tools);
     }
 
     //============================================================================================
@@ -287,6 +289,22 @@ namespace winrt::gui::Models::implementation{
         if (status == MapperStatus::running){
             mapper_stop(mapper);
         }
+    }
+
+    void Mapper::CaptureWindow(uint32_t Cwid, uint64_t hWnd){
+        mapper_captureWindow(mapper, Cwid, reinterpret_cast<HWND>(hWnd));
+    }
+
+    void Mapper::ReleaseWindow(uint32_t Cwid){
+        mapper_releaseWindw(mapper, Cwid);
+    }
+
+    void Mapper::StartViewports(){
+        mapper_startViewPort(mapper);
+    }
+
+    void Mapper::StopViewports(){
+        mapper_stopViewPort(mapper);
     }
 
     //============================================================================================

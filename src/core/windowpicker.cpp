@@ -5,8 +5,16 @@
 
 #include <vector>
 #include "mappercore.h"
+#include "tools.h"
 #include "simplewindow.h"
-#include "viewport.h"
+
+#include <algorithm>
+using std::min;
+using std::max;
+#include <gdiplus.h>
+#include <dwmapi.h>
+
+constexpr auto MAX_ENABLE_WINDOW_RATIO = 50;
 
 class WindowPicker;
 
@@ -18,9 +26,13 @@ class CoverWindow : public SimpleWindow<cover_window_class_name>{
 protected:
     WindowPicker& picker;
     IntRect rect;
+    GdiObject<HBITMAP> bitmap;
+    void* bitmap_data {nullptr};
+    std::optional<IntRect> hilighting {std::nullopt};
 public:
     CoverWindow(const WinDispatcher& dispatcher, WindowPicker& picker, IntRect& rect): 
-        SimpleWindow(dispatcher), picker(picker), rect(rect){}
+        SimpleWindow(dispatcher), picker(picker), rect(rect){
+    }
     ~CoverWindow(){}
 
     void start(){
@@ -32,17 +44,95 @@ public:
         destroy();
     }
 
+    void update_hilighting(std::optional<IntRect> selected_rect){
+        if (selected_rect){
+            auto&& valid = rect.intersect(*selected_rect);
+            if (valid.width == 0 || valid.height == 0){
+                if (hilighting){
+                    hilighting = std::nullopt;
+                }else{
+                    return;
+                }
+            }else{
+                hilighting = selected_rect;
+            }
+        }else{
+            if (hilighting){
+                hilighting = selected_rect;
+            }else{
+                return;
+            }
+        }
+        update_window();
+    }
+
 protected:
+    LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+
 	void preCreateWindow(CREATESTRUCTA& cs) override{
         SimpleWindow::preCreateWindow(cs);
-        //cs.dwExStyle = WS_EX_LAYERED;
+        cs.dwExStyle = WS_EX_LAYERED;
         cs.x = rect.x;
         cs.y = rect.y;
         cs.cx = rect.width;
         cs.cy = rect.height;
     }
 
-    LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    bool onCreate(CREATESTRUCT* cs) override{
+        SimpleWindow::onCreate(cs);
+        BITMAPV4HEADER hdr = {0};
+        hdr.bV4Size = sizeof(BITMAPV4HEADER);
+        hdr.bV4Width = rect.width;
+        hdr.bV4Height = rect.height;
+        hdr.bV4Planes = 1;
+        hdr.bV4BitCount = 32;
+        hdr.bV4V4Compression = BI_BITFIELDS;
+        hdr.bV4SizeImage = 0;
+        hdr.bV4XPelsPerMeter = 0;
+        hdr.bV4YPelsPerMeter = 0;
+        hdr.bV4ClrUsed = 0;
+        hdr.bV4ClrImportant = 0;
+        hdr.bV4RedMask = 0x00FF0000;
+        hdr.bV4GreenMask = 0x0000FF00;
+        hdr.bV4BlueMask = 0x000000FF;
+        hdr.bV4AlphaMask = 0xFF000000;
+        WinDC dc{nullptr};
+        bitmap = ::CreateDIBSection(
+            dc, reinterpret_cast<BITMAPINFO*>(&hdr), DIB_RGB_COLORS, &bitmap_data, nullptr, 0);
+
+        update_window();
+        return true;
+    }
+
+    void update_window(){
+        WinDC dc{nullptr};
+        MemDC memdc{dc};
+        auto prev_bitmap = ::SelectObject(memdc, bitmap.get_handle());
+
+        Gdiplus::Graphics graphics(memdc);
+        graphics.Clear(Gdiplus::Color(127, 0, 0, 0));
+
+        if (hilighting){
+            Gdiplus::Pen pen(Gdiplus::Color::Yellow, 32.0);
+            pen.SetAlignment(Gdiplus::PenAlignment::PenAlignmentInset);
+            graphics.DrawRectangle(
+                &pen, hilighting->x, hilighting->y, hilighting->width, hilighting->height);
+        }
+
+        POINT position{rect.x, rect.y};
+        static POINT point{ 0, 0 };
+        SIZE size;
+        size.cx = rect.width;
+        size.cy = rect.height;
+        BLENDFUNCTION blend;
+		blend.BlendOp = AC_SRC_OVER;
+		blend.BlendFlags = 0;
+		blend.SourceConstantAlpha = 255;
+		blend.AlphaFormat = AC_SRC_ALPHA;
+        ::UpdateLayeredWindow(*this, dc, &position, &size, memdc, &point, 0, &blend, ULW_ALPHA);
+
+        ::SelectObject(memdc, prev_bitmap);
+    };
 };
 
 //============================================================================================
@@ -53,13 +143,25 @@ protected:
     std::mutex mutex;
     std::condition_variable cv;
     bool completed{false};
+    HWND app_wnd;
     WinDispatcher dispatcher;
     std::vector<IntRect> displays;
     std::vector<std::unique_ptr<CoverWindow>> windows;
     HWND target{nullptr};
+    struct WindowDef{
+        HWND hwnd;
+        IntRect rect;
+        std::string title;
+        WindowDef()=delete;
+        WindowDef(HWND hwnd, const IntRect& rect, const char* title): hwnd(hwnd), rect(rect), title(title){}
+    };
+    std::vector<WindowDef> window_defs;
     
 public:
-    WindowPicker(){
+    WindowPicker(HWND app_wnd) : app_wnd(app_wnd){
+        //
+        // Building a cover window for each display monitor
+        //
         ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR, HDC, LPRECT rect, LPARAM context)->BOOL{
             auto self = reinterpret_cast<WindowPicker*>(context);
             self->displays.emplace_back(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
@@ -67,6 +169,38 @@ public:
             self->windows.emplace_back(std::move(window));
             return true;
         }, reinterpret_cast<LPARAM>(this));
+
+        //
+        // Building window list wich can be select
+        // This is based on dirty huristic rules:
+        //    - exclude windows that width / height ratio is huge
+        //    - exclude all layered window since I couldn't find a way to find actual non visible layered window
+        //    - exclude the next window avobe the desktop window because it should be shell desktop window
+        //
+        auto desktop = ::GetDesktopWindow();
+        auto window = ::GetTopWindow(nullptr);
+        while ((window = ::GetWindow(window, GW_HWNDNEXT)) != nullptr && window != desktop){
+            auto is_visible = ::IsWindowVisible(window);
+            int is_cloaked;
+            ::DwmGetWindowAttribute(window, DWMWA_CLOAKED, &is_cloaked, sizeof(is_cloaked));
+            WINDOWINFO info;
+            ::GetWindowInfo(window, &info);
+            IntRect rect{info.rcWindow.left, info.rcWindow.top, 
+                         info.rcWindow.right - info.rcWindow.left,
+                         info.rcWindow.bottom - info.rcWindow.top};
+            auto is_layered = info.dwExStyle & WS_EX_LAYERED;
+            if (is_visible && !is_cloaked && !is_layered &&
+                window != app_wnd &&
+                rect.width > 0 && rect.height > 0 &&
+                max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO){
+                char buf[512];
+                ::GetWindowTextA(window, buf, sizeof(buf));
+                window_defs.emplace_back(window, rect, buf);
+            }
+        }
+        if (window_defs.size() > 0) {
+            window_defs.pop_back();
+        }
     }
 
     ~WindowPicker(){}
@@ -81,12 +215,35 @@ public:
     }
 
     void update_target(POINT& point){
+        for (auto& def : window_defs){
+            if (def.rect.pointIsInRectangle(point.x, point.y)){
+                if (def.hwnd != target){
+                    target = def.hwnd;
+                    for (auto& window : windows){
+                        window->update_hilighting(def.rect);
+                    }
+                }
+                return;
+            }
+        }
+        if (target){
+            target = nullptr;
+            for (auto& window : windows){
+                window->update_hilighting(std::nullopt);
+            }
+        }
     }
 
-    void finish_picking(){
+    void finish_picking(bool with_cancel = false){
         for (auto& window : windows){
             window->stop();
         }
+        if (with_cancel){
+            target = nullptr;
+        }
+        std::lock_guard lock(mutex);
+        completed = true;
+        cv.notify_all();
     }
 };
 
@@ -95,24 +252,30 @@ public:
 // functions of CoverWindow which must be defined after WindowPicker definition
 //============================================================================================
 LRESULT CoverWindow::messageProc(UINT msg, WPARAM wparam, LPARAM lparam){
-    if (msg == WM_LBUTTONUP){
-        picker.finish_picking();
-        return 0;
-    }else if (msg == WM_MOVE){
+    if (msg == WM_MOUSEMOVE){
         auto x = LOWORD(lparam);
         auto y = HIWORD(lparam);
         POINT point {x, y};
         ::ClientToScreen(hWnd, &point);
         picker.update_target(point);
+    }else if (msg == WM_LBUTTONUP){
+        picker.finish_picking();
+    }else if (msg == WM_RBUTTONUP){
+        picker.finish_picking(true);
+    }else if (msg == WM_KEYDOWN){
+        if (wparam == VK_ESCAPE){
+            picker.finish_picking(true);
+        }
     }else{
         return SimpleWindow::messageProc(msg, wparam, lparam);
     }
+    return 0;
 }
 
 //============================================================================================
 // exported function as interface of DLL
 //============================================================================================
-DLLEXPORT HWND mapper_tools_PickWindow(){
-    WindowPicker picker;
+DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd){
+    WindowPicker picker{app_wnd};
     return picker.pick_window();
 }

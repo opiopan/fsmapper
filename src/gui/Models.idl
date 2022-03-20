@@ -63,5 +63,10 @@ namespace gui.Models{
 
         void RunScript();
         void StopScript();
+
+        void CaptureWindow(UInt32 Cwid, UInt64 hWnd);
+        void ReleaseWindow(UInt32 Cwid);
+        void StartViewports();
+        void StopViewports();
     }
 }

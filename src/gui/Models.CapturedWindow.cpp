@@ -24,11 +24,11 @@ namespace winrt::gui::Models::implementation{
         std::wostringstream os;
         if (is_captured) {
             auto hwnd = GetWindowFromWindowId(window_id);
-            os << "Captured: HWND = 0x"
+            os << L"Captured: HWND = 0x"
                << std::hex << std::setw(8) << std::setfill(L'0')
                << reinterpret_cast<uint64_t>(hwnd);
         }else{
-            os << "Not captured.\nClick to capture the target.";
+            os << L"Not captured.\nClick to capture the target.";
         }
         update_property(status_string, std::move(hstring(os.str())), L"StatusString");
     }
@@ -40,9 +40,12 @@ namespace winrt::gui::Models::implementation{
         //     auto name = result.Name();
         // }
         winrt::apartment_context ui_thread;
+        auto appwnd = App::TopWindowHandle();
+        //::ShowWindow(appwnd, SW_HIDE);
         co_await winrt::resume_background();
-        auto hwnd = mapper_tools_PickWindow();
+        auto hwnd = mapper_tools_PickWindow(appwnd);
         co_await ui_thread;
+        //::ShowWindow(appwnd, SW_SHOW);
     }
 
 }
