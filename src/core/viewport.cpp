@@ -207,7 +207,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         }
     }
     is_enable = true;
-    bgwin.start(bg_color, region);
+    //bgwin.start(bg_color, region);
     views[current_view]->show(*this);
     ::SetWindowPos(bgwin, views[current_view]->getBottomWnd(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }

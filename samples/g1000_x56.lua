@@ -394,6 +394,6 @@ mapper.set_primery_mappings({
 
     {event=x56throttle.button28.down, action=toggle_view},
     {event=x56throttle.button29.down, action=toggle_view},
-    {event=g1000.AUX1U.down, action=function () mapper.reset_viewports() end},
-    {event=g1000.AUX1D.down, action=function () mapper.abort() end},
+    {event=g1000.AUX1U.down, action=toggle_view},
+    {event=g1000.AUX1D.down, action=toggle_view},
 })
