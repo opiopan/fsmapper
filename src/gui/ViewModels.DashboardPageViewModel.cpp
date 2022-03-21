@@ -41,11 +41,14 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_Viewports();
             }else if (name == L"Devices"){
                 reflect_mapper_Devices();
+            }else if (name == L"ViewportIsActive"){
+                reflect_mapper_ViewportOperability();
             }
         });
 
         token_for_captured_windows = mapper.CapturedWindows().VectorChanged([this](auto const&, auto const&){
             reflect_mapper_CapturedWindows();
+            reflect_mapper_ViewportOperability();
         });
 
         reflect_mapper_ActiveSim();
@@ -53,12 +56,26 @@ namespace winrt::gui::ViewModels::implementation{
         reflect_mapper_MappingsInfo();
         reflect_mapper_Devices();
         reflect_mapper_CapturedWindows();
+        reflect_mapper_ViewportOperability();
     }
 
     DashboardPageViewModel::~DashboardPageViewModel(){
         mapper.CapturedWindows().VectorChanged(token_for_captured_windows);
         mapper.PropertyChanged(token_for_mapper);
     }
+
+    //============================================================================================
+    // Viewport manipulation
+    //============================================================================================
+    void DashboardPageViewModel::ToggleViewport(
+        winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
+        if (mapper.ViewportIsActive()){
+            mapper.StopViewports();
+        }else{
+            mapper.StartViewports();
+        }
+    }
+    
 
     //============================================================================================
     // Reflecting model properties
@@ -179,5 +196,15 @@ namespace winrt::gui::ViewModels::implementation{
         os << captured_num << "/" << cw_num << " captured):";
         update_property(captured_windows_summary, std::move(hstring(os.str())), L"CapturedWindowsSummary");
         update_property(captured_windows_is_visible, cw_num > 0, L"CapturedWindowsIsVisible");
+    }
+
+    void DashboardPageViewModel::reflect_mapper_ViewportOperability(){
+        auto viewport_is_active = mapper.ViewportIsActive();
+        auto cw_is_registerd = mapper.CapturedWindows().Size() > 0;
+        auto button_text = viewport_is_active ? L"Stop Viewports" : L"Activate Viewports";
+        update_property(viewport_button_text, std::move(hstring(button_text)), L"ViewportButtonText");
+        update_property(viewport_button_is_enabled, cw_is_registerd, L"ViewportButtonIsEnabled");
+        update_property(viewport_button_is_visible, cw_is_registerd, L"ViewportButtonIsVisible");
+        update_property(captured_window_button_is_enabled, !viewport_is_active, L"CapturedWindowButtonIsEnabled");
     }
 }

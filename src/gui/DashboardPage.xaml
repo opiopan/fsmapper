@@ -40,7 +40,11 @@
               Padding="12, 8, 12, 12">
             <Grid Grid.Row="0" Grid.ColumnDefinitions="Auto,*,Auto">
                 <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
-                <Button Content="Activate Viewports" Grid.Column="2"/>
+                <Button Grid.Column="2"
+                        Content="{x:Bind ViewModel.ViewportButtonText, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.ViewportButtonIsEnabled, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.ViewportButtonIsVisible, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.ToggleViewport}"/>
             </Grid>
 
             <TextBlock Grid.Row="1" FontWeight="Bold" Margin="0,12,0,0"
@@ -60,13 +64,16 @@
                                 CornerRadius="10"
                                 HorizontalContentAlignment="Left"
                                 Padding="12, 0, 12, 0" Margin="0, 0, 0, 12"
+                                IsEnabled="{x:Bind ButtonIsEnabled, Mode=OneWay}"
                                 Click="{x:Bind ToggleCapture}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{x:Bind Image, Mode=OneWay}"
                                        Width="80" Height="60" Margin="0, 0, 12, 0"/>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Name}" FontWeight="Bold"/>
-                                    <TextBlock Text="{x:Bind StatusString}" Margin="10,0,0,0"/>
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="Bold"
+                                               Foreground="{x:Bind ButtonTitleColor, Mode=OneWay}"/>
+                                    <TextBlock Text="{x:Bind StatusString, Mode=OneWay}" Margin="10,0,0,0"
+                                               Foreground="{x:Bind ButtonTextColor, Mode=OneWay}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Button>

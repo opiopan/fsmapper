@@ -133,23 +133,39 @@ DLLEXPORT bool mapper_enumViewport(MapperHandle handle, MAPPER_ENUM_VIEWPORT_FUN
 }
 
 DLLEXPORT bool mapper_captureWindow(MapperHandle handle, uint32_t cwid, HWND hWnd){
-    handle->engine->register_captured_window(cwid, hWnd);
-    return true;
+    try{
+        handle->engine->register_captured_window(cwid, hWnd);
+        return true;
+    }catch(MapperException& e){
+        return false;
+    }
 }
 
 DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid){
-    handle->engine->unregister_captured_window(cwid);
-    return true;
+    try{
+        handle->engine->unregister_captured_window(cwid);
+        return true;
+    }catch(MapperException& e){
+        return false;
+    }
 }
 
 DLLEXPORT bool mapper_startViewPort(MapperHandle handle){
-    handle->engine->enable_viewports();
-    return true;
+    try{
+        handle->engine->enable_viewports();
+        return true;
+    }catch(MapperException& e){
+        return false;
+    }
 }
 
 DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
-    handle->engine->disable_viewports();
-    return true;
+    try{
+        handle->engine->disable_viewports();
+        return true;
+    }catch(MapperException& e){
+        return false;
+    }
 }
 
 //============================================================================================

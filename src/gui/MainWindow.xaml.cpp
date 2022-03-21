@@ -13,9 +13,12 @@
 #include "ConsolePage.xaml.h"
 #include "UtilitiesPage.xaml.h"
 #include "SettingsPage.xaml.h"
+#include "App.xaml.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
+
+using App = winrt::gui::implementation::App;
 
 namespace winrt::gui::implementation
 {
@@ -40,6 +43,7 @@ namespace winrt::gui::implementation
 
         auto app_window = GetAppWindowForCurrentWindow();
         closing_event_token = app_window.Closing([this](const auto&, const auto&) {
+            App::Mapper().StopScriptSync();
             save_window_position();
         });
     }

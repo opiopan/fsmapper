@@ -8,6 +8,11 @@
     mc:Ignorable="d"
     CornerRadius="15">
 
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">5000</x:Double>
+        <x:Double x:Key="ContentDialogMaxHeight">5000</x:Double>
+    </ContentDialog.Resources>
+
     <Grid Grid.RowDefinitions="Auto,*,Auto" Grid.ColumnDefinitions="*"
           RowSpacing="20"
           Width="{x:Bind ViewModel.BoundsWidth, Mode=OneWay}"

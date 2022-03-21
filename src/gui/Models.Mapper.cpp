@@ -23,15 +23,15 @@
 
 using namespace winrt::gui::Models;
 
-static constexpr auto property_script_path      = 1 << 0;
-static constexpr auto property_status           = 1 << 1;
-static constexpr auto property_active_sim       = 1 << 2;
-static constexpr auto property_aircraft_name    = 1 << 3;
-static constexpr auto property_mappings_info    = 1 << 4;
-static constexpr auto property_devices          = 1 << 5;
-static constexpr auto property_viewport_mode    = 1 << 6;
-static constexpr auto property_viewports        = 1 << 7;
-static constexpr auto property_captured_windows = 1 << 8;
+static constexpr auto property_script_path        = 1 << 0;
+static constexpr auto property_status             = 1 << 1;
+static constexpr auto property_active_sim         = 1 << 2;
+static constexpr auto property_aircraft_name      = 1 << 3;
+static constexpr auto property_mappings_info      = 1 << 4;
+static constexpr auto property_devices            = 1 << 5;
+static constexpr auto property_viewport_is_active = 1 << 6;
+static constexpr auto property_viewports          = 1 << 7;
+static constexpr auto property_captured_windows   = 1 << 8;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -40,7 +40,7 @@ static const wchar_t* property_names[] = {
     L"AircraftName",
     L"MappingsInfo",
     L"Devices",
-    L"ViewportMode",
+    L"ViewportIsActive",
     L"Viewports",
     L"CapturedWindows",
     nullptr
@@ -139,7 +139,8 @@ namespace winrt::gui::Models::implementation{
                 break;
             }
             if (dirty_properties){
-                if (dirty_properties & property_mappings_info){
+                auto mask = dirty_properties;
+                if (mask & property_mappings_info){
                     auto&& stat = ::mapper_getMappingsStat(mapper);
                     mappings_info.Primery(stat.num_primery);
                     mappings_info.Secondary(stat.num_secondary);
@@ -147,7 +148,7 @@ namespace winrt::gui::Models::implementation{
                     mappings_info.Views(stat.num_for_views);
                 }
 
-                if (dirty_properties & property_devices){
+                if (mask & property_devices){
                     enum_device_context data;
                     mapper_enumDevices(mapper, enum_device_callback, &data);
                     devices.Clear();
@@ -160,7 +161,7 @@ namespace winrt::gui::Models::implementation{
                     }
                 }
 
-                if (dirty_properties & property_viewports){
+                if (mask & property_viewports){
                     viewports.Clear();
                     enum_viewport_context ctx;
                     ctx.viewports = viewports;
@@ -172,7 +173,8 @@ namespace winrt::gui::Models::implementation{
                     }
                 }
 
-                if (dirty_properties & property_captured_windows){
+                if (mask & property_captured_windows){
+                    mapper_stopViewPort(mapper);
                     enum_captured_windows_context cw_list;
                     mapper_enumCapturedWindows(mapper, enum_captured_window_callback, &cw_list);
                     lock.unlock();
@@ -190,11 +192,10 @@ namespace winrt::gui::Models::implementation{
                     }
                     co_await winrt::resume_background();
                     lock.lock();
-                    dirty_properties &= ~property_captured_windows;
                 }
 
                 for (auto i = 0; property_names[i]; i++){
-                    if (dirty_properties & (1 << i)){
+                    if (mask & (1 << i)){
                         lock.unlock();
                         co_await ui_thread;
                          property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{property_names[i]});
@@ -202,7 +203,7 @@ namespace winrt::gui::Models::implementation{
                         lock.lock();
                     }
                 }
-                dirty_properties = 0;
+                dirty_properties &= ~mask;
             }
         }
 
@@ -242,9 +243,9 @@ namespace winrt::gui::Models::implementation{
         return aircraft_name;
     }
 
-    winrt::gui::Models::ViewportStatus Mapper::ViewportMode(){
+    bool Mapper::ViewportIsActive(){
         std::lock_guard lock{mutex};
-        return viewport_mode;
+        return viewport_is_active;
     }
 
     Mapper::ViewportCollection Mapper::Viewports(){
@@ -289,6 +290,12 @@ namespace winrt::gui::Models::implementation{
         if (status == MapperStatus::running){
             mapper_stop(mapper);
         }
+    }
+
+    void Mapper::StopScriptSync(){
+        StopScript();
+        std::unique_lock lock(mutex);
+        cv.wait(lock, [this](){return status != MapperStatus::running;});
     }
 
     void Mapper::CaptureWindow(uint32_t Cwid, uint64_t hWnd){
@@ -346,8 +353,17 @@ namespace winrt::gui::Models::implementation{
         }else if (event == MEV_CHANGE_VIEWPORTS){
             dirty_properties |= property_viewports;
             cv.notify_all();
-        }else if (event == MEV_READY_TO_CAPTURE_WINDOW || event == MEV_RESET_VIEWPORTS){
-            dirty_properties |= property_captured_windows;
+        }else if (event == MEV_READY_TO_CAPTURE_WINDOW || event == MEV_RESET_VIEWPORTS || event == MEV_LOST_CAPTURED_WINDOW){
+            viewport_is_active = false;
+            dirty_properties |= (property_captured_windows | property_viewports | property_viewport_is_active);
+            cv.notify_all();
+        }else if (event == MEV_STOP_VIEWPORTS){
+            viewport_is_active = false;
+            dirty_properties |= property_viewport_is_active;
+            cv.notify_all();
+        }else if (event == MEV_START_VIEWPORTS){
+            viewport_is_active = true;
+            dirty_properties |= property_viewport_is_active;
             cv.notify_all();
         }
         return true;

@@ -28,9 +28,7 @@ namespace winrt::gui::implementation{
 
         uint64_t hWnd(){return hwnd;}
         hstring Name(){
-            std::wostringstream os;
-            os << std::hex << hwnd << " : " << name.c_str();
-            return hstring(os.str());
+            return name;
         }
         bool IsCapturable(){
             return static_cast<bool>(capturing.item);

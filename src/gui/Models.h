@@ -15,6 +15,10 @@
 #include <thread>
 #include "mappercore.h"
 
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Windows.Graphics.Capture.h>
+
+
 //============================================================================================
 // Device
 //============================================================================================
@@ -117,7 +121,25 @@ namespace winrt::gui::Models::implementation
             mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())),
             cwid(cwid), name(name), description(description),
             image(mapper.as<winrt::gui::Models::Mapper>().NullWindowImage()){
-            update_status_string();
+            capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
+            reflect_status_change(false);
+
+            token_for_mapper = this->mapper.get().PropertyChanged([this](auto const&, auto const& args){
+                auto name = args.PropertyName();
+                if (name == L"ViewportIsActive"){
+                    reflect_mapper_ViewportState();
+                }
+            });
+            reflect_mapper_ViewportState();
+        }
+        ~CapturedWindow(){
+            if (is_captured){
+                do_release_window();
+            }
+            stop_capture();
+            if (auto strong_mapper{mapper.get()}){
+                strong_mapper.PropertyChanged(token_for_mapper);
+            }
         }
 
         uint32_t Cwid(){return cwid;}
@@ -126,9 +148,18 @@ namespace winrt::gui::Models::implementation
         hstring StatusString(){return status_string;}
         bool IsCaptured(){return is_captured;}
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
+        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTitleColor();
+        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTextColor();
+        bool ButtonIsEnabled(){return button_is_enabled;}
 
         winrt::Windows::Foundation::IAsyncAction ToggleCapture(
             winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
+
+        void ForceRelease(){
+            if (is_captured){
+                do_release_window();
+            }
+        }
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -145,7 +176,10 @@ namespace winrt::gui::Models::implementation
         hstring status_string;
         bool is_captured {false};
         winrt::Microsoft::UI::Xaml::Media::ImageSource image;
-        winrt::Microsoft::UI::WindowId window_id;
+        uint64_t window_id {0};
+        bool button_is_enabled{false};
+
+        winrt::event_token token_for_mapper;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -169,7 +203,33 @@ namespace winrt::gui::Models::implementation
             property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{nm});
         }
 
-        void update_status_string();
+        void reflect_mapper_ViewportState(){
+            if (auto strong_mapper{mapper.get()}){
+                auto value = !strong_mapper.ViewportIsActive();
+                update_property(button_is_enabled, value, L"ButtonIsEnabled");
+            }
+        }
+
+        void reflect_status_change(bool captured_state);
+        void do_capture_window();
+        void do_release_window();
+
+        //------------------------------------------------------------------
+        // Window image capturing context & functions
+        //------------------------------------------------------------------
+        struct {
+            winrt::Microsoft::Graphics::Canvas::CanvasDevice canvas_device{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{nullptr};
+            winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool frame_pool{nullptr};
+            winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
+            winrt::event_token token;
+        }capturing;
+
+        void prepare_capture();
+        void start_capture();
+        void stop_capture();
+        winrt::Windows::Foundation::IAsyncAction process_captured_frame(
+            winrt::weak_ref<winrt::gui::Models::CapturedWindow> weak_self);
     };
 }
 namespace winrt::gui::Models::factory_implementation{
@@ -195,7 +255,7 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::MapperStatus Status();
         winrt::gui::Models::Simulators ActiveSim();
         hstring AircraftName();
-        winrt::gui::Models::ViewportStatus ViewportMode();
+        bool ViewportIsActive();
         ViewportCollection Viewports();
         CapturedWindowCollection CapturedWindows();
         DeviceCollection Devices();
@@ -205,6 +265,7 @@ namespace winrt::gui::Models::implementation{
 
         void RunScript();
         void StopScript();
+        void StopScriptSync();
         void CaptureWindow(uint32_t Cwid, uint64_t hWnd);
         void ReleaseWindow(uint32_t Cwid);
         void StartViewports();
@@ -230,7 +291,7 @@ namespace winrt::gui::Models::implementation{
         gui::Models::MapperStatus status {gui::Models::MapperStatus::stop};
         gui::Models::Simulators active_sim {gui::Models::Simulators::none};
         winrt::hstring aircraft_name;
-        winrt::gui::Models::ViewportStatus viewport_mode{winrt::gui::Models::ViewportStatus::none};
+        bool viewport_is_active{false};
         ViewportCollection viewports {nullptr};
         CapturedWindowCollection captured_windows{nullptr};
         DeviceCollection devices {nullptr};

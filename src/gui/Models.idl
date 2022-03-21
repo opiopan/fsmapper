@@ -1,7 +1,6 @@
 namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
     enum Simulators {none = 0, fs2020, dcs};
-    enum ViewportStatus {none = 0, prepared, stop, working};
 
     runtimeclass Device {
         Device(String cname, String dname);
@@ -42,8 +41,12 @@ namespace gui.Models{
         String StatusString{get;};
         Boolean IsCaptured{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush ButtonTitleColor{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush ButtonTextColor{get;};
+        Boolean ButtonIsEnabled{get;};
 
         Windows.Foundation.IAsyncAction ToggleCapture(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ForceRelease();
     }
 
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
@@ -53,7 +56,7 @@ namespace gui.Models{
         MapperStatus Status{get;};
         Simulators ActiveSim{get;};
         String AircraftName{get;};
-        ViewportStatus ViewportMode{get;};
+        Boolean ViewportIsActive{get;};
         Windows.Foundation.Collections.IVector<Viewport> Viewports{get;};
         Windows.Foundation.Collections.IObservableVector<CapturedWindow> CapturedWindows{get;};
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
@@ -63,6 +66,7 @@ namespace gui.Models{
 
         void RunScript();
         void StopScript();
+        void StopScriptSync();
 
         void CaptureWindow(UInt32 Cwid, UInt64 hWnd);
         void ReleaseWindow(UInt32 Cwid);

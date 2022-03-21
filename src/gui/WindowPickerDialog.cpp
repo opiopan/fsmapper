@@ -23,7 +23,6 @@
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
 
-
 constexpr auto MINIMUM_ENABLE_WINDOW_SIZE = 64;
 constexpr auto MAX_ENABLE_WINDOW_RATIO = 20;
 constexpr auto DOUBLE_CLICK_INTERVAL = std::chrono::microseconds(400);
@@ -173,7 +172,6 @@ namespace winrt::gui::implementation{
     // Window image capturing
     //============================================================================================
     void WindowItem::prepare_capture(){
-        auto namestr = name.c_str();
         const auto factory = get_activation_factory<winrt::Windows::Graphics::Capture::GraphicsCaptureItem>();
         const auto interop = factory.as<IGraphicsCaptureItemInterop>();
         try{

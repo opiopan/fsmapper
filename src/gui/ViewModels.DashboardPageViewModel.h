@@ -9,6 +9,9 @@
 #include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
 #include <string>
 
+//============================================================================================
+// View model definition
+//============================================================================================
 namespace winrt::gui::ViewModels::implementation{
     struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel>{
         DashboardPageViewModel();
@@ -32,8 +35,14 @@ namespace winrt::gui::ViewModels::implementation{
         hstring ViewportSummary(){return viewport_summary;}
         hstring ViewportDetail(){return viewport_detail;}
         bool ViewportDetailIsVisible(){return viewport_detail_is_visible;}
+        bool ViewportButtonIsEnabled(){return viewport_button_is_enabled;}
+        bool ViewportButtonIsVisible(){return viewport_button_is_visible;}
+        hstring ViewportButtonText(){return viewport_button_text;}
         bool CapturedWindowsIsVisible(){return captured_windows_is_visible;}
         hstring CapturedWindowsSummary(){return captured_windows_summary;}
+        bool CaptureWindowButtonIsEnabled(){return captured_window_button_is_enabled;}
+
+        void ToggleViewport(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -64,8 +73,12 @@ namespace winrt::gui::ViewModels::implementation{
         hstring viewport_summary;
         hstring viewport_detail;
         bool viewport_detail_is_visible{false};
+        bool viewport_button_is_enabled{false};
+        bool viewport_button_is_visible{false};
+        hstring viewport_button_text;
         bool captured_windows_is_visible{false};
         hstring captured_windows_summary;
+        bool captured_window_button_is_enabled{false};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -95,9 +108,14 @@ namespace winrt::gui::ViewModels::implementation{
         void reflect_mapper_Viewports();
         void reflect_mapper_Devices();
         void reflect_mapper_CapturedWindows();
+        void reflect_mapper_ViewportOperability();
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation{
     struct DashboardPageViewModel : DashboardPageViewModelT<DashboardPageViewModel, implementation::DashboardPageViewModel>{
     };
 }
+
+//============================================================================================
+// Converters
+//============================================================================================

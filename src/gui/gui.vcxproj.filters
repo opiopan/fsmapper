@@ -119,6 +119,9 @@
     <Filter Include="Dialogs">
       <UniqueIdentifier>{b9b43f3d-0ca4-4b81-9547-d4edbf6ef64b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Converters">
+      <UniqueIdentifier>{21518ac5-c5f5-4919-9ee6-8fdcfde2af3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
