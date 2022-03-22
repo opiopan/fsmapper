@@ -377,7 +377,8 @@ void ViewPortManager::start_viewports(){
 
         if (captured_windows.size() > 0){
             change_status(Status::ready_to_start);
-            engine.sendHostEvent(MEV_READY_TO_CAPTURE_WINDOW, 0);
+            lock.unlock();
+            engine.notifyUpdate(MapperEngine::UPDATED_READY_TO_CAPTURE);
             return;
         }
 
@@ -394,7 +395,7 @@ void ViewPortManager::start_viewports(){
         lock.lock();
         change_status(Status::running);
         lock.unlock();
-        engine.sendHostEvent(MEV_START_VIEWPORTS, 0);
+        engine.notifyUpdate(MapperEngine::UPDATED_VIEWPORTS_STATUS);
     }
 }
 
@@ -413,7 +414,7 @@ void ViewPortManager::stop_viewports(){
         lock.lock();
         change_status(Status::suspended);
         lock.unlock();
-        engine.sendHostEvent(MEV_STOP_VIEWPORTS, 0);
+        engine.notifyUpdate(MapperEngine::UPDATED_VIEWPORTS_STATUS);
     }
 }
 
@@ -447,7 +448,7 @@ void ViewPortManager::reset_viewports(){
     change_status(Status::init);
     lock.unlock();
     if (prev_status != Status::init) {
-        engine.sendHostEvent(MEV_RESET_VIEWPORTS, 0);
+        engine.notifyUpdate(MapperEngine::UPDATED_VIEWPORTS_STATUS);
     }
 }
 
@@ -526,7 +527,7 @@ void ViewPortManager::enable_viewports(){
         lock.lock();
         change_status(Status::running);
         lock.unlock();
-        engine.sendHostEvent(MEV_START_VIEWPORTS, 0);
+        engine.notifyUpdateWithNoLock(MapperEngine::UPDATED_VIEWPORTS_STATUS);
     }
 }
 
@@ -545,7 +546,7 @@ void ViewPortManager::disable_viewports(){
         lock.lock();
         change_status(Status::ready_to_start);
         lock.unlock();
-        engine.sendHostEvent(MEV_STOP_VIEWPORTS, 0);
+        engine.notifyUpdateWithNoLock(MapperEngine::UPDATED_VIEWPORTS_STATUS);
     }
 }
 
@@ -580,7 +581,7 @@ void ViewPortManager::process_close_event(HWND hWnd){
             item.second->release_window();
             auto cwid = item.first;
             lock.unlock();
-            engine.sendHostEvent(MEV_LOST_CAPTURED_WINDOW, cwid);
+            engine.notifyUpdate(MapperEngine::UPDATED_LOST_CAPTURED_WINDOW);
             return;
         }
     }

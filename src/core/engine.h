@@ -47,6 +47,9 @@ public:
     static constexpr auto UPDATED_MAPPINGS = 0x2;
     static constexpr auto UPDATED_VIEWPORTS = 0x4;
     static constexpr auto UPDATED_VJOY = 0x8;
+    static constexpr auto UPDATED_VIEWPORTS_STATUS = 0x10;
+    static constexpr auto UPDATED_READY_TO_CAPTURE = 0x20;
+    static constexpr auto UPDATED_LOST_CAPTURED_WINDOW = 0x40;
 
 protected : 
     std::mutex mutex;
@@ -140,6 +143,12 @@ public:
     void notifyUpdate(uint32_t flag){
         std::lock_guard lock(mutex);
         scripting.updated_flags |= flag;
+        event.cv.notify_all();
+    }
+
+    void notifyUpdateWithNoLock(uint32_t flag){
+        scripting.updated_flags |= flag;
+        event.cv.notify_all();
     }
 
     // interfaces for host program

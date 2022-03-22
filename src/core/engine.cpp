@@ -262,6 +262,24 @@ bool MapperEngine::run(std::string&& scriptPath){
                 if (scripting.updated_flags & UPDATED_VIEWPORTS){
                     sendHostEvent(MEV_CHANGE_VIEWPORTS, 0);
                 }
+                if (scripting.updated_flags & UPDATED_VIEWPORTS_STATUS){
+                    auto vpstat = scripting.viewportManager->get_status();
+                    mapper_event msg;
+                    if (vpstat == ViewPortManager::Status::init){
+                        sendHostEvent(MEV_RESET_VIEWPORTS, 0);
+                    }else if (vpstat == ViewPortManager::Status::ready_to_start ||
+                              vpstat == ViewPortManager::Status::suspended){
+                        sendHostEvent(MEV_STOP_VIEWPORTS, 0);
+                    }else if (vpstat == ViewPortManager::Status::running){
+                        sendHostEvent(MEV_START_VIEWPORTS, 0);
+                    }
+                }
+                if (scripting.updated_flags & UPDATED_READY_TO_CAPTURE){
+                    sendHostEvent(MEV_READY_TO_CAPTURE_WINDOW, 0);
+                }
+                if (scripting.updated_flags & UPDATED_LOST_CAPTURED_WINDOW){
+                    sendHostEvent(MEV_LOST_CAPTURED_WINDOW, 0);
+                }
                 scripting.updated_flags = 0;
             }
 
@@ -272,7 +290,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                 auto deferred_num = event.deferred_actions.size();
                 auto condition = [this, deferred_num]{
                     return event.queue.size() > 0 || event.deferred_actions.size() > deferred_num || 
-                        status != Status::running;
+                           status != Status::running || scripting.updated_flags;
                 };
 
                 if (deferred_num > 0){

@@ -148,7 +148,7 @@ public:
 class MapperEngine;
 
 class ViewPortManager{
-protected:
+public:
     enum class Status{
         init,
         ready_to_start,
@@ -157,6 +157,7 @@ protected:
         suspending,
         suspended,
     };
+protected:
     std::mutex mutex;
     std::condition_variable cv;
     MapperEngine& engine;
@@ -180,6 +181,11 @@ public:
     const WinDispatcher& get_dispatcher()const{return dispatcher;}
     void init_scripting_env(sol::table& mapper_table);
     Action* find_action(uint64_t evid);
+
+    Status get_status(){
+        std::lock_guard lock{mutex};
+        return status;
+    }
 
     // functions to export as Lua function in mapper table
     std::shared_ptr<ViewPort> create_viewport(sol::object def_obj);

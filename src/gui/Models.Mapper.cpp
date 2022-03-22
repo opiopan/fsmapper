@@ -299,18 +299,22 @@ namespace winrt::gui::Models::implementation{
     }
 
     void Mapper::CaptureWindow(uint32_t Cwid, uint64_t hWnd){
+        std::lock_guard lock{mutex};
         mapper_captureWindow(mapper, Cwid, reinterpret_cast<HWND>(hWnd));
     }
 
     void Mapper::ReleaseWindow(uint32_t Cwid){
+        std::lock_guard lock{mutex};
         mapper_releaseWindw(mapper, Cwid);
     }
 
     void Mapper::StartViewports(){
+        std::lock_guard lock{mutex};
         mapper_startViewPort(mapper);
     }
 
     void Mapper::StopViewports(){
+        std::lock_guard lock{mutex};
         mapper_stopViewPort(mapper);
     }
 
@@ -374,7 +378,8 @@ namespace winrt::gui::Models::implementation{
         return self->proc_message(type, msg, len);
     }
 
-    bool Mapper::proc_message(MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len){
+    bool Mapper::proc_message(MCONSOLE_MESSAGE_TYPE, const char*, size_t){
+
         return true;
     }
 
