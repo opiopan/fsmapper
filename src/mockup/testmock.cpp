@@ -26,7 +26,7 @@ protected:
         uint32_t cwid;
         std::string name;
     };
-    std::map<std::string, CWInfo> cwinfo_list;
+    std::map<uint32_t, CWInfo> cwinfo_list;
 
 public:
     MapperInterface(){
@@ -148,7 +148,7 @@ protected:
     bool enum_cw(CAPTURED_WINDOW_DEF* cwdef){
         std::lock_guard lock(mutex);
         CWInfo info = {cwdef->cwid, cwdef->name};
-        cwinfo_list[cwdef->name] = std::move(info);
+        cwinfo_list[cwdef->cwid] = std::move(info);
         return true;
     }
 

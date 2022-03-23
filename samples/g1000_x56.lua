@@ -181,12 +181,12 @@ local viewport = mapper.viewport({
 })
 local pfd = viewport:register_view({
     name = "PFD",
-    elements = {{object = mapper.captured_window({name = "01 G1000 PFD"})}},
+    elements = {{object = mapper.captured_window({name = "G1000 PFD"})}},
     mappings = pfd_maps,
 })
 local mfd = viewport:register_view({
     name = "MFD",
-    elements = {{object = mapper.captured_window({name = "02 G1000 MFD"})}},
+    elements = {{object = mapper.captured_window({name = "G1000 MFD"})}},
     mappings = mfd_maps,
 })
 
@@ -199,13 +199,11 @@ function toggle_view()
 end
 
 viewport:set_mappings({
+    {event=g1000.AUX1D.down, action=toggle_view},
+    {event=g1000.AUX1U.down, action=toggle_view},
     {event=g1000.AUX2D.down, action=toggle_view},
-})
-viewport:add_mappings({
     {event=g1000.AUX2U.down, action=toggle_view},
 })
-
-mapper.start_viewports()
 
 x56throttle_dev = mapper.device({
     name = "X-56 Throttle",
@@ -351,6 +349,13 @@ end
 
 update_secondary_mappings()
 
+
+viewport:add_mappings({
+    {event=x56throttle.button28.down, action=toggle_view},
+    {event=x56throttle.button29.down, action=toggle_view},
+})
+mapper.start_viewports()
+
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
         if value.aircraft == "Airbus A320 Neo FlyByWire" then
@@ -391,9 +396,4 @@ mapper.set_primery_mappings({
         joymap.modal = joymap_preflight
         update_secondary_mappings()
     end},
-
-    {event=x56throttle.button28.down, action=toggle_view},
-    {event=x56throttle.button29.down, action=toggle_view},
-    {event=g1000.AUX1U.down, action=toggle_view},
-    {event=g1000.AUX1D.down, action=toggle_view},
 })
