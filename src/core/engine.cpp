@@ -12,7 +12,7 @@
 #include "viewport.h"
 #include "vjoy.h"
 #include "filter.h"
-
+#include "simplewindow.h"
 
 //============================================================================================
 // initialize / terminate environment
@@ -20,6 +20,7 @@
 MapperEngine::MapperEngine(Callback callback, Logger logger) : 
     status(Status::init), callback(callback), logger(logger){
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
+    WinDispatcher::initSharedDispatcher();
 }
 
 MapperEngine::~MapperEngine(){
@@ -264,7 +265,6 @@ bool MapperEngine::run(std::string&& scriptPath){
                 }
                 if (scripting.updated_flags & UPDATED_VIEWPORTS_STATUS){
                     auto vpstat = scripting.viewportManager->get_status();
-                    mapper_event msg;
                     if (vpstat == ViewPortManager::Status::init){
                         sendHostEvent(MEV_RESET_VIEWPORTS, 0);
                     }else if (vpstat == ViewPortManager::Status::ready_to_start ||

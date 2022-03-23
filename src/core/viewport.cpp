@@ -112,7 +112,7 @@ Action* ViewPort::View::findAction(uint64_t evid){
 //============================================================================================
 // Viewport inmplementation
 //============================================================================================
-ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manager), bgwin(manager.get_dispatcher()){
+ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manager){
     if (def_obj.get_type() != sol::type::table){
         throw MapperException("viewport definition must be specified as a table");
     }

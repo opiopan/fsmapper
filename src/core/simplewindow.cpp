@@ -5,10 +5,19 @@
 
 #include "simplewindow.h"
 #include <stdexcept>
+#include <memory>
 
 //============================================================================================
 // Message pumping thread abstraction
 //============================================================================================
+static std::unique_ptr<WinDispatcher> shared_dispatcher;
+void WinDispatcher::initSharedDispatcher(){
+	if (!shared_dispatcher){
+		shared_dispatcher = std::move(std::make_unique<WinDispatcher>());
+	}
+}
+WinDispatcher& WinDispatcher::sharedDispatcher(){return *shared_dispatcher;}
+
 ATOM WinDispatcher::class_atom {0};
 
 WinDispatcher::WinDispatcher(){

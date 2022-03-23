@@ -85,15 +85,16 @@ protected:
         using parent_class = SimpleWindow<bg_window_class_name>;
         COLORREF bgcolor;
     public:
-        BackgroundWindow(const WinDispatcher& dispatcher):SimpleWindow(dispatcher){};
+        BackgroundWindow(const WinDispatcher& dispatcher = WinDispatcher::sharedDispatcher()):SimpleWindow(dispatcher){};
         virtual ~BackgroundWindow() = default;
         void start(COLORREF bgcolor, const IntRect& rect, HWND hWndInsertAfter = nullptr){
             this->bgcolor = bgcolor;
             create();
             ::SetWindowPos(*this, hWndInsertAfter ? hWndInsertAfter : HWND_TOP, rect.x, rect.y, rect.width, rect.height, 0);
-            showWindow(SW_SHOW);
         };
         void stop(){destroy();};
+        void show(){showWindow(SW_SHOW);}
+        void hide(){showWindow(SW_HIDE);}
     protected:
         virtual void preRegisterClass(WNDCLASSEXA& wc) override{
             parent_class::preRegisterClass(wc);
@@ -162,7 +163,6 @@ protected:
     std::condition_variable cv;
     MapperEngine& engine;
     Status status = Status::init;
-    WinDispatcher dispatcher;
     std::vector<std::shared_ptr<ViewPort>> viewports;
     std::vector<IntRect> displays;
     uint32_t cwid_counter = 1;
@@ -178,7 +178,6 @@ public:
     ViewPortManager& operator =(ViewPortManager&&) = delete;
 
     MapperEngine& get_engine() {return engine;};
-    const WinDispatcher& get_dispatcher()const{return dispatcher;}
     void init_scripting_env(sol::table& mapper_table);
     Action* find_action(uint64_t evid);
 

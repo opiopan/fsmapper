@@ -51,6 +51,9 @@ public:
 			reinterpret_cast<LPARAM>(&function_obj));
 	}
 
+	static void initSharedDispatcher();
+	static WinDispatcher& sharedDispatcher();
+
 protected:
 	static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	
 };
@@ -66,7 +69,7 @@ protected:
 	HWND hWnd = nullptr;
 
 public:
-	WinBase(const WinDispatcher& dispatcher);
+	WinBase(const WinDispatcher& dispatcher = WinDispatcher::sharedDispatcher());
 	WinBase(const WinBase&) = delete;
 	WinBase(WinBase&&) = delete;
 	virtual ~WinBase();
@@ -110,7 +113,7 @@ protected:
 	static ATOM class_atom;
 
 public:
-	SimpleWindow(const WinDispatcher& dispatcher) : WinBase(dispatcher){}
+	SimpleWindow(const WinDispatcher& dispatcher = WinDispatcher::sharedDispatcher()) : WinBase(dispatcher){}
 	virtual ~SimpleWindow() = default;
 
 protected:
