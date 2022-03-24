@@ -8,3 +8,5 @@ Generated Files
 .vscode
 .vs
 *.user
+deploy/fsmapper
+deploy/*.zip

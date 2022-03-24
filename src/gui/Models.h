@@ -8,7 +8,11 @@
 #include "Models.View.g.h"
 #include "Models.Viewport.g.h"
 #include "Models.CapturedWindow.g.h"
+#include "Models.Message.g.h"
 #include "Models.Mapper.g.h"
+
+#include "tools.hpp"
+#include "encoding.hpp"
 
 #include <mutex>
 #include <condition_variable>
@@ -17,7 +21,7 @@
 
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Windows.Graphics.Capture.h>
-
+#include <winrt/Microsoft.UI.Xaml.Media.h>
 
 //============================================================================================
 // Device
@@ -238,6 +242,57 @@ namespace winrt::gui::Models::factory_implementation{
 }
 
 //============================================================================================
+// Message
+//============================================================================================
+namespace winrt::gui::Models::implementation{
+    struct Message : MessageT<Message>{
+        Message() = delete;
+        Message(winrt::gui::Models::MessageType const& type, hstring const& text) : type(type), text(text){
+            if (type == winrt::gui::Models::MessageType::error){
+                type_string = L"ERROR";
+            }else if (type == winrt::gui::Models::MessageType::warning){
+                type_string = L"WARNING";
+            }else if (type == winrt::gui::Models::MessageType::info){
+                type_string = L"INFO";
+            }else if (type == winrt::gui::Models::MessageType::message){
+                type_string = L"MESSAGE";
+            }else if (type == winrt::gui::Models::MessageType::debug){
+                type_string = L"DEBUG";
+            }
+        }
+
+        winrt::gui::Models::MessageType Type(){return type;}
+        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush TypeColor(){
+            const wchar_t* key{nullptr};
+            if (type == winrt::gui::Models::MessageType::error){
+                key = L"MessageColorError";
+            }else if (type == winrt::gui::Models::MessageType::warning){
+                key = L"MessageColorWarning";
+            }else if (type == winrt::gui::Models::MessageType::info){
+                key = L"MessageColorInfo";
+            }else if (type == winrt::gui::Models::MessageType::message){
+                key = L"MessageColorMessage";
+            }else if (type == winrt::gui::Models::MessageType::debug){
+                key = L"MessageColorDebug";
+            }
+            auto value = tools::ThemeResource(key);
+            return value.as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>();
+        }
+        hstring TypeString(){return type_string;}
+        hstring Text(){return text;}
+
+    protected:
+        winrt::gui::Models::MessageType type;
+        hstring type_string;
+        hstring text;
+    };
+}
+namespace winrt::gui::Models::factory_implementation{
+    struct Message : MessageT<Message, implementation::Message>{
+    };
+}
+
+//============================================================================================
 // Mapper
 //============================================================================================
 namespace winrt::gui::Models::implementation{
@@ -246,6 +301,7 @@ namespace winrt::gui::Models::implementation{
         using ViewCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
         using ViewportCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Viewport>;
         using CapturedWindowCollection = winrt::Windows::Foundation::Collections::IObservableVector<winrt::gui::Models::CapturedWindow>;
+        using MessageCollection = winrt::Windows::Foundation::Collections::IObservableVector<winrt::gui::Models::Message>;
 
         Mapper();
         virtual ~Mapper();
@@ -260,6 +316,7 @@ namespace winrt::gui::Models::implementation{
         CapturedWindowCollection CapturedWindows();
         DeviceCollection Devices();
         winrt::gui::Models::MappingsStat MappingsInfo();
+        MessageCollection Messages();
 
         winrt::Microsoft::UI::Xaml::Media::ImageSource NullWindowImage();
 
@@ -286,6 +343,7 @@ namespace winrt::gui::Models::implementation{
         Windows::Foundation::IAsyncOperation<int32_t> scheduler;
         std::thread script_runner;
         std::thread mapper_observer;
+        Windows::Foundation::IAsyncOperation<int32_t> message_reader;
 
         winrt::hstring script_path;
         gui::Models::MapperStatus status {gui::Models::MapperStatus::stop};
@@ -296,6 +354,15 @@ namespace winrt::gui::Models::implementation{
         CapturedWindowCollection captured_windows{nullptr};
         DeviceCollection devices {nullptr};
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
+        MessageCollection messages {nullptr};
+
+        std::mutex message_mutex;
+        std::condition_variable message_cv;
+        bool message_should_stop{false};
+        std::vector<winrt::gui::Models::Message> message_buffer[2];
+        bool message_buffer_is_dirty{false};
+        int message_buffer_current{0};
+        tools::utf8_to_utf16_translator message_translator;
 
 		winrt::Microsoft::UI::Xaml::Media::ImageSource null_window_image{ nullptr };
 
@@ -330,6 +397,7 @@ namespace winrt::gui::Models::implementation{
         static bool enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef);
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler_proc();
+        Windows::Foundation::IAsyncOperation<int32_t> message_reader_proc();
     };
 }
 

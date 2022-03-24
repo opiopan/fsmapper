@@ -37,6 +37,8 @@ namespace fsmapper{
         virtual void set_script_path(std::filesystem::path&& path) = 0;
         virtual bool get_is_starting_script_at_start_up() = 0;
         virtual void set_is_starting_script_at_start_up(bool value) = 0;
+        virtual int32_t get_message_buffer_size() = 0;
+        virtual void set_message_buffer_size(int32_t value) = 0;
     };
 
     void init_app_config();

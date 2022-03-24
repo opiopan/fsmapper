@@ -15,6 +15,7 @@ static const auto* CONFIG_WINDOW_WIDTH = "window_width";
 static const auto* CONFIG_WINDOW_HEIGHT = "window_height";
 static const auto* CONFIG_SCRIPT_PATH = "script_path";
 static const auto* CONFIG_STARTING_SCRIPT_AT_START = "starting_script_at_start";
+static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -28,6 +29,7 @@ class config_imp : public config{
     rect window_rect = {0, 0, -1, -1};
     std::filesystem::path script_path;
     bool is_starting_script_at_start_up{true};
+    int32_t message_buffer_size{300};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -95,6 +97,7 @@ public:
         reflect_string(data, CONFIG_SCRIPT_PATH, path);
         script_path = path;
         reflect_bool(data, CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up);
+        reflect_number(data, CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size);
     }
 
     void save() override{
@@ -106,6 +109,7 @@ public:
                 {CONFIG_WINDOW_HEIGHT, window_rect.height},
                 {CONFIG_SCRIPT_PATH, script_path.string()},
                 {CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up},
+                {CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -132,6 +136,12 @@ public:
     void set_is_starting_script_at_start_up(bool value){
         update_value(is_starting_script_at_start_up, value);
     };
+    int32_t get_message_buffer_size(){
+        return message_buffer_size;
+    }
+    void set_message_buffer_size(int32_t value){
+        update_value(message_buffer_size, value);
+    }
 };
 
 static config_imp the_config;

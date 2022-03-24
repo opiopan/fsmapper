@@ -9,6 +9,7 @@
 #include "Models.MappingsStat.g.cpp"
 #include "Models.View.g.cpp"
 #include "Models.Viewport.g.cpp"
+#include "Models.Message.g.cpp"
 
 #include "App.xaml.h"
 #include "config.hpp"
@@ -114,6 +115,11 @@ namespace winrt::gui::Models::implementation{
         if (fsmapper::app_config.get_is_starting_script_at_start_up()){
             RunScript();
         }
+
+        //-----------------------------------------------------------------------------------------
+        // coroutine to read  message
+        //-----------------------------------------------------------------------------------------
+        message_reader = message_reader_proc();
     }
 
     Mapper::~Mapper(){
@@ -122,6 +128,10 @@ namespace winrt::gui::Models::implementation{
         should_stop = true;
         cv.notify_all();
         lock.unlock();
+        std::unique_lock msg_lock(message_mutex);
+        message_should_stop = true;
+        message_cv.notify_all();
+        msg_lock.unlock();
         script_runner.join();
         mapper_tools_terminate(mapper_tools);
     }
@@ -211,6 +221,35 @@ namespace winrt::gui::Models::implementation{
     }
 
     //============================================================================================
+    // Message reader
+    //============================================================================================
+    Windows::Foundation::IAsyncOperation<int32_t> Mapper::message_reader_proc(){
+        co_await winrt::resume_background();
+        std::unique_lock lock(message_mutex);
+        while (true){
+            cv.wait(lock, [this]{return message_buffer_is_dirty || should_stop;});
+            if (should_stop){
+                break;
+            }
+            auto& buffer = message_buffer[message_buffer_current];
+            message_buffer_current ^= 1;
+            message_buffer_is_dirty = false;
+            lock.unlock();
+            co_await ui_thread;
+
+            for (auto& message : buffer){
+                messages.Append(message);
+            }
+            buffer.clear();
+
+            co_await winrt::resume_background();
+            lock.lock();
+        }
+
+        co_return 0;
+    }
+
+    //============================================================================================
     // Properties of runtime class
     //============================================================================================
     hstring Mapper::ScriptPath(){
@@ -271,6 +310,11 @@ namespace winrt::gui::Models::implementation{
     winrt::Microsoft::UI::Xaml::Media::ImageSource Mapper::NullWindowImage(){
         std::lock_guard lock{mutex};
         return null_window_image;
+    }
+
+    Mapper::MessageCollection Mapper::Messages(){
+        std::lock_guard lock{mutex};
+        return messages;
     }
 
     //============================================================================================
@@ -378,8 +422,13 @@ namespace winrt::gui::Models::implementation{
         return self->proc_message(type, msg, len);
     }
 
-    bool Mapper::proc_message(MCONSOLE_MESSAGE_TYPE, const char*, size_t){
-
+    bool Mapper::proc_message(MCONSOLE_MESSAGE_TYPE type, const char* msg, size_t){
+        std::lock_guard lock(message_mutex);
+        auto message_type = static_cast<winrt::gui::Models::MessageType>(type);
+        message_translator = msg;
+        auto message = winrt::make<winrt::gui::Models::implementation::Message>(message_type, hstring(message_translator));
+        message_buffer[message_buffer_current].push_back(message);
+        message_cv.notify_all();
         return true;
     }
 

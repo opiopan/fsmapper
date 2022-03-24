@@ -1,6 +1,7 @@
 namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
     enum Simulators {none = 0, fs2020, dcs};
+    enum MessageType {error = 0, warning, info, message, debug};
 
     runtimeclass Device {
         Device(String cname, String dname);
@@ -49,6 +50,15 @@ namespace gui.Models{
         void ForceRelease();
     }
 
+    runtimeclass Message {
+        Message(MessageType type, String text);
+
+        MessageType Type{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush TypeColor{get;};
+        String TypeString{get;};
+        String Text{get;};
+    }
+
     runtimeclass Mapper: Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         Mapper();
 
@@ -61,6 +71,7 @@ namespace gui.Models{
         Windows.Foundation.Collections.IObservableVector<CapturedWindow> CapturedWindows{get;};
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
+        Windows.Foundation.Collections.IObservableVector<Message> Messages{get;};
 
         Microsoft.UI.Xaml.Media.ImageSource NullWindowImage{get;};
 
