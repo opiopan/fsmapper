@@ -29,7 +29,7 @@ class config_imp : public config{
     rect window_rect = {0, 0, -1, -1};
     std::filesystem::path script_path;
     bool is_starting_script_at_start_up{true};
-    int32_t message_buffer_size{300};
+    uint32_t message_buffer_size{300};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -136,10 +136,10 @@ public:
     void set_is_starting_script_at_start_up(bool value){
         update_value(is_starting_script_at_start_up, value);
     };
-    int32_t get_message_buffer_size(){
+    uint32_t get_message_buffer_size(){
         return message_buffer_size;
     }
-    void set_message_buffer_size(int32_t value){
+    void set_message_buffer_size(uint32_t value){
         update_value(message_buffer_size, value);
     }
 };

@@ -75,6 +75,7 @@ namespace winrt::gui::Models::implementation{
         captured_windows = winrt::single_threaded_observable_vector<gui::Models::CapturedWindow>();
         devices = winrt::single_threaded_vector<gui::Models::Device>();
         mappings_info = winrt::make<winrt::gui::Models::implementation::MappingsStat>();
+        messages = winrt::single_threaded_observable_vector<gui::Models::Message>();
 
         auto device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         auto source = winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasImageSource(device, 40, 30, 96);
@@ -227,7 +228,7 @@ namespace winrt::gui::Models::implementation{
         co_await winrt::resume_background();
         std::unique_lock lock(message_mutex);
         while (true){
-            cv.wait(lock, [this]{return message_buffer_is_dirty || should_stop;});
+            message_cv.wait(lock, [this]{return message_buffer_is_dirty || should_stop;});
             if (should_stop){
                 break;
             }
@@ -240,6 +241,10 @@ namespace winrt::gui::Models::implementation{
             for (auto& message : buffer){
                 messages.Append(message);
             }
+            while (messages.Size() > fsmapper::app_config.get_message_buffer_size()){
+                messages.RemoveAt(0);
+            }
+
             buffer.clear();
 
             co_await winrt::resume_background();
@@ -428,6 +433,7 @@ namespace winrt::gui::Models::implementation{
         message_translator = msg;
         auto message = winrt::make<winrt::gui::Models::implementation::Message>(message_type, hstring(message_translator));
         message_buffer[message_buffer_current].push_back(message);
+        message_buffer_is_dirty = true;
         message_cv.notify_all();
         return true;
     }
