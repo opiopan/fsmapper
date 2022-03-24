@@ -216,7 +216,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="simhost.h" />
     <ClInclude Include="simplewindow.h" />
     <ClInclude Include="tools.h" />
-    <ClInclude Include="vieport.h" />
+    <ClInclude Include="viewport.h" />
     <ClInclude Include="vjoy.h" />
   </ItemGroup>
   <ItemGroup>

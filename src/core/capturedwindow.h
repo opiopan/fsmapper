@@ -19,6 +19,7 @@ protected:
     uint32_t cwid = 0;
     HWND hwnd = nullptr;
     bool omit_system_region = true;
+    ViewPort::BackgroundWindow fallback_window;
 
 public:
     CapturedWindow() = delete;
@@ -35,5 +36,5 @@ public:
     HWND get_hwnd() const {return hwnd;};
     void attach_window(HWND hwnd);
     void release_window();
-    bool change_window_pos(IntRect& rect, HWND hwnd_insert_after, bool show);
+    bool change_window_pos(IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor = 0);
 };

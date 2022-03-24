@@ -60,9 +60,6 @@
     <ClInclude Include="fs2020.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vieport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="simplewindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -76,6 +73,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

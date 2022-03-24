@@ -23,10 +23,12 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     if (omit_system_region){
         this->omit_system_region = *omit_system_region;
     }
+    fallback_window.start();
 }
 
 CapturedWindow::~CapturedWindow(){
     release_window();
+    fallback_window.stop();
 }
 
 void CapturedWindow::attach_window(HWND hwnd){
@@ -43,9 +45,15 @@ void CapturedWindow::release_window(){
     }
 }
 
-bool CapturedWindow::change_window_pos(IntRect& rect, HWND hwnd_insert_after, bool show){
+bool CapturedWindow::change_window_pos(IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor){
     if (hwnd){
         hookdll_changeWindowAtrribute(hwnd, hwnd_insert_after, rect.x, rect.y, rect.width, rect.height, show);
+    }else{
+        if (show){
+            fallback_window.show(bgcolor, rect);
+        }else{
+            fallback_window.hide();
+        }
     }
     return true;
 }

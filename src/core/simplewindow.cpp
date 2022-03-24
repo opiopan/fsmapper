@@ -226,6 +226,8 @@ LRESULT WinBase::messageProc(UINT uMsg, WPARAM wParam, LPARAM lParam){
 		}else{
 			return -1;
 		}
+	}else if (uMsg == WM_ERASEBKGND){
+		return onEraseBackground(reinterpret_cast<HDC>(wParam)) ? 1 : 0;
 	}else if (uMsg == WM_PAINT){
 		onPaint();
 		return 0;
@@ -244,6 +246,10 @@ bool WinBase::onCreate(CREATESTRUCT* pcs){
 
 bool WinBase::onDestroy(){
 	return true;
+}
+
+bool WinBase::onEraseBackground(HDC hdc){
+	return ::DefWindowProcA(*this, WM_ERASEBKGND, reinterpret_cast<WPARAM>(hdc), 0);
 }
 
 void WinBase::onPaint(){

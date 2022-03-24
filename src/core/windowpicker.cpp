@@ -116,7 +116,7 @@ protected:
             Gdiplus::Pen pen(Gdiplus::Color::Yellow, 32.0);
             pen.SetAlignment(Gdiplus::PenAlignment::PenAlignmentInset);
             graphics.DrawRectangle(
-                &pen, hilighting->x, hilighting->y, hilighting->width, hilighting->height);
+                &pen, hilighting->x - rect.x, hilighting->y - rect.y, hilighting->width, hilighting->height);
         }
 
         POINT position{rect.x, rect.y};
@@ -175,9 +175,16 @@ public:
         // This is based on dirty huristic rules:
         //    - exclude windows that width / height ratio is huge
         //    - exclude all layered window since I couldn't find a way to find actual non visible layered window
-        //    - exclude the next window avobe the desktop window because it should be shell desktop window
+        //    - exclude same geometory with desktop window
         //
         auto desktop = ::GetDesktopWindow();
+        RECT temp_rect;
+        ::GetWindowRect(desktop, &temp_rect);
+        IntRect desktop_rect = {
+            temp_rect.left, temp_rect.top,
+            temp_rect.right - temp_rect.left,
+            temp_rect.bottom - temp_rect.top
+        };
         auto window = ::GetTopWindow(nullptr);
         while ((window = ::GetWindow(window, GW_HWNDNEXT)) != nullptr && window != desktop){
             auto is_visible = ::IsWindowVisible(window);
@@ -192,14 +199,12 @@ public:
             if (is_visible && !is_cloaked && !is_layered &&
                 window != app_wnd &&
                 rect.width > 0 && rect.height > 0 &&
-                max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO){
+                max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO &&
+                desktop_rect != rect){
                 char buf[512];
                 ::GetWindowTextA(window, buf, sizeof(buf));
                 window_defs.emplace_back(window, rect, buf);
             }
-        }
-        if (window_defs.size() > 0) {
-            window_defs.pop_back();
         }
     }
 

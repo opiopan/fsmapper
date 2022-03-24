@@ -80,7 +80,7 @@ void ViewPort::View::show(ViewPort& viewport){
         FloatRect region;
         element->transform_to_output_region(viewport.get_output_region(), region);
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
-        element->get_object().change_window_pos(iregion, HWND_TOP, true);
+        element->get_object().change_window_pos(iregion, HWND_TOP, true, viewport.get_background_clolor());
     }
 }
 

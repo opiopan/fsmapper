@@ -224,6 +224,15 @@ struct RectangleBase{
         return *this;
     };
 
+    bool operator == (const RectangleBase& src) const{
+        return x == src.x && y == src.y && width == src.width && height == src.height;
+    }
+
+    bool operator != (const RectangleBase& src) const{
+        return !(*this == src);
+    }
+
+
     bool pointIsInRectangle(T tx, T ty){
         return tx >= x && tx <= x + width &&
                ty >= y && ty <= y + height;

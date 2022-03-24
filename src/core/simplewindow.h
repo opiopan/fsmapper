@@ -101,6 +101,7 @@ protected:
 
 	virtual bool onCreate(CREATESTRUCT* pcs);
 	virtual bool onDestroy();
+	virtual bool onEraseBackground(HDC hdc);
 	virtual void onPaint();
 };
 

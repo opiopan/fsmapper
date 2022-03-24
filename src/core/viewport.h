@@ -79,27 +79,43 @@ protected:
         int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
     };
 
+public:
     static constexpr auto bg_window_class_name = "mapper_viewport_bg_window";
     class BackgroundWindow: public SimpleWindow<bg_window_class_name>{
     protected:
         using parent_class = SimpleWindow<bg_window_class_name>;
         COLORREF bgcolor;
+        GdiObject<HBRUSH> bgbrush;
     public:
         BackgroundWindow(const WinDispatcher& dispatcher = WinDispatcher::sharedDispatcher()):SimpleWindow(dispatcher){};
         virtual ~BackgroundWindow() = default;
+        void start(){
+            create();
+        }
         void start(COLORREF bgcolor, const IntRect& rect, HWND hWndInsertAfter = nullptr){
             this->bgcolor = bgcolor;
+            bgbrush = CreateSolidBrush(bgcolor);
             create();
             ::SetWindowPos(*this, hWndInsertAfter ? hWndInsertAfter : HWND_TOP, rect.x, rect.y, rect.width, rect.height, 0);
         };
         void stop(){destroy();};
         void show(){showWindow(SW_SHOW);}
+        void show(COLORREF bgcolor, const IntRect& rect, HWND hWndInsertAfter = nullptr){
+            if (this->bgcolor != bgcolor){
+                this->bgcolor = bgcolor;
+                bgbrush = CreateSolidBrush(bgcolor);
+            }
+            ::SetWindowPos(*this, hWndInsertAfter ? hWndInsertAfter : HWND_TOP, rect.x, rect.y, rect.width, rect.height, 0);
+            showWindow(SW_SHOW);
+        }
         void hide(){showWindow(SW_HIDE);}
     protected:
-        virtual void preRegisterClass(WNDCLASSEXA& wc) override{
-            parent_class::preRegisterClass(wc);
-            wc.hbrBackground = CreateSolidBrush(bgcolor);
-        };
+        bool onEraseBackground(HDC hdc) override{
+            RECT rect;
+            ::GetClientRect(*this, &rect);
+            ::FillRect(hdc, &rect, bgbrush);
+            return true;
+        }
     };
 
 protected:
@@ -144,6 +160,7 @@ public:
 
     // functions for views
     const IntRect& get_output_region() const {return region;};
+    COLORREF get_background_clolor() const {return bg_color;}
 };
 
 class MapperEngine;
