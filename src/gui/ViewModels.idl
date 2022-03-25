@@ -43,4 +43,11 @@ namespace gui.ViewModels{
 
         void ToggleViewport(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
+
+    runtimeclass ConsolePageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
+        ConsolePageViewModel();
+
+        gui.Models.Mapper Mapper{get;};
+        void EraseLog(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+    }
 }

@@ -141,6 +141,7 @@
     <ClInclude Include="Utilities\config.hpp" />
     <ClInclude Include="Utilities\encoding.hpp" />
     <ClInclude Include="Utilities\tools.hpp" />
+    <ClInclude Include="ViewModels.ConsolePageViewModel.h" />
     <ClInclude Include="ViewModels.DashboardPageViewModel.h" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
     <ClInclude Include="WindowPickerDialog.h">
@@ -185,6 +186,7 @@
     </ClCompile>
     <ClCompile Include="Utilities\appfs.cpp" />
     <ClCompile Include="Utilities\config.cpp" />
+    <ClCompile Include="ViewModels.ConsolePageViewModel.cpp" />
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp" />
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
     <ClCompile Include="WindowPickerDialog.cpp">

@@ -33,6 +33,8 @@ static constexpr auto property_devices            = 1 << 5;
 static constexpr auto property_viewport_is_active = 1 << 6;
 static constexpr auto property_viewports          = 1 << 7;
 static constexpr auto property_captured_windows   = 1 << 8;
+static constexpr auto property_event_msg_enabled  = 1 << 9;
+static constexpr auto property_debug_msg_enabled  = 1 << 10;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -44,6 +46,8 @@ static const wchar_t* property_names[] = {
     L"ViewportIsActive",
     L"Viewports",
     L"CapturedWindows",
+    L"EventMessageIsEnabled",
+    L"DebugMessageIsEnabled",
     nullptr
 };
 
@@ -99,6 +103,7 @@ namespace winrt::gui::Models::implementation{
                     break;
                 }
                 tools::utf16_to_utf8_translator path(script_path.c_str());
+                set_log_mode();
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();
@@ -320,6 +325,29 @@ namespace winrt::gui::Models::implementation{
     Mapper::MessageCollection Mapper::Messages(){
         std::lock_guard lock{mutex};
         return messages;
+    }
+
+    bool Mapper::EventMessageIsEnabled(){
+        std::lock_guard lock{mutex};
+        return event_message_is_enabled;
+    }
+    void Mapper::EventMessageIsEnabled(bool value){
+        std::lock_guard lock{mutex};
+        event_message_is_enabled = value;
+        dirty_properties |= property_event_msg_enabled;
+        cv.notify_all();
+        set_log_mode();
+    }
+    bool Mapper::DebugMessageIsEnabled(){
+        std::lock_guard lock{mutex};
+        return debug_message_is_enabled;
+    }
+    void Mapper::DebugMessageIsEnabled(bool value){
+        std::lock_guard lock{mutex};
+        debug_message_is_enabled = value;
+        dirty_properties |= property_debug_msg_enabled;
+        cv.notify_all();
+        set_log_mode();
     }
 
     //============================================================================================

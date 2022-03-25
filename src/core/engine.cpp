@@ -157,6 +157,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         //-------------------------------------------------------------------------------
         // create environment for lua script
         //-------------------------------------------------------------------------------
+        putLog(MCONSOLE_INFO, "mapper-core: start mapping");
         initScriptingEnv();
 
         //-------------------------------------------------------------------------------

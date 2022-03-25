@@ -8,10 +8,12 @@ namespace winrt::gui::implementation
     {
         ConsolePage();
 
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
+        winrt::gui::ViewModels::ConsolePageViewModel ViewModel() {
+            return view_model;
+        }
 
-        void myButton_Click(Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+    protected:
+        winrt::gui::ViewModels::ConsolePageViewModel view_model{ nullptr };
     };
 }
 

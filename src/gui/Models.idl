@@ -72,6 +72,8 @@ namespace gui.Models{
         Windows.Foundation.Collections.IVector<Device> Devices{get;};
         MappingsStat MappingsInfo{get;};
         Windows.Foundation.Collections.IObservableVector<Message> Messages{get;};
+        Boolean EventMessageIsEnabled;
+        Boolean DebugMessageIsEnabled;
 
         Microsoft.UI.Xaml.Media.ImageSource NullWindowImage{get;};
 

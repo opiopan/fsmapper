@@ -30,15 +30,15 @@
                     <SolidColorBrush x:Key="MessageColorDebug" Color="{ThemeResource SystemColorGrayTextColor}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="CapturedWindowButtonCaptured" Color="SkyBlue"/>
-                    <SolidColorBrush x:Key="CapturedWindowButtonUncaptured" Color="{ThemeResource SystemColorButtonFaceColor}"/>
+                    <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="SkyBlue"/>
+                    <SolidColorBrush x:Key="CapturedWindowButtonTitleUncaptured" Color="{ThemeResource SystemColorButtonFaceColor}"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTextCaptured" Color="{ThemeResource SystemColorButtonTextColor}"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTextUncaptured" Color="{ThemeResource SystemColorGrayTextColor}"/>
-                    <SolidColorBrush x:Key="MessageColorError" Color="Red"/>
+                    <SolidColorBrush x:Key="MessageColorError" Color="#f04040"/>
                     <SolidColorBrush x:Key="MessageColorWarning" Color="#ffff00"/>
-                    <SolidColorBrush x:Key="MessageColorInfo" Color="#00ff00"/>
-                    <SolidColorBrush x:Key="MessageColorMessage" Color="{ThemeResource SystemColorButtonTextColor}"/>
-                    <SolidColorBrush x:Key="MessageColorDebug" Color="{ThemeResource SystemColorGrayTextColor}"/>
+                    <SolidColorBrush x:Key="MessageColorInfo" Color="#00c000"/>
+                    <SolidColorBrush x:Key="MessageColorMessage" Color="#ffffff"/>
+                    <SolidColorBrush x:Key="MessageColorDebug" Color="#b0b0b0"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

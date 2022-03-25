@@ -317,6 +317,10 @@ namespace winrt::gui::Models::implementation{
         DeviceCollection Devices();
         winrt::gui::Models::MappingsStat MappingsInfo();
         MessageCollection Messages();
+        bool EventMessageIsEnabled();
+        void EventMessageIsEnabled(bool value);
+        bool DebugMessageIsEnabled();
+        void DebugMessageIsEnabled(bool value);
 
         winrt::Microsoft::UI::Xaml::Media::ImageSource NullWindowImage();
 
@@ -355,6 +359,8 @@ namespace winrt::gui::Models::implementation{
         DeviceCollection devices {nullptr};
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
         MessageCollection messages {nullptr};
+        bool event_message_is_enabled{false};
+        bool debug_message_is_enabled{true};
 
         std::mutex message_mutex;
         std::condition_variable message_cv;
@@ -398,6 +404,12 @@ namespace winrt::gui::Models::implementation{
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler_proc();
         Windows::Foundation::IAsyncOperation<int32_t> message_reader_proc();
+
+        void set_log_mode(){
+            auto mode = (event_message_is_enabled ? MAPPER_LOG_EVENT : 0) |
+                        (debug_message_is_enabled ? MAPPER_LOG_DEBUG : 0);
+            mapper_setLogMode(mapper, mode);
+        }
     };
 }
 

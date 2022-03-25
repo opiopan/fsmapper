@@ -7,8 +7,38 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock>Console Page is not implemented yet</TextBlock>
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid Grid.RowDefinitions="*, Auto" Grid.ColumnDefinitions="*" RowSpacing="12">
+        <ListView Grid.Row="0" Grid.Column="0"
+                  HorizontalAlignment="Stretch"
+                  Background="{StaticResource SystemChromeMediumLowColor}"
+                  ItemsSource="{x:Bind ViewModel.Mapper.Messages, Mode=OneWay}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:Models.Message">
+                    <Grid Grid.ColumnDefinitions="70,*"  Margin="0, 0, 0, 8">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Top"
+                                   Text="{x:Bind TypeString}"
+                                   Foreground="{x:Bind TypeColor}"/>
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Top"
+                                   Text="{x:Bind Text}"
+                                   Foreground="{x:Bind TypeColor}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            
+        </ListView>
+        <StackPanel Grid.Row="1" Grid.Column="0"
+                    Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="12">
+            <CheckBox Content="Show Events"
+                      IsChecked="{x:Bind ViewModel.Mapper.EventMessageIsEnabled, Mode=TwoWay}"/>
+            <CheckBox Content="Show Debug Messages"
+                      IsChecked="{x:Bind ViewModel.Mapper.DebugMessageIsEnabled, Mode=TwoWay}"/>
+            <Button Content="Erase Log" Click="{x:Bind ViewModel.EraseLog}"/>
+        </StackPanel>
+    </Grid>
 </Page>
