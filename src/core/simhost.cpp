@@ -3,6 +3,8 @@
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 
+#include <sstream>
+
 #include "engine.h"
 #include "simhost.h"
 #include "fs2020.h"
@@ -72,10 +74,13 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                 }
             }
             if (activeSim != oldActiveSim || activeSim == msg.simid){
+                std::ostringstream os;
+                os << "simhost: ";
                 if (activeSim == -1){
                     this->engine.sendEvent(std::move(Event(this->event_changeAircraft, std::move(Event::AssosiativeArray()))));
                     this->engine.sendHostEvent(MEV_CHANGE_SIMCONNECTION, MAPPER_SIM_NONE);
                     this->engine.sendHostEvent(MEV_CHANGE_AIRCRAFT, reinterpret_cast<int64_t>(""));
+                    os << "connection with flight simulator has been loast";
                 }else{
                     Event event(this->event_changeAircraft, std::move(Event::AssosiativeArray{
                         {"host", std::move(EventValue(simname_dict[activeSim]))},
@@ -84,7 +89,14 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     this->engine.sendEvent(std::move(event));
                     this->engine.sendHostEvent(MEV_CHANGE_SIMCONNECTION, simkind_dict[activeSim]);
                     this->engine.sendHostEvent(MEV_CHANGE_AIRCRAFT, reinterpret_cast<int64_t>(newConnectivity.aircraftName.c_str()));
+                    if (newConnectivity.aircraftName.length()){
+                        os << "changed aircraft: [sim] " << simname_dict[activeSim];
+                        os << ",  [aircraft] " << newConnectivity.aircraftName.c_str();
+                    }else{
+                        os << "connection with sim has been established: [sim] " << simname_dict[activeSim];
+                    }
                 }
+                this->engine.putLog(MCONSOLE_INFO, os.str());
             }
             lock.lock();
         }

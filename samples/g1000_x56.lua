@@ -1,6 +1,3 @@
-tmod = require("test_module")
-tmod.print_package_path()
-
 g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",
@@ -364,15 +361,6 @@ mapper.set_primery_mappings({
         else
             joymap.base = joymap_noab
             update_secondary_mappings()
-        end
-        if value.host then
-            if value.aircraft then
-                mapper.print("    [sim]: "..value.host.." [aircraft]: "..value.aircraft) 
-            else
-                mapper.print("    [sim]: "..value.host.." [aircraft]:") 
-            end
-        else
-            mapper.print("    [sim]: disconnected")
         end
     end},
 

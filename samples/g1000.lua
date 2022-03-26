@@ -205,16 +205,3 @@ viewport:add_mappings({
 })
 
 mapper.start_viewports()
-mapper.set_primery_mappings({
-    {event=mapper.events.change_aircraft, action=function (event, value)
-        if value.host then
-            if value.aircraft then
-                mapper.print("    [sim]: "..value.host.." [aircraft]: "..value.aircraft) 
-            else
-                mapper.print("    [sim]: "..value.host.." [aircraft]:") 
-            end
-        else
-            mapper.print("    [sim]: disconnected")
-        end
-    end},
-})

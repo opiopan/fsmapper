@@ -18,6 +18,9 @@ namespace winrt::gui::ViewModels::implementation{
         ~DashboardPageViewModel();
 
         winrt::gui::Models::Mapper Mapper(){return mapper;}
+        bool NormalViewIsVisible(){return normal_view_is_visible;}
+        bool StopViewIsVisible(){return stop_view_is_visible;}
+        bool ErrorViewIsVisible(){return error_view_is_visible;}
         bool SimIconIsVisible(){return sim_icon_is_visible;}
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource(){
             return logo_images[static_cast<int>(sim_type)];
@@ -57,6 +60,9 @@ namespace winrt::gui::ViewModels::implementation{
         winrt::event_token token_for_captured_windows;
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[3];
 
+        bool normal_view_is_visible{false};
+        bool stop_view_is_visible{true};
+        bool error_view_is_visible{false};
         bool sim_icon_is_visible;
         winrt::gui::Models::Simulators sim_type;
         std::wstring sim_name;
@@ -102,6 +108,7 @@ namespace winrt::gui::ViewModels::implementation{
             property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
         }
 
+        void reflect_mapper_Status();
         void reflect_mapper_ActiveSim();
         void reflect_mapper_AircraftName();
         void reflect_mapper_MappingsInfo();

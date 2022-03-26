@@ -123,6 +123,9 @@ public:
 
     void putLog(MCONSOLE_MESSAGE_TYPE mtype, const std::string& msg){
         if (!callback_is_inhibited){
+            if (mtype == MCONSOLE_DEBUG && !(logmode & MAPPER_LOG_DEBUG)){
+                return;
+            }
             logger(mtype, msg);
         }
     };

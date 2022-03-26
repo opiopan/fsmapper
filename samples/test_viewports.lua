@@ -22,7 +22,7 @@ local mfd_maps = {
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = 1,
-    x = 0.6, y = 0.75 / 2,
+    x = 1, y = 1,
     width = 0.25, height = 0.25,
     bgcolor = "Green",
 })
@@ -56,13 +56,6 @@ mapper.start_viewports()
 
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
-        if value.aircraft == "Airbus A320 Neo FlyByWire" then
-            joymap.base = joymap_full
-            update_secondary_mappings()
-        else
-            joymap.base = joymap_noab
-            update_secondary_mappings()
-        end
         if value.host then
             if value.aircraft then
                 mapper.print("    [sim]: "..value.host.." [aircraft]: "..value.aircraft) 

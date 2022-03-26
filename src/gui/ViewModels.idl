@@ -19,6 +19,9 @@ namespace gui.ViewModels{
         DashboardPageViewModel();
 
         gui.Models.Mapper Mapper{get;};
+        Boolean NormalViewIsVisible{get;};
+        Boolean StopViewIsVisible{get;};
+        Boolean ErrorViewIsVisible{get;};
         Boolean SimIconIsVisible{get;};
         Microsoft.UI.Xaml.Media.Imaging.BitmapImage SimIconSource{get;};
         String SimString{get;};

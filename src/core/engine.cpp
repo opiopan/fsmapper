@@ -157,7 +157,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         //-------------------------------------------------------------------------------
         // create environment for lua script
         //-------------------------------------------------------------------------------
-        putLog(MCONSOLE_INFO, "mapper-core: start mapping");
+        putLog(MCONSOLE_INFO, "mapper-core: start event-action mapping");
         initScriptingEnv();
 
         //-------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                 if (ev->getId() == static_cast<int64_t>(EventID::STOP)){
                     status = Status::stop;
                     lock.unlock();
-                    putLog(MCONSOLE_INFO, "mapper-core: a request to stopp mapping has been received");
+                    putLog(MCONSOLE_INFO, "mapper-core: a request to stopp event-action mapping has been received");
                     lock.lock();
                     break;
                 }
@@ -210,7 +210,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                     event.names.count(ev->getId()) > 0){
                     auto &name = event.names.at(ev->getId());
                     std::ostringstream os;
-                    os << "Event occurred: " << name;
+                    os << name;
                     if (ev->getType() == Event::Type::int_value){
                         os << "(" << ev->getAs<int64_t>() << ")";
                     }
@@ -218,7 +218,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                         os << " -> " << action->getName();
                     }
                     lock.unlock();
-                    putLog(MCONSOLE_INFO, os.str());
+                    putLog(MCONSOLE_EVENT, os.str());
                     lock.lock();
                 }
 
@@ -239,7 +239,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                     std::ostringstream os;
                     os << "Deferred action execution: " << action->getName();
                     lock.unlock();
-                    putLog(MCONSOLE_INFO, os.str());
+                    putLog(MCONSOLE_EVENT, os.str());
                     lock.lock();
                 }
                 lock.unlock();

@@ -258,6 +258,8 @@ namespace winrt::gui::Models::implementation{
                 type_string = L"MESSAGE";
             }else if (type == winrt::gui::Models::MessageType::debug){
                 type_string = L"DEBUG";
+            }else if (type == winrt::gui::Models::MessageType::events){
+                type_string = L"EVENT";
             }
         }
 
@@ -274,6 +276,8 @@ namespace winrt::gui::Models::implementation{
                 key = L"MessageColorMessage";
             }else if (type == winrt::gui::Models::MessageType::debug){
                 key = L"MessageColorDebug";
+            }else if (type == winrt::gui::Models::MessageType::events){
+                key = L"MessageColorEvent";
             }
             auto value = tools::ThemeResource(key);
             return value.as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>();
@@ -360,7 +364,7 @@ namespace winrt::gui::Models::implementation{
         winrt::gui::Models::MappingsStat mappings_info{nullptr};
         MessageCollection messages {nullptr};
         bool event_message_is_enabled{false};
-        bool debug_message_is_enabled{true};
+        bool debug_message_is_enabled{false};
 
         std::mutex message_mutex;
         std::condition_variable message_cv;

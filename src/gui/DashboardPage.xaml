@@ -7,127 +7,177 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Page.Resources></Page.Resources>
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="StopViewTextColor" Color="#808080"/>
+                    <SolidColorBrush x:Key="ErrorViewTextColor" Color="#f04040"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="StopViewTextColor" Color="#c0c0c0"/>
+                    <SolidColorBrush x:Key="ErrorViewTextColor" Color="#f08080"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="320"/>
-        </Grid.ColumnDefinitions>
+            <Style x:Key="StopViewText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="26"/>
+                <Setter Property="Foreground" Value="{ThemeResource StopViewTextColor}"/>
+            </Style>
+            <Style x:Key="ErrorViewText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="26"/>
+                <Setter Property="Foreground" Value="{ThemeResource ErrorViewTextColor}"/>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
 
-        <!-- Connected simulator pane-->
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
+
+    <Grid Grid.RowDefinitions="*" Grid.ColumnDefinitions="*">
+        <!--=======================================================================
+          Stop View: show when mapper is in stop state
+        ========================================================================-->
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   Style="{StaticResource StopViewText}"
+                   Visibility="{x:Bind ViewModel.StopViewIsVisible, Mode=OneWay}">
+            Event-Action mapping is stopped.<LineBreak/>
+            Select a Lua script which defines event-action mapping rules, then press the Run button.
+        </TextBlock>
+
+        <!--=======================================================================
+          Error View: show when mapper is in error state
+        ========================================================================-->
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   Style="{StaticResource ErrorViewText}"
+                   Visibility="{x:Bind ViewModel.ErrorViewIsVisible, Mode=OneWay}">
+            An error occured while event-action mapping processing.<LineBreak/>
+            Regarding the detail, refer to the error messages at the message console page.
+        </TextBlock>
+
+        <!--=======================================================================
+          Normal View: show when mapper is in running state
+        ========================================================================-->
+        <Grid Visibility="{x:Bind ViewModel.NormalViewIsVisible, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Connected simulator pane-->
+            <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
                     Background="{StaticResource SystemChromeMediumLowColor}"
                     Height="54"  VerticalAlignment="Center"
                     CornerRadius="10" Padding="12, 0, 12, 0">
-            <TextBlock FontSize="24" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
-            <Image Visibility="{x:Bind ViewModel.SimIconIsVisible, Mode=OneWay}"
+                <TextBlock FontSize="24" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
+                <Image Visibility="{x:Bind ViewModel.SimIconIsVisible, Mode=OneWay}"
                    Source="{x:Bind ViewModel.SimIconSource, Mode=OneWay}"
                    Height="26" Margin="16, 0, 0, 0"/>
-            <TextBlock Margin="16, 0, 0, 0" VerticalAlignment="Center"
+                <TextBlock Margin="16, 0, 0, 0" VerticalAlignment="Center"
                        Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
-        </StackPanel>
+            </StackPanel>
 
-        <!-- Viewport pane-->
-        <Grid Grid.Row="1" Grid.RowDefinitions="Auto, Auto, Auto, Auto, *"
+            <!-- Viewport pane-->
+            <Grid Grid.Row="1" Grid.RowDefinitions="Auto, Auto, Auto, Auto, *"
               Background="{StaticResource SystemChromeMediumLowColor}"
               CornerRadius="10"
               Margin="0,16,8,0"
               Padding="12, 8, 12, 12">
-            <Grid Grid.Row="0" Grid.ColumnDefinitions="Auto,*,Auto">
-                <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
-                <Button Grid.Column="2"
+                <Grid Grid.Row="0" Grid.ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
+                    <Button Grid.Column="2"
                         Content="{x:Bind ViewModel.ViewportButtonText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.ViewportButtonIsEnabled, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.ViewportButtonIsVisible, Mode=OneWay}"
                         Click="{x:Bind ViewModel.ToggleViewport}"/>
-            </Grid>
+                </Grid>
 
-            <TextBlock Grid.Row="1" FontWeight="Bold" Margin="0,12,0,0"
+                <TextBlock Grid.Row="1" FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.ViewportSummary, Mode=OneWay}"/>
-            <TextBlock Grid.Row="2" LineHeight="22" Margin="20,4,0,0"
+                <TextBlock Grid.Row="2" LineHeight="22" Margin="20,4,0,0"
                        Visibility="{x:Bind ViewModel.ViewportDetailIsVisible, Mode=OneWay}"
                        Text="{x:Bind ViewModel.ViewportDetail, Mode=OneWay}"/>
 
-            <TextBlock Grid.Row="3" FontWeight="Bold" Margin="0,24,0,8"
+                <TextBlock Grid.Row="3" FontWeight="Bold" Margin="0,24,0,8"
                        Text="{x:Bind ViewModel.CapturedWindowsSummary, Mode=OneWay}"
                        Visibility="{x:Bind ViewModel.CapturedWindowsIsVisible, Mode=OneWay}"/>
 
-            <ScrollViewer Grid.Row="4" Margin="20,4,0,0">
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Mapper.CapturedWindows, Mode=OneWay}">
-                    <DataTemplate x:DataType="local:Models.CapturedWindow">
-                        <Button Height="76" HorizontalAlignment="Stretch"
+                <ScrollViewer Grid.Row="4" Margin="20,4,0,0">
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Mapper.CapturedWindows, Mode=OneWay}">
+                        <DataTemplate x:DataType="local:Models.CapturedWindow">
+                            <Button Height="76" HorizontalAlignment="Stretch"
                                 CornerRadius="10"
                                 HorizontalContentAlignment="Left"
                                 Padding="12, 0, 12, 0" Margin="0, 0, 0, 12"
                                 IsEnabled="{x:Bind ButtonIsEnabled, Mode=OneWay}"
                                 Click="{x:Bind ToggleCapture}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{x:Bind Image, Mode=OneWay}"
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{x:Bind Image, Mode=OneWay}"
                                        Width="80" Height="60" Margin="0, 0, 12, 0"/>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Name}" FontWeight="Bold"
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Name}" FontWeight="Bold"
                                                Foreground="{x:Bind ButtonTitleColor, Mode=OneWay}"/>
-                                    <TextBlock Text="{x:Bind StatusString, Mode=OneWay}" Margin="10,0,0,0"
+                                        <TextBlock Text="{x:Bind StatusString, Mode=OneWay}" Margin="10,0,0,0"
                                                Foreground="{x:Bind ButtonTextColor, Mode=OneWay}"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
-                        </Button>
-                    </DataTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </Grid>
 
-        <!-- Stack for the other informations-->
-        <ScrollViewer Grid.Row="1" Grid.Column="1">
-            <StackPanel Orientation="Vertical"
+            <!-- Stack for the other informations-->
+            <ScrollViewer Grid.Row="1" Grid.Column="1">
+                <StackPanel Orientation="Vertical"
                         Margin="8,16,0,0">
 
-                <!-- Device pane-->
-                <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
+                    <!-- Device pane-->
+                    <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
                             Visibility="Visible"
                             CornerRadius="10"
                             Padding="12, 8, 12, 12"
                             Margin="0,0,0,16">
-                    <TextBlock FontSize="24">Devices</TextBlock>
-                    <TextBlock FontWeight="Bold" Margin="0,12,0,0"
+                        <TextBlock FontSize="24">Devices</TextBlock>
+                        <TextBlock FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.DeviceSummary, Mode=OneWay}"/>
-                    <TextBlock LineHeight="22" Margin="20,4,0,0"
+                        <TextBlock LineHeight="22" Margin="20,4,0,0"
                                Visibility="{x:Bind ViewModel.DeviceDetailIsVisible, Mode=OneWay}"
                                Text="{x:Bind ViewModel.DeviceDetail, Mode=OneWay}"/>
-                </StackPanel>
+                    </StackPanel>
 
-                <!-- Mappings pane-->
-                <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
+                    <!-- Mappings pane-->
+                    <StackPanel Background="{StaticResource SystemChromeMediumLowColor}"
                             CornerRadius="10"
                             Padding="12, 8, 12, 12"
                             Margin="0,0,0,16">
-                    <TextBlock FontSize="24">Mapping definitions</TextBlock>
-                    <TextBlock FontWeight="Bold" Margin="0,12,0,0"
+                        <TextBlock FontSize="24">Mapping definitions</TextBlock>
+                        <TextBlock FontWeight="Bold" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.MappingsSummary, Mode=OneWay}"/>
-                    <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"
+                        <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"
                           Visibility="{x:Bind ViewModel.MappingsDetailIsVisible, Mode=OneWay}">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primery) :"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primery) :"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>
 
-                        <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" 
+                            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" 
                                    Text="{x:Bind ViewModel.MappingsDetailPrimery, Mode=OneWay}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
                                    Text="{x:Bind ViewModel.MappingsDetailSecondary, Mode=OneWay}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"
                                    Text="{x:Bind ViewModel.MappingsDetailViewports, Mode=OneWay}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"
                                    Text="{x:Bind ViewModel.MappingsDetailViews, Mode=OneWay}"/>
-                    </Grid>
+                        </Grid>
 
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

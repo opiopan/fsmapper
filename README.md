@@ -12,7 +12,11 @@ fsmapper allow to:
 
 The above functions are configuread flexibly by writing a Lua scrip.
 
-## How to build
+<p align="center">
+<img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=700>
+</p>
+
+## How to build and install
 1. **Requirements**<br>
 Make sure that the following softwares are installed in advance.
     - Visual Studio 2019 or 2022 whilch is instaled with folowing workloads:
@@ -48,15 +52,41 @@ The one of easiest way is using the following shortcut made when Visual Studio w
     $ nuget restore fsmapper.sln
     $ msbuild /p:Configuration=Release
     ```
+5. **Making deployable package**
+    ```shell
+    $ cd ..\deploy
+    $ .\deploy.bat
+    ```
 
-## Running fsmapper
-The core module as DLL to handle device operation and mapping those event to the flight simulator driven by Lua script is almost implemeted. However the GUI for this software has not been implemented yet so far.<br>
-I  made a mockup CLI module instead the GUI in order to test the core engine.<br>
-This mockup utility can be launched with Lua script path as below.
+6. **Installing**<br>
+    Copy fsmmapper folder to any folder you want.
+    ```shell
+    $ xcopy fsmapper <DESTINATION_FOLDER_PATH>
+    ```
+## How to use fsmapper
 
-```shell
-$ src\x64\Release\testmock.exe samples\g1000.lua
-```
+### Configuration file = Lua scrip
+To briefly describe the function of fsmapper is that waiting event such as position change of the joystick axis then invoking the action corrensponds to the occured event.<br> 
+The rule of mapping between the events and the actions is described by [Lua 5.4](https://www.lua.org/manual/5.4/manual.html) script.
+The executable file of fsmapper, fsmapper.exe, provides GUI. However fsmapper has no capability to set of edit the event-action mapping rules. It just can behave like a dashboard to show the condition and state of event-action mapping process.<br>
+Therefore, the first thing you have to do is writing a configuration file by Lua script.
+
+I haven't writen the specification of this configuration file yet but some examples are pleaced [here](samples).
+
+### Running fsmapper
+The first time of launching fsmapper, you need to specify the configuration Lua script file by press the open button located to the left of the Run button. After that start event-action mapping process by press the Run button.<br>
+At the second and subsequent famapper launches, same script file will be executed automatically.
+
+### Captured window
+fsmapper has a function to controll visibility and position of any window ownd by other process. This function is designed to enable a display as multipurpose, especially to handle fs2020 puped out instrument window like [this movie](https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/movie.gif).
+
+Those windows controlled by fsmapper are called "captured window" and those are specified by ```mapper.captured_window()``` function in Lua script.<br>
+Unfortunately, FS2020 SDK does not allow to controll poped out window and does not provide a way to recognize the difference between poped out windows. From fsmapper point of view, all FS2020 poped out windows looks same.<br>
+So Lua script defines just placefolder, You need to specify which actual window corresponds to captured window definition at run time as below.
+
+<p align="center">
+<img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
+</p>
 
 ## Convenient Software
 The SimConnect SDK of Flight Simulator 2020 defines many [EVENT IDs](https://docs.flightsimulator.com/html/index.htm#t=Programming_Tools%2FSimVars%2FEvent_IDs.htm) to interact with the guages and panels of aircraft. 

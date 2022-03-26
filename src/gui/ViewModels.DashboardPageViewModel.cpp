@@ -31,7 +31,9 @@ namespace winrt::gui::ViewModels::implementation{
         mapper = App::Mapper();
         token_for_mapper = mapper.PropertyChanged([this](auto const&, auto const& args){
             auto name = args.PropertyName();
-            if (name == L"ActiveSim"){
+            if (name == L"Status"){
+                reflect_mapper_Status();
+            }else if (name == L"ActiveSim"){
                 reflect_mapper_ActiveSim();
             }else if (name == L"AircraftName"){
                 reflect_mapper_AircraftName();
@@ -51,6 +53,7 @@ namespace winrt::gui::ViewModels::implementation{
             reflect_mapper_ViewportOperability();
         });
 
+        reflect_mapper_Status();
         reflect_mapper_ActiveSim();
         reflect_mapper_AircraftName();
         reflect_mapper_MappingsInfo();
@@ -80,6 +83,14 @@ namespace winrt::gui::ViewModels::implementation{
     //============================================================================================
     // Reflecting model properties
     //============================================================================================
+    void DashboardPageViewModel::reflect_mapper_Status(){
+        using namespace gui::Models;
+        auto status = mapper.Status();
+        update_property(normal_view_is_visible, status == MapperStatus::running, L"NormalViewIsVisible");
+        update_property(stop_view_is_visible, status == MapperStatus::stop, L"StopViewIsVisible");
+        update_property(error_view_is_visible, status == MapperStatus::error, L"ErrorViewIsVisible");
+    }
+
     void DashboardPageViewModel::reflect_mapper_ActiveSim(){
         using namespace gui::Models;
         auto sim = mapper.ActiveSim();
