@@ -68,7 +68,7 @@ The one of easiest way is using the following shortcut made when Visual Studio w
 ### Configuration file = Lua scrip
 To briefly describe the function of fsmapper is that waiting event such as position change of the joystick axis then invoking the action corrensponds to the occured event.<br> 
 The rule of mapping between the events and the actions is described by [Lua 5.4](https://www.lua.org/manual/5.4/manual.html) script.
-The executable file of fsmapper, fsmapper.exe, provides GUI. However fsmapper has no capability to set of edit the event-action mapping rules. It just can behave like a dashboard to show the condition and state of event-action mapping process.<br>
+The executable file of fsmapper, fsmapper.exe, provides GUI. However fsmapper has no capability to edit the event-action mapping rules. It just can behave like a dashboard to show the condition and state of event-action mapping process.<br>
 Therefore, the first thing you have to do is writing a configuration file by Lua script.
 
 I haven't writen the specification of this configuration file yet but some examples are pleaced [here](samples).

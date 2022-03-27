@@ -59,6 +59,7 @@ namespace winrt::gui::ViewModels::implementation{
         reflect_mapper_ActiveSim();
         reflect_mapper_AircraftName();
         reflect_mapper_MappingsInfo();
+        reflect_mapper_Viewports();
         reflect_mapper_Devices();
         reflect_mapper_CapturedWindows();
         reflect_mapper_ViewportOperability();
