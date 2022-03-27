@@ -52,6 +52,7 @@ namespace tools{
         operator const STR_TO* () const noexcept {return buf;}
 
         int size(){return str_len;}
+        void clear(){str_len = 0;}
 
         bool translate(const STR_FROM* from){
             bool succeeded = false;

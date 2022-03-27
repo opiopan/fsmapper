@@ -19,6 +19,18 @@ local mfd_maps = {
     {event=g1000.EC1.decrement, action=fs2020.event_sender("Mobiflight.AS1000_MFD_VOL_1_DEC")},
 }
 
+x56stick_dev = mapper.device{
+    name = "X56 Stick",
+    type = "dinput",
+    identifier = {guid = "{81AF92D0-837D-11EB-8003-444553540000}"},
+}
+
+x56throttle_dev = mapper.device{
+    name = "X56 Throttle",
+    type = "dinput",
+    identifier = {index = 2},
+}
+
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = 1,

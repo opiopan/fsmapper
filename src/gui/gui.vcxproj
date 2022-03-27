@@ -94,7 +94,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;$(ProjectDir)..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fsmappercore.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -104,7 +104,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\Utilities;$(ProjectDir)..\core;$(ProjectDir)..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -139,7 +139,6 @@
     </ClInclude>
     <ClInclude Include="Utilities\appfs.hpp" />
     <ClInclude Include="Utilities\config.hpp" />
-    <ClInclude Include="Utilities\encoding.hpp" />
     <ClInclude Include="Utilities\tools.hpp" />
     <ClInclude Include="ViewModels.ConsolePageViewModel.h" />
     <ClInclude Include="ViewModels.DashboardPageViewModel.h" />

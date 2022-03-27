@@ -151,7 +151,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -178,7 +178,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.3\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

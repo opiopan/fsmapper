@@ -84,9 +84,6 @@
     <ClInclude Include="Utilities\config.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Utilities\encoding.hpp">
-      <Filter>Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="ViewModels.MainWindowViewModel.h">
       <Filter>ViewModels</Filter>
     </ClInclude>

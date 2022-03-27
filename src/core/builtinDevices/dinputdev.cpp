@@ -16,6 +16,7 @@
 #include <dinput.h>
 #include "dinputdev.h"
 #include "tools.h"
+#include "guid.hpp"
 
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -306,6 +307,7 @@ public:
 
 protected:
     std::string name;
+    GUID guid;
     FSMAPPER_HANDLE mapper;
     ComPtr<IDirectInputDevice8A> dinput_device;
     DeviceCaps device_caps;
@@ -325,9 +327,9 @@ public:
     DirectInputDevice& operator = (const DirectInputDevice&) = delete;
     DirectInputDevice& operator = (DirectInputDevice&&) = delete;
 
-    DirectInputDevice(const std::string& name, FSMAPPER_HANDLE mapper, IDirectInputDevice8A* dinput_device,
+    DirectInputDevice(const GUID& guid, const std::string& name, FSMAPPER_HANDLE mapper, IDirectInputDevice8A* dinput_device,
                       const DeviceCaps::NameList&& allowlist, const DeviceCaps::NameList&& denylist) : 
-        name(name), mapper(mapper), dinput_device(dinput_device), device_caps(std::move(allowlist), std::move(denylist)){
+        guid(guid), name(name), mapper(mapper), dinput_device(dinput_device), device_caps(std::move(allowlist), std::move(denylist)){
         event = ::CreateEventA(nullptr, true, false, nullptr);
         CallbackContext ctx = {*this, std::nullopt};
         dinput_device->EnumObjects(enum_object_callback, &ctx, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
@@ -357,6 +359,7 @@ public:
     void start(){running = true;}
     void stop(){running = false;}
 
+    const GUID& get_guid() const {return guid;}
     const std::string& get_name() const {return name;}
     HANDLE get_event() const {return event;}
     
@@ -440,29 +443,51 @@ public:
         dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enum_devices_callback, this, DIEDFL_ALLDEVICES);
     }
 
-    std::unique_ptr<DirectInputDevice> create_device(FSMAPPER_HANDLE mapper, const std::string& name,
-                                                     const DeviceCaps::NameList&& allowlist,
-                                                     const DeviceCaps::NameList&& denylist){
-        reflesh_ids();
+    const DIDEVICEINSTANCEA* find_device_id(const char* name){
         for (auto& id : device_ids){
-            if (name == id.tszInstanceName){
-                IDirectInputDevice8A* rawdev = nullptr;
-                auto hr = dinput->CreateDevice(id.guidInstance, &rawdev, nullptr);
-                if (!SUCCEEDED(hr)){
-                    throw std::runtime_error("failed to create a direct input devce");
-                }
-                return std::move(std::make_unique<DirectInputDevice>(
-                    name, mapper, rawdev, std::move(allowlist), std::move(denylist)));
+            if (strcmp(name, id.tszInstanceName) == 0){
+                return &id;
             }
         }
-        throw std::runtime_error("specified direct input device is not found");
+        return nullptr;
+    }
+
+    const DIDEVICEINSTANCEA* find_device_id(const GUID& guid){
+        for (auto& id : device_ids){
+            if (::IsEqualGUID(guid, id.guidInstance)){
+                return &id;
+            }
+        }
+        return nullptr;
+    }
+
+    const DIDEVICEINSTANCEA* find_device_id(int index){
+        if (index >= 0 && index < device_ids.size()){
+            return &device_ids[index];
+        }else{
+            return nullptr;
+        }
+    }
+
+    std::unique_ptr<DirectInputDevice> create_device(FSMAPPER_HANDLE mapper, const DIDEVICEINSTANCEA& device_id,
+                                                     const DeviceCaps::NameList&& allowlist,
+                                                     const DeviceCaps::NameList&& denylist){
+        IDirectInputDevice8A* rawdev = nullptr;
+        auto hr = dinput->CreateDevice(device_id.guidInstance, &rawdev, nullptr);
+        if (!SUCCEEDED(hr)){
+            throw std::runtime_error("failed to create a direct input devce");
+        }
+        return std::move(std::make_unique<DirectInputDevice>(
+            device_id.guidInstance, device_id.tszInstanceName, mapper, rawdev, std::move(allowlist), std::move(denylist)));
     }
 
     std::string to_string() const{
         std::ostringstream os;
         os << "detected " << device_ids.size() << " DirectInput gaming devices:";
+        tools::guid guid;
         for (auto& id : device_ids){
-            os << std::endl << "    " << id.tszInstanceName;
+            guid = id.guidInstance;
+            os << std::endl << "    " << guid << " : " << id.tszInstanceName;
         }
         return std::move(os.str());
     }
@@ -562,21 +587,24 @@ public:
         reader.join();
     }
 
+    DirectInput& get_dinput(){return dinput;}
+
     void stop(){
         std::unique_lock lock(mutex);
         should_stop = true;
         ::SetEvent(event);
     }
 
-    DirectInputDevice::MapperDevice* open_device(FSMDEVICE dev_handle, const std::string& name,
+    DirectInputDevice::MapperDevice* open_device(FSMDEVICE dev_handle, const DIDEVICEINSTANCEA& device_id,
                                                  const DeviceCaps::NameList&& allowlist,
                                                  const DeviceCaps::NameList&& denylist){
         std::unique_lock lock(mutex);
-        if (dinput_devices.count(name) == 0){
+        tools::guid guid(device_id.guidInstance);
+        if (dinput_devices.count(static_cast<const char*>(guid)) == 0){
             dinput_devices.emplace(
-                name, std::move(dinput.create_device(mapper, name, std::move(allowlist), std::move(denylist))));
+                guid, std::move(dinput.create_device(mapper, device_id, std::move(allowlist), std::move(denylist))));
         }
-        auto& dinput_device = dinput_devices.at(name);
+        auto& dinput_device = dinput_devices.at(static_cast<const char*>(guid));
         dinput_device->stop();
         auto mapper_device = dinput_device->add_mapper_device(dev_handle);
         mapper_devices.emplace(mapper_device, mapper_device);
@@ -598,7 +626,8 @@ public:
         auto& dinput_device = mapper_device->get_dinput_device();
         dinput_device.remove_mapper_device(mapper_device);
         if (dinput_device.get_mapper_device_num() == 0){
-            dinput_devices.erase(dinput_device.get_name());
+            tools::guid guid(dinput_device.get_guid());
+            dinput_devices.erase(static_cast<const char*>(guid));
             update_count++;
             ::SetEvent(event);
         }
@@ -634,8 +663,7 @@ static bool dinputdev_term(FSMAPPER_HANDLE handle){
     });
 }
 
-static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALUE identifier, LUAVALUE options)
-{
+static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALUE identifier, LUAVALUE options){
     auto make_list = [](LUAVALUE value){
         DeviceCaps::NameList list;
         if (luav_getType(value) == LV_TABLE){
@@ -655,21 +683,50 @@ static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALU
 
     return plugin_interface(handle, false, [handle, dev_handle, identifier, options, &make_list](){
         auto dinputdev = static_cast<DinputDev*>(fsmapper_getContext(handle));
+        dinputdev->get_dinput().reflesh_ids();
         auto name = luav_getItemWithKey(identifier, "name");
-        if (name){
+        auto guid = luav_getItemWithKey(identifier, "guid");
+        auto index = luav_getItemWithKey(identifier, "index");
+        const DIDEVICEINSTANCEA* device_id{nullptr};
+        if (!luav_isNull(name)){
             if (luav_getType(name) != LV_STRING){
-                throw std::runtime_error("\"name\" value for direct input device identifier must be string.");
+                throw std::runtime_error("\"name\" value for direct input device identifier must be string");
             }
-            auto&& denylist = make_list(luav_getItemWithKey(options, "denylist"));
-            auto&& allowlist = make_list(luav_getItemWithKey(options, "allowlist"));
-            if (denylist.size() > 0 && allowlist.size() > 0){
-                throw std::runtime_error("both of allowlist and denylist cannot be specified");
+            device_id = dinputdev->get_dinput().find_device_id(luav_asString(name));
+            if (!device_id){
+                throw std::runtime_error("direct input device which specified by \"name\" identifier is not found");
             }
-            auto device = dinputdev->open_device(dev_handle, luav_asString(name), std::move(allowlist), std::move(denylist));
-            fsmapper_setContextForDevice(handle, dev_handle, device);
-            return true;
+        }else if (!luav_isNull(guid)){
+            if (luav_getType(guid) != LV_STRING){
+                throw std::runtime_error("\"guid\" value for direct input device identifier must be string");
+            }
+            tools::guid id(luav_asString(guid));
+            device_id = dinputdev->get_dinput().find_device_id(static_cast<const GUID&>(id));
+            if (!device_id){
+                throw std::runtime_error("direct input device which specified by \"guid\" identifier is not found");
+            }
+        }else if (!luav_isNull(index)){
+            if (luav_getType(index) != LV_NUMBER){
+                throw std::runtime_error("\"guid\" value for direct input device identifier must be numeric");
+            }
+            device_id = dinputdev->get_dinput().find_device_id(luav_asInt(index));
+            if (!device_id){
+                throw std::runtime_error("direct input device which specified by \"index\" identifier is not found");
+            }
         }
-        throw std::runtime_error("\"name\" parameter must be specified for direct input device identifier");
+
+        if (!device_id){
+            throw std::runtime_error("no valid identifire for direct input device is specified");
+        }
+
+        auto&& denylist = make_list(luav_getItemWithKey(options, "denylist"));
+        auto&& allowlist = make_list(luav_getItemWithKey(options, "allowlist"));
+        if (denylist.size() > 0 && allowlist.size() > 0){
+            throw std::runtime_error("both of allowlist and denylist cannot be specified");
+        }
+        auto device = dinputdev->open_device(dev_handle, *device_id, std::move(allowlist), std::move(denylist));
+        fsmapper_setContextForDevice(handle, dev_handle, device);
+        return true;
     });
 }
 
