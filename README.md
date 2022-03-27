@@ -77,6 +77,13 @@ I haven't writen the specification of this configuration file yet but some examp
 The first time of launching fsmapper, you need to specify the configuration Lua script file by press the open button located to the left of the Run button. After that start event-action mapping process by press the Run button.<br>
 At the second and subsequent famapper launches, same script file will be executed automatically.
 
+When event-action mapping process is aborted due to error, the status indicater placed at the top of window blinks red.<br>
+In this case, refere the error message for details by acessing the message console page as below.
+
+<p align="center">
+<img alt="message console" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/console.png" width=600>
+</p>
+
 ### Captured window
 fsmapper has a function to controll visibility and position of any window ownd by other process. This function is designed to enable a display as multipurpose, especially to handle fs2020 puped out instrument window like [this movie](https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/movie.gif).
 
