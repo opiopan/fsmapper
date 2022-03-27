@@ -421,6 +421,9 @@ void MapperEngine::sendHostEvent(MAPPER_EVENT event, int64_t data){
     }
 }
 
+//============================================================================================
+// functions to expose to host program
+//============================================================================================
 std::vector<MapperEngine::DeviceInfo> MapperEngine::get_device_list(){
     std::lock_guard lock(mutex);
     std::vector<DeviceInfo> array;

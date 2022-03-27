@@ -550,17 +550,18 @@ void ViewPortManager::disable_viewports(){
     }
 }
 
-void ViewPortManager::enable_viewport_primitive(){
-        ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
-        for (auto& viewport : viewports){
-            viewport->enable(displays);
-        }
+void ViewPortManager::enable_viewport_primitive(){	
+    displays.clear();
+    ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
+    for (auto& viewport : viewports){
+        viewport->enable(displays);
+    }
 }
 
 void ViewPortManager::disable_viewport_primitive(){
-        for (auto& viewport : viewports){
-            viewport->disable();
-        }
+    for (auto& viewport : viewports){
+        viewport->disable();
+    }
 }
 
 BOOL ViewPortManager::monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context){

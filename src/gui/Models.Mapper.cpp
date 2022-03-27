@@ -385,14 +385,14 @@ namespace winrt::gui::Models::implementation{
         mapper_releaseWindw(mapper, Cwid);
     }
 
-    void Mapper::StartViewports(){
+    bool Mapper::StartViewports(){
         std::lock_guard lock{mutex};
-        mapper_startViewPort(mapper);
+        return mapper_startViewPort(mapper);
     }
 
-    void Mapper::StopViewports(){
+    bool Mapper::StopViewports(){
         std::lock_guard lock{mutex};
-        mapper_stopViewPort(mapper);
+        return mapper_stopViewPort(mapper);
     }
 
     //============================================================================================

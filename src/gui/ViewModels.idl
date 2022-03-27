@@ -44,7 +44,7 @@ namespace gui.ViewModels{
         String CapturedWindowsSummary{get;};
         Boolean CaptureWindowButtonIsEnabled{get;};
 
-        void ToggleViewport(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        Windows.Foundation.IAsyncAction ToggleViewport(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 
     runtimeclass ConsolePageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {

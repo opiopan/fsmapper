@@ -24,7 +24,7 @@
                     <SolidColorBrush x:Key="CapturedWindowButtonTextCaptured" Color="{ThemeResource SystemColorButtonTextColor}"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTextUncaptured" Color="{ThemeResource SystemColorGrayTextColor}"/>
                     <SolidColorBrush x:Key="MessageColorError" Color="Red"/>
-                    <SolidColorBrush x:Key="MessageColorWarning" Color="#cfcf00"/>
+                    <SolidColorBrush x:Key="MessageColorWarning" Color="#8f8f00"/>
                     <SolidColorBrush x:Key="MessageColorInfo" Color="Green"/>
                     <SolidColorBrush x:Key="MessageColorMessage" Color="{ThemeResource SystemColorButtonTextColor}"/>
                     <SolidColorBrush x:Key="MessageColorDebug" Color="{ThemeResource SystemColorGrayTextColor}"/>

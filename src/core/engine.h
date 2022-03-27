@@ -166,7 +166,7 @@ public:
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
     void enable_viewports();
-    void disable_viewports();
+    void  disable_viewports();
     MAPPINGS_STAT get_mapping_stat();
     
 protected:

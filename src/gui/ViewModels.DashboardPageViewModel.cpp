@@ -12,6 +12,8 @@
 #include <string>
 #include <sstream>
 
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 using App = winrt::gui::implementation::App;
@@ -70,12 +72,23 @@ namespace winrt::gui::ViewModels::implementation{
     //============================================================================================
     // Viewport manipulation
     //============================================================================================
-    void DashboardPageViewModel::ToggleViewport(
+    winrt::Windows::Foundation::IAsyncAction DashboardPageViewModel::ToggleViewport(
         winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
         if (mapper.ViewportIsActive()){
             mapper.StopViewports();
         }else{
-            mapper.StartViewports();
+            if (!mapper.StartViewports()){
+                winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
+                dialog.Title(winrt::box_value(L"Error"));
+                std::wostringstream os;
+                dialog.Content(winrt::box_value(
+                    L"Failed to enable viewports.\n"
+                    L"Refere the message console for details."
+                ));
+                dialog.CloseButtonText(L"OK");
+                dialog.XamlRoot(App::TopWindow().Content().XamlRoot());
+                co_await dialog.ShowAsync();
+            }
         }
     }
     

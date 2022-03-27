@@ -333,8 +333,8 @@ namespace winrt::gui::Models::implementation{
         void StopScriptSync();
         void CaptureWindow(uint32_t Cwid, uint64_t hWnd);
         void ReleaseWindow(uint32_t Cwid);
-        void StartViewports();
-        void StopViewports();
+        bool StartViewports();
+        bool StopViewports();
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
