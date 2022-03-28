@@ -4,8 +4,10 @@
 //
 
 #include <vector>
+#include <sstream>
 #include "mappercore.h"
 #include "tools.h"
+#include "encoding.hpp"
 #include "simplewindow.h"
 
 #include <algorithm>
@@ -69,9 +71,9 @@ public:
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-	void preCreateWindow(CREATESTRUCTA& cs) override{
+   	void preCreateWindow(CREATESTRUCTA& cs) override{
         SimpleWindow::preCreateWindow(cs);
-        cs.dwExStyle = WS_EX_LAYERED;
+        cs.dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST;
         cs.x = rect.x;
         cs.y = rect.y;
         cs.cx = rect.width;
@@ -104,35 +106,7 @@ protected:
         return true;
     }
 
-    void update_window(){
-        WinDC dc{nullptr};
-        MemDC memdc{dc};
-        auto prev_bitmap = ::SelectObject(memdc, bitmap.get_handle());
-
-        Gdiplus::Graphics graphics(memdc);
-        graphics.Clear(Gdiplus::Color(127, 0, 0, 0));
-
-        if (hilighting){
-            Gdiplus::Pen pen(Gdiplus::Color::Yellow, 32.0);
-            pen.SetAlignment(Gdiplus::PenAlignment::PenAlignmentInset);
-            graphics.DrawRectangle(
-                &pen, hilighting->x - rect.x, hilighting->y - rect.y, hilighting->width, hilighting->height);
-        }
-
-        POINT position{rect.x, rect.y};
-        static POINT point{ 0, 0 };
-        SIZE size;
-        size.cx = rect.width;
-        size.cy = rect.height;
-        BLENDFUNCTION blend;
-		blend.BlendOp = AC_SRC_OVER;
-		blend.BlendFlags = 0;
-		blend.SourceConstantAlpha = 255;
-		blend.AlphaFormat = AC_SRC_ALPHA;
-        ::UpdateLayeredWindow(*this, dc, &position, &size, memdc, &point, 0, &blend, ULW_ALPHA);
-
-        ::SelectObject(memdc, prev_bitmap);
-    };
+    void update_window();
 };
 
 //============================================================================================
@@ -144,6 +118,7 @@ protected:
     std::condition_variable cv;
     bool completed{false};
     HWND app_wnd;
+    tools::utf8_to_utf16_translator target_name;
     WinDispatcher dispatcher;
     std::vector<IntRect> displays;
     std::vector<std::unique_ptr<CoverWindow>> windows;
@@ -158,7 +133,7 @@ protected:
     std::vector<WindowDef> window_defs;
     
 public:
-    WindowPicker(HWND app_wnd) : app_wnd(app_wnd){
+    WindowPicker(HWND app_wnd, const char* target_name) : app_wnd(app_wnd), target_name(target_name){
         //
         // Building a cover window for each display monitor
         //
@@ -196,11 +171,13 @@ public:
                          info.rcWindow.right - info.rcWindow.left,
                          info.rcWindow.bottom - info.rcWindow.top};
             auto is_layered = info.dwExStyle & WS_EX_LAYERED;
+            if (desktop_rect == rect){
+                break;
+            }
             if (is_visible && !is_cloaked && !is_layered &&
                 window != app_wnd &&
                 rect.width > 0 && rect.height > 0 &&
-                max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO &&
-                desktop_rect != rect){
+                max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO){
                 char buf[512];
                 ::GetWindowTextA(window, buf, sizeof(buf));
                 window_defs.emplace_back(window, rect, buf);
@@ -250,6 +227,8 @@ public:
         completed = true;
         cv.notify_all();
     }
+
+    const wchar_t* get_target_name(){return target_name;}
 };
 
 
@@ -277,10 +256,74 @@ LRESULT CoverWindow::messageProc(UINT msg, WPARAM wparam, LPARAM lparam){
     return 0;
 }
 
+void CoverWindow::update_window(){
+    WinDC dc{nullptr};
+    MemDC memdc{dc};
+    auto prev_bitmap = ::SelectObject(memdc, bitmap.get_handle());
+
+    Gdiplus::Graphics graphics(memdc);
+    graphics.Clear(Gdiplus::Color(127, 0, 0, 0));
+
+    //
+    // draw the region of window under the mouse pointer
+    //
+    if (hilighting){
+        Gdiplus::Pen pen(Gdiplus::Color::Yellow, 32.0);
+        pen.SetAlignment(Gdiplus::PenAlignment::PenAlignmentInset);
+        graphics.DrawRectangle(
+            &pen, hilighting->x - rect.x, hilighting->y - rect.y, hilighting->width, hilighting->height);
+    }
+
+    //
+    // draw notice message at the center of display
+    //
+    {
+        auto font_height = static_cast<Gdiplus::REAL>(rect.width * 0.04);
+        Gdiplus::FontFamily font_family{ L"Segoe UI" };
+        Gdiplus::Font font{ &font_family, font_height, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel };
+        Gdiplus::RectF layout_rect{ 0., 0., static_cast<Gdiplus::REAL>(rect.width), static_cast<Gdiplus::REAL>(rect.height) };
+
+        auto str1 = L"Select a window to capture";
+        Gdiplus::RectF str1_rect;
+        graphics.MeasureString(str1, -1, &font, layout_rect, &str1_rect);
+
+        std::wostringstream os;
+        os << L"for \"" << picker.get_target_name() << L"\"";
+        auto&& str2 = os.str();
+        Gdiplus::RectF str2_rect;
+        graphics.MeasureString(str2.c_str(), -1, &font, layout_rect, &str2_rect);
+
+        auto spacing = font_height * 0.0;          
+        Gdiplus::PointF point1{
+            static_cast<Gdiplus::REAL>((layout_rect.Width - str1_rect.Width) / 2.0),
+            static_cast<Gdiplus::REAL>((layout_rect.Height - str1_rect.Height - str2_rect.Height - spacing) / 2.0) };
+        Gdiplus::PointF point2{
+            static_cast<Gdiplus::REAL>((layout_rect.Width - str2_rect.Width) / 2.0),
+            static_cast<Gdiplus::REAL>(point1.Y + str1_rect.Height + spacing) };
+        Gdiplus::SolidBrush brush(Gdiplus::Color(130, 0, 255, 255));
+        graphics.DrawString(str1, -1, &font, point1, &brush);
+        graphics.DrawString(str2.c_str(), -1, &font, point2, &brush);
+    }
+
+    POINT position{rect.x, rect.y};
+    static POINT point{ 0, 0 };
+    SIZE size;
+    size.cx = rect.width;
+    size.cy = rect.height;
+    BLENDFUNCTION blend;
+    blend.BlendOp = AC_SRC_OVER;
+    blend.BlendFlags = 0;
+    blend.SourceConstantAlpha = 255;
+    blend.AlphaFormat = AC_SRC_ALPHA;
+    ::UpdateLayeredWindow(*this, dc, &position, &size, memdc, &point, 0, &blend, ULW_ALPHA);
+
+    ::SelectObject(memdc, prev_bitmap);
+};
+
 //============================================================================================
 // exported function as interface of DLL
 //============================================================================================
-DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd){
-    WindowPicker picker{app_wnd};
+DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd, const char* name){
+    WindowPicker picker{app_wnd, name};
     return picker.pick_window();
 }

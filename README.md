@@ -28,7 +28,7 @@ Make sure that the following softwares are installed in advance.
     - [nuget.exe](https://www.nuget.org/downloads) should be placed at the folder which is indicated by PATH environment variable.
 
 2. **Running a console**<br>
-Run ```cmd.exe``` or ```PowerShell.exe``` on any console. Note that environment variables are set to complie x64 binaries.<br>
+Run ```cmd.exe``` or ```PowerShell.exe``` on any console. Note that environment variables must be set to complie x64 binaries.<br>
 The one of easiest way is using the following shortcut made when Visual Studio was installed.
     - x64 Native Tools Command Prompt for VS 2022
     - x64 Native Tools Command Prompt for VS 2019

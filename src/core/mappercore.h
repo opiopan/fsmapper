@@ -116,7 +116,7 @@ struct MapperToolsContext;
 typedef struct MapperToolsContext* MapperToolsHandle;
 DLLEXPORT MapperToolsHandle mapper_tools_init();
 DLLEXPORT void mapper_tools_terminate(MapperToolsHandle handle);
-DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd);
+DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd, const char* name);
 
 #ifdef __cplusplus
 }

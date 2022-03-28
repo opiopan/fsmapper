@@ -190,10 +190,10 @@ namespace winrt::gui::Models::implementation{
                 }
 
                 if (mask & property_captured_windows){
+                    lock.unlock();
                     mapper_stopViewPort(mapper);
                     enum_captured_windows_context cw_list;
                     mapper_enumCapturedWindows(mapper, enum_captured_window_callback, &cw_list);
-                    lock.unlock();
                     co_await ui_thread;
                     captured_windows.Clear();
                     tools::utf8_to_utf16_translator translator;

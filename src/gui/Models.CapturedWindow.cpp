@@ -97,11 +97,12 @@ namespace winrt::gui::Models::implementation{
             #else
             winrt::apartment_context ui_thread;
             auto appwnd = App::TopWindowHandle();
-            //::ShowWindow(appwnd, SW_HIDE);
+            tools::utf16_to_utf8_translator target_name(name.c_str());
+            ::ShowWindow(appwnd, SW_HIDE);
             co_await winrt::resume_background();
-            auto hwnd = mapper_tools_PickWindow(appwnd);
+            auto hwnd = mapper_tools_PickWindow(appwnd, target_name);
             co_await ui_thread;
-            //::ShowWindow(appwnd, SW_SHOW);
+            ::ShowWindow(appwnd, SW_SHOW);
             #endif
             auto strong_mapper{mapper.get()};
             if (strong_mapper && hwnd){
