@@ -171,13 +171,14 @@ public:
                          info.rcWindow.right - info.rcWindow.left,
                          info.rcWindow.bottom - info.rcWindow.top};
             auto is_layered = info.dwExStyle & WS_EX_LAYERED;
-            if (desktop_rect == rect){
-                break;
-            }
             if (is_visible && !is_cloaked && !is_layered &&
                 window != app_wnd &&
                 rect.width > 0 && rect.height > 0 &&
                 max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO){
+                if (desktop_rect == rect || 
+                    (rect.width >= desktop_rect.width && rect.height >= desktop_rect.height)){
+                    break;
+                }
                 char buf[512];
                 ::GetWindowTextA(window, buf, sizeof(buf));
                 window_defs.emplace_back(window, rect, buf);
@@ -293,16 +294,24 @@ void CoverWindow::update_window(){
         Gdiplus::RectF str2_rect;
         graphics.MeasureString(str2.c_str(), -1, &font, layout_rect, &str2_rect);
 
+        auto str3 = L"or right click to cancel";
+        Gdiplus::RectF str3_rect;
+        graphics.MeasureString(str3, -1, &font, layout_rect, &str3_rect);
+
         auto spacing = font_height * 0.0;          
         Gdiplus::PointF point1{
             static_cast<Gdiplus::REAL>((layout_rect.Width - str1_rect.Width) / 2.0),
-            static_cast<Gdiplus::REAL>((layout_rect.Height - str1_rect.Height - str2_rect.Height - spacing) / 2.0) };
+            static_cast<Gdiplus::REAL>((layout_rect.Height - str1_rect.Height - str2_rect.Height - str3_rect.Height - spacing) / 2.0) };
         Gdiplus::PointF point2{
             static_cast<Gdiplus::REAL>((layout_rect.Width - str2_rect.Width) / 2.0),
             static_cast<Gdiplus::REAL>(point1.Y + str1_rect.Height + spacing) };
+        Gdiplus::PointF point3{
+            static_cast<Gdiplus::REAL>((layout_rect.Width - str3_rect.Width) / 2.0),
+            static_cast<Gdiplus::REAL>(point2.Y + str2_rect.Height + spacing) };
         Gdiplus::SolidBrush brush(Gdiplus::Color(130, 0, 255, 255));
         graphics.DrawString(str1, -1, &font, point1, &brush);
         graphics.DrawString(str2.c_str(), -1, &font, point2, &brush);
+        graphics.DrawString(str3, -1, &font, point3, &brush);
     }
 
     POINT position{rect.x, rect.y};
