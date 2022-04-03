@@ -13,6 +13,11 @@
 #include "tools.h"
 #include "hookdll.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
+#include <gdiplus.h>
+
 //============================================================================================
 // View inmplementation
 //============================================================================================
@@ -110,6 +115,132 @@ Action* ViewPort::View::findAction(uint64_t evid){
 }
 
 //============================================================================================
+// Viewport Cover Window inmplementation
+//============================================================================================
+static constexpr auto cover_window_name = "mapper_viewport_cover_window";
+class ViewPort::CoverWindow: public SimpleWindow<cover_window_name>{
+public:
+    CoverWindow() = default;
+    virtual ~CoverWindow() = default;
+    virtual void start(const IntRect& vrect, const IntRect& erect) = 0;
+    virtual void stop() = 0;
+};
+
+template <typename MSG_RELAY>
+class ViewPortWindow : public ViewPort::CoverWindow{
+protected:
+    using base_class = ViewPort::CoverWindow;
+    MSG_RELAY relay;
+    COLORREF bgcolor;
+    IntRect varid_rect;
+    IntRect entire_rect;
+    GdiObject<HBITMAP> bitmap;
+    void* bitmap_data {nullptr};
+
+public:
+    ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay): bgcolor(bgcolor), relay(relay){};
+    virtual ~ViewPortWindow() = default;
+    void start(const IntRect& erect, const IntRect& vrect) override{
+        entire_rect = erect;
+        varid_rect = vrect;
+        create();
+        showWindow(SW_SHOW);
+    }
+    void stop() override{
+        destroy();
+    }
+
+protected:
+    LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override{
+        if (msg == WM_MOUSEMOVE || 
+            msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN || 
+            msg == WM_RBUTTONUP || msg == WM_RBUTTONDOWN){
+            return relay(msg, wparam, lparam);
+        }else{
+            return base_class::messageProc(msg, wparam, lparam);
+        }
+    }
+
+    void preCreateWindow(CREATESTRUCTA& cs) override{
+        base_class::preCreateWindow(cs);
+        cs.dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST;
+        cs.x = entire_rect.x;
+        cs.y = entire_rect.y;
+        cs.cx = entire_rect.width;
+        cs.cy = entire_rect.height;
+    }
+
+    bool onCreate(CREATESTRUCT* cs) override{
+        base_class::onCreate(cs);
+        BITMAPV4HEADER hdr = {0};
+        hdr.bV4Size = sizeof(BITMAPV4HEADER);
+        hdr.bV4Width = entire_rect.width;
+        hdr.bV4Height = entire_rect.height;
+        hdr.bV4Planes = 1;
+        hdr.bV4BitCount = 32;
+        hdr.bV4V4Compression = BI_BITFIELDS;
+        hdr.bV4SizeImage = 0;
+        hdr.bV4XPelsPerMeter = 0;
+        hdr.bV4YPelsPerMeter = 0;
+        hdr.bV4ClrUsed = 0;
+        hdr.bV4ClrImportant = 0;
+        hdr.bV4RedMask = 0x00FF0000;
+        hdr.bV4GreenMask = 0x0000FF00;
+        hdr.bV4BlueMask = 0x000000FF;
+        hdr.bV4AlphaMask = 0xFF000000;
+        bitmap = ::CreateDIBSection(
+            nullptr, reinterpret_cast<BITMAPINFO*>(&hdr), DIB_RGB_COLORS, &bitmap_data, nullptr, 0);
+        update_window(true);
+        return true;
+    }
+
+    void update_window(bool initial_update = false){
+        WinDC dc{nullptr};
+        MemDC memdc{dc};
+        auto prev_bitmap = ::SelectObject(memdc, bitmap.get_handle());
+
+        if (initial_update){
+            Gdiplus::Graphics graphics(memdc);
+            Gdiplus::RectF rect{
+                static_cast<Gdiplus::REAL>(varid_rect.x), static_cast<Gdiplus::REAL>(varid_rect.y), 
+                static_cast<Gdiplus::REAL>(varid_rect.width), static_cast<Gdiplus::REAL>(varid_rect.height)};
+            graphics.ExcludeClip(rect);
+            graphics.Clear(Gdiplus::Color(255, GetRValue(bgcolor), GetGValue(bgcolor), GetBValue(bgcolor)));
+        }
+        Gdiplus::Graphics graphics(memdc);
+        Gdiplus::RectF erect{
+            static_cast<Gdiplus::REAL>(entire_rect.x), static_cast<Gdiplus::REAL>(entire_rect.y),
+            static_cast<Gdiplus::REAL>(entire_rect.width), static_cast<Gdiplus::REAL>(entire_rect.height)};
+        Gdiplus::RectF vrect{
+            static_cast<Gdiplus::REAL>(varid_rect.x), static_cast<Gdiplus::REAL>(varid_rect.y),
+            static_cast<Gdiplus::REAL>(varid_rect.width), static_cast<Gdiplus::REAL>(varid_rect.height)};
+        Gdiplus::Region region(erect);
+        region.Exclude(vrect);
+        graphics.ExcludeClip(&region);
+        graphics.Clear(Gdiplus::Color(1, 0, 0, 0));
+
+        POINT position{entire_rect.x, entire_rect.y};
+        static POINT point{0, 0};
+        SIZE size;
+        size.cx = entire_rect.width;
+        size.cy = entire_rect.height;
+        BLENDFUNCTION blend;
+        blend.BlendOp = AC_SRC_OVER;
+        blend.BlendFlags = 0;
+        blend.SourceConstantAlpha = 255;
+        blend.AlphaFormat = AC_SRC_ALPHA;
+        ::UpdateLayeredWindow(*this, dc, &position, &size, memdc, &point, 0, &blend, ULW_ALPHA);
+
+        ::SelectObject(memdc, prev_bitmap);
+    }
+};
+
+template <typename MSG_RELAY>
+std::unique_ptr<ViewPortWindow<MSG_RELAY>> make_viewport_window(COLORREF bgcolor, const MSG_RELAY& relay){
+    return std::move(std::make_unique<ViewPortWindow<MSG_RELAY>>(bgcolor, relay));
+}
+
+//============================================================================================
 // Viewport inmplementation
 //============================================================================================
 ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manager){
@@ -153,6 +284,8 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
                               "if absolute coordinate system is selected or target display number specification is ommited");
     }
 
+    aspect_ratio = lua_safevalue<float>(def["aspect_ratio"]);
+
     auto&& bgcolor = lua_safevalue<std::string>(def["bgcolor"]);
     if (bgcolor){
         auto color = webcolor_to_colorref(*bgcolor);
@@ -165,6 +298,11 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             throw MapperException(std::move(os.str()));
         }
     }
+
+    auto window = make_viewport_window(bg_color, [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
+        return 0;
+    });
+    cover_window = std::move(window);
 }
 
 ViewPort::~ViewPort(){
@@ -181,10 +319,10 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         throw MapperException(std::move(os.str()));
     }
     if (!def_display_no){
-        region.x = std::roundf(def_region.x);
-        region.y = std::roundf(def_region.y);
-        region.width = std::roundf(std::roundf(def_region.width));
-        region.height = std::roundf(def_region.height);
+        entire_region.x = std::roundf(def_region.x);
+        entire_region.y = std::roundf(def_region.y);
+        entire_region.width = std::roundf(std::roundf(def_region.width));
+        entire_region.height = std::roundf(def_region.height);
     }else{
         if (displays.size() < *def_display_no){
             std::ostringstream os;
@@ -194,29 +332,46 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         }else{
             auto& drect = displays[*def_display_no - 1];
             if (is_relative_coordinates){
-                region.x = std::roundf(def_region.x * drect.width + drect.x);
-                region.y = std::roundf(def_region.y * drect.height + drect.y);
-                region.width = std::roundf(def_region.width * drect.width);
-                region.height = std::roundf(def_region.height * drect.height);
+                entire_region.x = std::roundf(def_region.x * drect.width + drect.x);
+                entire_region.y = std::roundf(def_region.y * drect.height + drect.y);
+                entire_region.width = std::roundf(def_region.width * drect.width);
+                entire_region.height = std::roundf(def_region.height * drect.height);
             }else{
-                region.x = std::roundf(def_region.x + drect.x);
-                region.y = std::roundf(def_region.y + drect.y);
-                region.width = std::roundf(def_region.width);
-                region.height = std::roundf(def_region.height);
+                entire_region.x = std::roundf(def_region.x + drect.x);
+                entire_region.y = std::roundf(def_region.y + drect.y);
+                entire_region.width = std::roundf(def_region.width);
+                entire_region.height = std::roundf(def_region.height);
             }
         }
     }
+    if (aspect_ratio){
+        auto eratio = static_cast<float>(entire_region.width) / static_cast<float>(entire_region.height);
+        if (eratio > *aspect_ratio){
+            auto factor = *aspect_ratio / eratio;
+            region.width = entire_region.width * factor;
+            region.x = entire_region.x + (entire_region.width - region.width) / 2;
+            region.height = entire_region.height;
+            region.y = entire_region.y;
+        }else{
+            auto factor = eratio / *aspect_ratio;
+            region.width = entire_region.width;
+            region.x = entire_region.x;
+            region.height = entire_region.height * factor;
+            region.y = entire_region.y + (entire_region.height - region.height) / 2;
+        }
+    }else{
+        region = entire_region;
+    }
     is_enable = true;
-    //bgwin.start(bg_color, region);
+    cover_window->start(entire_region, region);
     views[current_view]->show(*this);
-    ::SetWindowPos(bgwin, views[current_view]->getBottomWnd(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void ViewPort::disable(){
     if (is_enable) {
         is_enable = false;
         views[current_view]->hide(*this);
-        bgwin.stop();
+        cover_window->stop();
     }
 }
 
@@ -267,7 +422,6 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
                 current_view = *view_no;
                 views[current_view]->show(*this);
                 views[prev]->hide(*this);
-                ::SetWindowPos(bgwin, views[current_view]->getBottomWnd(), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             }
         }else{
             throw MapperException("invalid view number is specified");

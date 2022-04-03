@@ -71,7 +71,7 @@ public:
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-   	void preCreateWindow(CREATESTRUCTA& cs) override{
+    void preCreateWindow(CREATESTRUCTA& cs) override{
         SimpleWindow::preCreateWindow(cs);
         cs.dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST;
         cs.x = rect.x;

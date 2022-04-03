@@ -232,7 +232,6 @@ struct RectangleBase{
         return !(*this == src);
     }
 
-
     bool pointIsInRectangle(T tx, T ty){
         return tx >= x && tx <= x + width &&
                ty >= y && ty <= y + height;

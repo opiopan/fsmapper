@@ -118,6 +118,8 @@ public:
         }
     };
 
+    class CoverWindow;
+
 protected:
     ViewPortManager& manager;
     std::string name;
@@ -125,12 +127,14 @@ protected:
     FloatRect def_region = {0., 0., 1., 1.};
     COLORREF bg_color = 0x000000;
     bool is_relative_coordinates = true;
+    std::optional<float> aspect_ratio{std::nullopt};
     bool is_freezed = false;
     bool is_enable = false;
+    IntRect entire_region;
     IntRect region;
     std::vector<std::unique_ptr<View>> views;
     int current_view = 0;
-    BackgroundWindow bgwin;
+    std::unique_ptr<CoverWindow> cover_window;
     std::unique_ptr<EventActionMap> mappings;
     int mappings_num_for_views{0};
 
