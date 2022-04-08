@@ -84,6 +84,7 @@ public:
 
     void load(){
         if (!std::filesystem::exists(config_path)){
+            is_dirty = true;
             save();
         }
         std::ifstream ifs(config_path.string());
