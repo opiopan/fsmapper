@@ -47,6 +47,8 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_Devices();
             }else if (name == L"ViewportIsActive"){
                 reflect_mapper_ViewportOperability();
+            }else if (name == L"CapturedWindowStatus"){
+                reflect_mapper_CapturedWindows();
             }
         });
 

@@ -24,17 +24,18 @@
 
 using namespace winrt::gui::Models;
 
-static constexpr auto property_script_path        = 1 << 0;
-static constexpr auto property_status             = 1 << 1;
-static constexpr auto property_active_sim         = 1 << 2;
-static constexpr auto property_aircraft_name      = 1 << 3;
-static constexpr auto property_mappings_info      = 1 << 4;
-static constexpr auto property_devices            = 1 << 5;
-static constexpr auto property_viewport_is_active = 1 << 6;
-static constexpr auto property_viewports          = 1 << 7;
-static constexpr auto property_captured_windows   = 1 << 8;
-static constexpr auto property_event_msg_enabled  = 1 << 9;
-static constexpr auto property_debug_msg_enabled  = 1 << 10;
+static constexpr auto property_script_path             = 1 << 0;
+static constexpr auto property_status                  = 1 << 1;
+static constexpr auto property_active_sim              = 1 << 2;
+static constexpr auto property_aircraft_name           = 1 << 3;
+static constexpr auto property_mappings_info           = 1 << 4;
+static constexpr auto property_devices                 = 1 << 5;
+static constexpr auto property_viewport_is_active      = 1 << 6;
+static constexpr auto property_viewports               = 1 << 7;
+static constexpr auto property_captured_windows        = 1 << 8;
+static constexpr auto property_event_msg_enabled       = 1 << 9;
+static constexpr auto property_debug_msg_enabled       = 1 << 10;
+static constexpr auto property_captured_window_status  = 1 << 11;
 
 static const wchar_t* property_names[] = {
     L"ScriptPath",
@@ -48,6 +49,7 @@ static const wchar_t* property_names[] = {
     L"CapturedWindows",
     L"EventMessageIsEnabled",
     L"DebugMessageIsEnabled",
+    L"CapturedWindowStatus",
     nullptr
 };
 
@@ -379,11 +381,15 @@ namespace winrt::gui::Models::implementation{
     void Mapper::CaptureWindow(uint32_t Cwid, uint64_t hWnd){
         std::lock_guard lock{mutex};
         mapper_captureWindow(mapper, Cwid, reinterpret_cast<HWND>(hWnd));
+        dirty_properties |= property_captured_window_status;
+        cv.notify_all();
     }
 
     void Mapper::ReleaseWindow(uint32_t Cwid){
         std::lock_guard lock{mutex};
         mapper_releaseWindw(mapper, Cwid);
+        dirty_properties |= property_captured_window_status;
+        cv.notify_all();
     }
 
     bool Mapper::StartViewports(){

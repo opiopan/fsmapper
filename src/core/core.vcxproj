@@ -159,7 +159,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
@@ -188,7 +188,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.3\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua5.4.3-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
@@ -210,6 +210,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="event.h" />
     <ClInclude Include="filter.h" />
     <ClInclude Include="fs2020.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
     <ClInclude Include="pluginapi.h" />
@@ -233,6 +234,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="filter.cpp" />
     <ClCompile Include="fs2020.cpp" />
+    <ClCompile Include="graphics.cpp" />
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="pluginapi.cpp" />
     <ClCompile Include="simhost.cpp" />

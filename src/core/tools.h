@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <string.h>
+#include <dcommon.h>
 
 #ifndef NO_SOL
 #include <memory>
@@ -215,8 +216,11 @@ struct RectangleBase{
     RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
     RectangleBase(const RectangleBase& src){*this = src;};
     ~RectangleBase() = default;
+    template <typename SRC>
+    RectangleBase(const SRC& src): x(src.x), y(src.y), width(src.width), height(src.height){}
 
-    RectangleBase& operator = (const RectangleBase& src){
+    template<typename SRC>
+    RectangleBase& operator = (const SRC& src){
         x = src.x;
         y = src.y;
         width = src.width;
@@ -230,6 +234,15 @@ struct RectangleBase{
 
     bool operator != (const RectangleBase& src) const{
         return !(*this == src);
+    }
+
+    operator D2D1_RECT_F (){
+        return D2D1_RECT_F{
+            static_cast<float>(x),
+            static_cast<float>(y),
+            static_cast<float>(x + width),
+            static_cast<float>(y + height)
+        };
     }
 
     bool pointIsInRectangle(T tx, T ty){

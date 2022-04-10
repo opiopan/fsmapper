@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <sol/sol.hpp>
+#include <d2d1helper.h>
 #include "mappercore_inner.h"
 #include "tools.h"
 #include "simplewindow.h"
@@ -22,6 +23,9 @@ class MapperEngine;
 class ViewPortManager;
 class CapturedWindow;
 class ViewObject;
+namespace graphics{
+    class render_target;
+}
 
 class ViewPort{
 protected:
@@ -61,6 +65,7 @@ protected:
         std::string name;
         std::vector<std::unique_ptr<CWViewElement>> captured_window_elements;
         std::vector<std::unique_ptr<NormalViewElement>> normal_elements;
+        D2D1::ColorF bg_color{0.f, 0.f, 0.f, 0.f};
         std::unique_ptr<EventActionMap> mappings;
 
     public:
@@ -74,6 +79,7 @@ protected:
         ~View();
         void show(ViewPort& viewport);
         void hide(ViewPort& viewport);
+        bool render_view(graphics::render_target& render_target, const FloatRect& rect);
         HWND getBottomWnd();
         Action* findAction(uint64_t evid);
         int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
@@ -131,9 +137,15 @@ protected:
     bool is_freezed = false;
     bool is_enable = false;
     IntRect entire_region;
+    IntRect entire_region_client;
     IntRect region;
+    IntRect region_client;
     std::vector<std::unique_ptr<View>> views;
     int current_view = 0;
+    std::mutex rendering_mutex;
+    std::unique_ptr<graphics::render_target> render_target;
+    int rendering_count = 0;
+    int rendering_reflect_count = 0;
     std::unique_ptr<CoverWindow> cover_window;
     std::unique_ptr<EventActionMap> mappings;
     int mappings_num_for_views{0};
@@ -163,8 +175,10 @@ public:
     std::pair<int, int> getMappingsStat();
 
     // functions for views
-    const IntRect& get_output_region() const {return region;};
+    const IntRect& get_output_region() const {return region;}
+    const IntRect& get_output_client_region() const{return region_client;}
     COLORREF get_background_clolor() const {return bg_color;}
+    void invaridate_rect(const FloatRect& rect);
 };
 
 class MapperEngine;

@@ -13,6 +13,7 @@
 #include "vjoy.h"
 #include "filter.h"
 #include "simplewindow.h"
+#include "graphics.h"
 
 //============================================================================================
 // initialize / terminate environment
@@ -21,6 +22,7 @@ MapperEngine::MapperEngine(Callback callback, Logger logger) :
     status(Status::init), callback(callback), logger(logger){
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
     WinDispatcher::initSharedDispatcher();
+    graphics::initialize_grahics();
 }
 
 MapperEngine::~MapperEngine(){
@@ -37,6 +39,9 @@ MapperEngine::~MapperEngine(){
 
     // destory lua environment
     scripting.lua_ptr = nullptr;
+
+    // clean up graphics environment
+    graphics::terminate_graphics();
 }
 
 //============================================================================================

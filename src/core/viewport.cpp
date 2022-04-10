@@ -10,6 +10,7 @@
 #include "viewport.h"
 #include "engine.h"
 #include "capturedwindow.h"
+#include "graphics.h"
 #include "tools.h"
 #include "hookdll.h"
 
@@ -87,6 +88,8 @@ void ViewPort::View::show(ViewPort& viewport){
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
         element->get_object().change_window_pos(iregion, HWND_TOP, true, viewport.get_background_clolor());
     }
+    FloatRect rect{viewport.get_output_client_region()};
+    viewport.invaridate_rect(rect);
 }
 
 void ViewPort::View::hide(ViewPort& viewport){
@@ -96,6 +99,15 @@ void ViewPort::View::hide(ViewPort& viewport){
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
         element->get_object().change_window_pos(iregion,HWND_BOTTOM, false);
     }
+}
+
+bool ViewPort::View::render_view(graphics::render_target& render_target, const FloatRect& rect){
+    // clear background at first;
+    render_target->Clear(bg_color);
+
+    // render each objects are proceded below
+
+    return true;
 }
 
 HWND ViewPort::View::getBottomWnd(){
@@ -124,30 +136,50 @@ public:
     virtual ~CoverWindow() = default;
     virtual void start(const IntRect& vrect, const IntRect& erect) = 0;
     virtual void stop() = 0;
+    virtual void update_window() = 0;
+    virtual void update_window_with_dc(HDC hdc) = 0;
 };
 
-template <typename MSG_RELAY>
+template <typename MSG_RELAY, typename UPDATE_WINDOW>
 class ViewPortWindow : public ViewPort::CoverWindow{
 protected:
     using base_class = ViewPort::CoverWindow;
+    UINT update_msg;
     MSG_RELAY relay;
+    UPDATE_WINDOW on_update_window;
     COLORREF bgcolor;
     IntRect varid_rect;
     IntRect entire_rect;
-    GdiObject<HBITMAP> bitmap;
-    void* bitmap_data {nullptr};
+    POINT window_pos;
+    SIZE window_size;
+    BLENDFUNCTION blend;
+    UPDATELAYEREDWINDOWINFO lw_info{0};
 
 public:
-    ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay): bgcolor(bgcolor), relay(relay){};
+    ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay, const UPDATE_WINDOW& on_update_window):
+        bgcolor(bgcolor), relay(relay), on_update_window(on_update_window){
+    	update_msg = ::RegisterWindowMessageA("MAPPER_CORE_VIEW_UPDATE");
+    }
     virtual ~ViewPortWindow() = default;
+
     void start(const IntRect& erect, const IntRect& vrect) override{
         entire_rect = erect;
         varid_rect = vrect;
         create();
         showWindow(SW_SHOW);
     }
+
     void stop() override{
         destroy();
+    }
+
+    void update_window() override{
+        ::PostMessageA(*this, update_msg, 0, 0);
+    }
+
+    void update_window_with_dc(HDC dc) override{
+        lw_info.hdcSrc = dc;
+        ::UpdateLayeredWindowIndirect(*this, &lw_info);
     }
 
 protected:
@@ -156,6 +188,8 @@ protected:
             msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN || 
             msg == WM_RBUTTONUP || msg == WM_RBUTTONDOWN){
             return relay(msg, wparam, lparam);
+        }else if (msg == update_msg){
+            on_update_window();
         }else{
             return base_class::messageProc(msg, wparam, lparam);
         }
@@ -172,72 +206,31 @@ protected:
 
     bool onCreate(CREATESTRUCT* cs) override{
         base_class::onCreate(cs);
-        BITMAPV4HEADER hdr = {0};
-        hdr.bV4Size = sizeof(BITMAPV4HEADER);
-        hdr.bV4Width = entire_rect.width;
-        hdr.bV4Height = entire_rect.height;
-        hdr.bV4Planes = 1;
-        hdr.bV4BitCount = 32;
-        hdr.bV4V4Compression = BI_BITFIELDS;
-        hdr.bV4SizeImage = 0;
-        hdr.bV4XPelsPerMeter = 0;
-        hdr.bV4YPelsPerMeter = 0;
-        hdr.bV4ClrUsed = 0;
-        hdr.bV4ClrImportant = 0;
-        hdr.bV4RedMask = 0x00FF0000;
-        hdr.bV4GreenMask = 0x0000FF00;
-        hdr.bV4BlueMask = 0x000000FF;
-        hdr.bV4AlphaMask = 0xFF000000;
-        bitmap = ::CreateDIBSection(
-            nullptr, reinterpret_cast<BITMAPINFO*>(&hdr), DIB_RGB_COLORS, &bitmap_data, nullptr, 0);
-        update_window(true);
-        return true;
-    }
 
-    void update_window(bool initial_update = false){
-        WinDC dc{nullptr};
-        MemDC memdc{dc};
-        auto prev_bitmap = ::SelectObject(memdc, bitmap.get_handle());
-
-        if (initial_update){
-            Gdiplus::Graphics graphics(memdc);
-            Gdiplus::RectF rect{
-                static_cast<Gdiplus::REAL>(varid_rect.x), static_cast<Gdiplus::REAL>(varid_rect.y), 
-                static_cast<Gdiplus::REAL>(varid_rect.width), static_cast<Gdiplus::REAL>(varid_rect.height)};
-            graphics.ExcludeClip(rect);
-            graphics.Clear(Gdiplus::Color(255, GetRValue(bgcolor), GetGValue(bgcolor), GetBValue(bgcolor)));
-        }
-        Gdiplus::Graphics graphics(memdc);
-        Gdiplus::RectF erect{
-            static_cast<Gdiplus::REAL>(entire_rect.x), static_cast<Gdiplus::REAL>(entire_rect.y),
-            static_cast<Gdiplus::REAL>(entire_rect.width), static_cast<Gdiplus::REAL>(entire_rect.height)};
-        Gdiplus::RectF vrect{
-            static_cast<Gdiplus::REAL>(varid_rect.x), static_cast<Gdiplus::REAL>(varid_rect.y),
-            static_cast<Gdiplus::REAL>(varid_rect.width), static_cast<Gdiplus::REAL>(varid_rect.height)};
-        Gdiplus::Region region(erect);
-        region.Exclude(vrect);
-        graphics.ExcludeClip(&region);
-        graphics.Clear(Gdiplus::Color(1, 0, 0, 0));
-
-        POINT position{entire_rect.x, entire_rect.y};
+        window_pos.x = entire_rect.x;
+        window_pos.y = entire_rect.y;
+        window_size.cx = entire_rect.width;
+        window_size.cy = entire_rect.height;
         static POINT point{0, 0};
-        SIZE size;
-        size.cx = entire_rect.width;
-        size.cy = entire_rect.height;
-        BLENDFUNCTION blend;
         blend.BlendOp = AC_SRC_OVER;
         blend.BlendFlags = 0;
         blend.SourceConstantAlpha = 255;
         blend.AlphaFormat = AC_SRC_ALPHA;
-        ::UpdateLayeredWindow(*this, dc, &position, &size, memdc, &point, 0, &blend, ULW_ALPHA);
-
-        ::SelectObject(memdc, prev_bitmap);
+        lw_info.cbSize = sizeof(lw_info);
+        lw_info.pptDst = &window_pos;
+        lw_info.pptSrc = &point;
+        lw_info.psize = &window_size;
+        lw_info.pblend = &blend;
+        lw_info.dwFlags = ULW_ALPHA;
+        
+        return true;
     }
 };
 
-template <typename MSG_RELAY>
-std::unique_ptr<ViewPortWindow<MSG_RELAY>> make_viewport_window(COLORREF bgcolor, const MSG_RELAY& relay){
-    return std::move(std::make_unique<ViewPortWindow<MSG_RELAY>>(bgcolor, relay));
+template <typename MSG_RELAY, typename UPDATE_WINDOW>
+std::unique_ptr<ViewPortWindow<MSG_RELAY, UPDATE_WINDOW>> make_viewport_window(
+    COLORREF bgcolor, const MSG_RELAY& relay, const UPDATE_WINDOW& update_window){
+    return std::move(std::make_unique<ViewPortWindow<MSG_RELAY, UPDATE_WINDOW>>(bgcolor, relay, update_window));
 }
 
 //============================================================================================
@@ -299,9 +292,36 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         }
     }
 
-    auto window = make_viewport_window(bg_color, [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
-        return 0;
-    });
+    auto window = make_viewport_window(bg_color,
+        //
+        // processing mouse message and touch message
+        //
+        [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
+            return 0;
+        },
+
+        //
+        // updating viewport window contents displayed
+        // note thta contents to display is build as bitmap in scripting thread
+        // this function just reflect that on layerd window
+        //
+        [this](){
+            std::lock_guard lock(rendering_mutex);
+            if (rendering_count > rendering_reflect_count){
+                rendering_reflect_count = rendering_count;
+                (*render_target)->BeginDraw();
+                {
+                    CComPtr<ID2D1GdiInteropRenderTarget> gdi_target;
+                    (*render_target)->QueryInterface(&gdi_target);
+                    HDC dc;
+                    gdi_target->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &dc);
+                    cover_window->update_window_with_dc(dc);
+                    gdi_target->ReleaseDC(nullptr);
+                }
+                (*render_target)->EndDraw();
+            }
+        }
+    );
     cover_window = std::move(window);
 }
 
@@ -362,7 +382,19 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     }else{
         region = entire_region;
     }
+    entire_region_client = entire_region;
+    entire_region_client.x = 0;
+    entire_region_client.y = 0;
+    region_client = region;
+    region_client.x = region.x - entire_region.x;
+    region_client.y = region.y - entire_region.y;
     is_enable = true;
+    render_target = std::move(graphics::render_target::create_render_target(
+        entire_region.width, entire_region.height,
+        graphics::render_target::rendering_method::cpu));
+    (*render_target)->BeginDraw();
+    (*render_target)->Clear(D2D1::ColorF(GetRValue(bg_color) / 255., GetGValue(bg_color) / 255., GetBValue(bg_color) / 255., 1.0f));
+    (*render_target)->EndDraw();
     cover_window->start(entire_region, region);
     views[current_view]->show(*this);
 }
@@ -372,6 +404,24 @@ void ViewPort::disable(){
         is_enable = false;
         views[current_view]->hide(*this);
         cover_window->stop();
+        render_target = nullptr;
+    }
+}
+
+void ViewPort::invaridate_rect(const FloatRect& rect){
+    if (is_enable){
+        std::lock_guard lock(rendering_mutex);
+        (*render_target)->BeginDraw();
+        (*render_target)->PushAxisAlignedClip(entire_region_client, D2D1_ANTIALIAS_MODE_ALIASED);
+        (*render_target)->PushAxisAlignedClip(region_client, D2D1_ANTIALIAS_MODE_ALIASED);
+        auto updated = views[current_view]->render_view(*render_target, rect);
+        (*render_target)->PopAxisAlignedClip();
+        (*render_target)->PopAxisAlignedClip();
+        (*render_target)->EndDraw();
+        if (updated && rendering_count == rendering_reflect_count){
+            rendering_count++;
+            cover_window->update_window();
+        }
     }
 }
 
