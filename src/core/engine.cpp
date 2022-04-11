@@ -209,28 +209,54 @@ bool MapperEngine::run(std::string&& scriptPath){
                     putLog(MCONSOLE_INFO, "mapper-core: a request to stopp event-action mapping has been received");
                     lock.lock();
                     break;
-                }
-
-                if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
-                    event.names.count(ev->getId()) > 0){
-                    auto &name = event.names.at(ev->getId());
-                    std::ostringstream os;
-                    os << name;
-                    if (ev->getType() == Event::Type::int_value){
-                        os << "(" << ev->getAs<int64_t>() << ")";
+                }else if (ev->getId() == static_cast<int64_t>(EventID::API_REQUEST)){
+                    ApiContext* context = *ev;
+                    const char* msg = nullptr;
+                    try{
+                        if (context->type == ApiContext::Type::start_viewports){
+                            msg = "failed to enable viewports:\n";
+                            scripting.viewportManager->enable_viewports();
+                        }else if (context->type == ApiContext::Type::stop_viewports){
+                            msg = "failed to disable viewports\n";
+                            scripting.viewportManager->disable_viewports();
+                        }else{
+                            abort();
+                        }
+                        context->done = true;
+                        context->result = true;
+                        event.cv.notify_all();
+                    }catch (MapperException& e){
+                        std::ostringstream os;
+                        os << "mapper-core: " << msg << e.what();
+                        context->done = true;
+                        context->result = false;
+                        event.cv.notify_all();
+                        lock.unlock();
+                        putLog(MCONSOLE_WARNING, os.str());
+                        lock.lock();
                     }
+                }else{
+                    if (logmode & MAPPER_LOG_EVENT && ev->getId() >= static_cast<int64_t>(EventID::DINAMIC_EVENT) &&
+                        event.names.count(ev->getId()) > 0){
+                        auto &name = event.names.at(ev->getId());
+                        std::ostringstream os;
+                        os << name;
+                        if (ev->getType() == Event::Type::int_value){
+                            os << "(" << ev->getAs<int64_t>() << ")";
+                        }
+                        if (action){
+                            os << " -> " << action->getName();
+                        }
+                        lock.unlock();
+                        putLog(MCONSOLE_EVENT, os.str());
+                        lock.lock();
+                    }
+
                     if (action){
-                        os << " -> " << action->getName();
+                        lock.unlock();
+                        action->invoke(*ev, scripting.lua());
+                        lock.lock();
                     }
-                    lock.unlock();
-                    putLog(MCONSOLE_EVENT, os.str());
-                    lock.lock();
-                }
-
-                if (action){
-                    lock.unlock();
-                    action->invoke(*ev, scripting.lua());
-                    lock.lock();
                 }
             }else if (event.deferred_actions.size() > 0 && event.deferred_actions.begin()->first < now){
                 //-------------------------------------------------------------------------------
@@ -257,20 +283,22 @@ bool MapperEngine::run(std::string&& scriptPath){
             // notify events if needed
             //-------------------------------------------------------------------------------
             if (scripting.updated_flags){
-                if (scripting.updated_flags & UPDATED_DEVICES){
+                auto flags = scripting.updated_flags;
+                auto vpstat = scripting.viewportManager->get_status();
+                lock.unlock();
+                if (flags & UPDATED_DEVICES){
                     sendHostEvent(MEV_CHANGE_DEVICES, 0);
                 }
-                if (scripting.updated_flags & UPDATED_MAPPINGS){
+                if (flags & UPDATED_MAPPINGS){
                     sendHostEvent(MEV_CHANGE_MAPPINGS, 0);
                 }
-                if (scripting.updated_flags & UPDATED_VJOY){
+                if (flags & UPDATED_VJOY){
                     sendHostEvent(MEV_CHANGE_VJOY, 0);
                 }
-                if (scripting.updated_flags & UPDATED_VIEWPORTS){
+                if (flags & UPDATED_VIEWPORTS){
                     sendHostEvent(MEV_CHANGE_VIEWPORTS, 0);
                 }
-                if (scripting.updated_flags & UPDATED_VIEWPORTS_STATUS){
-                    auto vpstat = scripting.viewportManager->get_status();
+                if (flags & UPDATED_VIEWPORTS_STATUS){
                     if (vpstat == ViewPortManager::Status::init){
                         sendHostEvent(MEV_RESET_VIEWPORTS, 0);
                     }else if (vpstat == ViewPortManager::Status::ready_to_start ||
@@ -280,13 +308,14 @@ bool MapperEngine::run(std::string&& scriptPath){
                         sendHostEvent(MEV_START_VIEWPORTS, 0);
                     }
                 }
-                if (scripting.updated_flags & UPDATED_READY_TO_CAPTURE){
+                if (flags & UPDATED_READY_TO_CAPTURE){
                     sendHostEvent(MEV_READY_TO_CAPTURE_WINDOW, 0);
                 }
-                if (scripting.updated_flags & UPDATED_LOST_CAPTURED_WINDOW){
+                if (flags & UPDATED_LOST_CAPTURED_WINDOW){
                     sendHostEvent(MEV_LOST_CAPTURED_WINDOW, 0);
                 }
-                scripting.updated_flags = 0;
+                lock.lock();
+                scripting.updated_flags &= ~flags;
             }
 
             //-------------------------------------------------------------------------------
@@ -364,7 +393,7 @@ const char* MapperEngine::getEventName(uint64_t evid) const{
 void MapperEngine::sendEvent(Event &&ev){
     std::lock_guard lock(mutex);
     event.queue.push(std::make_unique<Event>(std::move(ev)));
-    event.cv.notify_one();
+    event.cv.notify_all();
 }
 
 std::unique_ptr<Event>&& MapperEngine::receiveEvent(){
@@ -472,18 +501,34 @@ std::vector<ViewportInfo> MapperEngine::get_viewport_list(){
     }
 }
 
-void MapperEngine::enable_viewports(){
-    std::lock_guard lock(mutex);
+bool MapperEngine::enable_viewports(){
+    std::unique_lock lock(mutex);
     if (status == Status::running){
-        scripting.viewportManager->enable_viewports();
+        ApiContext context;
+        context.type = ApiContext::Type::start_viewports;
+        Event ev{static_cast<uint64_t>(EventID::API_REQUEST), &context};
+        lock.unlock();
+        sendEvent(std::move(ev));
+        lock.lock();
+        event.cv.wait(lock, [this, &context](){return status != Status::running || context.done;});
+        return context.result;
     }
+    return true;
 }
 
-void MapperEngine::disable_viewports(){
-    std::lock_guard lock(mutex);
+bool MapperEngine::disable_viewports(){
+    std::unique_lock lock(mutex);
     if (status == Status::running){
-        scripting.viewportManager->disable_viewports();
+        ApiContext context;
+        context.type = ApiContext::Type::stop_viewports;
+        Event ev{static_cast<uint64_t>(EventID::API_REQUEST), &context};
+        lock.unlock();
+        sendEvent(std::move(ev));
+        lock.lock();
+        event.cv.wait(lock, [this, &context](){return status != Status::running || context.done;});
+        return context.result;
     }
+    return true;
 }
 
 MAPPINGS_STAT MapperEngine::get_mapping_stat(){

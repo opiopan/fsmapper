@@ -158,8 +158,7 @@ DLLEXPORT bool mapper_releaseWindw(MapperHandle handle, uint32_t cwid){
 
 DLLEXPORT bool mapper_startViewPort(MapperHandle handle){
     try{
-        handle->engine->enable_viewports();
-        return true;
+        return handle->engine->enable_viewports();
     }catch(MapperException& e){
         std::ostringstream os;
         os << "mapper-core: failed to enable viewports:\n" << e.what();
@@ -170,8 +169,7 @@ DLLEXPORT bool mapper_startViewPort(MapperHandle handle){
 
 DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
     try{
-        handle->engine->disable_viewports();
-        return true;
+        return handle->engine->disable_viewports();
     }catch(MapperException& e){
         std::ostringstream os;
         os << "mapper-core: failed to stop viewports:\n" << e.what();

@@ -11,6 +11,8 @@
 #include <cmath>
 #include <sol/sol.hpp>
 
+struct ApiContext;
+
 class EventValue{
 public:
     enum class Type{
@@ -20,6 +22,7 @@ public:
         double_value,
         string_value,
         lua_value,
+        api_context,
     };
 
 protected:
@@ -28,6 +31,7 @@ protected:
         bool boolValue;
         int64_t intValue;
         double doubleValue;
+        ApiContext* apiContext;
     }unionValue;
     std::unique_ptr<std::string> stringValue;
     sol::object luaValue;
@@ -43,6 +47,9 @@ public:
     EventValue(double value): type(Type::double_value){
         unionValue.doubleValue = value;
     };
+    EventValue(ApiContext* value): type(Type::api_context){
+        unionValue.apiContext = value;
+    }
     EventValue(const char* value) : type(Type::string_value){
         stringValue = std::make_unique<std::string>(value);
     };
@@ -115,6 +122,8 @@ public:
             return stringValue->length();
         case Type::lua_value:
             return luaValue.get_type() != sol::type::lua_nil;
+        case Type::api_context:
+            return unionValue.apiContext;
         }
     };
     operator int64_t () const{
@@ -128,6 +137,7 @@ public:
         case Type::null:
         case Type::string_value:
         case Type::lua_value:
+        default:
             return 0;
         }
     };
@@ -142,6 +152,7 @@ public:
         case Type::null:
         case Type::string_value:
         case Type::lua_value:
+        default:
             return 0;
         }
     };
@@ -154,6 +165,7 @@ public:
         case Type::int_value:
         case Type::double_value:
         case Type::lua_value:
+        default:
             return "";
         }
     };
@@ -163,6 +175,13 @@ public:
     operator sol::object () const{
         return luaValue;
     };
+    operator ApiContext* () const{
+        if (type == Type::api_context){
+            return unionValue.apiContext;
+        }else{
+            return nullptr;
+        }
+    }
 
     template <class T> T getAs() const {return static_cast<T>(*this);};
 };
@@ -187,6 +206,7 @@ public:
     Event(uint64_t id, const char* value) : id(id), value(value){};
     Event(uint64_t id, std::string&& value) : id(id), value(std::move(value)){};
     Event(uint64_t id, sol::object&& value): id(id), value(std::move(value)){};
+    Event(uint64_t id, ApiContext* value): id(id), value(value){}
     Event(uint64_t id, AssosiativeArray&& value): id(id), array(std::make_unique<AssosiativeArray>(std::move(value))){};
     Event(const Event& src){*this = src;};
     Event(Event&& src): id(src.id), value(std::move(src.value)), array(std::move(src.array)){};
@@ -232,6 +252,9 @@ public:
     operator const AssosiativeArray& () const{
         return *array;
     };
+    operator ApiContext* () const{
+        return static_cast<ApiContext*>(value);
+    }
 
     template <class T> T getAs() const {return static_cast<T>(*this);};
 
@@ -267,10 +290,19 @@ enum class EventID : int64_t{
     CHANGE_SIMCONNECTION,
     CHANGE_AIRCRAFT,
     CHANGE_DEVICES,
-    READY_TO_CAPTURE_WINDOW,
-    LOST_CAPUTRED_WINDOW,
-    ENABLE_VIEWPORT,
-    DISABLE_VIEPORT,
+    API_REQUEST,
     
     DINAMIC_EVENT = 10000
+};
+
+struct ApiContext{
+    enum class Type{
+        start_viewports,
+        stop_viewports,
+    };
+    Type type;
+    bool done = false;
+    bool result = false;
+
+    ApiContext() = default;
 };

@@ -165,8 +165,8 @@ public:
     std::vector<ViewportInfo> get_viewport_list();
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
-    void enable_viewports();
-    void  disable_viewports();
+    bool enable_viewports();
+    bool disable_viewports();
     MAPPINGS_STAT get_mapping_stat();
     
 protected:
