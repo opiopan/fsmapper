@@ -175,6 +175,7 @@ local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = 2,
     bgcolor = "Black",
+    aspect_ratio = 4.0 / 3.0,
 })
 local pfd = viewport:register_view({
     name = "PFD",
@@ -187,7 +188,7 @@ local mfd = viewport:register_view({
     mappings = mfd_maps,
 })
 
-function toggle_view()
+local function toggle_view()
     if viewport.current_view == pfd then
         viewport:change_view(mfd)
     else
