@@ -345,7 +345,6 @@ namespace winrt::gui::Models::implementation{
         std::condition_variable cv;
         bool should_stop {false};
         MapperHandle mapper {nullptr};
-        MapperToolsHandle mapper_tools {nullptr};
         uint32_t dirty_properties {0};
 
         Windows::Foundation::IAsyncOperation<int32_t> scheduler;

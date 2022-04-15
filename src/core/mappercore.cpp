@@ -177,28 +177,3 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
         return false;
     }
 }
-
-//============================================================================================
-// mapper core tools API imprementation
-//============================================================================================
-struct MapperToolsContext{
-    uint64_t token;
-    Gdiplus::GdiplusStartupInput input;
-    Gdiplus::GdiplusStartupOutput output;
-};
-
-DLLEXPORT MapperToolsHandle mapper_tools_init(){
-    auto handle = std::make_unique<MapperToolsContext>();
-    if (Gdiplus::GdiplusStartup(&handle->token, &handle->input, &handle->output) == Gdiplus::Ok){
-        return handle.release();
-    }else{
-        return nullptr;
-    }
-}
-
-DLLEXPORT void mapper_tools_terminate(MapperToolsHandle handle){
-    if (handle){
-        Gdiplus::GdiplusShutdown(handle->token);
-        delete handle;
-    }
-}

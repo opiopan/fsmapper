@@ -279,17 +279,9 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
 
     aspect_ratio = lua_safevalue<float>(def["aspect_ratio"]);
 
-    auto&& bgcolor = lua_safevalue<std::string>(def["bgcolor"]);
-    if (bgcolor){
-        auto color = webcolor_to_colorref(*bgcolor);
-        if (color){
-            this->bg_color = *color;
-        }else{
-            std::ostringstream os;
-            os << "\"bgcolor\" parameter value is invalid, it should be follow the webcolers format. [";
-            os << *bgcolor << "]";
-            throw MapperException(std::move(os.str()));
-        }
+    sol::object bgcolor = def["bgcolor"];
+    if (bgcolor.get_type() != sol::type::nil){
+        bg_color = graphics::color(bgcolor);
     }
 
     auto window = make_viewport_window(bg_color,

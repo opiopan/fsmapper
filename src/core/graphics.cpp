@@ -6,6 +6,10 @@
 #include "graphics.h"
 
 #include <stdexcept>
+#include <memory>
+#include <sol/sol.hpp>
+#include "tools.h"
+#include "engine.h"
 
 //============================================================================================
 // initialize / deinitialize factory objects
@@ -33,6 +37,29 @@ namespace graphics{
         d3d_device = nullptr;
         wic_factory = nullptr;
         d2d_factory = nullptr;
+    }
+}
+
+//============================================================================================
+// representation of color
+//============================================================================================
+namespace graphics{
+    color::color(sol::object value){
+        if (value.get_type() == sol::type::string){
+            auto rgb = webcolor_to_colorref(value.as<std::string>());
+            if (!rgb){
+                throw MapperException("color as string must be specified with Web colors format");
+            }
+            r = GetRValue(*rgb) / 255.f;
+            g = GetGValue(*rgb) / 255.f;
+            b = GetBValue(*rgb) / 255.f;
+            a = 1.0f;
+        }else if (value.is<std::shared_ptr<color>>()){
+            auto rgba = value.as<std::shared_ptr<color>>();
+            *this = *rgba;
+        }else{
+            throw MapperException("color must be specified as string or graphics.color() object");
+        }
     }
 }
 
@@ -101,4 +128,40 @@ namespace graphics{
             throw std::runtime_error("invalid redering method is specified");
         }
     }
+}
+
+//============================================================================================
+// create lua environment
+//============================================================================================
+void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
+    auto table = lua.create_named_table("graphics");
+
+    table.new_usertype<graphics::color>(
+        "color",
+        sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
+            return lua_c_interface(engine, "graphics.color", [&va](){
+                if (va.size() >= 3){
+                    auto r = lua_safevalue<float>(va[0]);
+                    auto g = lua_safevalue<float>(va[1]);
+                    auto b = lua_safevalue<float>(va[2]);
+                    if (r && g && b){
+                        if (va.size() >= 4){
+                            auto a = lua_safevalue<float>(va[3]);
+                            if (a){
+                                return std::make_shared<graphics::color>(*r / 255.f, *g / 255.f, *b / 255.f, *a);
+                            }
+                        }else{
+                            return std::make_shared<graphics::color>(*r / 255.f, *g / 255.f, *b / 255.f);
+                        }
+                    }
+                }else if (va.size() >= 1){
+                    sol::object obj = va[0];
+                    if (obj.get_type() == sol::type::string){
+                        return std::make_shared<graphics::color>(obj);
+                    }
+                }
+                throw MapperException("invalid arguments");
+            });
+        })
+    );
 }

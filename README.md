@@ -66,7 +66,7 @@ The one of easiest way is using the following shortcut made when Visual Studio w
     ```
 ## How to use fsmapper
 
-### Configuration file = Lua scrip
+### Configuration file
 To briefly describe the function of fsmapper is that waiting event such as position change of the joystick axis then invoking the action corrensponds to the occured event.<br> 
 The rule of mapping between the events and the actions is described by [Lua 5.4](https://www.lua.org/manual/5.4/manual.html) script.
 The executable file of fsmapper, fsmapper.exe, provides GUI. However fsmapper has no capability to edit the event-action mapping rules. It just can behave like a dashboard to show the condition and state of event-action mapping process.<br>
@@ -97,7 +97,7 @@ So Lua script defines just placefolder, You need to specify which actual window 
 </p>
 
 ## Convenient Software
-The SimConnect SDK of Flight Simulator 2020 defines many [EVENT IDs](https://docs.flightsimulator.com/html/index.htm#t=Programming_Tools%2FSimVars%2FEvent_IDs.htm) to interact with the guages and panels of aircraft. 
+The SimConnect SDK of Flight Simulator 2020 defines many [EVENT IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm) to interact with the guages and panels of aircraft. 
 For example, ```G1000_PFD_FLIGHTPLAN_BUTTON``` is defined for the FPL button on the PFD.<br>
 It seems that outer software can invoke guages or panel operation by sending such events via SimConnect. However almost event case, Flight Simulator 2020 doesn't react even if the event are sent from outer software via SimConnect.<br>
 [MobiFlight WASM Module](https://github.com/MobiFlight/MobiFlight-WASM-Module) solves this problem.

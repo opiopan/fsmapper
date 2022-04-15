@@ -24,6 +24,7 @@ class ViewPortManager;
 class CapturedWindow;
 class ViewObject;
 namespace graphics{
+    class color;
     class render_target;
 }
 

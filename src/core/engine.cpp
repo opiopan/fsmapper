@@ -137,6 +137,11 @@ void MapperEngine::initScriptingEnv(){
     scripting.simhostManager = std::make_unique<SimHostManager>(*this, ev_change_aircraft, scripting.lua());
 
     //-------------------------------------------------------------------------------
+    // create graphics related environments
+    //-------------------------------------------------------------------------------
+    graphics::create_lua_env(*this, scripting.lua());
+
+    //-------------------------------------------------------------------------------
     // set package path
     //-------------------------------------------------------------------------------
     std::filesystem::path path(scripting.scriptPath);
@@ -284,6 +289,7 @@ bool MapperEngine::run(std::string&& scriptPath){
             //-------------------------------------------------------------------------------
             if (scripting.updated_flags){
                 auto flags = scripting.updated_flags;
+                scripting.updated_flags = 0;
                 auto vpstat = scripting.viewportManager->get_status();
                 lock.unlock();
                 if (flags & UPDATED_DEVICES){
@@ -315,7 +321,6 @@ bool MapperEngine::run(std::string&& scriptPath){
                     sendHostEvent(MEV_LOST_CAPTURED_WINDOW, 0);
                 }
                 lock.lock();
-                scripting.updated_flags &= ~flags;
             }
 
             //-------------------------------------------------------------------------------
