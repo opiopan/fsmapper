@@ -42,7 +42,7 @@ namespace graphics{
         color() = default;
         color(float red, float green, float blue, float alpha = 1.0f): 
             r(clip(red)), g(clip(green)), b(clip(blue)), a(clip(alpha)){}
-        color(sol::object value);
+        color(sol::object value, float alpha = 1.0f);
         color(const color& src){*this = src;}
         ~color(){
         }

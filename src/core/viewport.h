@@ -28,6 +28,60 @@ namespace graphics{
     class render_target;
 }
 
+namespace view_utils{
+    struct region_def{
+        bool is_relative_coordinates = true;
+        FloatRect rect;
+        
+        region_def() = default;
+        region_def(const region_def& src){*this = src;}
+        region_def(const sol::table& def, bool initial_is_relative, bool default_is_whole = true, const char* msg_for_no_rect = nullptr);
+        region_def& operator = (const region_def& src){
+            is_relative_coordinates = src.is_relative_coordinates;
+            rect = src.rect;
+            return *this;
+        }
+    };
+
+    struct region_restriction{
+        float aspect_ratio;
+        struct size{
+            float width;
+            float height;
+        };
+        std::optional<size> logical_size;
+
+        region_restriction() = default;
+        region_restriction(const region_restriction& src){*this = src;}
+        region_restriction& operator = (const region_restriction& src){
+            aspect_ratio = src.aspect_ratio;
+            logical_size = src.logical_size;
+            return *this;
+        }
+    };
+    std::optional<region_restriction> parse_region_restriction(
+        const sol::table& def, const std::optional<region_restriction>& parent = std::nullopt);
+    
+    enum class horizontal_alignment{center, left, right};
+    enum class vertical_alignment{center, top, bottom};
+    struct alignment_opt{
+        horizontal_alignment h = horizontal_alignment::center;
+        vertical_alignment v = vertical_alignment::center;
+
+        alignment_opt() = default;
+        alignment_opt(const alignment_opt& src){*this = src;}
+        alignment_opt(const sol::table& def);
+        alignment_opt& operator = (const alignment_opt& src){
+            h = src.h;
+            v = src.v;
+            return *this;
+        }
+    };
+
+    FloatRect calculate_actual_rect(const FloatRect& base, const region_def& def, float scale_factor = 1.f);
+    FloatRect calculate_restricted_rect(const FloatRect& base, const region_restriction& restriction, const alignment_opt& align);
+}
+
 class ViewPort{
 protected:
     class View{
@@ -131,10 +185,10 @@ protected:
     ViewPortManager& manager;
     std::string name;
     std::optional<int> def_display_no;
-    FloatRect def_region = {0., 0., 1., 1.};
+    view_utils::region_def def_region;
+    std::optional<view_utils::region_restriction> def_restriction;
+    view_utils::alignment_opt def_alignment;
     COLORREF bg_color = 0x000000;
-    bool is_relative_coordinates = true;
-    std::optional<float> aspect_ratio{std::nullopt};
     bool is_freezed = false;
     bool is_enable = false;
     IntRect entire_region;

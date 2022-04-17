@@ -44,7 +44,7 @@ namespace graphics{
 // representation of color
 //============================================================================================
 namespace graphics{
-    color::color(sol::object value){
+    color::color(sol::object value, float alpha){
         if (value.get_type() == sol::type::string){
             auto rgb = webcolor_to_colorref(value.as<std::string>());
             if (!rgb){
@@ -53,7 +53,7 @@ namespace graphics{
             r = GetRValue(*rgb) / 255.f;
             g = GetGValue(*rgb) / 255.f;
             b = GetBValue(*rgb) / 255.f;
-            a = 1.0f;
+            a = alpha;
         }else if (value.is<std::shared_ptr<color>>()){
             auto rgba = value.as<std::shared_ptr<color>>();
             *this = *rgba;
@@ -140,24 +140,25 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         "color",
         sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
             return lua_c_interface(engine, "graphics.color", [&va](){
-                if (va.size() >= 3){
+                auto type = va[0].get_type();
+                if (type == sol::type::number){
                     auto r = lua_safevalue<float>(va[0]);
                     auto g = lua_safevalue<float>(va[1]);
                     auto b = lua_safevalue<float>(va[2]);
+                    auto a = lua_safevalue<float>(va[3]);
                     if (r && g && b){
-                        if (va.size() >= 4){
-                            auto a = lua_safevalue<float>(va[3]);
-                            if (a){
-                                return std::make_shared<graphics::color>(*r / 255.f, *g / 255.f, *b / 255.f, *a);
-                            }
+                        if (a){
+                            return std::make_shared<graphics::color>(*r / 255.f, *g / 255.f, *b / 255.f, *a);
                         }else{
                             return std::make_shared<graphics::color>(*r / 255.f, *g / 255.f, *b / 255.f);
                         }
                     }
-                }else if (va.size() >= 1){
-                    sol::object obj = va[0];
-                    if (obj.get_type() == sol::type::string){
-                        return std::make_shared<graphics::color>(obj);
+                }else if (type == sol::type::string){
+                    auto a = lua_safevalue<float>(va[1]);
+                    if (a){
+                        return std::make_shared<graphics::color>(va[0], *a);
+                    }else{
+                        return std::make_shared<graphics::color>(va[0]);
                     }
                 }
                 throw MapperException("invalid arguments");

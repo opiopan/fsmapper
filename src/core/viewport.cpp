@@ -20,6 +20,138 @@ using std::max;
 #include <gdiplus.h>
 
 //============================================================================================
+// Utilities
+//============================================================================================
+namespace view_utils{
+    region_def::region_def(const sol::table& def, bool initial_is_relative, bool default_is_whole, const char* msg_for_no_rect){
+        is_relative_coordinates = initial_is_relative;
+        auto&& coordinate = lua_safevalue<std::string>(def["coordinate"]);
+        if (coordinate && coordinate.value() == "relative"){
+            is_relative_coordinates = true;
+        }else if (coordinate && coordinate.value() == "absolute"){
+            is_relative_coordinates = false;
+        }else if (coordinate){
+            throw MapperException("Invalid value for \"coordinate\" parameter, \"relative\" or \"absolute\" can be specified");
+        }
+        auto x = lua_safevalue<float>(def["x"]);
+        auto y = lua_safevalue<float>(def["y"]);
+        auto width = lua_safevalue<float>(def["width"]);
+        auto height = lua_safevalue<float>(def["height"]);
+        if (x && y && width && height){
+            rect = FloatRect{*x, *y, *width, *height};
+        }else if (default_is_whole){
+            is_relative_coordinates = true;
+            rect = FloatRect{0.f, 0.f, 1.f, 1.f};
+        }else{
+            throw MapperException(msg_for_no_rect);
+        }
+    }
+
+    std::optional<region_restriction> parse_region_restriction(
+        const sol::table& def, const std::optional<region_restriction>& parent){
+        auto width = lua_safevalue<float>(def["logical_width"]);
+        auto height = lua_safevalue<float>(def["logical_height"]);
+        auto aspect_ratio = lua_safevalue<float>(def["aspect_ratio"]);
+        if (width && height){
+            region_restriction restriction;
+            restriction.logical_size = region_restriction::size{*width, *height};
+            restriction.aspect_ratio = *width / *height;
+            return restriction;
+        }else if (aspect_ratio){
+            region_restriction restriction;
+            restriction.aspect_ratio = *aspect_ratio;
+            return restriction;
+        }else if (parent){
+            return parent;
+        }else{
+            return std::nullopt;
+        }
+    }
+
+    alignment_opt::alignment_opt(const sol::table& def){
+        auto&& h_alignment = lua_safevalue<std::string>(def["horizontal_alignment"]);
+        if (h_alignment){
+            if (*h_alignment == "center"){
+                h = horizontal_alignment::center;
+            }else if (*h_alignment == "left"){
+                h = horizontal_alignment::left;
+            }else if (*h_alignment == "right"){
+                h = horizontal_alignment::right;
+            }else{
+                throw MapperException(
+                    "value of \"horizontal_alignment\" parameter must be eather \"center\", \"left\", or \"right\"");
+            }
+        }else{
+            h = horizontal_alignment::center;
+        }
+        auto&& v_alignment = lua_safevalue<std::string>(def["vertical_alignment"]);
+        if (v_alignment){
+            if (*v_alignment == "center"){
+                v = vertical_alignment::center;
+            }else if (*v_alignment == "top"){
+                v = vertical_alignment::top;
+            }else if (*v_alignment == "bottom"){
+                v = vertical_alignment::bottom;
+            }else{
+                throw MapperException(
+                    "value of \"vertical_alignment\" parameter must be eather \"center\", \"top\", or \"bottom\"");
+            }
+        }else{
+            v = vertical_alignment::center;
+        }
+    }
+
+    FloatRect calculate_actual_rect(const FloatRect& base, const region_def& def, float scale_factor){
+        if (def.is_relative_coordinates){
+            return FloatRect{
+                base.x + def.rect.x * base.width,
+                base.y + def.rect.y * base.height,
+                def.rect.width * base.width,
+                def.rect.height * base.height
+            };
+        }else{
+            return FloatRect{
+                base.x + def.rect.x * scale_factor,
+                base.y + def.rect.y * scale_factor,
+                def.rect.width * scale_factor,
+                def.rect.height * scale_factor
+            };
+        }
+    }
+
+    FloatRect calculate_restricted_rect(const FloatRect& base, const region_restriction& restriction, const alignment_opt& align){
+        auto aratio = base.width / base.height;
+        if (aratio > restriction.aspect_ratio){
+            auto factor = restriction.aspect_ratio / aratio;
+            auto width = base.width * factor;
+            auto offset = 
+                align.h == horizontal_alignment::center ? (base.width - width) / 2.f :
+                align.h == horizontal_alignment::right  ? (base.width - width) :
+                                                          0.f;
+            return {
+                base.x + offset,
+                base.y,
+                width,
+                base.height
+            };
+        }else{
+            auto factor = aratio / restriction.aspect_ratio;
+            auto height = base.height * factor;
+            auto offset = 
+                align.v == vertical_alignment::center ? (base.height - height) / 2.f :
+                align.v == vertical_alignment::bottom ? (base.height - height) :
+                                                        0.f;
+            return {
+                base.x,
+                base.y + offset,
+                base.width,
+                height
+            };
+        }
+    }
+}
+
+//============================================================================================
 // View inmplementation
 //============================================================================================
 ViewPort::View::View(MapperEngine& engine, sol::object& def_obj){
@@ -41,13 +173,13 @@ ViewPort::View::View(MapperEngine& engine, sol::object& def_obj){
             FloatRect region(0, 0, 1, 1);
             bool is_relative = true;
             
-            auto&& region_type = lua_safevalue<std::string>(item["region_type"]);
-            if (region_type && region_type.value() == "relative"){
+            auto&& coordinate = lua_safevalue<std::string>(item["coordinate"]);
+            if (coordinate && coordinate.value() == "relative"){
                 is_relative = true;
-            }else if (region_type && region_type.value() == "absolute"){
+            }else if (coordinate && coordinate.value() == "absolute"){
                 is_relative = false;
-            }else if (region_type){
-                throw MapperException("Invalid value for \"region_type\" parameter, \"relative\" or \"absolute\" can be specified");
+            }else if (coordinate){
+                throw MapperException("Invalid value for \"coordinate\" parameter, \"relative\" or \"absolute\" can be specified");
             }
 
             auto x = lua_safevalue<float>(item["x"]);
@@ -251,33 +383,17 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
     if (def_display_no && *def_display_no < 1){
         throw  MapperException("\"displayno\" parameter value is invalid, the value must be integer grater than 0");
     }
-    is_relative_coordinates = def_display_no ? true : false;
+    def_region = view_utils::region_def(
+        def, static_cast<bool>(def_display_no), static_cast<bool>(def_display_no),
+        "Viewport region must be specified by \"x\", \"y\", \"width\" and \"height\" parameters, "
+        "if absolute coordinate system is selected or target display number specification is ommited");
     
-    auto&& region_type = lua_safevalue<std::string>(def["region_type"]);
-    if (region_type && region_type.value() == "relative"){
-        is_relative_coordinates = true;
-    }else if (region_type && region_type.value() == "absolute"){
-        is_relative_coordinates = false;
-    }else if (region_type){
-        throw MapperException("Invalid value for \"region_type\" parameter, \"relative\" or \"absolute\" can be specified");
-    }
-    if (!def_display_no && is_relative_coordinates){
-        throw MapperException("region type of viewport should be \"absolute\" if target display number specification is ommited");
+    if (!def_display_no && def_region.is_relative_coordinates){
+        throw MapperException("coordinate of viewport should be \"absolute\" if target display number specification is ommited");
     }
 
-    auto x = lua_safevalue<float>(def["x"]);
-    auto y = lua_safevalue<float>(def["y"]);
-    auto width = lua_safevalue<float>(def["width"]);
-    auto height = lua_safevalue<float>(def["height"]);
-
-    if (x && y && width && height){
-        def_region = {*x, *y, *width, *height};
-    }else if (!is_relative_coordinates || !def_display_no){
-        throw MapperException("Viewport region must be specified by \"x\", \"y\", \"width\" and \"height\" parameters, "
-                              "if absolute coordinate system is selected or target display number specification is ommited");
-    }
-
-    aspect_ratio = lua_safevalue<float>(def["aspect_ratio"]);
+    def_restriction = view_utils::parse_region_restriction(def);
+    def_alignment = view_utils::alignment_opt(def);
 
     sol::object bgcolor = def["bgcolor"];
     if (bgcolor.get_type() != sol::type::nil){
@@ -331,10 +447,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         throw MapperException(std::move(os.str()));
     }
     if (!def_display_no){
-        entire_region.x = std::roundf(def_region.x);
-        entire_region.y = std::roundf(def_region.y);
-        entire_region.width = std::roundf(std::roundf(def_region.width));
-        entire_region.height = std::roundf(def_region.height);
+        entire_region = view_utils::calculate_actual_rect({0.f, 0.f, 0.f, 0.f}, def_region);
     }else{
         if (displays.size() < *def_display_no){
             std::ostringstream os;
@@ -343,34 +456,11 @@ void ViewPort::enable(const std::vector<IntRect> displays){
             throw MapperException(std::move(os.str()));
         }else{
             auto& drect = displays[*def_display_no - 1];
-            if (is_relative_coordinates){
-                entire_region.x = std::roundf(def_region.x * drect.width + drect.x);
-                entire_region.y = std::roundf(def_region.y * drect.height + drect.y);
-                entire_region.width = std::roundf(def_region.width * drect.width);
-                entire_region.height = std::roundf(def_region.height * drect.height);
-            }else{
-                entire_region.x = std::roundf(def_region.x + drect.x);
-                entire_region.y = std::roundf(def_region.y + drect.y);
-                entire_region.width = std::roundf(def_region.width);
-                entire_region.height = std::roundf(def_region.height);
-            }
+            entire_region = view_utils::calculate_actual_rect(drect, def_region);
         }
     }
-    if (aspect_ratio){
-        auto eratio = static_cast<float>(entire_region.width) / static_cast<float>(entire_region.height);
-        if (eratio > *aspect_ratio){
-            auto factor = *aspect_ratio / eratio;
-            region.width = entire_region.width * factor;
-            region.x = entire_region.x + (entire_region.width - region.width) / 2;
-            region.height = entire_region.height;
-            region.y = entire_region.y;
-        }else{
-            auto factor = eratio / *aspect_ratio;
-            region.width = entire_region.width;
-            region.x = entire_region.x;
-            region.height = entire_region.height * factor;
-            region.y = entire_region.y + (entire_region.height - region.height) / 2;
-        }
+    if (def_restriction){
+        region = view_utils::calculate_restricted_rect(entire_region, *def_restriction, def_alignment);
     }else{
         region = entire_region;
     }
