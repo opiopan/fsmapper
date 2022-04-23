@@ -59,9 +59,10 @@ namespace graphics{
         float green() const{return g;}
         float blue() const{return b;}
         float alpha() const{return a;}
+        void set_alpha(float alpha){a = alpha;}
 
-        operator COLORREF (){return RGB(r * 255, g * 255, b * 255);}
-        operator D3DCOLORVALUE (){return D3DCOLORVALUE{r, g, b, a};}
+        operator COLORREF () const{return RGB(r * 255, g * 255, b * 255);}
+        operator D3DCOLORVALUE () const{return D3DCOLORVALUE{r, g, b, a};}
     };
 
     //============================================================================================

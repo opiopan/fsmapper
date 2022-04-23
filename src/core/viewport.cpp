@@ -208,12 +208,12 @@ View::~View(){
 }
 
 void View::prepare(){
-    if (def_restriction){
-        region = view_utils::calculate_restricted_rect(viewport.get_output_region(), *def_restriction, def_alignment);
-        scale_factor = view_utils::calculate_scale_factor(region, *def_restriction, viewport.get_scale_factor());
-    }else{
+    if (def_restriction == viewport.get_region_restriction()){
         region = viewport.get_output_region();
         scale_factor = viewport.get_scale_factor();
+    }else{
+        region = view_utils::calculate_restricted_rect(viewport.get_output_region(), *def_restriction, def_alignment);
+        scale_factor = view_utils::calculate_scale_factor(region, *def_restriction, viewport.get_scale_factor());
     }
 }
 
@@ -238,8 +238,16 @@ void View::hide(){
 }
 
 bool View::render_view(graphics::render_target& render_target, const FloatRect& rect){
-    // clear background at first;
-    render_target->Clear(bg_color);
+
+    //fill outer area of varid region as needed, then clear background
+    if (rect.width > region.width || rect.height > region.height){
+        render_target->Clear(viewport.get_background_clolor());
+        render_target->PushAxisAlignedClip(region, D2D1_ANTIALIAS_MODE_ALIASED);
+        render_target->Clear(bg_color);
+        render_target->PopAxisAlignedClip();
+    }else{
+        render_target->Clear(bg_color);
+    }
 
     // render each objects are proceded below
 
@@ -402,6 +410,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
     sol::object bgcolor = def["bgcolor"];
     if (bgcolor.get_type() != sol::type::nil){
         bg_color = graphics::color(bgcolor);
+        bg_color.set_alpha(1.f);
     }
 
     auto window = make_viewport_window(bg_color,

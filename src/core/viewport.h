@@ -58,6 +58,16 @@ namespace view_utils{
             logical_size = src.logical_size;
             return *this;
         }
+        bool operator == (const region_restriction& lvalue) const{
+            bool rc =  aspect_ratio == lvalue.aspect_ratio && 
+                       logical_size.has_value() == lvalue.logical_size.has_value();
+            if (logical_size && lvalue.logical_size){
+                rc = rc &&
+                     logical_size->width == lvalue.logical_size->width &&
+                     logical_size->height == lvalue.logical_size->height;
+            }
+            return rc;
+        }
     };
     std::optional<region_restriction> parse_region_restriction(
         const sol::table& def, const std::optional<region_restriction>& parent = std::nullopt);
@@ -206,7 +216,7 @@ protected:
     view_utils::region_def def_region;
     std::optional<view_utils::region_restriction> def_restriction;
     view_utils::alignment_opt def_alignment;
-    COLORREF bg_color = 0x000000;
+    graphics::color bg_color {0.f, 0.f, 0.f, 1.f};
     bool is_freezed = false;
     bool is_enable = false;
     IntRect entire_region;
@@ -254,7 +264,7 @@ public:
     const IntRect& get_output_region() const {return region_client;}
     const IntPoint& get_window_position()const{return window_pos;}
     float get_scale_factor() const {return scale_factor;}
-    COLORREF get_background_clolor() const {return bg_color;}
+    const graphics::color& get_background_clolor() const {return bg_color;}
     void invaridate_rect(const FloatRect& rect);
 };
 
