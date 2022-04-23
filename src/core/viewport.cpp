@@ -221,8 +221,7 @@ void View::show(){
     for (auto& element : captured_window_elements){
         FloatRect fregion;
         element->transform_to_output_region(region + viewport.get_window_position(), fregion, scale_factor);
-        IntRect iregion(std::roundf(fregion.x), std::roundf(fregion.y), std::roundf(fregion.width), std::roundf(fregion.height));
-        element->get_object().change_window_pos(iregion, HWND_TOP, true, viewport.get_background_clolor());
+        element->get_object().change_window_pos(IntRect{fregion}, HWND_TOP, true, viewport.get_background_clolor());
     }
     FloatRect rect{viewport.get_output_region()};
     viewport.invaridate_rect(rect);
@@ -230,23 +229,27 @@ void View::show(){
 
 void View::hide(){
     for (auto& element : captured_window_elements){
-        FloatRect region;
-        element->transform_to_output_region(viewport.get_output_region(), region, scale_factor);
-        IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
-        element->get_object().change_window_pos(iregion,HWND_BOTTOM, false);
+        FloatRect fregion;
+        element->transform_to_output_region(viewport.get_output_region(), fregion, scale_factor);
+        element->get_object().change_window_pos(IntRect{fregion}, HWND_BOTTOM, false);
     }
 }
 
 bool View::render_view(graphics::render_target& render_target, const FloatRect& rect){
 
     //fill outer area of varid region as needed, then clear background
+    auto clear_background = [this, &render_target]{
+        render_target->Clear(bg_color);
+    };
     if (rect.width > region.width || rect.height > region.height){
         render_target->Clear(viewport.get_background_clolor());
         render_target->PushAxisAlignedClip(region, D2D1_ANTIALIAS_MODE_ALIASED);
-        render_target->Clear(bg_color);
+        clear_background();
         render_target->PopAxisAlignedClip();
     }else{
-        render_target->Clear(bg_color);
+        render_target->PushAxisAlignedClip(rect, D2D1_ANTIALIAS_MODE_ALIASED);
+        clear_background();
+        render_target->PopAxisAlignedClip();
     }
 
     // render each objects are proceded below

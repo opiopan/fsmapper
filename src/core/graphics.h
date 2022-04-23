@@ -11,6 +11,7 @@
 #include <d2d1.h>
 #include <wincodec.h>
 #include <sol/sol.hpp>
+#include "tools.h"
 
 class MapperEngine;
 
@@ -68,8 +69,16 @@ namespace graphics{
     //============================================================================================
     // bitmap: WIC based bitmap
     //============================================================================================
+    class bitmap_source;
+
     class bitmap{
     protected:
+        std::shared_ptr<bitmap_source> source;
+        FloatRect rect;
+        FloatPoint origin;
+
+    public:
+        bitmap(const std::shared_ptr<bitmap_source>& source, FloatRect rect, FloatPoint origin ={0.f, 0.f});
     };
 
     //============================================================================================

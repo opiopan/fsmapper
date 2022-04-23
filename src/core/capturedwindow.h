@@ -36,5 +36,5 @@ public:
     HWND get_hwnd() const {return hwnd;};
     void attach_window(HWND hwnd);
     void release_window();
-    bool change_window_pos(IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor = 0);
+    bool change_window_pos(const IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor = 0);
 };

@@ -247,10 +247,11 @@ struct RectangleBase{
 
     RectangleBase() = default;
     RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
-    RectangleBase(const RectangleBase& src){*this = src;};
     ~RectangleBase() = default;
     template <typename SRC>
-    RectangleBase(const SRC& src): x(src.x), y(src.y), width(src.width), height(src.height){}
+    RectangleBase(const SRC& src): 
+        x(static_cast<T>(src.x)), y(static_cast<T>(src.y)), 
+        width(static_cast<T>(src.width)), height(static_cast<T>(src.height)){}
 
     template<typename SRC>
     RectangleBase& operator = (const SRC& src){
@@ -284,7 +285,7 @@ struct RectangleBase{
         return !(*this == src);
     }
 
-    operator D2D1_RECT_F (){
+    operator D2D1_RECT_F () const{
         return D2D1_RECT_F{
             static_cast<float>(x),
             static_cast<float>(y),
