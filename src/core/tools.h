@@ -205,6 +205,39 @@ struct GUID_KEY: public GUID{
 };
 
 #ifndef NO_SOL
+template <typename T>
+struct PointBase{
+    T x = 0;
+    T y = 0;
+
+    PointBase() = default;
+    PointBase(T x, T y) : x(x), y(y){}
+    template <typename POINT>
+    PointBase(const POINT& src){*this = src;}
+    ~PointBase() = default;
+
+    template<typename POINT>
+    PointBase& operator = (const POINT& src){
+        x = static_cast<T>(src.x);
+        y = static_cast<T>(src.y);
+        return *this;
+    }
+
+    template<typename POINT>
+    PointBase& operator += (const POINT& rvalue){
+        x += static_cast<T>(rvalue.x);
+        y += static_cast<T>(rvalue.y);
+    }
+
+    template<typename POINT>
+    PointBase operator + (const POINT& rvalue) const{
+        return {x + static_cast<T>(rvalue.x), y + static_cast<T>(rvalue.y)};
+    }
+};
+
+using IntPoint = PointBase<int>;
+using FloatPoint = PointBase<float>;
+
 template <typename T> 
 struct RectangleBase{
     T x = 0;
@@ -227,6 +260,21 @@ struct RectangleBase{
         height = src.height;
         return *this;
     };
+
+    template<typename ANY>
+    RectangleBase& operator += (const PointBase<ANY>& point){
+        x += static_cast<T>(point.x);
+        y += static_cast<T>(point.y);
+        return *this;
+    }
+
+    template<typename ANY>
+    RectangleBase operator + (const PointBase<ANY>& point) const{
+        return {
+            x + static_cast<T>(point.x), y + static_cast<T>(point.y),
+            width, height
+        };
+    }
 
     bool operator == (const RectangleBase& src) const{
         return x == src.x && y == src.y && width == src.width && height == src.height;

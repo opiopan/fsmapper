@@ -18,16 +18,16 @@
 #include "tools.h"
 #include "simplewindow.h"
 #include "action.h"
+#include "graphics.h"
 
 class MapperEngine;
 class ViewPortManager;
 class CapturedWindow;
 class ViewObject;
-namespace graphics{
-    class color;
-    class render_target;
-}
 
+//============================================================================================
+// Utilitiy classes / functions
+//============================================================================================
 namespace view_utils{
     struct region_def{
         bool is_relative_coordinates = true;
@@ -80,66 +80,84 @@ namespace view_utils{
 
     FloatRect calculate_actual_rect(const FloatRect& base, const region_def& def, float scale_factor = 1.f);
     FloatRect calculate_restricted_rect(const FloatRect& base, const region_restriction& restriction, const alignment_opt& align);
+    float calculate_scale_factor(const FloatRect& actual, const region_restriction& restriction, float base_factor = 1.f);
 }
 
+class ViewPort;
+
+//============================================================================================
+// View Element
+//============================================================================================
+template <typename Object>
+class ViewElement{
+public:
+    using object_type = Object;
+protected:
+    view_utils::region_def def_region;
+    object_type& object;
+public:
+    ViewElement(view_utils::region_def region, object_type& object) : def_region(region), object(object) {};
+    ~ViewElement(){};
+    void transform_to_output_region(const IntRect& base, FloatRect& out, float scale_factor) const{
+        if (def_region.is_relative_coordinates){
+            out.x = base.x + def_region.rect.x * base.width;
+            out.y = base.y + def_region.rect.y * base.height;
+            out.width = def_region.rect.width * base.width;
+            out.height = def_region.rect.height * base.height;
+        }else{
+            out.x = def_region.rect.x * scale_factor + base.x;
+            out.y = def_region.rect.y * scale_factor + base.y;
+            out.width = def_region.rect.width * scale_factor;
+            out.height = def_region.rect.height * scale_factor;
+        }
+    };
+    object_type& get_object() const {return object;};
+    operator object_type& () const {return object;};
+};
+
+//============================================================================================
+// View
+//============================================================================================
+class View{
+protected:
+    using CWViewElement = ViewElement<CapturedWindow>;
+    using NormalViewElement = ViewElement<ViewObject>;
+
+    ViewPort& viewport;
+    std::string name;
+    std::optional<view_utils::region_restriction> def_restriction;
+    view_utils::alignment_opt def_alignment;
+    graphics::color bg_color{0.f, 0.f, 0.f, 0.f};
+    std::shared_ptr<graphics::bitmap> bg_bitmap = nullptr;
+    FloatRect region;
+    float scale_factor;
+    std::vector<std::unique_ptr<CWViewElement>> captured_window_elements;
+    std::vector<std::unique_ptr<NormalViewElement>> normal_elements;
+    std::unique_ptr<EventActionMap> mappings;
+
+public:
+    friend ViewPortManager;
+    View() = delete;
+    View(const View&) = delete;
+    View(View&&) = delete;
+    View& operator = (const View&) = delete;
+    View& operator = (View&&) = delete;
+    View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj);
+    ~View();
+    void prepare();
+    void show();
+    void hide();
+    bool render_view(graphics::render_target& render_target, const FloatRect& rect);
+    HWND getBottomWnd();
+    Action* findAction(uint64_t evid);
+    int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
+};
+
+//============================================================================================
+// Viewport
+//============================================================================================
 class ViewPort{
 protected:
-    class View{
-    protected:
-        template <typename Object>
-        class ViewElement{
-        public:
-            using object_type = Object;
-        protected:
-            FloatRect def_region;
-            bool is_relative_coordinates = true;
-            object_type& object;
-        public:
-            ViewElement(FloatRect& region, bool is_relative_coordinates, object_type& object) :
-                def_region(region), is_relative_coordinates(is_relative_coordinates), object(object) {};
-            ~ViewElement(){};
-            void transform_to_output_region(const IntRect& base, FloatRect& out) const{
-                if (is_relative_coordinates){
-                    out.x = base.x + def_region.x * base.width;
-                    out.y = base.y + def_region.y * base.height;
-                    out.width = def_region.width * base.width;
-                    out.height = def_region.height * base.height;
-                }else{
-                    out.x = def_region.x + base.x;
-                    out.y = def_region.y + base.y;
-                    out.width = def_region.width;
-                    out.height = def_region.height;
-                }
-            };
-            object_type& get_object() const {return object;};
-            operator object_type& () const {return object;};
-        };
-        using CWViewElement = ViewElement<CapturedWindow>;
-        using NormalViewElement = ViewElement<ViewObject>;
-
-        std::string name;
-        std::vector<std::unique_ptr<CWViewElement>> captured_window_elements;
-        std::vector<std::unique_ptr<NormalViewElement>> normal_elements;
-        D2D1::ColorF bg_color{0.f, 0.f, 0.f, 0.f};
-        std::unique_ptr<EventActionMap> mappings;
-
-    public:
-        friend ViewPortManager;
-        View() = delete;
-        View(const View&) = delete;
-        View(View&&) = delete;
-        View& operator = (const View&) = delete;
-        View& operator = (View&&) = delete;
-        View(MapperEngine& engine, sol::object& def_obj);
-        ~View();
-        void show(ViewPort& viewport);
-        void hide(ViewPort& viewport);
-        bool render_view(graphics::render_target& render_target, const FloatRect& rect);
-        HWND getBottomWnd();
-        Action* findAction(uint64_t evid);
-        int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
-    };
-
 public:
     static constexpr auto bg_window_class_name = "mapper_viewport_bg_window";
     class BackgroundWindow: public SimpleWindow<bg_window_class_name>{
@@ -195,6 +213,8 @@ protected:
     IntRect entire_region_client;
     IntRect region;
     IntRect region_client;
+    IntPoint window_pos;
+    float scale_factor;
     std::vector<std::unique_ptr<View>> views;
     int current_view = 0;
     std::mutex rendering_mutex;
@@ -230,14 +250,18 @@ public:
     std::pair<int, int> getMappingsStat();
 
     // functions for views
-    const IntRect& get_output_region() const {return region;}
-    const IntRect& get_output_client_region() const{return region_client;}
+    const std::optional<view_utils::region_restriction>& get_region_restriction()const {return def_restriction;}
+    const IntRect& get_output_region() const {return region_client;}
+    const IntPoint& get_window_position()const{return window_pos;}
+    float get_scale_factor() const {return scale_factor;}
     COLORREF get_background_clolor() const {return bg_color;}
     void invaridate_rect(const FloatRect& rect);
 };
 
+//============================================================================================
+// Viewport Manager
+//============================================================================================
 class MapperEngine;
-
 class ViewPortManager{
 public:
     enum class Status{

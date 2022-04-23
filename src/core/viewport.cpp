@@ -149,12 +149,20 @@ namespace view_utils{
             };
         }
     }
+
+    float calculate_scale_factor(const FloatRect& actual, const region_restriction& restriction, float base_factor){
+        if (restriction.logical_size){
+            return actual.width / restriction.logical_size->width;
+        }else{
+            return base_factor;
+        }
+    }
 }
 
 //============================================================================================
 // View inmplementation
 //============================================================================================
-ViewPort::View::View(MapperEngine& engine, sol::object& def_obj){
+View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : viewport(viewport){
     if (def_obj.get_type() != sol::type::table){
         throw MapperException("view definition must be specified as a table");
     }
@@ -165,38 +173,24 @@ ViewPort::View::View(MapperEngine& engine, sol::object& def_obj){
         throw MapperException("\"name\" parameter for view definition must be specified");
     }
 
+    def_restriction = view_utils::parse_region_restriction(def, viewport.get_region_restriction());
+    def_alignment = view_utils::alignment_opt(def);
+    sol::object background = def["background"];
+    if (background.is<std::shared_ptr<graphics::bitmap>>()){
+        bg_bitmap = background.as<std::shared_ptr<graphics::bitmap>>();
+    }else if (background){
+        bg_color = graphics::color(background);
+    }
+
     sol::object elements_val = def["elements"];
     if (elements_val.get_type() == sol::type::table){
         sol::table elements_def = elements_val;
         for (int i = 1; i <= elements_def.size(); i++){
             auto item = elements_def[i];
-            FloatRect region(0, 0, 1, 1);
-            bool is_relative = true;
-            
-            auto&& coordinate = lua_safevalue<std::string>(item["coordinate"]);
-            if (coordinate && coordinate.value() == "relative"){
-                is_relative = true;
-            }else if (coordinate && coordinate.value() == "absolute"){
-                is_relative = false;
-            }else if (coordinate){
-                throw MapperException("Invalid value for \"coordinate\" parameter, \"relative\" or \"absolute\" can be specified");
-            }
-
-            auto x = lua_safevalue<float>(item["x"]);
-            auto y = lua_safevalue<float>(item["y"]);
-            auto width = lua_safevalue<float>(item["width"]);
-            auto height = lua_safevalue<float>(item["height"]);
-
-            if (x && y && width && height){
-                region = {*x, *y, *width, *height};
-            }else if (!is_relative){
-                throw MapperException("View element region must be specified by \"x\", \"y\", \"width\" and \"height\" parameters "
-                                      "if absolute coordinate system is selected.");
-            }
-
+            auto region_def = view_utils::region_def(item, !(def_restriction && def_restriction->logical_size));
             sol::object object = item["object"];
             if (object.is<CapturedWindow&>()){
-                auto element = std::make_unique<CWViewElement>(region, is_relative, object.as<CapturedWindow&>());
+                auto element = std::make_unique<CWViewElement>(region_def, object.as<CapturedWindow&>());
                 captured_window_elements.push_back(std::move(element));
             }else{
                 throw MapperException("unsupported object is specified as view element object");
@@ -210,30 +204,40 @@ ViewPort::View::View(MapperEngine& engine, sol::object& def_obj){
     mappings = std::move(createEventActionMap(engine, def["mappings"]));
 }
 
-ViewPort::View::~View(){
+View::~View(){
 }
 
-void ViewPort::View::show(ViewPort& viewport){
+void View::prepare(){
+    if (def_restriction){
+        region = view_utils::calculate_restricted_rect(viewport.get_output_region(), *def_restriction, def_alignment);
+        scale_factor = view_utils::calculate_scale_factor(region, *def_restriction, viewport.get_scale_factor());
+    }else{
+        region = viewport.get_output_region();
+        scale_factor = viewport.get_scale_factor();
+    }
+}
+
+void View::show(){
     for (auto& element : captured_window_elements){
-        FloatRect region;
-        element->transform_to_output_region(viewport.get_output_region(), region);
-        IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
+        FloatRect fregion;
+        element->transform_to_output_region(region + viewport.get_window_position(), fregion, scale_factor);
+        IntRect iregion(std::roundf(fregion.x), std::roundf(fregion.y), std::roundf(fregion.width), std::roundf(fregion.height));
         element->get_object().change_window_pos(iregion, HWND_TOP, true, viewport.get_background_clolor());
     }
-    FloatRect rect{viewport.get_output_client_region()};
+    FloatRect rect{viewport.get_output_region()};
     viewport.invaridate_rect(rect);
 }
 
-void ViewPort::View::hide(ViewPort& viewport){
+void View::hide(){
     for (auto& element : captured_window_elements){
         FloatRect region;
-        element->transform_to_output_region(viewport.get_output_region(), region);
+        element->transform_to_output_region(viewport.get_output_region(), region, scale_factor);
         IntRect iregion(std::roundf(region.x), std::roundf(region.y), std::roundf(region.width), std::roundf(region.height));
         element->get_object().change_window_pos(iregion,HWND_BOTTOM, false);
     }
 }
 
-bool ViewPort::View::render_view(graphics::render_target& render_target, const FloatRect& rect){
+bool View::render_view(graphics::render_target& render_target, const FloatRect& rect){
     // clear background at first;
     render_target->Clear(bg_color);
 
@@ -242,7 +246,7 @@ bool ViewPort::View::render_view(graphics::render_target& render_target, const F
     return true;
 }
 
-HWND ViewPort::View::getBottomWnd(){
+HWND View::getBottomWnd(){
     if (captured_window_elements.size() > 0){
         return captured_window_elements[captured_window_elements.size() -1 ]->get_object().get_hwnd();
     }else{
@@ -250,7 +254,7 @@ HWND ViewPort::View::getBottomWnd(){
     }
 }
 
-Action* ViewPort::View::findAction(uint64_t evid){
+Action* View::findAction(uint64_t evid){
     if (mappings && mappings->count(evid)){
         return mappings->at(evid).get();
     }else{
@@ -461,9 +465,12 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     }
     if (def_restriction){
         region = view_utils::calculate_restricted_rect(entire_region, *def_restriction, def_alignment);
+        scale_factor = view_utils::calculate_scale_factor(region, *def_restriction);
     }else{
         region = entire_region;
+        scale_factor = 1.f;
     }
+    window_pos = entire_region;
     entire_region_client = entire_region;
     entire_region_client.x = 0;
     entire_region_client.y = 0;
@@ -477,14 +484,17 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     (*render_target)->BeginDraw();
     (*render_target)->Clear(D2D1::ColorF(GetRValue(bg_color) / 255., GetGValue(bg_color) / 255., GetBValue(bg_color) / 255., 1.0f));
     (*render_target)->EndDraw();
+    for (auto& view : views){
+        view->prepare();
+    }
     cover_window->start(entire_region, region);
-    views[current_view]->show(*this);
+    views[current_view]->show();
 }
 
 void ViewPort::disable(){
     if (is_enable) {
         is_enable = false;
-        views[current_view]->hide(*this);
+        views[current_view]->hide();
         cover_window->stop();
         render_target = nullptr;
     }
@@ -513,7 +523,7 @@ int ViewPort::registerView(sol::object def_obj){
             throw MapperException("Viewport definitions are fixed by calling mapper.start_viewports(). "
                                   "You may need to call mapper.reset_viewports().");
         }
-        auto view = std::make_unique<View>(manager.get_engine(), def_obj);
+        auto view = std::make_unique<View>(manager.get_engine(), *this, def_obj);
         mappings_num_for_views += view->getMappingsNum();
         views.push_back(std::move(view));
         manager.get_engine().notifyUpdate(MapperEngine::UPDATED_VIEWPORTS);
@@ -552,8 +562,8 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
             if (current_view != *view_no && is_enable){
                 auto prev = current_view;
                 current_view = *view_no;
-                views[current_view]->show(*this);
-                views[prev]->hide(*this);
+                views[current_view]->show();
+                views[prev]->hide();
             }
         }else{
             throw MapperException("invalid view number is specified");
