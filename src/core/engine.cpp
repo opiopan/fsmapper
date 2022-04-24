@@ -142,14 +142,14 @@ void MapperEngine::initScriptingEnv(){
     graphics::create_lua_env(*this, scripting.lua());
 
     //-------------------------------------------------------------------------------
-    // set package path
+    // set asset path & package path
     //-------------------------------------------------------------------------------
     std::filesystem::path path(scripting.scriptPath);
     path.remove_filename();
+    scripting.lua()["mapper"]["asset_path"] = path.string();
     path /= "?.lua";
     auto package = scripting.lua()["package"];
     package["path"] = path.string();
-
 }
 
 //============================================================================================

@@ -240,6 +240,10 @@ bool View::render_view(graphics::render_target& render_target, const FloatRect& 
     //fill outer area of varid region as needed, then clear background
     auto clear_background = [this, &render_target]{
         render_target->Clear(bg_color);
+        if (bg_bitmap){
+            FloatRect srect{0.f, 0.f, bg_bitmap->get_width(), bg_bitmap->get_height()};
+            bg_bitmap->draw(render_target, srect, region);
+        }
     };
     if (rect.width > region.width || rect.height > region.height){
         render_target->Clear(viewport.get_background_clolor());

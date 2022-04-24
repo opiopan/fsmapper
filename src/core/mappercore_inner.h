@@ -18,3 +18,6 @@ struct ViewportInfo{
     std::vector<std::string> views;
     ViewportInfo(const char* name, std::vector<std::string>&& views) : name(name), views(std::move(views)){}
 };
+
+class MapperEngine;
+MapperEngine* mapper_EngineInstance();

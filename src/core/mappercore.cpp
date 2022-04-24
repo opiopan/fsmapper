@@ -38,6 +38,16 @@ struct MapperContext{
     };
 };
 
+static MapperContext* sole_context {nullptr};
+
+MapperEngine* mapper_EngineInstance(){
+    if (sole_context){
+        return sole_context->engine.get();
+    }else{
+        return nullptr;
+    }
+}
+
 //============================================================================================
 // mapper core API imprementation
 //============================================================================================
@@ -48,13 +58,19 @@ DLLEXPORT MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE
     auto loggerFunctor = std::bind(&MapperContext::logger, handle.get(), std::placeholders::_1, std::placeholders::_2);
     handle->engine = std::make_unique<MapperEngine>(callbackFunctor, loggerFunctor);
 
-    return handle.release();
+    if (sole_context){
+        return nullptr;
+    }else{
+        sole_context = handle.release();
+        return sole_context;
+    }
 }
 
 DLLEXPORT bool mapper_terminate(MapperHandle handle){
     handle->engine->stop();
     handle->engine->inhibitCallback();
     delete handle;
+    sole_context = nullptr;
     return true;
 }
 

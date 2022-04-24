@@ -208,6 +208,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="devicemodifier.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="event.h" />
+    <ClInclude Include="fileops.h" />
     <ClInclude Include="filter.h" />
     <ClInclude Include="fs2020.h" />
     <ClInclude Include="graphics.h" />
@@ -232,6 +233,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="devicemodifier.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="fileops.cpp" />
     <ClCompile Include="filter.cpp" />
     <ClCompile Include="fs2020.cpp" />
     <ClCompile Include="graphics.cpp" />

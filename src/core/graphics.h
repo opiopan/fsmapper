@@ -20,6 +20,8 @@ namespace graphics{
     void terminate_graphics();
     void create_lua_env(MapperEngine& engine, sol::state& lua);
 
+    class render_target;
+
     //============================================================================================
     // color: representation of color
     //============================================================================================
@@ -78,7 +80,23 @@ namespace graphics{
         FloatPoint origin;
 
     public:
-        bitmap(const std::shared_ptr<bitmap_source>& source, FloatRect rect, FloatPoint origin ={0.f, 0.f});
+        bitmap(const std::shared_ptr<bitmap_source>& source, const FloatRect& rect, const FloatPoint& origin ={0.f, 0.f}) :
+            source(source), rect(rect), origin(origin){}
+        
+        float get_width() const {return rect.width;}
+        float get_height() const {return rect.height;}
+        const FloatPoint& get_origin() const {return origin;}
+        bool set_origin(const FloatPoint& new_origin){
+            if (rect.pointIsInRectangle(new_origin.x, new_origin.y)){
+                origin = new_origin;
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        void draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect, float opacity = 1.f);
+        void draw(const render_target& target, const FloatPoint& offset, float scale, float opacity = 1.f, float rotation = 0.f);
     };
 
     //============================================================================================

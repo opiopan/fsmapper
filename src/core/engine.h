@@ -154,6 +154,8 @@ public:
         event.cv.notify_all();
     }
 
+    sol::state& getLuaState(){return scripting.lua();};
+
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();
     struct DeviceInfo {

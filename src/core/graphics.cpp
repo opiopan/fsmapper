@@ -10,6 +10,8 @@
 #include <sol/sol.hpp>
 #include "tools.h"
 #include "engine.h"
+#include "fileops.h"
+#include "encoding.hpp"
 
 //============================================================================================
 // initialize / deinitialize factory objects
@@ -60,6 +62,73 @@ namespace graphics{
         }else{
             throw MapperException("color must be specified as string or graphics.color() object");
         }
+    }
+}
+
+//============================================================================================
+// bitmap: WiC based bitmap representation
+//============================================================================================
+namespace graphics{
+    class bitmap_source{
+        IntRect rect;
+        CComPtr<IWICBitmapSource> wic_bitmap{nullptr};
+        ID2D1RenderTarget* last_render_target{nullptr};
+        CComPtr<ID2D1Bitmap> d2d_bitmap{nullptr};
+
+    public:
+        bitmap_source() = delete;
+        ~bitmap_source() = default;
+
+        bitmap_source(int width, int height){
+            CComPtr<IWICBitmap> bitmap;
+            wic_factory->CreateBitmap(width, height, GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &bitmap);
+            wic_bitmap = bitmap;
+            rect = {0, 0, width, height};
+        }
+
+        bitmap_source(const char* sub_path){
+            auto& lua = mapper_EngineInstance()->getLuaState();
+            auto&& search_path = lua_safestring(lua["mapper"]["asset_path"]);
+            auto&& path = fileops::find_file_in_paths(search_path.c_str(), sub_path);
+            if (path){
+                CComPtr<IWICBitmapDecoder> decoder;
+                if (wic_factory->CreateDecoderFromFilename(path->c_str(), NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &decoder) != S_OK){
+                    throw MapperException("bitmap format of specified file cannot be handled");
+                }
+                CComPtr<IWICBitmapFrameDecode> frame;
+                if (decoder->GetFrame(0, &frame) != S_OK){
+                    throw MapperException("specified bitmap file does not cantain varid image data");
+                }
+                CComPtr<IWICFormatConverter> converter;
+                wic_factory->CreateFormatConverter(&converter);
+                converter->Initialize(
+                    frame, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom);
+                wic_bitmap = converter;
+                UINT width, height;
+                wic_bitmap->GetSize(&width, &height);
+                rect = {0, 0, static_cast<int>(width), static_cast<int>(height)};
+            }else{
+                throw MapperException("specified file does not found");
+            }
+        }
+
+        int width() const {return rect.width;}
+        int height() const {return rect.height;}
+
+        ID2D1Bitmap* get_d2d_bitmap(ID2D1RenderTarget* target){
+            if (target != last_render_target){
+                d2d_bitmap = nullptr;
+                target->CreateBitmapFromWicBitmap(wic_bitmap, &d2d_bitmap);
+                last_render_target = target;
+            }
+            return d2d_bitmap;
+        }
+    };
+
+    void bitmap::draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect, float opacity){
+        auto srect = src_rect + origin;
+        auto bitmap = source->get_d2d_bitmap(target);
+        target->DrawBitmap(bitmap, dest_rect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, srect);
     }
 }
 
@@ -159,6 +228,30 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                         return std::make_shared<graphics::color>(va[0], *a);
                     }else{
                         return std::make_shared<graphics::color>(va[0]);
+                    }
+                }
+                throw MapperException("invalid arguments");
+            });
+        })
+    );
+
+    table.new_usertype<graphics::bitmap>(
+        "bitmap",
+        sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
+            return lua_c_interface(engine, "graphics.bitmap", [&va](){
+                auto type = va[0].get_type();
+                if (type == sol::type::string){
+                    auto&& sub_path = lua_safestring(va[0]);
+                    auto source = std::make_shared<bitmap_source>(sub_path.c_str());
+                    FloatRect rect{0.f, 0.f, static_cast<float>(source->width()), static_cast<float>(source->height())};
+                    return std::make_shared<bitmap>(source, rect);
+                }else if (type == sol::type::number){
+                    auto width = lua_safevalue<int>(va[0]);
+                    auto height = lua_safevalue<int>(va[1]);
+                    if (width && height){
+                        auto source = std::make_shared<bitmap_source>(*width, *height);
+                        FloatRect rect{0.f, 0.f, static_cast<float>(*width), static_cast<float>(*height)};
+                        return std::make_shared<bitmap>(source, rect);
                     }
                 }
                 throw MapperException("invalid arguments");
