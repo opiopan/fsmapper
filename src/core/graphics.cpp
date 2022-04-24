@@ -125,7 +125,7 @@ namespace graphics{
         }
     };
 
-    void bitmap::draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect, float opacity){
+    void bitmap::draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect){
         auto srect = src_rect + origin;
         auto bitmap = source->get_d2d_bitmap(target);
         target->DrawBitmap(bitmap, dest_rect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, srect);
@@ -256,6 +256,7 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                 }
                 throw MapperException("invalid arguments");
             });
-        })
+        }),
+        "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity)
     );
 }

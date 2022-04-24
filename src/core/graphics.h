@@ -78,6 +78,7 @@ namespace graphics{
         std::shared_ptr<bitmap_source> source;
         FloatRect rect;
         FloatPoint origin;
+        float opacity{1.f};
 
     public:
         bitmap(const std::shared_ptr<bitmap_source>& source, const FloatRect& rect, const FloatPoint& origin ={0.f, 0.f}) :
@@ -94,9 +95,11 @@ namespace graphics{
                 return false;
             }
         }
+        float get_opacity() const {return opacity;}
+        void set_opacity(float opacity){this->opacity = opacity;}
 
-        void draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect, float opacity = 1.f);
-        void draw(const render_target& target, const FloatPoint& offset, float scale, float opacity = 1.f, float rotation = 0.f);
+        void draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect);
+        void draw(const render_target& target, const FloatPoint& offset, float scale, float rotation = 0.f);
     };
 
     //============================================================================================
