@@ -104,9 +104,11 @@ public:
     using object_type = Object;
 protected:
     view_utils::region_def def_region;
-    object_type& object;
+    view_utils::alignment_opt def_alignment;
+    std::shared_ptr<object_type> object;
 public:
-    ViewElement(view_utils::region_def region, object_type& object) : def_region(region), object(object) {};
+    ViewElement(const view_utils::region_def&region, const view_utils::alignment_opt& alignment, std::shared_ptr<object_type> object) :
+        def_region(region), def_alignment(alignment), object(object) {};
     ~ViewElement(){};
     void transform_to_output_region(const IntRect& base, FloatRect& out, float scale_factor) const{
         if (def_region.is_relative_coordinates){
@@ -121,8 +123,8 @@ public:
             out.height = def_region.rect.height * scale_factor;
         }
     };
-    object_type& get_object() const {return object;};
-    operator object_type& () const {return object;};
+    object_type& get_object() const {return *object;};
+    operator object_type& () const {return *object;};
 };
 
 //============================================================================================

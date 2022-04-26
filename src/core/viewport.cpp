@@ -186,14 +186,18 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
     if (elements_val.get_type() == sol::type::table){
         sol::table elements_def = elements_val;
         for (int i = 1; i <= elements_def.size(); i++){
-            auto item = elements_def[i];
-            auto region_def = view_utils::region_def(item, !(def_restriction && def_restriction->logical_size));
-            sol::object object = item["object"];
-            if (object.is<CapturedWindow&>()){
-                auto element = std::make_unique<CWViewElement>(region_def, object.as<CapturedWindow&>());
-                captured_window_elements.push_back(std::move(element));
-            }else{
-                throw MapperException("unsupported object is specified as view element object");
+            sol::object item_obj = elements_def[i];
+            if (item_obj.is<sol::table>()){
+                auto item = item_obj.as<sol::table>();
+                auto region_def = view_utils::region_def(item, !(def_restriction && def_restriction->logical_size));
+                view_utils::alignment_opt alignment(item);
+                sol::object object = item["object"];
+                if (object.is<std::shared_ptr<CapturedWindow>>()){
+                    auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
+                    captured_window_elements.push_back(std::move(element));
+                }else{
+                    throw MapperException("unsupported object is specified as view element object");
+                }
             }
         }
     }
