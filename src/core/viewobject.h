@@ -22,7 +22,6 @@ public:
     virtual float get_aspect_ratio() = 0;
     virtual float claculate_scale_factor(const FloatRect& actual_region) = 0;
     virtual touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) = 0;
-    virtual void set_value(EventValue& value) = 0;
     virtual void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) = 0;
     virtual void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) = 0;
 };

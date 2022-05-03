@@ -57,7 +57,7 @@ namespace graphics{
             g = GetGValue(*rgb) / 255.f;
             b = GetBValue(*rgb) / 255.f;
             a = alpha;
-        }else if (value.is<std::shared_ptr<color>>()){
+        }else if (value.is<color&>()){
             auto rgba = value.as<std::shared_ptr<color>>();
             *this = *rgba;
         }else{
@@ -65,7 +65,7 @@ namespace graphics{
         }
     }
 
-    ID2D1Brush* color::operator () (render_target& target){
+    ID2D1Brush* color::brush_interface(render_target& target){
         if (this->target == target){
             return brush;
         }else{

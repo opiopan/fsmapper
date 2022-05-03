@@ -312,7 +312,7 @@ struct RectangleBase{
     }
 
     template <typename ANY>
-    RectangleBase operator + (const RectangleBase<ANY>& rect){
+    RectangleBase operator + (const RectangleBase<ANY>& rect) const{
         auto result = *this;
         result += rect;
         return result;
@@ -335,12 +335,12 @@ struct RectangleBase{
         };
     }
 
-    bool pointIsInRectangle(T tx, T ty){
+    bool pointIsInRectangle(T tx, T ty) const{
         return tx >= x && tx <= x + width &&
                ty >= y && ty <= y + height;
     }
 
-    RectangleBase intersect(const RectangleBase& src){
+    RectangleBase intersect(const RectangleBase& src) const{
         auto right = x + width;
         auto bottom = y + height;
         auto src_right = src.x + src.width;

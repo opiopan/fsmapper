@@ -177,9 +177,9 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
     def_restriction = view_utils::parse_region_restriction(def, viewport.get_region_restriction());
     def_alignment = view_utils::alignment_opt(def);
     sol::object background = def["background"];
-    if (background.is<std::shared_ptr<graphics::bitmap>>()){
+    if (background.is<graphics::bitmap&>()){
         bg_bitmap = background.as<std::shared_ptr<graphics::bitmap>>();
-    }else if (background){
+    }else if (background.get_type() != sol::type::lua_nil){
         bg_color = graphics::color(background);
     }
 
@@ -193,10 +193,10 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
                 auto region_def = view_utils::region_def(item, !(def_restriction && def_restriction->logical_size));
                 view_utils::alignment_opt alignment(item);
                 sol::object object = item["object"];
-                if (object.is<std::shared_ptr<CapturedWindow>>()){
+                if (object.is<CapturedWindow&>()){
                     auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
                     captured_window_elements.push_back(std::move(element));
-                }else if (object.is<std::shared_ptr<ViewObject>>()){
+                }else if (object.is<ViewObject&>()){
                     auto element = std::make_unique<NormalViewElement>(region_def, alignment, object.as<std::shared_ptr<ViewObject>>());
                     normal_elements.push_back(std::move(element));
                 }else{

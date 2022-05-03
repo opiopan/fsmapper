@@ -27,7 +27,7 @@ namespace graphics{
     //============================================================================================
     class brush{
     public:
-        virtual ID2D1Brush* operator () (render_target& target) = 0;
+        virtual ID2D1Brush* brush_interface(render_target& target) = 0;
     };
 
     //============================================================================================
@@ -92,7 +92,7 @@ namespace graphics{
             }
         };
 
-        ID2D1Brush* operator () (render_target& target) override;
+        ID2D1Brush* brush_interface(render_target& target) override;
 };
 
     //============================================================================================

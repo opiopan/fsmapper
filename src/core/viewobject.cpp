@@ -78,15 +78,52 @@ public:
     //-----------------------------------------------------------------------------------
     // ViewObject interface implementation
     //-----------------------------------------------------------------------------------
-    float get_aspect_ratio() override{return 0.f;}
-
-    float claculate_scale_factor(const FloatRect& actual_region) override{return 1.f;}
-
-    touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) override{
-        return touch_reaction::none;
+    float get_aspect_ratio() override{
+        return 0.f;
     }
 
-    void set_value(EventValue& value) override{
+    float claculate_scale_factor(const FloatRect& actual_region) override{
+        return 1.f;
+    }
+
+    touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) override{
+        auto out_of_region = rel_x < 0.f || rel_x > 1.f || rel_y < 0.f || rel_y > 1.f;
+        auto invaridate = [this]{
+            is_dirty = true;
+            mapper_EngineInstance()->invokeViewportsUpdate();
+        };
+        if (status == op_status::init){
+            if (event == touch_event::lbutton_down){
+                status = op_status::touch_in;
+                invaridate();
+                return touch_reaction::capture;
+            }else{
+                return touch_reaction::none;
+            }
+        }else if (status == op_status::touch_in){
+            if (event == touch_event::lbutton_up){
+                status = op_status::init;
+                invaridate();
+                if (event_tap){
+                    mapper_EngineInstance()->sendEvent(std::move(Event(*event_tap)));
+                }
+                return touch_reaction::uncapture;
+            }else if (event == touch_event::mouse_drag && out_of_region){
+                status = op_status::touch_out;
+                invaridate();
+            }
+            return touch_reaction::capture;
+        }else if (status == op_status::touch_out){
+            if (event == touch_event::lbutton_up){
+                status = op_status::init;
+                return touch_reaction::uncapture;
+            }else if (event == touch_event::mouse_drag && !out_of_region){
+                status = op_status::touch_in;
+                invaridate();
+            }
+            return touch_reaction::capture;
+        }
+        return touch_reaction::none;
     }
 
     void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) override{
@@ -99,7 +136,7 @@ public:
         if (is_dirty && status == op_status::touch_in){
             auto round_radius = std::max(actual_region.width, actual_region.height) * round_ratio;
             D2D1_ROUNDED_RECT rrect{actual_region, round_radius, round_radius};
-            
+            target->FillRoundedRectangle(rrect, reaction_color.brush_interface(target));
         }
         is_dirty = false;
     }
