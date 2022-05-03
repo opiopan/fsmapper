@@ -107,20 +107,24 @@ protected:
     view_utils::alignment_opt def_alignment;
     std::shared_ptr<object_type> object;
 public:
+    FloatRect region;
+    FloatRect object_region;
+    float object_scale_factor = 1.f;
+public:
     ViewElement(const view_utils::region_def&region, const view_utils::alignment_opt& alignment, std::shared_ptr<object_type> object) :
         def_region(region), def_alignment(alignment), object(object) {};
     ~ViewElement(){};
-    void transform_to_output_region(const IntRect& base, FloatRect& out, float scale_factor) const{
+    void calculate_element_region(const FloatRect& base, float base_scale_factor){
         if (def_region.is_relative_coordinates){
-            out.x = base.x + def_region.rect.x * base.width;
-            out.y = base.y + def_region.rect.y * base.height;
-            out.width = def_region.rect.width * base.width;
-            out.height = def_region.rect.height * base.height;
+            region.x = base.x + def_region.rect.x * base.width;
+            region.y = base.y + def_region.rect.y * base.height;
+            region.width = def_region.rect.width * base.width;
+            region.height = def_region.rect.height * base.height;
         }else{
-            out.x = def_region.rect.x * scale_factor + base.x;
-            out.y = def_region.rect.y * scale_factor + base.y;
-            out.width = def_region.rect.width * scale_factor;
-            out.height = def_region.rect.height * scale_factor;
+            region.x = def_region.rect.x * base_scale_factor + base.x;
+            region.y = def_region.rect.y * base_scale_factor + base.y;
+            region.width = def_region.rect.width * base_scale_factor;
+            region.height = def_region.rect.height * base_scale_factor;
         }
     };
     object_type& get_object() const {return *object;};

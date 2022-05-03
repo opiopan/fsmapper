@@ -23,14 +23,25 @@ namespace graphics{
     class render_target;
 
     //============================================================================================
+    // brush: abstruct class to express brush
+    //============================================================================================
+    class brush{
+    public:
+        virtual ID2D1Brush* operator () (render_target& target) = 0;
+    };
+
+    //============================================================================================
     // color: representation of color
     //============================================================================================
-    class color{
+    class color : public brush{
     protected:
         float r = 0.f;
         float g = 0.f;
         float b = 0.f;
         float a = 1.0f;
+        
+        ID2D1RenderTarget* target = nullptr;
+        ID2D1Brush* brush = nullptr;
 
         template <typename T>
         static constexpr T clip(T value){
@@ -47,8 +58,7 @@ namespace graphics{
             r(clip(red)), g(clip(green)), b(clip(blue)), a(clip(alpha)){}
         color(sol::object value, float alpha = 1.0f);
         color(const color& src){*this = src;}
-        ~color(){
-        }
+        virtual ~color() = default;
 
         color& operator = (const color& src){
             r = src.r;
@@ -63,10 +73,27 @@ namespace graphics{
         float blue() const{return b;}
         float alpha() const{return a;}
         void set_alpha(float alpha){a = alpha;}
+        
+        uint32_t rgba() const{
+            return static_cast<uint32_t>(r * 255) << 24 |
+                   static_cast<uint32_t>(g * 255) << 16 |
+                   static_cast<uint32_t>(b * 255) << 8 |
+                   static_cast<uint32_t>(a * 255);
+        };
 
         operator COLORREF () const{return RGB(r * 255, g * 255, b * 255);}
         operator D3DCOLORVALUE () const{return D3DCOLORVALUE{r, g, b, a};}
-    };
+        bool operator == (const color& rvalue) const{return this->rgba() == rvalue.rgba();}
+        bool operator != (const color& rvalue) const{return this->rgba() != rvalue.rgba();}
+
+        struct hash{
+            std::size_t operator ()(const color& key) const{
+                return std::hash<uint32_t>()(key.rgba());
+            }
+        };
+
+        ID2D1Brush* operator () (render_target& target) override;
+};
 
     //============================================================================================
     // bitmap: WIC based bitmap
@@ -112,5 +139,7 @@ namespace graphics{
 
         virtual operator ID2D1RenderTarget* () const = 0;
         ID2D1RenderTarget* operator ->() const {return static_cast<ID2D1RenderTarget*>(*this);}
+
+        virtual ID2D1Brush* get_solid_color_brush(const color& color) = 0;
     };
 }

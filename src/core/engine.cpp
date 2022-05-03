@@ -56,6 +56,8 @@ void MapperEngine::initScriptingEnv(){
     //      mapper.print():                  print message on console
     //      mapper.abort():                  abort mapper engine
     //      mapper.delay():                  deferred function execution
+    //      mapper.register_event():         register event id
+    //      mapper.unregister_event():       unregister event id
     //      mapper.set_primery_mappings():   set primery mappings
     //      mapper.add_primery_mappings();   add primery mappings
     //      mapper.set_secondary_mappings(): set primery mappings
@@ -88,6 +90,25 @@ void MapperEngine::initScriptingEnv(){
             auto function = std::make_shared<LuaAction>(function_o);
             Event ev(static_cast<int64_t>(EventID::NILL));
             invokeActionIn(function, ev, MILLISEC(*millisec));
+        });
+    };
+    mapper["register_event"] = [this](const sol::object obj){
+        return lua_c_interface(*this, "mapper:register_event", [this, &obj](){
+            auto&& desc = lua_safestring(obj);
+            if (desc.length() == 0){
+                throw MapperException("description of event to register must be specified as string");
+            }
+            return registerEvent(std::move(desc));
+        });
+    };
+    mapper["unregister_event"] = [this](const sol::object obj){
+        lua_c_interface(*this, "mapper:unregister_event", [this, &obj](){
+            auto evid = lua_safevalue<int64_t>(obj);
+            if (evid){
+                unregisterEvent(*evid);
+            }else{
+                throw MapperException("event-id must be specified");
+            }
         });
     };
     mapper["set_primery_mappings"] = [this](const sol::object def){

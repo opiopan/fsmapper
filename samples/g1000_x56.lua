@@ -222,6 +222,8 @@ x56throttle = x56throttle_dev.events
 vjoy = mapper.virtual_joystick(1)
 local throttle1 = vjoy:get_axis("rx")
 local throttle2 = vjoy:get_axis("ry")
+local throttle1a = vjoy:get_axis("x")
+local throttle2a = vjoy:get_axis("y")
 local airbrake_open = vjoy:get_button(1)
 local airbrake_close = vjoy:get_button(2)
 local ab1 = vjoy:get_button(3)
@@ -258,6 +260,49 @@ local arm_aux1 = vjoy:get_button(27)
 local arm_aux2 = vjoy:get_button(28)
 local arm_aux3 = vjoy:get_button(29)
 local arm_aux4 = vjoy:get_button(30)
+
+local joymap_dcs = {
+    {event=x56throttle.x.change, action=filter.duplicator(
+        filter.lerp(throttle1a:value_setter(),{
+            {-1023, -1023},
+            {-619, -617},
+            {-613, -617},
+            {1023, 1023},
+        }),
+        filter.lerp(throttle1:value_setter(),{
+            {-1023, -1023},
+            {-609, -1023},
+            {1023, 1023},
+        }),
+        filter.branch(
+            {condition="falled", value=-900, action=ab1:value_setter(true)},
+            {condition="exceeded", value=-800, action=ab1:value_setter(false)}
+        )
+    )},
+    {event=x56throttle.y.change, action=filter.duplicator(
+        filter.lerp(throttle2a:value_setter(),{
+            {-1023, -1023},
+            {-619, -617},
+            {-613, -617},
+            {1023, 1023},
+        }),
+        filter.lerp(throttle2:value_setter(),{
+            {-1023, -1023},
+            {-619, -1023},
+            {1023, 1023},
+        }),
+        filter.branch(
+            {condition="falled", value=-900, action=ab2:value_setter(true)},
+            {condition="exceeded", value=-800, action=ab2:value_setter(false)}
+        )
+    )},
+    {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},
+    {event=x56throttle.button33.down, action=filter.duplicator(
+        airbrake_open:value_setter(false),
+        airbrake_close:value_setter(true)
+    )},
+    {event=x56throttle.button33.following_down, action=airbrake_close:value_setter(false)},
+}
 
 local joymap_noab = {
     {event=x56throttle.x.change, action=filter.duplicator(
@@ -336,7 +381,7 @@ local joymap_combat = {
 }
 
 local joymap ={
-    base = joymap_noab,
+    base = joymap_dcs,
     modal = {}
 }
 
@@ -356,7 +401,10 @@ mapper.start_viewports()
 
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
-        if value.aircraft == "Airbus A320 Neo FlyByWire" then
+        if value.host ~= "fs2020" then
+            jyomap.base = joymap_dcs
+            update_secondary_mappings()
+        elseif value.aircraft == "Airbus A320 Neo FlyByWire" then
             joymap.base = joymap_full
             update_secondary_mappings()
         else

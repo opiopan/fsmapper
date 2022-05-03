@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <memory>
+#include <unordered_map>
 #include <sol/sol.hpp>
 #include "tools.h"
 #include "engine.h"
@@ -61,6 +62,16 @@ namespace graphics{
             *this = *rgba;
         }else{
             throw MapperException("color must be specified as string or graphics.color() object");
+        }
+    }
+
+    ID2D1Brush* color::operator () (render_target& target){
+        if (this->target == target){
+            return brush;
+        }else{
+            this->target = target;
+            brush = target.get_solid_color_brush(*this);
+            return brush;
         }
     }
 }
@@ -140,6 +151,7 @@ class render_target_implementation : public graphics::render_target{
 protected:
     CComPtr<TARGET> target;
     CComPtr<CONTENTS> contents;
+    std::unordered_map<uint32_t, CComPtr<ID2D1SolidColorBrush>> solid_color_brush_pool;
 
 public:
     render_target_implementation() = delete;
@@ -150,6 +162,18 @@ public:
 
     operator ID2D1RenderTarget * () const override{
         return target;
+    }
+
+    ID2D1Brush* get_solid_color_brush(const graphics::color& color) override{
+        auto key = color.rgba();
+        if (solid_color_brush_pool.count(key)){
+            return solid_color_brush_pool.at(key);
+        }else{
+            CComPtr<ID2D1SolidColorBrush> brush;
+            target->CreateSolidColorBrush(color, &brush);
+            solid_color_brush_pool[key] = brush;
+            return brush;
+        }
     }
 };
 

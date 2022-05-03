@@ -218,6 +218,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="simhost.h" />
     <ClInclude Include="simplewindow.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="viewobject.h" />
     <ClInclude Include="viewport.h" />
     <ClInclude Include="vjoy.h" />
   </ItemGroup>
@@ -242,6 +243,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="simhost.cpp" />
     <ClCompile Include="simplewindow.cpp" />
     <ClCompile Include="tools.cpp" />
+    <ClCompile Include="viewobject.cpp" />
     <ClCompile Include="viewport.cpp" />
     <ClCompile Include="vjoy.cpp" />
     <ClCompile Include="windowpicker.cpp" />

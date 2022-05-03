@@ -94,6 +94,7 @@ protected :
         std::map<uint64_t, std::string> names;
         std::queue< std::unique_ptr<Event> > queue;
         std::map<TIME_POINT, DeferredAction> deferred_actions;
+        bool need_update_viewports = false;
     }event;
 
     std::unique_ptr<EventActionMap> mapping[2];
@@ -151,6 +152,12 @@ public:
 
     void notifyUpdateWithNoLock(uint32_t flag){
         scripting.updated_flags |= flag;
+        event.cv.notify_all();
+    }
+
+    void invokeViewportsUpdate(){
+        std::lock_guard lock(mutex);
+        event.need_update_viewports = true;
         event.cv.notify_all();
     }
 

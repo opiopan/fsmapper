@@ -10,6 +10,7 @@
 #include "viewport.h"
 #include "engine.h"
 #include "capturedwindow.h"
+#include "viewobject.h"
 #include "graphics.h"
 #include "tools.h"
 #include "hookdll.h"
@@ -195,6 +196,9 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
                 if (object.is<std::shared_ptr<CapturedWindow>>()){
                     auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
                     captured_window_elements.push_back(std::move(element));
+                }else if (object.is<std::shared_ptr<ViewObject>>()){
+                    auto element = std::make_unique<NormalViewElement>(region_def, alignment, object.as<std::shared_ptr<ViewObject>>());
+                    normal_elements.push_back(std::move(element));
                 }else{
                     throw MapperException("unsupported object is specified as view element object");
                 }
@@ -219,13 +223,16 @@ void View::prepare(){
         region = view_utils::calculate_restricted_rect(viewport.get_output_region(), *def_restriction, def_alignment);
         scale_factor = view_utils::calculate_scale_factor(region, *def_restriction, viewport.get_scale_factor());
     }
+    for (auto& element : captured_window_elements){
+        element->calculate_element_region(region + viewport.get_window_position(), scale_factor);
+        element->object_region = element->region;
+        element->object_scale_factor = scale_factor;
+    }
 }
 
 void View::show(){
     for (auto& element : captured_window_elements){
-        FloatRect fregion;
-        element->transform_to_output_region(region + viewport.get_window_position(), fregion, scale_factor);
-        element->get_object().change_window_pos(IntRect{fregion}, HWND_TOP, true, viewport.get_background_clolor());
+        element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
     }
     FloatRect rect{viewport.get_output_region()};
     viewport.invaridate_rect(rect);
@@ -233,9 +240,7 @@ void View::show(){
 
 void View::hide(){
     for (auto& element : captured_window_elements){
-        FloatRect fregion;
-        element->transform_to_output_region(viewport.get_output_region(), fregion, scale_factor);
-        element->get_object().change_window_pos(IntRect{fregion}, HWND_BOTTOM, false);
+        element->get_object().change_window_pos(IntRect{element->region}, HWND_BOTTOM, false);
     }
 }
 
@@ -645,12 +650,26 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     };
 
     //
+    // view element objects
+    //
+    viewobject_init_scripting_env(engine, mapper_table);
+    sol::table view_objects = mapper_table["view_objects"];
+
+    //
     // functions to handle captured window
     //
     mapper_table.new_usertype<CapturedWindow>(
         "captured_window",
         sol::call_constructor, sol::factories([this](sol::object def){
             return lua_c_interface(engine, "mapper.captured_window", [this, &def](){
+                return create_captured_window(def);
+            });
+        })
+    );
+    view_objects.new_usertype<CapturedWindow>(
+        "captured_window",
+        sol::call_constructor, sol::factories([this](sol::object def){
+            return lua_c_interface(engine, "mapper.view_objects.captured_window", [this, &def](){
                 return create_captured_window(def);
             });
         })

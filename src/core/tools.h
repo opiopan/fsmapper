@@ -240,10 +240,29 @@ using FloatPoint = PointBase<float>;
 
 template <typename T> 
 struct RectangleBase{
+    static constexpr auto zero = static_cast<T>(0);
     T x = 0;
     T y = 0;
     T width = 0;
     T height = 0;
+
+    template <typename ANY>
+    static constexpr ANY max(ANY a, ANY b){
+        if (a > b){
+            return a;
+        }else{
+            return b;
+        }
+    }
+
+    template <typename ANY>
+    static constexpr ANY min(ANY a, ANY b){
+        if (a < b){
+            return a;
+        }else{
+            return b;
+        }
+    }
 
     RectangleBase() = default;
     RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
@@ -262,14 +281,14 @@ struct RectangleBase{
         return *this;
     };
 
-    template<typename ANY>
+    template <typename ANY>
     RectangleBase& operator += (const PointBase<ANY>& point){
         x += static_cast<T>(point.x);
         y += static_cast<T>(point.y);
         return *this;
     }
 
-    template<typename ANY>
+    template <typename ANY>
     RectangleBase operator + (const PointBase<ANY>& point) const{
         return {
             x + static_cast<T>(point.x), y + static_cast<T>(point.y),
@@ -277,6 +296,28 @@ struct RectangleBase{
         };
     }
 
+    template <typename ANY>
+    RectangleBase& operator += (const RectangleBase<ANY>& rect){
+        if (width == zero || height == zero){
+            *this = rect;
+        }else{
+            auto x2 = max(x + width, static_cast<T>(rect.x + rect.width));
+            auto y2 = max(y + height, static_cast<T>(rect.y + rect.height));
+            x = min(x, static_cast<T>(rect.x));
+            y = min(y, static_cast<T>(rect.y));
+            width = x2 - x;
+            height = y2 - y;
+        }
+        return *this;
+    }
+
+    template <typename ANY>
+    RectangleBase operator + (const RectangleBase<ANY>& rect){
+        auto result = *this;
+        result += rect;
+        return result;
+    }
+    
     bool operator == (const RectangleBase& src) const{
         return x == src.x && y == src.y && width == src.width && height == src.height;
     }
