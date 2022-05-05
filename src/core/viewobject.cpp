@@ -78,8 +78,8 @@ public:
     //-----------------------------------------------------------------------------------
     // ViewObject interface implementation
     //-----------------------------------------------------------------------------------
-    float get_aspect_ratio() override{
-        return 0.f;
+    std::optional<float> get_aspect_ratio() override{
+        return std::nullopt;
     }
 
     float claculate_scale_factor(const FloatRect& actual_region) override{
@@ -126,6 +126,12 @@ public:
         return touch_reaction::none;
     }
 
+    void reset_touch_status() override{
+        status = op_status::init;
+    }
+
+    void set_value(const EventValue& value) override{}
+
     void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) override{
         if (is_dirty){
             dirty_rect += actual_region;
@@ -133,7 +139,7 @@ public:
     }
 
     void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) override{
-        if (is_dirty && status == op_status::touch_in){
+        if (status == op_status::touch_in){
             auto round_radius = std::max(actual_region.width, actual_region.height) * round_ratio;
             D2D1_ROUNDED_RECT rrect{actual_region, round_radius, round_radius};
             target->FillRoundedRectangle(rrect, reaction_color.brush_interface(target));

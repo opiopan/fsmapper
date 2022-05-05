@@ -345,13 +345,34 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
 
             //-------------------------------------------------------------------------------
+            // process touch operation on viewports
+            //-------------------------------------------------------------------------------
+            if (event.touch_event_occurred){
+                event.touch_event_occurred = false;
+                lock.unlock();
+                scripting.viewportManager->process_touch_event();
+                lock.lock();
+            }
+
+            //-------------------------------------------------------------------------------
+            // update viewport windows if needed
+            //-------------------------------------------------------------------------------
+            if (event.need_update_viewports){
+                event.need_update_viewports = false;
+                lock.unlock();
+                scripting.viewportManager->update_viewports();
+                lock.lock();
+            }
+
+            //-------------------------------------------------------------------------------
             // wait until event occurrence
             //-------------------------------------------------------------------------------
             if (queue_empty){
                 auto deferred_num = event.deferred_actions.size();
                 auto condition = [this, deferred_num]{
                     return event.queue.size() > 0 || event.deferred_actions.size() > deferred_num || 
-                           status != Status::running || scripting.updated_flags;
+                           status != Status::running || scripting.updated_flags || 
+                           event.need_update_viewports || event.touch_event_occurred;
                 };
 
                 if (deferred_num > 0){

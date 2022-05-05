@@ -19,6 +19,7 @@
 #include "simplewindow.h"
 #include "action.h"
 #include "graphics.h"
+#include "viewobject.h"
 
 class MapperEngine;
 class ViewPortManager;
@@ -52,6 +53,7 @@ namespace view_utils{
         std::optional<size> logical_size;
 
         region_restriction() = default;
+        region_restriction(float aspect_ratio) : aspect_ratio(aspect_ratio){}
         region_restriction(const region_restriction& src){*this = src;}
         region_restriction& operator = (const region_restriction& src){
             aspect_ratio = src.aspect_ratio;
@@ -127,8 +129,10 @@ public:
             region.height = def_region.rect.height * base_scale_factor;
         }
     };
-    object_type& get_object() const {return *object;};
-    operator object_type& () const {return *object;};
+    object_type& get_object() const {return *object;}
+    operator object_type& () const {return *object;}
+    operator const view_utils::region_def& () const {return def_region;}
+    operator const view_utils::alignment_opt& () const {return def_alignment;}
 };
 
 //============================================================================================
@@ -150,6 +154,7 @@ protected:
     std::vector<std::unique_ptr<CWViewElement>> captured_window_elements;
     std::vector<std::unique_ptr<NormalViewElement>> normal_elements;
     std::unique_ptr<EventActionMap> mappings;
+    NormalViewElement* touch_captured_element = nullptr;
 
 public:
     friend ViewPortManager;
@@ -163,6 +168,8 @@ public:
     void prepare();
     void show();
     void hide();
+    void process_touch_event(ViewObject::touch_event event, int x, int y);
+    void update_view();
     bool render_view(graphics::render_target& render_target, const FloatRect& rect);
     HWND getBottomWnd();
     Action* findAction(uint64_t evid);
@@ -215,6 +222,8 @@ public:
 
     class CoverWindow;
 
+    using touch_event = ViewObject::touch_event;
+
 protected:
     ViewPortManager& manager;
     std::string name;
@@ -240,6 +249,15 @@ protected:
     std::unique_ptr<CoverWindow> cover_window;
     std::unique_ptr<EventActionMap> mappings;
     int mappings_num_for_views{0};
+    std::mutex touch_event_mutex;
+    static constexpr auto touch_event_buffer_size = 4;
+    struct {
+        touch_event event;
+        int x;
+        int y;
+    } touch_event_buffer[touch_event_buffer_size];
+    int touch_event_num = 0;
+    bool is_mouse_captured = false;
 
 public:
     friend ViewPortManager;
@@ -262,6 +280,8 @@ public:
     void freeze(){is_freezed = true;};
     void enable(const std::vector<IntRect> displays);
     void disable();
+    void process_touch_event();
+    void update();
     Action* findAction(uint64_t evid);
     std::pair<int, int> getMappingsStat();
 
@@ -315,6 +335,9 @@ public:
         std::lock_guard lock{mutex};
         return status;
     }
+
+    void process_touch_event();
+    void update_viewports();
 
     // functions to export as Lua function in mapper table
     std::shared_ptr<ViewPort> create_viewport(sol::object def_obj);

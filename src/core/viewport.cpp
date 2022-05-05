@@ -15,6 +15,7 @@
 #include "tools.h"
 #include "hookdll.h"
 
+#include <windowsx.h>
 #include <algorithm>
 using std::min;
 using std::max;
@@ -161,7 +162,7 @@ namespace view_utils{
 }
 
 //============================================================================================
-// View inmplementation
+// View implementation
 //============================================================================================
 View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : viewport(viewport){
     if (def_obj.get_type() != sol::type::table){
@@ -228,6 +229,13 @@ void View::prepare(){
         element->object_region = element->region;
         element->object_scale_factor = scale_factor;
     }
+    for (auto& element : normal_elements){
+        element->calculate_element_region(region, scale_factor);
+        auto aratio = element->get_object().get_aspect_ratio();
+        view_utils::region_restriction restriction{aratio ? *aratio : element->region.width / element->region.height};
+        element->object_region = view_utils::calculate_restricted_rect(element->region, restriction, *element);
+        element->object_scale_factor = element->get_object().claculate_scale_factor(element->object_region);
+    }
 }
 
 void View::show(){
@@ -242,10 +250,48 @@ void View::hide(){
     for (auto& element : captured_window_elements){
         element->get_object().change_window_pos(IntRect{element->region}, HWND_BOTTOM, false);
     }
+    for (auto& element : normal_elements){
+        element->get_object().reset_touch_status();
+    }
+    touch_captured_element = nullptr;
+}
+
+void View::process_touch_event(ViewObject::touch_event event, int x, int y){
+    if (touch_captured_element){
+        auto& object_region = touch_captured_element->object_region;
+        auto& object  = touch_captured_element->get_object();
+        auto rel_x = (static_cast<float>(x) - object_region.x) / object_region.width;
+        auto rel_y = (static_cast<float>(y) - object_region.y) / object_region.height;
+        auto result = object.process_touch_event(event, rel_x, rel_y, object_region);
+        if (result != ViewObject::touch_reaction::capture){
+            touch_captured_element = nullptr;
+        }
+    }else if (event == ViewObject::touch_event::lbutton_down){
+        for (auto& element : normal_elements){
+            if (element->object_region.pointIsInRectangle(x, y)){
+                auto& object_region = element->object_region;
+                auto rel_x = (static_cast<float>(x) - object_region.x) / object_region.width;
+                auto rel_y = (static_cast<float>(y) - object_region.y) / object_region.height;
+                auto result = element->get_object().process_touch_event(event, rel_x, rel_y, object_region);
+                if (result == ViewObject::touch_reaction::capture){
+                    touch_captured_element = element.get();
+                }
+            }
+        }
+    }
+}
+
+void View::update_view(){
+    FloatRect dirty_rect;
+    for (const auto& element : normal_elements){
+        element->get_object().merge_dirty_rect(element->object_region, dirty_rect);
+    }
+    if (dirty_rect.width > 0.f && dirty_rect.height > 0.f){
+        viewport.invaridate_rect(dirty_rect);
+    }
 }
 
 bool View::render_view(graphics::render_target& render_target, const FloatRect& rect){
-
     //fill outer area of varid region as needed, then clear background
     auto clear_background = [this, &render_target]{
         render_target->Clear(bg_color);
@@ -266,6 +312,11 @@ bool View::render_view(graphics::render_target& render_target, const FloatRect& 
     }
 
     // render each objects are proceded below
+    std::for_each(std::rbegin(normal_elements), std::rend(normal_elements), [&](auto& element){
+        if (element->object_region.isIntersected(rect)){
+            element->get_object().update_rect(render_target, element->object_region, element->object_scale_factor);
+        }
+    });
 
     return true;
 }
@@ -434,6 +485,68 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         // processing mouse message and touch message
         //
         [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
+            std::lock_guard lock(touch_event_mutex);
+            auto need_notify = touch_event_num == 0;
+            using tevent = ViewPort::touch_event;
+            using oevent = std::optional<tevent>;
+            oevent event = msg == WM_LBUTTONDOWN ? oevent{tevent::lbutton_down}  :
+                           msg == WM_LBUTTONUP ?   oevent{tevent::lbutton_up} :
+                           msg == WM_MOUSEMOVE ?   oevent{tevent::mouse_drag} :
+                                                   oevent{std::nullopt};
+            auto x = GET_X_LPARAM(lparam);
+            auto y = GET_Y_LPARAM(lparam);
+            if (event){
+                if (!is_mouse_captured && (*event == tevent::lbutton_up || *event == tevent::mouse_drag)){
+                    return 0;
+                }
+
+                if (touch_event_num < touch_event_buffer_size){
+                    if (*event == tevent::mouse_drag && touch_event_num > 0 && 
+                        touch_event_buffer[touch_event_num - 1].event == tevent::mouse_drag){
+                        auto& slot = touch_event_buffer[touch_event_num - 1];
+                        slot.x = x;
+                        slot.y = y;
+                    }else{
+                        auto& slot = touch_event_buffer[touch_event_num];
+                        slot.event = *event;
+                        slot.x = x;
+                        slot.y = y;
+                        touch_event_num++;
+                    }
+                    if (*event == tevent::lbutton_down){
+                        ::SetCapture(*cover_window);
+                        is_mouse_captured = true;
+                    }else if (*event == tevent::lbutton_up){
+                        ::ReleaseCapture();
+                        is_mouse_captured = false;
+                    }
+                    if (need_notify){
+                        mapper_EngineInstance()->notifyTouchEvent();
+                    }
+                }else{
+                    auto& last = touch_event_buffer[touch_event_num - 1];
+                    if (*event == tevent::lbutton_down){
+                        return 0;
+                    }else if (*event == tevent::mouse_drag){
+                        if (last.event == tevent::mouse_drag){
+                            last.x = x;
+                            last.y = y;
+                        }else{
+                            return 0;
+                        }
+                    }else if (*event == tevent::lbutton_up){
+                        if (last.event == tevent::mouse_drag){
+                            last.event = *event;
+                            last.x = x;
+                            last.y = y;
+                        }else if (last.event == tevent::lbutton_down){
+                            touch_event_num--;
+                        }
+                        ::ReleaseCapture();
+                        is_mouse_captured = false;
+                    }
+                }
+            }
             return 0;
         },
 
@@ -522,6 +635,23 @@ void ViewPort::disable(){
         views[current_view]->hide();
         cover_window->stop();
         render_target = nullptr;
+    }
+}
+
+void ViewPort::process_touch_event(){
+    if (is_enable){
+        std::lock_guard lock(touch_event_mutex);
+        for (auto i = 0; i < touch_event_num; i++){
+            auto& slot = touch_event_buffer[i];
+            views[current_view]->process_touch_event(slot.event, slot.x, slot.y);
+        }
+        touch_event_num = 0;
+    }
+}
+
+void ViewPort::update(){
+    if (is_enable){
+        views[current_view]->update_view();
     }
 }
 
@@ -689,6 +819,21 @@ Action* ViewPortManager::find_action(uint64_t evid){
     return nullptr;
 }
 
+void ViewPortManager::process_touch_event(){
+    if (status == Status::running){
+        for (auto& viewport : viewports){
+            viewport->process_touch_event();
+        }
+    }
+}
+
+void ViewPortManager::update_viewports(){
+    if (status == Status::running){
+        for (auto& viewport : viewports){
+            viewport->update();
+        }
+    }
+}
 
 std::shared_ptr<ViewPort> ViewPortManager::create_viewport(sol::object def_obj){
     std::lock_guard lock(mutex);

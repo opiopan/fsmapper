@@ -402,7 +402,7 @@ mapper.start_viewports()
 mapper.set_primery_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
         if value.host ~= "fs2020" then
-            jyomap.base = joymap_dcs
+            joymap.base = joymap_dcs
             update_secondary_mappings()
         elseif value.aircraft == "Airbus A320 Neo FlyByWire" then
             joymap.base = joymap_full

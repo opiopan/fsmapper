@@ -95,6 +95,7 @@ protected :
         std::queue< std::unique_ptr<Event> > queue;
         std::map<TIME_POINT, DeferredAction> deferred_actions;
         bool need_update_viewports = false;
+        bool touch_event_occurred = false;
     }event;
 
     std::unique_ptr<EventActionMap> mapping[2];
@@ -156,8 +157,15 @@ public:
     }
 
     void invokeViewportsUpdate(){
-        std::lock_guard lock(mutex);
+        // this function must be called from the event-action mapping loop (thread)
+        // and this flag (need_update_viewports) is refered by only that thread
+        // so no need to guard by mutex lock and no need to notify condition variable also
         event.need_update_viewports = true;
+    }
+
+    void notifyTouchEvent(){
+        std::lock_guard lock(mutex);
+        event.touch_event_occurred = true;
         event.cv.notify_all();
     }
 

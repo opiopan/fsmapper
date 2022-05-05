@@ -247,22 +247,10 @@ struct RectangleBase{
     T height = 0;
 
     template <typename ANY>
-    static constexpr ANY max(ANY a, ANY b){
-        if (a > b){
-            return a;
-        }else{
-            return b;
-        }
-    }
+    static constexpr ANY max(ANY a, ANY b){return a > b ? a : b;}
 
     template <typename ANY>
-    static constexpr ANY min(ANY a, ANY b){
-        if (a < b){
-            return a;
-        }else{
-            return b;
-        }
-    }
+    static constexpr ANY min(ANY a, ANY b){return a < b ? a : b;}
 
     RectangleBase() = default;
     RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
@@ -338,6 +326,19 @@ struct RectangleBase{
     bool pointIsInRectangle(T tx, T ty) const{
         return tx >= x && tx <= x + width &&
                ty >= y && ty <= y + height;
+    }
+
+    template <typename ANY>
+    bool isIntersected(const RectangleBase<ANY>& src) const{
+        auto right = x + width;
+        auto bottom = y + height;
+        auto src_right = static_cast<T>(src.x + src.width);
+        auto src_bottom = static_cast<T>(src.y + src.height);
+        auto new_x = std::max(x, src.x);
+        auto new_y = std::max(y, src.y);
+        auto new_right = std::min(right, src_right);
+        auto new_bottom = std::min(bottom, src_bottom);
+        return new_right - new_x > zero && new_bottom - new_y > zero;
     }
 
     RectangleBase intersect(const RectangleBase& src) const{
