@@ -287,6 +287,10 @@ void View::update_view(){
         element->get_object().merge_dirty_rect(element->object_region, dirty_rect);
     }
     if (dirty_rect.width > 0.f && dirty_rect.height > 0.f){
+        dirty_rect.x -= 1.f;
+        dirty_rect.width += 2.f;
+        dirty_rect.y -=1.f;
+        dirty_rect.height += 2.f;
         viewport.invaridate_rect(dirty_rect);
     }
 }
@@ -700,7 +704,7 @@ Action* ViewPort::findAction(uint64_t evid){
 }
 
 std::pair<int, int> ViewPort::getMappingsStat(){
-    return {mappings->size(), mappings_num_for_views};
+    return {mappings ?  mappings->size() : 0, mappings_num_for_views};
 }
 
 std::optional<int> ViewPort::getCurrentView(){
