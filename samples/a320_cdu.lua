@@ -157,7 +157,7 @@ local viewport = mapper.viewport{
     name = "A320 Viewport",
     -- displayno = 1,
     -- x = 0, y = 0,
-    -- width = 0.4, height = 0.4,
+    -- width = 0.2 * (4/3) / (16/9), height = 0.4,
     displayno = 2,
     x = 0.5, y = 0,
     width = 0.5, height = 1,
@@ -176,7 +176,7 @@ viewport:register_view({
     logical_width = 1084,
     logical_height = 1550,
     horizontal_alignment = "center",
-    vertical_alignment = "center",
+    vertical_alignment = "top",
     mappings = maps,
     elements = {
         {

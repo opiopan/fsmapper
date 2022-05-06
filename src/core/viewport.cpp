@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <cfenv>
 #include <cmath>
+#include <chrono>
+#include <functional>
 #include "viewport.h"
 #include "engine.h"
 #include "capturedwindow.h"
@@ -20,6 +22,8 @@
 using std::min;
 using std::max;
 #include <gdiplus.h>
+
+static constexpr auto MOUSE_REJECTION_TIME = std::chrono::milliseconds(500);
 
 //============================================================================================
 // Utilities
@@ -266,7 +270,7 @@ void View::process_touch_event(ViewObject::touch_event event, int x, int y){
         if (result != ViewObject::touch_reaction::capture){
             touch_captured_element = nullptr;
         }
-    }else if (event == ViewObject::touch_event::lbutton_down){
+    }else if (event == ViewObject::touch_event::down){
         for (auto& element : normal_elements){
             if (element->object_region.pointIsInRectangle(x, y)){
                 auto& object_region = element->object_region;
@@ -276,6 +280,7 @@ void View::process_touch_event(ViewObject::touch_event event, int x, int y){
                 if (result == ViewObject::touch_reaction::capture){
                     touch_captured_element = element.get();
                 }
+                break;
             }
         }
     }
@@ -369,11 +374,13 @@ protected:
     SIZE window_size;
     BLENDFUNCTION blend;
     UPDATELAYEREDWINDOWINFO lw_info{0};
+    std::chrono::steady_clock::time_point last_touch;
 
 public:
     ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay, const UPDATE_WINDOW& on_update_window):
         bgcolor(bgcolor), relay(relay), on_update_window(on_update_window){
     	update_msg = ::RegisterWindowMessageA("MAPPER_CORE_VIEW_UPDATE");
+        last_touch = std::chrono::steady_clock::now();
     }
     virtual ~ViewPortWindow() = default;
 
@@ -399,10 +406,19 @@ public:
 
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override{
-        if (msg == WM_MOUSEMOVE || 
-            msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN || 
-            msg == WM_RBUTTONUP || msg == WM_RBUTTONDOWN){
-            return relay(msg, wparam, lparam);
+        if (msg == WM_TOUCH){
+            last_touch = std::chrono::steady_clock::now();
+            auto rc = relay(msg, wparam, lparam);
+            ::CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(lparam));
+            return rc;
+        }else if (msg == WM_MOUSEMOVE || 
+            msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN){
+            auto now = std::chrono::steady_clock::now();
+            if (now - last_touch > MOUSE_REJECTION_TIME){
+                return relay(msg, wparam, lparam);
+            }else{
+                return base_class::messageProc(msg, wparam, lparam);
+            }
         }else if (msg == update_msg){
             on_update_window();
         }else{
@@ -437,6 +453,8 @@ protected:
         lw_info.psize = &window_size;
         lw_info.pblend = &blend;
         lw_info.dwFlags = ULW_ALPHA;
+
+        ::RegisterTouchWindow(hWnd, 0);
         
         return true;
     }
@@ -493,20 +511,84 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             auto need_notify = touch_event_num == 0;
             using tevent = ViewPort::touch_event;
             using oevent = std::optional<tevent>;
-            oevent event = msg == WM_LBUTTONDOWN ? oevent{tevent::lbutton_down}  :
-                           msg == WM_LBUTTONUP ?   oevent{tevent::lbutton_up} :
-                           msg == WM_MOUSEMOVE ?   oevent{tevent::mouse_drag} :
-                                                   oevent{std::nullopt};
-            auto x = GET_X_LPARAM(lparam);
-            auto y = GET_Y_LPARAM(lparam);
+            oevent event;
+            float x = -1.f;
+            float y = -1.f;
+            DWORD msg_touch_id = 0;
+            std::function<void()> start_capture = []{};
+            std::function<void()> end_capture = []{};
+
+            if (msg == WM_TOUCH){
+                if (is_touch_captured && captured_device == touch_device::mouse){
+                    event = tevent::cancel;
+                    end_capture = [this]{
+                        is_touch_captured = false;
+                        captured_device = touch_device::unknown;
+                        ::ReleaseCapture();
+                    };
+                }else{
+                    auto handle = reinterpret_cast<HTOUCHINPUT>(lparam);
+                    if (LOWORD(wparam) > 1){
+                        event = tevent::cancel;
+                    }else{
+                        TOUCHINPUT  input;
+                        ::GetTouchInputInfo(handle, 1, &input, sizeof(TOUCHINPUT));
+                        msg_touch_id = input.dwID;
+                        event = input.dwFlags & TOUCHEVENTF_DOWN ? oevent{tevent::down} :
+                                input.dwFlags & TOUCHEVENTF_UP ?   oevent{tevent::up} :
+                                input.dwFlags & TOUCHEVENTF_MOVE ? oevent{tevent::drag} :
+                                                                   oevent{std::nullopt};
+                        POINT pt{ input.x / 100, input.y / 100 };
+                        ::ScreenToClient(*cover_window, &pt);
+                        x = pt.x;
+                        y = pt.y;
+                    }
+                    start_capture = [this, msg_touch_id]{
+                        is_touch_captured = true;
+                        captured_device = touch_device::touch;
+                        touch_id = msg_touch_id;
+                        ::SetCapture(*cover_window);
+                    };
+                    end_capture = [this]{
+                        is_touch_captured = false;
+                        captured_device = touch_device::unknown;
+                        ::ReleaseCapture();
+                    };
+                }
+            }else{
+                if (is_touch_captured && captured_device == touch_device::touch){
+                    event = tevent::cancel;
+                    end_capture = [this]{
+                        is_touch_captured = false;
+                        captured_device = touch_device::unknown;
+                    };
+                }else{
+                    event = msg == WM_LBUTTONDOWN ? oevent{tevent::down}  :
+                            msg == WM_LBUTTONUP ?   oevent{tevent::up} :
+                            msg == WM_MOUSEMOVE ?   oevent{tevent::drag} :
+                                                    oevent{std::nullopt};
+                    x = GET_X_LPARAM(lparam);
+                    y = GET_Y_LPARAM(lparam);
+                    start_capture = [this]{
+                        is_touch_captured = true;
+                        captured_device = touch_device::mouse;
+                        ::SetCapture(*cover_window);
+                    };
+                    end_capture = [this]{
+                        is_touch_captured = false;
+                        captured_device = touch_device::unknown;
+                        ::ReleaseCapture();
+                    };
+                }
+            }
             if (event){
-                if (!is_mouse_captured && (*event == tevent::lbutton_up || *event == tevent::mouse_drag)){
+                if (!is_touch_captured && *event != tevent::down){
                     return 0;
                 }
 
                 if (touch_event_num < touch_event_buffer_size){
-                    if (*event == tevent::mouse_drag && touch_event_num > 0 && 
-                        touch_event_buffer[touch_event_num - 1].event == tevent::mouse_drag){
+                    if (*event == tevent::drag && touch_event_num > 0 && 
+                        touch_event_buffer[touch_event_num - 1].event == tevent::drag){
                         auto& slot = touch_event_buffer[touch_event_num - 1];
                         slot.x = x;
                         slot.y = y;
@@ -517,37 +599,37 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
                         slot.y = y;
                         touch_event_num++;
                     }
-                    if (*event == tevent::lbutton_down){
-                        ::SetCapture(*cover_window);
-                        is_mouse_captured = true;
-                    }else if (*event == tevent::lbutton_up){
-                        ::ReleaseCapture();
-                        is_mouse_captured = false;
+                    if (*event == tevent::down){
+                        start_capture();
+                    }else if (*event == tevent::up || *event == tevent::cancel){
+                        end_capture();
                     }
                     if (need_notify){
                         mapper_EngineInstance()->notifyTouchEvent();
                     }
                 }else{
                     auto& last = touch_event_buffer[touch_event_num - 1];
-                    if (*event == tevent::lbutton_down){
+                    if (*event == tevent::down){
                         return 0;
-                    }else if (*event == tevent::mouse_drag){
-                        if (last.event == tevent::mouse_drag){
+                    }else if (*event == tevent::drag){
+                        if (last.event == tevent::drag){
                             last.x = x;
                             last.y = y;
                         }else{
                             return 0;
                         }
-                    }else if (*event == tevent::lbutton_up){
-                        if (last.event == tevent::mouse_drag){
+                    }else if (*event == tevent::up){
+                        if (last.event == tevent::drag){
                             last.event = *event;
                             last.x = x;
                             last.y = y;
-                        }else if (last.event == tevent::lbutton_down){
+                        }else if (last.event == tevent::down){
                             touch_event_num--;
                         }
-                        ::ReleaseCapture();
-                        is_mouse_captured = false;
+                        end_capture();
+                    }else if (*event == tevent::cancel){
+                        last.event = *event;
+                        end_capture();
                     }
                 }
             }

@@ -93,7 +93,7 @@ public:
             mapper_EngineInstance()->invokeViewportsUpdate();
         };
         if (status == op_status::init){
-            if (event == touch_event::lbutton_down){
+            if (event == touch_event::down){
                 status = op_status::touch_in;
                 invaridate();
                 return touch_reaction::capture;
@@ -101,23 +101,27 @@ public:
                 return touch_reaction::none;
             }
         }else if (status == op_status::touch_in){
-            if (event == touch_event::lbutton_up){
+            if (event == touch_event::up){
                 status = op_status::init;
                 invaridate();
                 if (event_tap){
                     mapper_EngineInstance()->sendEvent(std::move(Event(*event_tap)));
                 }
                 return touch_reaction::uncapture;
-            }else if (event == touch_event::mouse_drag && out_of_region){
+            }else if (event == touch_event::cancel){
+                status = op_status::init;
+                invaridate();
+                return touch_reaction::uncapture;
+            }else if (event == touch_event::drag && out_of_region){
                 status = op_status::touch_out;
                 invaridate();
             }
             return touch_reaction::capture;
         }else if (status == op_status::touch_out){
-            if (event == touch_event::lbutton_up){
+            if (event == touch_event::up || event == touch_event::cancel){
                 status = op_status::init;
                 return touch_reaction::uncapture;
-            }else if (event == touch_event::mouse_drag && !out_of_region){
+            }else if (event == touch_event::drag && !out_of_region){
                 status = op_status::touch_in;
                 invaridate();
             }

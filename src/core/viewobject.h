@@ -17,7 +17,7 @@ namespace graphics{
 
 class ViewObject{
 public:
-    enum class touch_event{lbutton_down, lbutton_up, mouse_drag};
+    enum class touch_event{down, up, drag, cancel};
     enum class touch_reaction{none, capture, uncapture};
 
     virtual std::optional<float> get_aspect_ratio() = 0;

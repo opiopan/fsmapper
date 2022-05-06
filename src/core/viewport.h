@@ -253,11 +253,14 @@ protected:
     static constexpr auto touch_event_buffer_size = 4;
     struct {
         touch_event event;
-        int x;
-        int y;
+        float x;
+        float y;
     } touch_event_buffer[touch_event_buffer_size];
     int touch_event_num = 0;
-    bool is_mouse_captured = false;
+    bool is_touch_captured = false;
+    enum class touch_device{unknown, touch, mouse};
+    touch_device captured_device = touch_device::unknown;
+    DWORD touch_id = 0;;
 
 public:
     friend ViewPortManager;
