@@ -10,7 +10,7 @@
 #include "tools.h"
 
 class MapperEngine;
-class EventValue;
+class Event;
 namespace graphics{
     class render_target;
 }
@@ -24,9 +24,39 @@ public:
     virtual float claculate_scale_factor(const FloatRect& actual_region) = 0;
     virtual touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) = 0;
     virtual void reset_touch_status() = 0;
-    virtual void set_value(const EventValue& value) = 0;
+    virtual void set_value(std::unique_ptr<Event>& value) = 0;
     virtual void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) = 0;
     virtual void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) = 0;
+};
+
+class Renderer{
+public:
+    virtual void render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua) = 0;
+};
+
+template <typename FUNC>
+class NativeRenderer : public Renderer{
+    FUNC function;
+public:
+    NativeRenderer(FUNC& function): function(function){}
+    virtual ~NativeRenderer() = default;
+    void render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua) override{
+        function(target, target_rect, scale_factor, value);
+    }
+};
+
+template <typename FUNC>
+inline std::shared_ptr<NativeRenderer<FUNC>> make_native_renderer(FUNC function){
+    return std::make_shared<NativeRenderer<FUNC>>(function);
+}
+
+class LuaRenderer : public Renderer{
+    sol::protected_function function;
+public:
+    LuaRenderer() = delete;
+    LuaRenderer(sol::function function): function(function){}
+    virtual ~LuaRenderer() = default;
+    void render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua) override;
 };
 
 void viewobject_init_scripting_env(MapperEngine& engine, sol::table& mapper_table);

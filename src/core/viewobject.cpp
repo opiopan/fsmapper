@@ -134,7 +134,8 @@ public:
         status = op_status::init;
     }
 
-    void set_value(const EventValue& value) override{}
+    void set_value(std::unique_ptr<Event>& value) override{
+    }
 
     void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) override{
         if (is_dirty){
@@ -151,6 +152,37 @@ public:
         is_dirty = false;
     }
 };
+
+//============================================================================================
+// LuaRenderer implementation
+//============================================================================================
+void LuaRenderer::render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua){
+    graphics::rendering_context ctx(target, target_rect, scale_factor);
+    sol::protected_function_result result;
+    auto type = value.getType();
+    if (value.isArrayValue()){
+        auto table = lua.create_table();
+        value.applyToTable(table);
+        result = function(ctx, table);
+    }else if (type == Event::Type::null){
+        result = function(ctx);
+    }else if (type == Event::Type::bool_value){
+        result = function(ctx, value.getAs<bool>());
+    }else if (type == Event::Type::int_value){
+        result = function(ctx, value.getAs<int64_t>());
+    }else if (type == Event::Type::double_value){
+        result = function(ctx, value.getAs<double>());
+    }else if (type == Event::Type::string_value){
+        result = function(ctx, value.getAs<const char*>());
+    }else if (type == Event::Type::lua_value){
+        result = function(ctx, value.getAs<sol::object>());
+    }
+    
+    if (!result.valid()){
+        sol::error err = result;
+        throw MapperException(err.what());
+    }
+}
 
 //============================================================================================
 // building lua environment
