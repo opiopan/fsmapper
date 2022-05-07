@@ -20,7 +20,21 @@ namespace graphics{
     void terminate_graphics();
     void create_lua_env(MapperEngine& engine, sol::state& lua);
 
-    class render_target;
+    class color;
+
+    //============================================================================================
+    // render_target: abstruction of Direct2D  render target
+    //============================================================================================
+    class render_target{
+    public:
+        enum class rendering_method{cpu, gpu};
+        static std::unique_ptr<render_target> create_render_target(int width, int height, rendering_method method);
+
+        virtual operator ID2D1RenderTarget* () const = 0;
+        ID2D1RenderTarget* operator ->() const {return static_cast<ID2D1RenderTarget*>(*this);}
+
+        virtual ID2D1Brush* get_solid_color_brush(const color& color) = 0;
+    };
 
     //============================================================================================
     // brush: abstruct class to express brush
@@ -93,7 +107,7 @@ namespace graphics{
         };
 
         ID2D1Brush* brush_interface(render_target& target) override;
-};
+    };
 
     //============================================================================================
     // bitmap: WIC based bitmap
@@ -111,6 +125,7 @@ namespace graphics{
         bitmap(const std::shared_ptr<bitmap_source>& source, const FloatRect& rect, const FloatPoint& origin ={0.f, 0.f}) :
             source(source), rect(rect), origin(origin){}
         
+        const FloatRect& get_rect_in_source() const {return rect;}
         float get_width() const {return rect.width;}
         float get_height() const {return rect.height;}
         const FloatPoint& get_origin() const {return origin;}
@@ -125,21 +140,29 @@ namespace graphics{
         float get_opacity() const {return opacity;}
         void set_opacity(float opacity){this->opacity = opacity;}
 
+        std::unique_ptr<render_target> create_render_target() const;
+
         void draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect);
         void draw(const render_target& target, const FloatPoint& offset, float scale, float rotation = 0.f);
     };
 
     //============================================================================================
-    // render_target: abstruction of Windows  render target
+    // rendering_context: access point to render graphics from Lua script
     //============================================================================================
-    class render_target{
+    class rendering_context {
+    protected:
+        render_target* target;
+        std::unique_ptr<render_target> target_entity;
+        FloatRect rect;
+        FloatPoint origin{ 0.f, 0.f };
+        float scale = 1.f;
+
     public:
-        enum class rendering_method{cpu, gpu};
-        static std::unique_ptr<render_target> create_render_target(int width, int height, rendering_method method);
+        rendering_context() = delete;
+        rendering_context(render_target& target, const FloatRect& rect, float scale) : target(&target), rect(rect), scale(scale) {}
+        rendering_context(const bitmap& bitmap);
+        ~rendering_context();
 
-        virtual operator ID2D1RenderTarget* () const = 0;
-        ID2D1RenderTarget* operator ->() const {return static_cast<ID2D1RenderTarget*>(*this);}
-
-        virtual ID2D1Brush* get_solid_color_brush(const color& color) = 0;
+        void finish_rendering();
     };
 }

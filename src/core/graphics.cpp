@@ -44,6 +44,86 @@ namespace graphics{
 }
 
 //============================================================================================
+// Reder target implementation
+//============================================================================================
+template <typename TARGET, typename CONTENTS>
+class render_target_implementation : public graphics::render_target{
+protected:
+    CComPtr<TARGET> target;
+    CComPtr<CONTENTS> contents;
+    std::unordered_map<uint32_t, CComPtr<ID2D1SolidColorBrush>> solid_color_brush_pool;
+
+public:
+    render_target_implementation() = delete;
+    render_target_implementation(const render_target_implementation&) = delete;
+    render_target_implementation(render_target_implementation&&) = delete;
+    render_target_implementation(TARGET* target, CONTENTS* contents) : target(target), contents(contents){}
+    virtual ~render_target_implementation() = default;
+
+    operator ID2D1RenderTarget * () const override{
+        return target;
+    }
+
+    ID2D1Brush* get_solid_color_brush(const graphics::color& color) override{
+        auto key = color.rgba();
+        if (solid_color_brush_pool.count(key)){
+            return solid_color_brush_pool.at(key);
+        }else{
+            CComPtr<ID2D1SolidColorBrush> brush;
+            target->CreateSolidColorBrush(color, &brush);
+            solid_color_brush_pool[key] = brush;
+            return brush;
+        }
+    }
+};
+
+namespace graphics{
+    std::unique_ptr<render_target> render_target::create_render_target(int width, int height, rendering_method method){
+        const D2D1_PIXEL_FORMAT format = D2D1::PixelFormat(
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            D2D1_ALPHA_MODE_PREMULTIPLIED);
+        const D2D1_RENDER_TARGET_PROPERTIES properties = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            format,
+            0.0f, // default dpi
+            0.0f, // default dpi
+            D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
+
+        if (method == rendering_method::cpu){
+            CComPtr<IWICBitmap> bitmap;
+            wic_factory->CreateBitmap(width, height, GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &bitmap);
+            CComPtr<ID2D1RenderTarget> target;
+            if (d2d_factory->CreateWicBitmapRenderTarget(bitmap, properties, &target) != S_OK){
+                throw std::runtime_error("failed to create cpu redering environment");
+            }
+            return std::make_unique<render_target_implementation<ID2D1RenderTarget, IWICBitmap>>(target, bitmap);
+        }else if (method == rendering_method::gpu){
+            D3D10_TEXTURE2D_DESC description = {};
+            description.ArraySize = 1;
+            description.BindFlags = D3D10_BIND_RENDER_TARGET;
+            description.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            description.Width = width;
+            description.Height = height;
+            description.MipLevels = 1;
+            description.SampleDesc.Count = 1;
+            description.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+
+            CComPtr<ID3D10Texture2D> texture;
+            d3d_device->CreateTexture2D(&description, 0, &texture);
+            CComPtr<IDXGISurface> surface;
+            texture.QueryInterface(&surface);
+            CComPtr<ID2D1RenderTarget> target;
+            if (d2d_factory->CreateDxgiSurfaceRenderTarget(surface, properties, &target) != S_OK){
+                throw std::runtime_error("failed to create gpu rendering environment");
+            }
+            return std::make_unique<render_target_implementation<ID2D1RenderTarget, ID3D10Texture2D>>(target, texture);
+        }else{
+            throw std::runtime_error("invalid redering method is specified");
+        }
+    }
+}
+
+//============================================================================================
 // representation of color
 //============================================================================================
 namespace graphics{
@@ -126,6 +206,15 @@ namespace graphics{
         int width() const {return rect.width;}
         int height() const {return rect.height;}
 
+        operator CComPtr<IWICBitmap> ()const {
+            CComPtr<IWICBitmap> bitmap;
+            auto rc = wic_bitmap->QueryInterface(IID_PPV_ARGS(&bitmap));
+            if (rc != S_OK){
+                throw MapperException("bitmap object is not modifiable");
+            }
+            return bitmap;
+        }
+
         ID2D1Bitmap* get_d2d_bitmap(ID2D1RenderTarget* target){
             if (target != last_render_target){
                 d2d_bitmap = nullptr;
@@ -136,6 +225,23 @@ namespace graphics{
         }
     };
 
+    std::unique_ptr<render_target> bitmap::create_render_target() const{
+        const D2D1_PIXEL_FORMAT format = D2D1::PixelFormat(
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            D2D1_ALPHA_MODE_PREMULTIPLIED);
+        const D2D1_RENDER_TARGET_PROPERTIES properties = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            format,
+            0.0f, 0.0f // default dpi
+        );
+        auto&& target_bitmap = source->operator CComPtr<IWICBitmap>();
+        CComPtr<ID2D1RenderTarget>target;
+        if (d2d_factory->CreateWicBitmapRenderTarget(target_bitmap, properties, &target) != S_OK){
+            throw std::runtime_error("failed to create cpu redering environment");
+        }
+        return std::make_unique<render_target_implementation<ID2D1RenderTarget, IWICBitmap>>(target, target_bitmap);
+    }
+
     void bitmap::draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect){
         auto srect = src_rect + origin;
         auto bitmap = source->get_d2d_bitmap(target);
@@ -144,82 +250,21 @@ namespace graphics{
 }
 
 //============================================================================================
-// Reder target implementation
+// rendering_context: access point to render graphics from Lua script
 //============================================================================================
-template <typename TARGET, typename CONTENTS>
-class render_target_implementation : public graphics::render_target{
-protected:
-    CComPtr<TARGET> target;
-    CComPtr<CONTENTS> contents;
-    std::unordered_map<uint32_t, CComPtr<ID2D1SolidColorBrush>> solid_color_brush_pool;
-
-public:
-    render_target_implementation() = delete;
-    render_target_implementation(const render_target_implementation&) = delete;
-    render_target_implementation(render_target_implementation&&) = delete;
-    render_target_implementation(TARGET* target, CONTENTS* contents) : target(target), contents(contents){}
-    virtual ~render_target_implementation() = default;
-
-    operator ID2D1RenderTarget * () const override{
-        return target;
-    }
-
-    ID2D1Brush* get_solid_color_brush(const graphics::color& color) override{
-        auto key = color.rgba();
-        if (solid_color_brush_pool.count(key)){
-            return solid_color_brush_pool.at(key);
-        }else{
-            CComPtr<ID2D1SolidColorBrush> brush;
-            target->CreateSolidColorBrush(color, &brush);
-            solid_color_brush_pool[key] = brush;
-            return brush;
-        }
-    }
-};
-
 namespace graphics{
-    std::unique_ptr<render_target> render_target::create_render_target(int width, int height, rendering_method method){
-        const D2D1_PIXEL_FORMAT format = D2D1::PixelFormat(
-            DXGI_FORMAT_B8G8R8A8_UNORM,
-            D2D1_ALPHA_MODE_PREMULTIPLIED);
-        const D2D1_RENDER_TARGET_PROPERTIES properties = D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            format,
-            0.0f, // default dpi
-            0.0f, // default dpi
-            D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
+    rendering_context::rendering_context(const bitmap& bitmap) : rect(bitmap.get_rect_in_source()), origin(bitmap.get_origin()){
+        target_entity = bitmap.create_render_target();
+        target = target_entity.get();
+    }
 
-        if (method == rendering_method::cpu){
-            CComPtr<IWICBitmap> bitmap;
-            wic_factory->CreateBitmap(width, height, GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &bitmap);
-            CComPtr<ID2D1RenderTarget> target;
-            if (d2d_factory->CreateWicBitmapRenderTarget(bitmap, properties, &target) != S_OK){
-                throw std::runtime_error("failed to create cpu redering environment");
-            }
-            return std::make_unique<render_target_implementation<ID2D1RenderTarget, IWICBitmap>>(target, bitmap);
-        }else if (method == rendering_method::gpu){
-            D3D10_TEXTURE2D_DESC description = {};
-            description.ArraySize = 1;
-            description.BindFlags = D3D10_BIND_RENDER_TARGET;
-            description.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-            description.Width = width;
-            description.Height = height;
-            description.MipLevels = 1;
-            description.SampleDesc.Count = 1;
-            description.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+    rendering_context::~rendering_context(){
+        finish_rendering();
+    }
 
-            CComPtr<ID3D10Texture2D> texture;
-            d3d_device->CreateTexture2D(&description, 0, &texture);
-            CComPtr<IDXGISurface> surface;
-            texture.QueryInterface(&surface);
-            CComPtr<ID2D1RenderTarget> target;
-            if (d2d_factory->CreateDxgiSurfaceRenderTarget(surface, properties, &target) != S_OK){
-                throw std::runtime_error("failed to create gpu rendering environment");
-            }
-            return std::make_unique<render_target_implementation<ID2D1RenderTarget, ID3D10Texture2D>>(target, texture);
-        }else{
-            throw std::runtime_error("invalid redering method is specified");
-        }
+    void rendering_context::finish_rendering(){
+        target_entity = nullptr;
+        target = nullptr;
     }
 }
 
@@ -282,5 +327,20 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
             });
         }),
         "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity)
+    );
+
+    table.new_usertype<graphics::rendering_context>(
+        "rendering_context",
+        sol::call_constructor, sol::factories([&engine](sol::object object){
+            return lua_c_interface(engine, "graphics.rendering_context", [&object](){
+                if (object.is<graphics::bitmap&>()){
+                    auto bitmap = object.as<std::shared_ptr<graphics::bitmap>>();
+                    return std::make_shared<graphics::rendering_context>(*bitmap);
+                }else{
+                    throw MapperException("bitmap to render is not specified");
+                }
+            });
+        }),
+        "finish_rendering", &graphics::rendering_context::finish_rendering
     );
 }

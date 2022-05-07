@@ -869,7 +869,7 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     // view element objects
     //
     viewobject_init_scripting_env(engine, mapper_table);
-    sol::table view_objects = mapper_table["view_objects"];
+    sol::table view_elements = mapper_table["view_elements"];
 
     //
     // functions to handle captured window
@@ -882,10 +882,10 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
             });
         })
     );
-    view_objects.new_usertype<CapturedWindow>(
+    view_elements.new_usertype<CapturedWindow>(
         "captured_window",
         sol::call_constructor, sol::factories([this](sol::object def){
-            return lua_c_interface(engine, "mapper.view_objects.captured_window", [this, &def](){
+            return lua_c_interface(engine, "mapper.view_elemnets.captured_window", [this, &def](){
                 return create_captured_window(def);
             });
         })

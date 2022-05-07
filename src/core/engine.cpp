@@ -392,7 +392,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         return rc;
     }catch (MapperException& e){
         std::ostringstream os;
-        os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << e.what();
+        os << "mapper-core: an error that cannot proceed event-action mapping occurred: " << std::endl << e.what();
         putLog(MCONSOLE_ERROR, os.str());
         {
             std::lock_guard lock(mutex);

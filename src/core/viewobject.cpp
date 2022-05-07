@@ -165,12 +165,12 @@ void viewobject_init_scripting_env(MapperEngine& engine, sol::table& mapper_tabl
     table.new_usertype<operable_area>(
         "operable_area",
         sol::call_constructor, sol::factories([&engine](sol::object def){
-            return lua_c_interface(engine, "mapper.view_objects.operable_area", [&def]{
+            return lua_c_interface(engine, "mapper.view_elements.operable_area", [&def]{
                 std::shared_ptr<ViewObject> ptr = std::make_shared<operable_area>(def);
                 return ptr;
             });
         })
     );
 
-    mapper_table["view_objects"] = table;
+    mapper_table["view_elements"] = table;
 }
