@@ -129,20 +129,17 @@ namespace graphics{
         float get_width() const {return rect.width;}
         float get_height() const {return rect.height;}
         const FloatPoint& get_origin() const {return origin;}
-        bool set_origin(const FloatPoint& new_origin){
-            if (rect.pointIsInRectangle(new_origin.x, new_origin.y)){
-                origin = new_origin;
-                return true;
-            }else{
-                return false;
-            }
+        void set_origin(const FloatPoint& new_origin){
+            origin = new_origin;
         }
         float get_opacity() const {return opacity;}
         void set_opacity(float opacity){this->opacity = opacity;}
 
+        std::shared_ptr<bitmap> create_partial_bitmap(sol::variadic_args va) const;
+
         std::unique_ptr<render_target> create_render_target() const;
 
-        void draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect);
+        void draw(const render_target& target, const FloatRect& dest_rect);
         void draw(const render_target& target, const FloatPoint& offset, float scale, float rotation = 0.f);
     };
 
@@ -164,5 +161,7 @@ namespace graphics{
         ~rendering_context();
 
         void finish_rendering();
+
+        void draw_bitmap(sol::variadic_args args);
     };
 }

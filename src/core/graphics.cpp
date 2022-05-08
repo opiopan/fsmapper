@@ -225,6 +225,20 @@ namespace graphics{
         }
     };
 
+    std::shared_ptr<bitmap> bitmap::create_partial_bitmap(sol::variadic_args va) const{
+        return lua_c_interface(*mapper_EngineInstance(), "bitmap::create_partial_bitmap", [this, &va]{
+            auto x = lua_safevalue<float>(va[0]);
+            auto y = lua_safevalue<float>(va[1]);
+            auto width = lua_safevalue<float>(va[2]);
+            auto height = lua_safevalue<float>(va[3]);
+            if (x && y && width && height){
+                return std::make_shared<bitmap>(source, FloatRect(*x, *y, *width, *height));
+            }else{
+                throw MapperException("invalid argument");
+            }
+        });
+    }
+
     std::unique_ptr<render_target> bitmap::create_render_target() const{
         const D2D1_PIXEL_FORMAT format = D2D1::PixelFormat(
             DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -242,10 +256,10 @@ namespace graphics{
         return std::make_unique<render_target_implementation<ID2D1RenderTarget, IWICBitmap>>(target, target_bitmap);
     }
 
-    void bitmap::draw(const render_target& target, const FloatRect& src_rect, const FloatRect& dest_rect){
-        auto srect = src_rect + origin;
+    void bitmap::draw(const render_target& target, const FloatRect& dest_rect){
+        auto drect = dest_rect - origin;
         auto bitmap = source->get_d2d_bitmap(target);
-        target->DrawBitmap(bitmap, dest_rect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, srect);
+        target->DrawBitmap(bitmap, drect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
     }
 }
 
@@ -256,6 +270,7 @@ namespace graphics{
     rendering_context::rendering_context(const bitmap& bitmap) : rect(bitmap.get_rect_in_source()), origin(bitmap.get_origin()){
         target_entity = bitmap.create_render_target();
         target = target_entity.get();
+        (*target)->BeginDraw();
     }
 
     rendering_context::~rendering_context(){
@@ -263,8 +278,54 @@ namespace graphics{
     }
 
     void rendering_context::finish_rendering(){
-        target_entity = nullptr;
+        if (target_entity){
+            (*target)->EndDraw();
+            target_entity = nullptr;
+        }
         target = nullptr;
+    }
+
+    void rendering_context::draw_bitmap(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_bitmap", [this, &args]{
+            std::shared_ptr<bitmap> bitmap;
+            std::optional<float> x;
+            std::optional<float> y;
+            std::optional<float> width;
+            std::optional<float> height;
+            FloatRect drect{0.f, 0.f, 0.f, 0.f};
+            sol::object arg0 = args[0];
+            if (arg0.is<graphics::bitmap&>()){
+                bitmap = arg0.as<std::shared_ptr<graphics::bitmap>>();
+                x = lua_safevalue<float>(args[1]);
+                y = lua_safevalue<float>(args[2]);
+                width = lua_safevalue<float>(args[3]);
+                height = lua_safevalue<float>(args[4]);
+            }else if (arg0.get_type() == sol::type::table){
+                auto def = arg0.as<sol::table>();
+                sol::object bm = def["bitmap"];
+                if (!bm.is<graphics::bitmap&>()){
+                    throw MapperException("no bitmap is specified");
+                }
+                bitmap = bm.as<std::shared_ptr<graphics::bitmap>>();
+                x = lua_safevalue<float>(def["x"]);
+                y = lua_safevalue<float>(def["y"]);
+                width = lua_safevalue<float>(def["width"]);
+                height = lua_safevalue<float>(def["height"]);
+            }else{
+                throw MapperException("invalid parameters");
+            }
+            drect.width = bitmap->get_width() * scale;
+            drect.height = bitmap->get_height() * scale;
+            if (x && y){
+                drect.x = *x * scale;
+                drect.y = *y * scale;
+            }
+            if (width && height){
+                drect.width = *width * scale;
+                drect.height = *height * scale;
+            }
+            bitmap->draw(*target, drect);
+        });
     }
 }
 
@@ -274,6 +335,9 @@ namespace graphics{
 void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
     auto table = lua.create_named_table("graphics");
 
+    //
+    // color
+    //
     table.new_usertype<graphics::color>(
         "color",
         sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
@@ -304,6 +368,9 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         })
     );
 
+    //
+    // bitmap
+    //
     table.new_usertype<graphics::bitmap>(
         "bitmap",
         sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
@@ -326,9 +393,13 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                 throw MapperException("invalid arguments");
             });
         }),
-        "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity)
+        "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity),
+        "create_partial_bitmap", &bitmap::create_partial_bitmap
     );
 
+    //
+    // rendering_context
+    //
     table.new_usertype<graphics::rendering_context>(
         "rendering_context",
         sol::call_constructor, sol::factories([&engine](sol::object object){
@@ -341,6 +412,7 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                 }
             });
         }),
-        "finish_rendering", &graphics::rendering_context::finish_rendering
+        "finish_rendering", &graphics::rendering_context::finish_rendering,
+        "draw_bitmap", &graphics::rendering_context::draw_bitmap
     );
 }

@@ -12,6 +12,21 @@
 #include "graphics.h"
 #include "capturedwindow.h"
 
+
+
+void ViewObject::set_value_lua(sol::object value){
+    auto event = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL), std::move(value));
+    set_value(event);
+}
+
+std::shared_ptr<NativeAction::Function> ViewObject::value_setter(){
+    NativeAction::Function::ACTION_FUNCTION func = [this](Event& event, sol::state&){
+        auto value = std::make_unique<Event>(std::move(event));
+        set_value(value);
+    };
+    return std::make_shared<NativeAction::Function>("view_elements:set_value()", func);
+}
+
 //============================================================================================
 // operable object
 //============================================================================================
@@ -82,7 +97,7 @@ public:
         return std::nullopt;
     }
 
-    float claculate_scale_factor(const FloatRect& actual_region) override{
+    float calculate_scale_factor(const FloatRect& actual_region, float base_scale_factor) override{
         return 1.f;
     }
 
@@ -154,9 +169,18 @@ public:
 };
 
 //============================================================================================
-// LuaRenderer implementation
+// LuaRenderer: expression of rederer which written as Lua script
 //============================================================================================
-void LuaRenderer::render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua){
+class lua_renderer : public Renderer{
+    sol::protected_function function;
+public:
+    lua_renderer() = delete;
+    lua_renderer(sol::function function): function(function){}
+    virtual ~lua_renderer() = default;
+    void render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua) override;
+};
+
+void lua_renderer::render(graphics::render_target& target, const FloatRect& target_rect, float scale_factor, Event& value, sol::state& lua){
     graphics::rendering_context ctx(target, target_rect, scale_factor);
     sol::protected_function_result result;
     auto type = value.getType();
@@ -185,24 +209,122 @@ void LuaRenderer::render(graphics::render_target& target, const FloatRect& targe
 }
 
 //============================================================================================
+// canvas: expression of rederer which written as Lua script
+//============================================================================================
+class canvas : public ViewObject{
+    std::optional<view_utils::region_restriction> def_restriction;
+    std::unique_ptr<Event> value = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL));
+    bool is_dirty = true;
+    std::shared_ptr<Renderer> renderer;
+
+public:
+    canvas() = delete;
+
+    canvas(sol::object& def_obj){
+        if (def_obj.get_type() != sol::type::table){
+            throw MapperException("canvas definition must be specified as a table");
+        }
+        auto def = def_obj.as<sol::table>();
+
+        def_restriction = view_utils::parse_region_restriction(def);
+        sol::object value = def["value"];
+        if (value.get_type() != sol::type::lua_nil){
+            this->value = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL), std::move(value));
+        }
+        sol::object renderer = def["renderer"];
+        if (renderer.is<Renderer&>()){
+            this->renderer = renderer.as<std::shared_ptr<Renderer>>();
+        }else if (renderer.get_type() == sol::type::function){
+            this->renderer = std::make_shared<lua_renderer>(renderer);
+        }else{
+            throw MapperException("no renderer parameter is specified or invarid object is specifid for renderer parameter");
+        }
+    }
+
+    virtual ~canvas() = default;
+
+    //-----------------------------------------------------------------------------------
+    // ViewObject interface implementation
+    //-----------------------------------------------------------------------------------
+    std::optional<float> get_aspect_ratio() override{
+        return def_restriction ? std::optional<float>(def_restriction->aspect_ratio) : std::nullopt;
+    }
+
+    float calculate_scale_factor(const FloatRect& actual_region, float base_scale_factor) override{
+        return def_restriction && def_restriction->logical_size ? 
+            actual_region.width / def_restriction->logical_size->width : base_scale_factor;
+    }
+
+    touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) override{
+        return touch_reaction::none;
+    }
+
+    void reset_touch_status() override{}
+
+    void set_value(std::unique_ptr<Event>& value) override{
+        bool need_update = true;
+        auto ctype = this->value->getType();
+        auto ntype = value->getType();
+        if (ntype == ctype){
+            if (ntype == Event::Type::null){
+                need_update = false;
+            }else if (ntype == Event::Type::bool_value){
+                need_update = value->getAs<bool>() != this->value->getAs<bool>();
+            }else if (ntype == Event::Type::int_value){
+                need_update = value->getAs<int64_t>() != this->value->getAs<int64_t>();
+            }else if (ntype == Event::Type::double_value){
+                need_update = value->getAs<double>() != this->value->getAs<double>();
+            }
+
+            if (need_update){
+                this->value = std::move(value);
+                if (!is_dirty){
+                    is_dirty = true;
+                    mapper_EngineInstance()->invokeViewportsUpdate();
+                }
+            }
+        }
+    }
+
+    void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) override{
+        if (is_dirty){
+            dirty_rect += actual_region;
+        }
+    }
+
+    void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) override{
+        renderer->render(target, actual_region, scale_factor, *value, mapper_EngineInstance()->getLuaState());
+        is_dirty = false;
+    }
+};
+
+//============================================================================================
 // building lua environment
 //============================================================================================
 void viewobject_init_scripting_env(MapperEngine& engine, sol::table& mapper_table){
     auto& lua = engine.getLuaState();
     auto table = lua.create_table();
 
-    //
-    // operable_area
-    //
-    table.new_usertype<operable_area>(
-        "operable_area",
-        sol::call_constructor, sol::factories([&engine](sol::object def){
-            return lua_c_interface(engine, "mapper.view_elements.operable_area", [&def]{
-                std::shared_ptr<ViewObject> ptr = std::make_shared<operable_area>(def);
-                return ptr;
-            });
-        })
+    table.new_usertype<ViewObject>(
+        "_view_object",
+        "new", sol::no_constructor,
+        "set_value", &ViewObject::set_value_lua,
+        "value_setter", &ViewObject::value_setter
     );
+
+    table["operable_area"] = [&engine](sol::object def){
+        return lua_c_interface(engine, "mapper.view_elements.operable_area", [&def]{
+            std::shared_ptr<ViewObject> ptr = std::make_shared<operable_area>(def);
+            return ptr;
+        });
+    };
+
+    table["canvas"] = [&engine](sol::object def){
+        return lua_c_interface(engine, "mapper.view_elements.canvas", [&def]{
+            std::shared_ptr<ViewObject> ptr = std::make_shared<canvas>(def);
+            return ptr;
+        });
+    };
 
     mapper_table["view_elements"] = table;
 }

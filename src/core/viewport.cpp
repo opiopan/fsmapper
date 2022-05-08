@@ -238,7 +238,7 @@ void View::prepare(){
         auto aratio = element->get_object().get_aspect_ratio();
         view_utils::region_restriction restriction{aratio ? *aratio : element->region.width / element->region.height};
         element->object_region = view_utils::calculate_restricted_rect(element->region, restriction, *element);
-        element->object_scale_factor = element->get_object().claculate_scale_factor(element->object_region);
+        element->object_scale_factor = element->get_object().calculate_scale_factor(element->object_region, scale_factor);
     }
 }
 
@@ -305,8 +305,7 @@ bool View::render_view(graphics::render_target& render_target, const FloatRect& 
     auto clear_background = [this, &render_target]{
         render_target->Clear(bg_color);
         if (bg_bitmap){
-            FloatRect srect{0.f, 0.f, bg_bitmap->get_width(), bg_bitmap->get_height()};
-            bg_bitmap->draw(render_target, srect, region);
+            bg_bitmap->draw(render_target, region);
         }
     };
     if (rect.width > region.width || rect.height > region.height){

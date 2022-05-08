@@ -252,7 +252,7 @@ struct RectangleBase{
     template <typename ANY>
     static constexpr ANY min(ANY a, ANY b){return a < b ? a : b;}
 
-    RectangleBase() = default;
+    RectangleBase(){};
     RectangleBase(T x, T y, T width, T height) : x(x), y(y), width(width), height(height){};
     ~RectangleBase() = default;
     template <typename SRC>
@@ -280,6 +280,21 @@ struct RectangleBase{
     RectangleBase operator + (const PointBase<ANY>& point) const{
         return {
             x + static_cast<T>(point.x), y + static_cast<T>(point.y),
+            width, height
+        };
+    }
+
+    template <typename ANY>
+    RectangleBase& operator -= (const PointBase<ANY>& point){
+        x -= static_cast<T>(point.x);
+        y -= static_cast<T>(point.y);
+        return *this;
+    }
+
+    template <typename ANY>
+    RectangleBase operator - (const PointBase<ANY>& point) const{
+        return {
+            x - static_cast<T>(point.x), y - static_cast<T>(point.y),
             width, height
         };
     }
@@ -352,8 +367,8 @@ struct RectangleBase{
         auto new_bottom = std::min(bottom, src_bottom);
         return {new_x,
                 new_y,
-                std::max(0, new_right - new_x),
-                std::max(0, new_bottom - new_y)};
+                std::max(zero, new_right - new_x),
+                std::max(zero, new_bottom - new_y)};
     }
 };
 
