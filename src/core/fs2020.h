@@ -48,7 +48,8 @@ protected:
     };
 
     std::mutex mutex;
-    bool shouldStop = false;    
+    bool shouldStop = false;
+    bool needToUpdateMfwasm = false;
     Status status = Status::connecting;
     bool isActive = false;
     std::string aircraftName;
@@ -66,6 +67,7 @@ public:
     virtual ~FS2020();
     virtual void initLuaEnv(sol::state& lua);
     virtual void changeActivity(bool isActive);
+    void updateMfwasm();
 
 protected:
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);

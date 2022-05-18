@@ -214,6 +214,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="graphics.h" />
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
+    <ClInclude Include="mobiflight_wasm.h" />
     <ClInclude Include="pluginapi.h" />
     <ClInclude Include="simhost.h" />
     <ClInclude Include="simplewindow.h" />
@@ -239,6 +240,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="fs2020.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="mappercore.cpp" />
+    <ClCompile Include="mobiflight_wasm.cpp" />
     <ClCompile Include="pluginapi.cpp" />
     <ClCompile Include="simhost.cpp" />
     <ClCompile Include="simplewindow.cpp" />
@@ -253,7 +255,17 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <Project>{bae570f4-ea42-43ad-81bb-613949159f81}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\nlohmann.json.3.10.4\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.10.4\build\native\nlohmann.json.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\nlohmann.json.3.10.4\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.10.4\build\native\nlohmann.json.targets'))" />
+  </Target>
 </Project>

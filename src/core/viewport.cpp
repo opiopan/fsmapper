@@ -1118,8 +1118,16 @@ void ViewPortManager::disable_viewports(){
 void ViewPortManager::enable_viewport_primitive(){	
     displays.clear();
     ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
-    for (auto& viewport : viewports){
-        viewport->enable(displays);
+    int i = 0;
+    try{
+        for (i = 0; i < viewports.size(); i++){
+            viewports[i]->enable(displays);
+        }
+    }catch(MapperException& e){
+        for (int j = 0; j < i; j++){
+            viewports[j]->disable();
+            throw e;
+        }
     }
 }
 

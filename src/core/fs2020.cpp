@@ -8,6 +8,7 @@
 #include "fs2020.h"
 #include "tools.h"
 #include "action.h"
+#include "mobiflight_wasm.h"
 
 static const auto CONNECTING_INTERVAL = 500;
 static const auto WATCH_DOG_ERROR_PERIOD = 10 * 1000;
@@ -96,6 +97,9 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             while(status != Status::disconnected){
                 if (shouldStop){
                     return;
+                }else if (needToUpdateMfwasm){
+                    needToUpdateMfwasm = false;
+                    mfwasm_update_simvar_observation();
                 }
                 lock.unlock();
                 auto eventix = ::WaitForMultipleObjects(2, events, false, 2 * 1000);
@@ -132,11 +136,16 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                                 if (new_name != aircraft_name){
                                     aircraft_name = std::move(new_name);
                                     status = Status::start;
+                                    mfwasm_start(*this, simconnect);
                                     lock.unlock();
                                     this->reportConnectivity(true, aircraft_name.c_str());
                                     lock.lock();
                                 }
+
                             }
+                        }else if (pData->dwID == SIMCONNECT_RECV_ID_CLIENT_DATA){
+                            auto pClientData = reinterpret_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
+                            mfwasm_process_client_data(pClientData);
                         }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
                             status = Status::disconnected;
                         }
@@ -151,6 +160,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             }
 
             isActive = false;
+            mfwasm_stop();
             lock.unlock();
             this->reportConnectivity(false, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
@@ -170,11 +180,18 @@ FS2020::~FS2020(){
         SetEvent(event_interrupt);
     }
     scheduler.join();
+    mfwasm_stop();
 }
 
 void FS2020::changeActivity(bool isActive){
     std::lock_guard lock(mutex);
     this->isActive = isActive;
+}
+
+void FS2020::updateMfwasm(){
+    std::lock_guard lock(mutex);
+    needToUpdateMfwasm = true;
+    SetEvent(event_interrupt);
 }
 
 //============================================================================================
@@ -198,6 +215,7 @@ void FS2020::initLuaEnv(sol::state& lua){
         };
         return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
     };
+    mfwasm_create_lua_env(fs2020);
     lua["fs2020"] = fs2020;
 }
 

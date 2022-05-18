@@ -87,6 +87,9 @@
     <ClInclude Include="viewobject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mobiflight_wasm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -161,5 +164,11 @@
     <ClCompile Include="viewobject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mobiflight_wasm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -269,6 +269,8 @@ bool MapperEngine::run(std::string&& scriptPath){
                         os << name;
                         if (ev->getType() == Event::Type::int_value){
                             os << "(" << ev->getAs<int64_t>() << ")";
+                        }else if (ev->getType() == Event::Type::double_value){
+                            os << "(" << ev->getAs<double>() << ")";
                         }
                         if (action){
                             os << " -> " << action->getName();
