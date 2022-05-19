@@ -215,7 +215,7 @@ void FS2020::initLuaEnv(sol::state& lua){
         };
         return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
     };
-    mfwasm_create_lua_env(fs2020);
+    mfwasm_create_lua_env(*this, fs2020);
     lua["fs2020"] = fs2020;
 }
 

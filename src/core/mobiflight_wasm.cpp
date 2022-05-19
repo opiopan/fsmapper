@@ -136,6 +136,10 @@ struct channel{
     }
 
     void send_command(const char* cmd){
+        command_buf[0] = 0;
+        debug_assert(
+            "SimConnect_SetClientData",
+            SimConnect_SetClientData(simconnect, command.id, msgdata_defid, 0, 0, mobiflight_message_size, command_buf));
         strcpy_s(command_buf, mobiflight_message_size, cmd);
         debug_assert(
             "SimConnect_SetClientData",
@@ -165,7 +169,7 @@ public:
         my_channel.initialize(simconnect);
 
         // Sometimes first command after reconnect is ignored. Therefore send just some arbitrary command.
-        initial_channel.send_command("dummy_command");
+        initial_channel.send_command("");
         std::string cmd{"MF.Clients.Add."};
         cmd += my_channel.name;
         initial_channel.send_command(cmd.c_str());
@@ -243,6 +247,12 @@ public:
     void notify_need_to_update(){
         fs2020.updateMfwasm();
     }
+
+    void execute_rpn(const char* rpn){
+        std::string cmd{"MF.SimVars.Set."};
+        cmd += rpn;
+        my_channel.send_command(cmd.c_str());
+    }
 };
 
 //============================================================================================
@@ -274,13 +284,14 @@ void mfwasm_process_client_data(SIMCONNECT_RECV_CLIENT_DATA* data){
 void mfwasm_update_simvar_observation(){
     std::lock_guard lock(mutex);
     if (connection){
+        connection->update_simvar_observation();
     }
 }
 
 //============================================================================================
 // Interface for Lua script
 //============================================================================================
-static void add_observed_simvars(sol::object obj){
+static void add_observed_simvars(sol::object& obj){
     std::lock_guard lock(mutex);
     if (obj.get_type() == sol::type::table){
         sol::table defs = obj;
@@ -319,7 +330,18 @@ static void clear_observed_simvars(){
     }
 }
 
-void mfwasm_create_lua_env(sol::table& fs2020){
+static void execute_rpn(FS2020& fs2020, const char* rpn){
+    fs2020.run_with_lock([rpn]{
+        std::lock_guard lock(mutex);
+        if (connection){
+            connection->execute_rpn(rpn);
+        }else{
+            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "mfwasm: [execute_rpn()] FS2020 is not running");
+        }
+    });
+}
+
+void mfwasm_create_lua_env(FS2020& fs2020, sol::table& fs2020_table){
     auto table = mapper_EngineInstance()->getLuaState().create_table();
 
     table["add_observed_data"] = [](sol::object obj){
@@ -332,6 +354,29 @@ void mfwasm_create_lua_env(sol::table& fs2020){
             clear_observed_simvars();
         });
     };
+    table["execute_rpn"] = [&fs2020](sol::object obj) {
+        lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.execute_rpn", [&fs2020, &obj] {
+            auto rpn = lua_safestring(obj);
+            if (rpn.size() == 0){
+                throw MapperException("invalid argument");
+            }
+            execute_rpn(fs2020, rpn.c_str());
+        });
+    };
+    table["rpn_executer"] = [&fs2020](sol::object obj) {
+        return lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.rpn_executer", [&fs2020, &obj] {
+            auto rpn = lua_safestring(obj);
+            if (rpn.size() == 0) {
+                throw MapperException("invalid argument");
+            }
+            std::ostringstream os;
+            os << "fs2020.mfwasm.execute_rpn(\"" << rpn << "\")";
+            NativeAction::Function::ACTION_FUNCTION func = [rpn, &fs2020](Event&, sol::state&) {
+                execute_rpn(fs2020, rpn.c_str());
+            };
+            return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
+        });
+    };
     
-    fs2020["mfwasm"] = table;
+    fs2020_table["mfwasm"] = table;
 }

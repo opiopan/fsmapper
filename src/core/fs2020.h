@@ -67,7 +67,13 @@ public:
     virtual ~FS2020();
     virtual void initLuaEnv(sol::state& lua);
     virtual void changeActivity(bool isActive);
+
     void updateMfwasm();
+    template <typename FUNC>
+    void run_with_lock(FUNC func){
+        std::lock_guard lock(mutex);
+        func();
+    }
 
 protected:
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
