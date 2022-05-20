@@ -10,8 +10,8 @@
 #include "action.h"
 #include "mobiflight_wasm.h"
 
-static const auto CONNECTING_INTERVAL = 500;
-static const auto WATCH_DOG_ERROR_PERIOD = 10 * 1000;
+static constexpr auto CONNECTING_INTERVAL = 500;
+static constexpr auto WATCH_DOG_ERROR_PERIOD = 10 * 1000;
 
 enum STATIC_EVENTS{
     EVENT_SIM_START = 1,
@@ -25,12 +25,77 @@ enum STATIC_DATA_DEFS{
 struct SystemData{
     char title[256];
 };
-static const auto DINAMIC_DATA_DEF_MIN = 100;
+static constexpr auto DINAMIC_DATA_DEF_MIN = 100;
 
 enum STATIC_REQESTS{
     REQUEST_SYSTEM_DATA = 1,
 };
-static const auto DINAMIC_REQUESt_MIN = 100;
+static constexpr auto DINAMIC_REQUEST_MIN = 100;
+
+//============================================================================================
+// represatation of observed simulation variables
+//============================================================================================
+struct SimVar{
+    std::string name;
+    std::string unit;
+    uint64_t eventid;
+    double epsilon;
+    double value = 0.;
+
+    SimVar() = delete;
+    SimVar(const char* name, const char* unit, uint64_t eventid, double epsilon = 0.): 
+        name(name), unit(unit), eventid(eventid), epsilon(epsilon){}
+    SimVar(SimVar&& src){*this = std::move(src);}
+    SimVar& operator = (SimVar&& src){
+        name = std::move(src.name);
+        unit = std::move(src.unit);
+        epsilon = src.epsilon;
+        value = src.value;
+        return *this;
+    }
+};
+
+static constexpr auto SIMVAR_GROUP_DEFINITION_ID_OFFSET = 1000;
+
+struct FS2020::SimVarGroup{
+    bool is_registerd = false;
+    std::vector<SimVar> simvars;
+
+    SimVarGroup() = default;
+    SimVarGroup(SimVarGroup&& src){*this = std::move(src);}
+    ~SimVarGroup() = default;
+    SimVarGroup& operator = (SimVarGroup&& src){
+        is_registerd = src.is_registerd;
+        simvars = std::move(src.simvars);
+        return *this;
+    }
+
+    void subscribe(HANDLE simconnect, DWORD id){
+        if (!is_registerd){
+            for (auto& simvar : simvars){
+                auto hr = ::SimConnect_AddToDataDefinition(
+                    simconnect,
+                    SIMVAR_GROUP_DEFINITION_ID_OFFSET + id, 
+                    simvar.name.c_str(),
+                    simvar.unit.c_str(),
+                    SIMCONNECT_DATATYPE_FLOAT64,
+                    simvar.epsilon);
+            }
+            auto hr = ::SimConnect_RequestDataOnSimObjectType(
+                simconnect,
+                SIMVAR_GROUP_DEFINITION_ID_OFFSET + id,
+                SIMVAR_GROUP_DEFINITION_ID_OFFSET + id,
+                0, SIMCONNECT_SIMOBJECT_TYPE_USER
+            );
+            is_registerd = true;
+        }
+    }
+    void unsubscribe(HANDLE simconnect, DWORD id){
+        if (is_registerd){
+            ::SimConnect_ClearDataDefinition(simconnect, SIMVAR_GROUP_DEFINITION_ID_OFFSET + id);
+        }
+    }
+};
 
 //============================================================================================
 // SimConnect event loop
@@ -141,7 +206,22 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                                     this->reportConnectivity(true, aircraft_name.c_str());
                                     lock.lock();
                                 }
-
+                                for (auto i = 0; i < simvar_groups.size(); i++){
+                                    subscribeSimVarGroup(i);
+                                }
+                            }else if (pObjData->dwRequestID >= SIMVAR_GROUP_DEFINITION_ID_OFFSET && 
+                                pObjData->dwRequestID < SIMVAR_GROUP_DEFINITION_ID_OFFSET + simvar_groups.size()){
+                                auto& group = simvar_groups[pObjData->dwRequestID - SIMVAR_GROUP_DEFINITION_ID_OFFSET];
+                                auto data = reinterpret_cast<double*>(&pObjData->dwData);
+                                for (auto i = 0; i < group.simvars.size(); i++){
+                                    auto& simvar = group.simvars[i];
+                                    auto delta = simvar.value - data[i];
+                                    if (delta > simvar.epsilon || delta < -simvar.epsilon){
+                                        simvar.value = data[i];
+                                        Event event(simvar.eventid, data[i]);
+                                        mapper_EngineInstance()->sendEvent(std::move(event));
+                                    }
+                                }
                             }
                         }else if (pData->dwID == SIMCONNECT_RECV_ID_CLIENT_DATA){
                             auto pClientData = reinterpret_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
@@ -199,11 +279,13 @@ void FS2020::updateMfwasm(){
 //============================================================================================
 void FS2020::initLuaEnv(sol::state& lua){
     auto fs2020 = lua.create_table();
+
     fs2020["send_event"] = [this](sol::object name_o){
         auto name = std::move(lua_safestring(name_o));
         auto event_id = this->getSimEventId(name);
         this->sendSimEventId(event_id);
     };
+
     fs2020["event_sender"] = [this](sol::object name_o){
         auto event_name = std::move(lua_safestring(name_o));
         auto event_id = this->getSimEventId(event_name);
@@ -215,6 +297,19 @@ void FS2020::initLuaEnv(sol::state& lua){
         };
         return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
     };
+
+    fs2020["add_observed_simvars"] = [this](sol::object obj){
+        lua_c_interface(*mapper_EngineInstance(), "fs2020.add_observed_simvars", [this, &obj]{
+            addObservedSimVars(obj);
+        });
+    };
+
+    fs2020["clear_observed_simvars"] = [this]{
+        lua_c_interface(*mapper_EngineInstance(), "fs2020.clear_observed_simvars", [this]{
+            clearObservedSimVars();
+        });
+    };
+
     mfwasm_create_lua_env(*this, fs2020);
     lua["fs2020"] = fs2020;
 }
@@ -242,5 +337,58 @@ void FS2020::sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid){
     if (isActive && status == Status::start){
         SimConnect_TransmitClientEvent(
             simconnect, 0, eventid, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+    }
+}
+
+//============================================================================================
+// SimVar handling functions
+//============================================================================================
+void FS2020::addObservedSimVars(sol::object obj){
+    if (obj.get_type() == sol::type::table){
+        sol::table def = obj;
+        SimVarGroup group;
+        for (auto i = 1; i <= def.size(); i++){
+            auto item = def[i];
+            if (item.get_type() == sol::type::table){
+                sol::table simvar = item;
+                auto name = lua_safestring(simvar["name"]);
+                auto unit = lua_safestring(simvar["unit"]);
+                auto eventid = lua_safevalue<uint64_t>(simvar["event"]);
+                auto epsilon = lua_safevalue<double>(simvar["epsilon"]);
+                if (name.size() == 0 || !eventid){
+                    throw MapperException("invarid arguments, SimVar defenition to observe must contain "
+                                          "\"name\" parameter and \"event\" parameter at least");
+                }
+                group.simvars.emplace_back(name.c_str(), unit.c_str(), *eventid, epsilon ? *epsilon : 0.);
+            }else{
+                throw MapperException("argument must be a array of tables");
+            }
+        }
+
+        std::lock_guard lock(mutex);
+        simvar_groups.emplace_back(std::move(group));
+        if (status == Status::start){
+            subscribeSimVarGroup(simvar_groups.size() - 1);
+        }
+    }else{
+        throw MapperException("argument must be a array of tables");
+    }
+}
+
+void FS2020::subscribeSimVarGroup(size_t ix){
+    simvar_groups[ix].subscribe(simconnect, ix);
+}
+
+void FS2020::clearObservedSimVars(){
+    std::lock_guard lock(mutex);
+    if (status == Status::start){
+        unsubscribeSimVarGroups();
+    }
+    simvar_groups.clear();
+}
+
+void FS2020::unsubscribeSimVarGroups(){
+    for (auto i = 0; i < simvar_groups.size(); i++){
+        simvar_groups[i].unsubscribe(simconnect, i);
     }
 }

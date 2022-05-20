@@ -47,6 +47,8 @@ protected:
         disconnected,
     };
 
+    struct SimVarGroup;
+    
     std::mutex mutex;
     bool shouldStop = false;
     bool needToUpdateMfwasm = false;
@@ -59,6 +61,7 @@ protected:
     WinHandle event_simconnect;
     WinHandle event_interrupt;
     std::map<std::string, SIMCONNECT_CLIENT_EVENT_ID> sim_events;
+    std::vector<SimVarGroup> simvar_groups;
 
 public:
     FS2020(SimHostManager& manager, int id);
@@ -78,4 +81,8 @@ public:
 protected:
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
     void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid);
+    void addObservedSimVars(sol::object obj);
+    void subscribeSimVarGroup(size_t ix);
+    void clearObservedSimVars();
+    void unsubscribeSimVarGroups();
 };
