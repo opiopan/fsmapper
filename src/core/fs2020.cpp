@@ -120,7 +120,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             //-------------------------------------------------------------------------------
             while (true){
                 HANDLE connection;
-                auto rc = SimConnect_Open(&connection, "fsmapper", nullptr, 0, event_simconnect, 0);
+                auto rc = SimConnect_Open(&connection, "fsmapper", nullptr, 0, 0, 0);
                 if (SUCCEEDED(rc)){
                     simconnect = connection;
                     break;
@@ -138,27 +138,25 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             //-------------------------------------------------------------------------------
             // Register data definition
             //-------------------------------------------------------------------------------
-            SimConnect_AddToDataDefinition(simconnect, DATA_DEF_SYSTEM, "Title", nullptr, SIMCONNECT_DATATYPE_STRING256);
-            SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
+            ::SimConnect_AddToDataDefinition(simconnect, DATA_DEF_SYSTEM, "Title", nullptr, SIMCONNECT_DATATYPE_STRING256);
+            ::SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
 
             //-------------------------------------------------------------------------------
             // Subscribe system events
             //-------------------------------------------------------------------------------
-            SimConnect_SubscribeToSystemEvent(simconnect, EVENT_SIM_START, "SimStart");
-            SimConnect_SubscribeToSystemEvent(simconnect, EVENT_1SEC, "1sec");
+            ::SimConnect_SubscribeToSystemEvent(simconnect, EVENT_SIM_START, "SimStart");
+            ::SimConnect_SubscribeToSystemEvent(simconnect, EVENT_1SEC, "1sec");
 
             //-------------------------------------------------------------------------------
             // Mapping client event
             //-------------------------------------------------------------------------------
             for (auto& [name, id] : sim_events){
-                SimConnect_MapClientEventToSimEvent(simconnect, id, name.c_str());
+                ::SimConnect_MapClientEventToSimEvent(simconnect, id, name.c_str());
             }
 
             //-------------------------------------------------------------------------------
             // process SimConnect events
             //-------------------------------------------------------------------------------
-            std::chrono::steady_clock::time_point watch_dog;
-            std::string aircraft_name;
             while(status != Status::disconnected){
                 if (shouldStop){
                     return;
@@ -167,70 +165,13 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     mfwasm_update_simvar_observation();
                 }
                 lock.unlock();
-                auto eventix = ::WaitForMultipleObjects(2, events, false, 2 * 1000);
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                ::SimConnect_CallDispatch(simconnect, [](SIMCONNECT_RECV* pData, DWORD cbData, void *context)->void{
+                    auto self = reinterpret_cast<FS2020*>(context);
+                    self->processSimConnectReceivedData(pData, cbData);
+                }, this);
                 lock.lock();
-                if (eventix == ix_interrupt){
-                    ::ResetEvent(event_interrupt);
-                }else if (eventix == ix_simconnect){
-                    ::ResetEvent(event_simconnect);
-                    SIMCONNECT_RECV* pData;
-                    DWORD cbData;
-                    lock.unlock();
-                    auto rc = SimConnect_GetNextDispatch(simconnect, &pData, &cbData);
-                    lock.lock();
-                    if (SUCCEEDED(rc)){
-                        if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
-                            SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
-                            if (evt->uEventID == EVENT_SIM_START){
-                                SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
-                            }else if (evt->uEventID == EVENT_1SEC){
-                                watch_dog = std::chrono::steady_clock::now();
-                                if (status == Status::connected){
-                                    status = Status::start;
-                                    lock.unlock();
-                                    this->reportConnectivity(true, nullptr);
-                                    lock.lock();
-                                }
-                            }
-                        }else if (pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE){
-                            auto pObjData = reinterpret_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE*>(pData);
-                            if (pObjData->dwRequestID == REQUEST_SYSTEM_DATA){
-                                auto object_id = pObjData->dwObjectID;
-                                auto data = reinterpret_cast<SystemData*>(&pObjData->dwData);
-                                std::string new_name = data->title;
-                                if (new_name != aircraft_name){
-                                    aircraft_name = std::move(new_name);
-                                    status = Status::start;
-                                    mfwasm_start(*this, simconnect);
-                                    lock.unlock();
-                                    this->reportConnectivity(true, aircraft_name.c_str());
-                                    lock.lock();
-                                }
-                                for (auto i = 0; i < simvar_groups.size(); i++){
-                                    subscribeSimVarGroup(i);
-                                }
-                            }else if (pObjData->dwRequestID >= SIMVAR_GROUP_DEFINITION_ID_OFFSET && 
-                                pObjData->dwRequestID < SIMVAR_GROUP_DEFINITION_ID_OFFSET + simvar_groups.size()){
-                                auto& group = simvar_groups[pObjData->dwRequestID - SIMVAR_GROUP_DEFINITION_ID_OFFSET];
-                                auto data = reinterpret_cast<double*>(&pObjData->dwData);
-                                for (auto i = 0; i < group.simvars.size(); i++){
-                                    auto& simvar = group.simvars[i];
-                                    auto delta = simvar.value - data[i];
-                                    if (delta > simvar.epsilon || delta < -simvar.epsilon){
-                                        simvar.value = data[i];
-                                        Event event(simvar.eventid, data[i]);
-                                        mapper_EngineInstance()->sendEvent(std::move(event));
-                                    }
-                                }
-                            }
-                        }else if (pData->dwID == SIMCONNECT_RECV_ID_CLIENT_DATA){
-                            auto pClientData = reinterpret_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
-                            mfwasm_process_client_data(pClientData);
-                        }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
-                            status = Status::disconnected;
-                        }
-                    }
-                }else if (status == Status::start){
+                if (status == Status::start){
                     // check watch dog
                     auto now = std::chrono::steady_clock::now();
                     if (now - watch_dog > std::chrono::milliseconds(WATCH_DOG_ERROR_PERIOD)){
@@ -252,6 +193,61 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
         }
     });
 }
+
+void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData){
+    std::unique_lock lock(mutex);
+    if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
+        SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
+        if (evt->uEventID == EVENT_SIM_START){
+            SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
+        }else if (evt->uEventID == EVENT_1SEC){
+            watch_dog = std::chrono::steady_clock::now();
+            if (status == Status::connected){
+                status = Status::start;
+                lock.unlock();
+                this->reportConnectivity(true, nullptr);
+                lock.lock();
+            }
+        }
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE){
+        auto pObjData = reinterpret_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE*>(pData);
+        if (pObjData->dwRequestID == REQUEST_SYSTEM_DATA){
+            auto object_id = pObjData->dwObjectID;
+            auto data = reinterpret_cast<SystemData*>(&pObjData->dwData);
+            std::string new_name = data->title;
+            if (new_name != aircraftName){
+                aircraftName = std::move(new_name);
+                status = Status::start;
+                mfwasm_start(*this, simconnect);
+                lock.unlock();
+                this->reportConnectivity(true, aircraftName.c_str());
+                lock.lock();
+            }
+            for (auto i = 0; i < simvar_groups.size(); i++){
+                subscribeSimVarGroup(i);
+            }
+        }else if (pObjData->dwRequestID >= SIMVAR_GROUP_DEFINITION_ID_OFFSET && 
+            pObjData->dwRequestID < SIMVAR_GROUP_DEFINITION_ID_OFFSET + simvar_groups.size()){
+            auto& group = simvar_groups[pObjData->dwRequestID - SIMVAR_GROUP_DEFINITION_ID_OFFSET];
+            auto data = reinterpret_cast<double*>(&pObjData->dwData);
+            for (auto i = 0; i < group.simvars.size(); i++){
+                auto& simvar = group.simvars[i];
+                auto delta = simvar.value - data[i];
+                if (delta > simvar.epsilon || delta < -simvar.epsilon){
+                    simvar.value = data[i];
+                    Event event(simvar.eventid, data[i]);
+                    mapper_EngineInstance()->sendEvent(std::move(event));
+                }
+            }
+        }
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_CLIENT_DATA){
+        auto pClientData = reinterpret_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
+        mfwasm_process_client_data(pClientData);
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
+        status = Status::disconnected;
+    }
+}
+
 
 FS2020::~FS2020(){
     {

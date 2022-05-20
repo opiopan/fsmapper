@@ -11,6 +11,7 @@
 #include <thread>
 #include <string>
 #include <map>
+#include <chrono>
 #include <windows.h>
 #include <SimConnect.h>
 #include "simhost.h"
@@ -56,6 +57,7 @@ protected:
     bool isActive = false;
     std::string aircraftName;
     std::thread scheduler;
+    std::chrono::steady_clock::time_point watch_dog;
 
     SimConnectHandle simconnect;
     WinHandle event_simconnect;
@@ -79,6 +81,8 @@ public:
     }
 
 protected:
+    void processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData);
+
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
     void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid);
     void addObservedSimVars(sol::object obj);
