@@ -283,6 +283,21 @@ namespace graphics{
             target_entity = nullptr;
         }
         target = nullptr;
+        brush = nullptr;
+    }
+
+    void rendering_context::set_brush(sol::object brush){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_brush", [this, &brush]{
+            if (brush.get_type() == sol::type::lua_nil){
+                this->brush = nullptr;
+            }else if (brush.is<graphics::brush&>()){
+                this->brush = brush.as<std::shared_ptr<graphics::brush>>();
+            }else if (brush.is<graphics::color&>()){
+                this->brush = brush.as<std::shared_ptr<graphics::color>>();
+            }else{
+                throw MapperException("specified value is not brush object");
+            }
+        });
     }
 
     void rendering_context::draw_bitmap(sol::variadic_args args){
@@ -325,6 +340,22 @@ namespace graphics{
                 drect.height = *height * scale;
             }
             bitmap->draw(*target, drect);
+        });
+    }
+
+    void rendering_context::fill_rectangle(sol::object x, sol::object y, sol::object width, sol::object height){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:fill_rectangle", [this, &x, &y, &width, &height]{
+            auto vx = lua_safevalue<float>(x);
+            auto vy = lua_safevalue<float>(y);
+            auto vwidth = lua_safevalue<float>(width);
+            auto vheight = lua_safevalue<float>(height);
+            if (!vx || !vy || !vwidth || !vheight){
+                throw MapperException("invarid argument");
+            }
+            if (this->brush){
+                FloatRect rect{*vx, *vy, *vwidth, *vheight};
+                (*target)->FillRectangle(rect, brush->brush_interface(*target));
+            }
         });
     }
 }
@@ -413,6 +444,8 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
             });
         }),
         "finish_rendering", &graphics::rendering_context::finish_rendering,
-        "draw_bitmap", &graphics::rendering_context::draw_bitmap
+        "set_brush", &graphics::rendering_context::set_brush,
+        "draw_bitmap", &graphics::rendering_context::draw_bitmap,
+        "fill_rectangle", &graphics::rendering_context::fill_rectangle
     );
 }

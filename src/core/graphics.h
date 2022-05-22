@@ -153,6 +153,7 @@ namespace graphics{
         FloatRect rect;
         FloatPoint origin{ 0.f, 0.f };
         float scale = 1.f;
+        std::shared_ptr<graphics::brush> brush;
 
     public:
         rendering_context() = delete;
@@ -162,6 +163,9 @@ namespace graphics{
 
         void finish_rendering();
 
+        void set_brush(sol::object brush);
+
         void draw_bitmap(sol::variadic_args args);
+        void fill_rectangle(sol::object x, sol::object y, sol::object width, sol::object height);
     };
 }
