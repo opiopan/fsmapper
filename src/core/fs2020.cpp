@@ -218,13 +218,14 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
             if (new_name != aircraftName){
                 aircraftName = std::move(new_name);
                 status = Status::start;
+                watch_dog = std::chrono::steady_clock::now();
                 mfwasm_start(*this, simconnect);
                 lock.unlock();
                 this->reportConnectivity(true, aircraftName.c_str());
                 lock.lock();
-            }
-            for (auto i = 0; i < simvar_groups.size(); i++){
-                subscribeSimVarGroup(i);
+                for (auto i = 0; i < simvar_groups.size(); i++){
+                    subscribeSimVarGroup(i);
+                }
             }
         }else if (pObjData->dwRequestID >= SIMVAR_GROUP_DEFINITION_ID_OFFSET && 
             pObjData->dwRequestID < SIMVAR_GROUP_DEFINITION_ID_OFFSET + simvar_groups.size()){

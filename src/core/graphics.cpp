@@ -339,6 +339,8 @@ namespace graphics{
                 drect.width = *width * scale;
                 drect.height = *height * scale;
             }
+            drect.x += this->rect.x;
+            drect.y += this->rect.y;
             bitmap->draw(*target, drect);
         });
     }
@@ -354,6 +356,10 @@ namespace graphics{
             }
             if (this->brush){
                 FloatRect rect{*vx, *vy, *vwidth, *vheight};
+                rect.x = rect.x * this->scale + this->rect.x;
+                rect.y = rect.y * this->scale + this->rect.y;
+                rect.width *= this->scale;
+                rect.height *= this->scale;
                 (*target)->FillRectangle(rect, brush->brush_interface(*target));
             }
         });
@@ -425,6 +431,8 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
             });
         }),
         "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity),
+        "width", sol::property(&bitmap::get_width),
+        "height", sol::property(&bitmap::get_height),
         "create_partial_bitmap", &bitmap::create_partial_bitmap
     );
 
