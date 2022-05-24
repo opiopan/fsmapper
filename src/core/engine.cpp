@@ -491,7 +491,11 @@ void MapperEngine::setMapping(const char* function_name, int level, const sol::o
 }
 
 void MapperEngine::addMapping(const char* function_name, int level, const sol::object& mapdef){
-    addEventActionMap(*this, mapping[level], mapdef);
+    if (mapping[level]) {
+        addEventActionMap(*this, mapping[level], mapdef);
+    }else{
+        setMapping(function_name, level, mapdef);
+    }
     notifyUpdate(UPDATED_MAPPINGS);
 }
 
