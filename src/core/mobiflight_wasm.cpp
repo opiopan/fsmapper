@@ -304,7 +304,10 @@ static void add_observed_simvars(sol::object& obj){
                 auto initial_value = lua_safevalue<float>(item["initial_value"]);
                 auto epsilon = lua_safevalue<float>(item["epsilon"]);
                 if (var.length() == 0 || !event){
-                    throw MapperException("invarid simvar definition, \"rpn\" parameter and \"event\" parameter must be specified");
+                    std::ostringstream os;
+                    os << "invarid simvar definition [#" << i;
+                    os << "]: \"rpn\" parameter and \"event\" parameter must be specified";
+                    throw MapperException(os.str());
                 }
                 holding_simvars.emplace_back(var, *event);
                 if (initial_value){

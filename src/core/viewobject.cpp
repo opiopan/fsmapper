@@ -275,13 +275,12 @@ public:
             }else if (ntype == Event::Type::double_value){
                 need_update = value->getAs<double>() != this->value->getAs<double>();
             }
-
-            if (need_update){
-                this->value = std::move(value);
-                if (!is_dirty){
-                    is_dirty = true;
-                    mapper_EngineInstance()->invokeViewportsUpdate();
-                }
+        }
+        if (need_update){
+            this->value = std::move(value);
+            if (!is_dirty){
+                is_dirty = true;
+                mapper_EngineInstance()->invokeViewportsUpdate();
             }
         }
     }
