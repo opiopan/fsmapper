@@ -1014,7 +1014,9 @@ void ViewPortManager::reset_viewports(){
     lock.unlock();
     if (prev_status != Status::init) {
         engine.notifyUpdate(MapperEngine::UPDATED_VIEWPORTS_STATUS);
+        engine.notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
     }
+    engine.recommend_gc();
 }
 
 std::shared_ptr<CapturedWindow> ViewPortManager::create_captured_window(sol::object def_obj){

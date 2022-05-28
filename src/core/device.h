@@ -17,6 +17,7 @@ class DeviceManager;
 class MaaperEngine;
 
 class Device{
+    bool is_available = true;
     std::string name;
     MapperEngine& engine;
     DeviceClass& deviceClass;
@@ -35,6 +36,8 @@ public:
     operator FSMDEVICECTX* (){return &contextForPlugin;};
     const std::vector<FSMDEVUNITDEF>& getUnitDefs() const {return unitDefs;};
     const std::vector<std::shared_ptr<DeviceModifier>>& getModifiers() const {return modifiers;};
+
+    void close();
 
     void issueEvent(size_t unitIndex, int value);
     void sendUnitValue(size_t unitIndex, int value);

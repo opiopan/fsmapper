@@ -207,6 +207,9 @@ void SimHIDConnection::processReceivedData_S(){
 //============================================================================================
 SimHIDConnection::~SimHIDConnection(){
     stop();
+    std::ostringstream os;
+    os << "SimHID deivice [" << devicePath << "] was closed";
+    fsmapper_putLog(mapper, FSMLOG_DEBUG, os.str().c_str());
 }
 
 void SimHIDConnection::stop(){

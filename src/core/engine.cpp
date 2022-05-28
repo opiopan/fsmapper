@@ -33,6 +33,7 @@ MapperEngine::~MapperEngine(){
     // since action may be lua function
     mapping[0] = nullptr;
     mapping[1] = nullptr;
+    event.deferred_actions.clear();
     if (scripting.viewportManager){
         scripting.viewportManager->reset_viewports();
     }

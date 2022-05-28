@@ -59,37 +59,51 @@ Device::Device(MapperEngine& engine, DeviceClass &deviceClass, std::string &name
 }
 
 Device::~Device(){
-    deviceClass.get_manager().removeDevice(name.c_str());
-    deviceClass.plugin().close(deviceClass, *this);
-    engine.notifyUpdate(engine.UPDATED_DEVICES);
+    close();
+}
+
+void Device::close(){
+    if (is_available){
+        deviceClass.get_manager().removeDevice(name.c_str());
+        deviceClass.plugin().close(deviceClass, *this);
+        engine.notifyUpdate(engine.UPDATED_DEVICES);
+        is_available = false;
+        engine.recommend_gc();
+    }
 }
 
 void Device::issueEvent(size_t unitIndex, int value){
-    modifiers[unitIndex]->processUnitValueChangeEvent(value);
+    if (is_available){
+        modifiers[unitIndex]->processUnitValueChangeEvent(value);
+    }
 }
 
 void Device::sendUnitValue(size_t unitIndex, int value){
-    lua_c_interface(engine, "device:send", [this, unitIndex, value](){
-        if (unitDefs.size() <= unitIndex || unitDefs[unitIndex].direction != FSMDU_DIR_OUTPUT){
-            throw MapperException("invalid upstream id");
-        }
-        deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
-    });
+    if (is_available){
+        lua_c_interface(engine, "device:send", [this, unitIndex, value](){
+            if (unitDefs.size() <= unitIndex || unitDefs[unitIndex].direction != FSMDU_DIR_OUTPUT){
+                throw MapperException("invalid upstream id");
+            }
+            deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+        });
+    }
 }
 
 sol::object Device::create_event_table(sol::this_state s){
     sol::state_view lua(s);
     auto out = lua.create_table();
-    for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
-        auto& unit = unitDefs[ix_unit];
-        if (unit.direction == FSMDU_DIR_INPUT){
-            auto unit_table = lua.create_table();
-            auto modifier = modifiers[ix_unit];
-            for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
-                auto event = modifier->getEvent(ix_event);
-                unit_table[event.name] = event.id;
+    if (is_available){
+        for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
+            auto& unit = unitDefs[ix_unit];
+            if (unit.direction == FSMDU_DIR_INPUT){
+                auto unit_table = lua.create_table();
+                auto modifier = modifiers[ix_unit];
+                for (auto ix_event = 0; ix_event < modifier->getEventNum(); ix_event++){
+                    auto event = modifier->getEvent(ix_event);
+                    unit_table[event.name] = event.id;
+                }
+                out[unit.name] = unit_table;
             }
-            out[unit.name] = unit_table;
         }
     }
     return out;
@@ -98,9 +112,11 @@ sol::object Device::create_event_table(sol::this_state s){
 sol::object Device::create_upstream_id_table(sol::this_state s){
     sol::state_view lua(s);
     auto out = lua.create_table();
-    for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
-        auto& unit = unitDefs[ix_unit];
-        out[unit.name] = ix_unit;
+    if (is_available){
+        for (auto ix_unit = 0; ix_unit < unitDefs.size(); ix_unit++){
+            auto& unit = unitDefs[ix_unit];
+            out[unit.name] = ix_unit;
+        }
     }
     return out;
 }
@@ -185,6 +201,7 @@ void DeviceManager::init_scripting_env(sol::table& mapper_table){
         }),
         "events", sol::property(&Device::create_event_table),
         "upstream_ids", sol::property(&Device::create_upstream_id_table),
+        "close", &Device::close,
         "send", &Device::sendUnitValue
     );
 }

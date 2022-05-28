@@ -73,10 +73,10 @@ public:
             }
         }
         event_tap = lua_safevalue<int64_t>(def["event_tap"]);
-        event_flic_up = lua_safevalue<int64_t>(def["event_flic_up"]);
-        event_flic_down = lua_safevalue<int64_t>(def["event_flic_down"]);
-        event_flic_right = lua_safevalue<int64_t>(def["event_flic_right"]);
-        event_flic_left = lua_safevalue<int64_t>(def["event_flic_left"]);
+        event_flic_up = lua_safevalue<int64_t>(def["event_flick_up"]);
+        event_flic_down = lua_safevalue<int64_t>(def["event_flick_down"]);
+        event_flic_right = lua_safevalue<int64_t>(def["event_flick_right"]);
+        event_flic_left = lua_safevalue<int64_t>(def["event_flick_left"]);
         event_rotate_clockwise = lua_safevalue<int64_t>(def["event_rotate_clockwise"]);
         event_rotate_counter_clockwise = lua_safevalue<int64_t>(def["event_rotate_counter_clockwise"]);
         valid_ops |= event_tap ? op_tap : 0;
