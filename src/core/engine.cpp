@@ -54,6 +54,8 @@ void MapperEngine::initScriptingEnv(){
 
     //-------------------------------------------------------------------------------
     // create 'mapper' table
+    //      mapper.script_path               this script file path
+    //      mapper.script_dir                directory of the above file
     //      mapper.print():                  print message on console
     //      mapper.abort():                  abort mapper engine
     //      mapper.delay():                  deferred function execution
@@ -167,7 +169,9 @@ void MapperEngine::initScriptingEnv(){
     // set asset path & package path
     //-------------------------------------------------------------------------------
     std::filesystem::path path(scripting.scriptPath);
+    scripting.lua()["mapper"]["script_path"] = path.string();
     path.remove_filename();
+    scripting.lua()["mapper"]["script_dir"] = path.string();
     scripting.lua()["mapper"]["asset_path"] = path.string();
     path /= "?.lua";
     auto package = scripting.lua()["package"];

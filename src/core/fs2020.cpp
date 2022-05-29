@@ -162,7 +162,9 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     return;
                 }else if (needToUpdateMfwasm){
                     needToUpdateMfwasm = false;
+                    lock.unlock();
                     mfwasm_update_simvar_observation();
+                    lock.lock();
                 }
                 lock.unlock();
                 std::this_thread::sleep_for(std::chrono::microseconds(50));
@@ -181,8 +183,8 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             }
 
             isActive = false;
-            mfwasm_stop();
             lock.unlock();
+            mfwasm_stop();
             this->reportConnectivity(false, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
             lock.lock();
@@ -219,8 +221,8 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 aircraftName = std::move(new_name);
                 status = Status::start;
                 watch_dog = std::chrono::steady_clock::now();
-                mfwasm_start(*this, simconnect);
                 lock.unlock();
+                mfwasm_start(*this, simconnect);
                 this->reportConnectivity(true, aircraftName.c_str());
                 lock.lock();
                 for (auto i = 0; i < simvar_groups.size(); i++){
@@ -243,7 +245,9 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
         }
     }else if (pData->dwID == SIMCONNECT_RECV_ID_CLIENT_DATA){
         auto pClientData = reinterpret_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData);
+        lock.unlock();
         mfwasm_process_client_data(pClientData);
+        lock.lock();
     }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
         status = Status::disconnected;
     }
