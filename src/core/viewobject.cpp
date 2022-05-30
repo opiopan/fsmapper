@@ -36,8 +36,8 @@ class operable_area : public ViewObject{
     bool is_dirty = true;
     static constexpr auto op_tap = 1;
     static constexpr auto op_vertical_flic = 2;
-    static constexpr auto op_horizontal_flic = 3;
-    static constexpr auto op_rotate = 4;
+    static constexpr auto op_horizontal_flic = 4;
+    static constexpr auto op_rotate = 8;
     uint32_t valid_ops = 0;
     graphics::color reaction_color{0.f, 1.f, 1.f, 0.3f};
     float round_ratio = 0.f;
@@ -48,6 +48,7 @@ class operable_area : public ViewObject{
     std::optional<int64_t> event_flic_left;
     std::optional<int64_t> event_rotate_clockwise;
     std::optional<int64_t> event_rotate_counter_clockwise;
+    FloatPoint initial_point;
 
 public:
     operable_area() = delete;
@@ -110,6 +111,8 @@ public:
         if (status == op_status::init){
             if (event == touch_event::down){
                 status = op_status::touch_in;
+                initial_point.x = rel_x;
+                initial_point.y = rel_y;
                 invaridate();
                 return touch_reaction::capture;
             }else{
@@ -119,7 +122,21 @@ public:
             if (event == touch_event::up){
                 status = op_status::init;
                 invaridate();
-                if (event_tap){
+                if (valid_ops & op_horizontal_flic){
+                    auto hdelta = rel_x - initial_point.x;
+                    if (hdelta > 0.4 || (initial_point.x > 0.6 && rel_x > 0.6)){
+                        mapper_EngineInstance()->sendEvent(std::move(Event(*event_flic_right)));
+                    }else if (hdelta < -0.4 || (initial_point.x < 0.4 && rel_x < 0.4)){
+                        mapper_EngineInstance()->sendEvent(std::move(Event(*event_flic_left)));
+                    }
+                }else if (valid_ops & op_vertical_flic){
+                    auto vdelta = rel_y - initial_point.y;
+                    if (vdelta > 0.4 || (initial_point.y > 0.6 && rel_y > 0.6)){
+                        mapper_EngineInstance()->sendEvent(std::move(Event(*event_flic_down)));
+                    }else if (vdelta < -0.4 || (initial_point.y < 0.4 && rel_y < 0.4)){
+                        mapper_EngineInstance()->sendEvent(std::move(Event(*event_flic_up)));
+                    }
+                }else if (valid_ops & op_tap){
                     mapper_EngineInstance()->sendEvent(std::move(Event(*event_tap)));
                 }
                 return touch_reaction::uncapture;
@@ -127,7 +144,7 @@ public:
                 status = op_status::init;
                 invaridate();
                 return touch_reaction::uncapture;
-            }else if (event == touch_event::drag && out_of_region){
+            }else if (event == touch_event::drag && out_of_region && !(valid_ops & ~op_tap)){
                 status = op_status::touch_out;
                 invaridate();
             }
