@@ -132,6 +132,7 @@ namespace graphics{
         void set_origin(const FloatPoint& new_origin){
             origin = new_origin;
         }
+        void lua_set_origin(sol::variadic_args va);
         float get_opacity() const {return opacity;}
         void set_opacity(float opacity){this->opacity = opacity;}
 

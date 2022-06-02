@@ -225,6 +225,23 @@ namespace graphics{
         }
     };
 
+    void bitmap::lua_set_origin(sol::variadic_args va){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap:set_origin", [this, &va]{
+            auto x = lua_safevalue<float>(va[0]);
+            auto y = lua_safevalue<float>(va[1]);
+            if (va[0].get_type() == sol::type::table){
+                sol::table def = va[0];
+                x = lua_safevalue<float>(def["x"]);
+                y = lua_safevalue<float>(def["y"]);
+            }
+            if (x && y){
+                this->set_origin({*x, *y});
+            }else{
+                throw MapperException("invalid argument");
+            }
+        });
+    }
+
     std::shared_ptr<bitmap> bitmap::create_partial_bitmap(sol::variadic_args va) const{
         return lua_c_interface(*mapper_EngineInstance(), "bitmap::create_partial_bitmap", [this, &va]{
             auto x = lua_safevalue<float>(va[0]);
@@ -433,6 +450,7 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         "opacity", sol::property(&bitmap::get_opacity, &bitmap::set_opacity),
         "width", sol::property(&bitmap::get_width),
         "height", sol::property(&bitmap::get_height),
+        "set_origin", &bitmap::lua_set_origin,
         "create_partial_bitmap", &bitmap::create_partial_bitmap
     );
 
