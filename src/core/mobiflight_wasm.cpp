@@ -183,17 +183,11 @@ public:
             // response of command via initial channel
             if (status == connection_status::init){
                 auto data_buf = reinterpret_cast<const char*>(&data->dwData);
-                auto object = json::parse(data_buf);
-                static const char* key = "Name";
-                if (object.count(key)){
-                    auto value = object[key];
-                    if (value.is_string()){
-                        auto&& name = value.get<std::string>();
-                        if (name == my_channel.name){
-                            status = connection_status::connected;
-                            update_simvar_observation();
-                        }
-                    }
+                std::ostringstream os;
+                os << "MF.Clients.Add." << my_channel.name << ".Finished";
+                if (os.str() == data_buf){
+                    status = connection_status::connected;
+                    update_simvar_observation();
                 }
             }
         }else if (data->dwDefineID == my_channel.msgdata_defid){
