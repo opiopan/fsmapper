@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <memory>
 #include <unordered_map>
+#include <iomanip>
+#include <limits>
 #include <sol/sol.hpp>
 #include "tools.h"
 #include "engine.h"
@@ -281,6 +283,74 @@ namespace graphics{
 }
 
 //============================================================================================
+// font:
+//============================================================================================
+namespace graphics{
+    std::shared_ptr<font> as_font(sol::object& obj){
+        std::shared_ptr<font> font;
+        if (obj.is<bitmap_font>()){
+            font = obj.as<std::shared_ptr<bitmap_font>>();
+        }
+        return font;
+    }
+
+    void bitmap_font::add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph){
+        if (code_point >= code_point_min && code_point <= code_point_max ){
+            glyphs[code_point - code_point_min] = glyph;
+        }
+    }
+
+    void bitmap_font::add_glyph_lua(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap_font:add_glyph", [this, &args]{
+            std::string code_point;
+            sol::object may_be_bitmap;
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::string){
+                code_point = std::move(lua_safestring(arg0));
+                may_be_bitmap = args[1];
+            }else if (arg0.get_type() == sol::type::table){
+                sol::table def = arg0;
+                code_point = std::move(lua_safestring(def["code_point"]));
+                may_be_bitmap = def["bitmap"];
+            }else{
+                throw MapperException("invalid parameters");
+            }
+
+            if (code_point.size() != 1 || code_point.c_str()[0] < code_point_min || code_point.c_str()[1] > code_point_max){
+                throw MapperException("string that represents code point is not correct, "
+                                      "it must be one charactor and must be within the range of ASCII code");
+            }
+            if (!may_be_bitmap.is<bitmap&>()){
+                throw MapperException("bitmap parameter is not specified or specified value is not bitmap object");
+            }
+            auto bitmap = may_be_bitmap.as<std::shared_ptr<graphics::bitmap>>();
+            add_glyph(code_point.c_str()[0], bitmap);
+        });
+    }
+
+    FloatRect bitmap_font::draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale){
+        FloatRect rect{pos.x, pos.y, 0.f, 0.f};
+        for (const char* code = string; *code; code++){
+            if (*code >= code_point_min && *code <= code_point_max){
+                const auto& glyph = glyphs[*code - code_point_min];
+                if (glyph){
+                    FloatRect target_rect{
+                        rect.x + rect.width,
+                        rect.y, 
+                        glyph->get_width() * scale,
+                        glyph->get_height() * scale
+                    };
+                    glyph->draw(target, target_rect);
+                    auto out_rect = target_rect - glyph->get_origin();
+                    rect += out_rect;
+                }
+            }
+        }
+        return rect;
+    }
+}
+
+//============================================================================================
 // rendering_context: access point to render graphics from Lua script
 //============================================================================================
 namespace graphics{
@@ -301,6 +371,19 @@ namespace graphics{
         }
         target = nullptr;
         brush = nullptr;
+        font = nullptr;
+    }
+
+    void rendering_context::translate_to_context_coordinate(FloatPoint& point){
+        point.x = point.x * this->scale + this->rect.x;
+        point.y = point.y * this->scale + this->rect.y;
+    }
+
+    void rendering_context::translate_to_context_coordinate(FloatRect& rect){
+        rect.x = rect.x * this->scale + this->rect.x;
+        rect.y = rect.y * this->scale + this->rect.y;
+        rect.width *= this->scale;
+        rect.height *= this->scale;
     }
 
     void rendering_context::set_brush(sol::object brush){
@@ -316,6 +399,22 @@ namespace graphics{
             }
         });
     }
+
+    void rendering_context::set_font(sol::object font){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_font", [this, &font]{
+            if (font.get_type() == sol::type::lua_nil){
+                this->font = nullptr;
+            }else{
+                auto newfont = as_font(font);
+                if (newfont){
+                    this->font = newfont;
+                }else{
+                    throw MapperException("specified value is not font object");
+                }
+            }
+        });
+    }
+
 
     void rendering_context::draw_bitmap(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_bitmap", [this, &args]{
@@ -380,6 +479,104 @@ namespace graphics{
                 (*target)->FillRectangle(rect, brush->brush_interface(*target));
             }
         });
+    }
+
+    void rendering_context::draw_string(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_string", [this, &args]{
+            std::string string;
+            std::optional<float> x;
+            std::optional<float> y;
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::string){
+                string = std::move(lua_safestring(arg0));
+                x = lua_safevalue<float>(args[1]);
+                y = lua_safevalue<float>(args[2]);
+            }else if (arg0.get_type() == sol::type::table){
+                sol::table def = arg0;
+                string = std::move(lua_safestring(def["string"]));
+                x = lua_safevalue<float>(def["x"]);
+                y = lua_safevalue<float>(def["y"]);
+            }else{
+                throw MapperException("invalid parameters");
+            }
+            FloatPoint point{0.f, 0.f};
+            if (x && y){
+                point.x = *x;
+                point.y = *y;
+            }
+            draw_string_native(string.c_str(), point);
+        });
+    }
+
+    void rendering_context::draw_number(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_number", [this, &args]{
+            std::optional<double> value;
+            std::optional<float> x;
+            std::optional<float> y;
+            std::optional<int> fraction_precision;
+            std::optional<int> precision;
+            std::optional<bool> leading_zero;
+
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::number){
+                value = lua_safevalue<double>(arg0);
+                x = lua_safevalue<float>(args[1]);
+                y = lua_safevalue<float>(args[2]);
+            }else if (arg0.get_type() == sol::type::table){
+                sol::table def = arg0;
+                value = lua_safevalue<double>(def["value"]);
+                x = lua_safevalue<float>(def["x"]);
+                y = lua_safevalue<float>(def["y"]);
+                fraction_precision = lua_safevalue<int>(def["fraction_precision"]);
+                precision = lua_safevalue<int>(def["precision"]);
+                leading_zero = lua_safevalue<bool>(def["leading_zero"]);
+            }else{
+                throw MapperException("invalid parameters");
+            }
+            if (!value){
+                throw MapperException("no numeric value is specified");
+            }
+            if (precision && fraction_precision && precision <= fraction_precision){
+                throw MapperException("precition parameter must be larger than fraction_precision parameter");
+            }
+            if (precision && *precision <= 0){
+                throw MapperException("precition parameter must be grater than 0");
+            }
+            if (fraction_precision && *fraction_precision < 0){
+                throw MapperException("precition parameter must be grater than 0 or 0");
+            }
+
+            std::ostringstream os;
+            if (precision && fraction_precision){
+                if (*fraction_precision > 0){
+                    os << std::setprecision(*fraction_precision) << std::fixed << std::setw(*precision + 1);
+                }else{
+                    os << std::setprecision(0) << std::fixed << std::setw(*precision);
+                }
+            }else if (precision){
+                os << std::setprecision(*precision);
+            }else if (fraction_precision){
+                os << std::setprecision(*fraction_precision) << std::fixed;
+            }
+            if (leading_zero && *leading_zero){
+                os << std::setfill('0');
+            }
+            os << *value;
+
+            FloatPoint point{0.f, 0.f};
+            if (x && y){
+                point.x = *x;
+                point.y = *y;
+            }
+            draw_string_native(os.str().c_str(), point);
+        });
+    }
+
+
+    void rendering_context::draw_string_native(const char* string, const FloatPoint& point){
+        auto opoint = point;
+        translate_to_context_coordinate(opoint);
+        font->draw_string(*target, string, opoint, this->scale);
     }
 }
 
@@ -455,6 +652,15 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
     );
 
     //
+    // bitmap_font
+    //
+    table.new_usertype<graphics::bitmap_font>(
+        "bitmap_font",
+        sol::call_constructor, sol::factories([]{return std::make_shared<bitmap_font>();}),
+        "add_glyph", &graphics::bitmap_font::add_glyph_lua
+    );
+
+    //
     // rendering_context
     //
     table.new_usertype<graphics::rendering_context>(
@@ -471,7 +677,10 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         }),
         "finish_rendering", &graphics::rendering_context::finish_rendering,
         "set_brush", &graphics::rendering_context::set_brush,
+        "set_font", &graphics::rendering_context::set_font,
         "draw_bitmap", &graphics::rendering_context::draw_bitmap,
+        "draw_string", &graphics::rendering_context::draw_string,
+        "draw_number", &graphics::rendering_context::draw_number,
         "fill_rectangle", &graphics::rendering_context::fill_rectangle
     );
 }

@@ -145,6 +145,36 @@ namespace graphics{
     };
 
     //============================================================================================
+    // font: abstract class for all font implementation
+    //============================================================================================
+    class font{
+    public:
+        virtual FloatRect draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale = 1.f) = 0;
+    };
+
+    std::shared_ptr<font> as_font(sol::object& obj);
+
+    //============================================================================================
+    // bitmap_font: font created from bitmap
+    //============================================================================================
+    class bitmap_font : public font {
+    public:
+        static constexpr auto code_point_min = 1;
+        static constexpr auto code_point_max = 126;
+    protected:
+        std::shared_ptr<bitmap> glyphs[code_point_max + 1 - code_point_min];
+
+    public:
+        bitmap_font() = default;
+        virtual ~bitmap_font() = default;
+
+        void add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph);
+        FloatRect draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale = 1.f) override;
+
+        void add_glyph_lua(sol::variadic_args args);
+    };
+    
+    //============================================================================================
     // rendering_context: access point to render graphics from Lua script
     //============================================================================================
     class rendering_context {
@@ -155,6 +185,7 @@ namespace graphics{
         FloatPoint origin{ 0.f, 0.f };
         float scale = 1.f;
         std::shared_ptr<graphics::brush> brush;
+        std::shared_ptr<graphics::font> font;
 
     public:
         rendering_context() = delete;
@@ -165,8 +196,16 @@ namespace graphics{
         void finish_rendering();
 
         void set_brush(sol::object brush);
+        void set_font(sol::object font);
 
         void draw_bitmap(sol::variadic_args args);
         void fill_rectangle(sol::object x, sol::object y, sol::object width, sol::object height);
+        void draw_string(sol::variadic_args args);
+        void draw_number(sol::variadic_args args);
+
+    protected:
+        void translate_to_context_coordinate(FloatPoint& point);
+        void translate_to_context_coordinate(FloatRect& rect);
+        void draw_string_native(const char* string, const FloatPoint& point);
     };
 }
