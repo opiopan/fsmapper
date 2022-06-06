@@ -276,7 +276,10 @@ namespace graphics{
     }
 
     void bitmap::draw(const render_target& target, const FloatRect& dest_rect){
-        auto drect = dest_rect - origin;
+        auto shift = origin;
+        shift.x *= dest_rect.width / rect.width;
+        shift.y *= dest_rect.height / rect.height;
+        auto drect = dest_rect - shift;
         auto bitmap = source->get_d2d_bitmap(target);
         target->DrawBitmap(bitmap, drect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
     }

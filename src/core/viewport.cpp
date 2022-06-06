@@ -1086,10 +1086,10 @@ void ViewPortManager::enable_viewports(){
         lock.unlock();
         try{
             enable_viewport_primitive();
-        }catch (MapperException&){
+        }catch (MapperException& e){
             lock.lock();
             change_status(Status::ready_to_start);
-            throw;
+            throw e;
         }
         lock.lock();
         change_status(Status::running);
@@ -1128,8 +1128,8 @@ void ViewPortManager::enable_viewport_primitive(){
     }catch(MapperException& e){
         for (int j = 0; j < i; j++){
             viewports[j]->disable();
-            throw e;
         }
+        throw e;
     }
 }
 

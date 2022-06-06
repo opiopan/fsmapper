@@ -11,7 +11,7 @@
 #include "mobiflight_wasm.h"
 
 static constexpr auto CONNECTING_INTERVAL = 500;
-static constexpr auto WATCH_DOG_ERROR_PERIOD = 10 * 1000;
+static constexpr auto WATCH_DOG_ERROR_PERIOD = 30 * 1000;
 
 enum STATIC_EVENTS{
     EVENT_SIM_START = 1,
