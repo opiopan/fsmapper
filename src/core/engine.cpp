@@ -61,10 +61,10 @@ void MapperEngine::initScriptingEnv(){
     //      mapper.delay():                  deferred function execution
     //      mapper.register_event():         register event id
     //      mapper.unregister_event():       unregister event id
-    //      mapper.set_primery_mappings():   set primery mappings
-    //      mapper.add_primery_mappings();   add primery mappings
-    //      mapper.set_secondary_mappings(): set primery mappings
-    //      mapper.add_secondary_mappings(); add primery mappings
+    //      mapper.set_primary_mappings():   set primary mappings
+    //      mapper.add_primary_mappings();   add primary mappings
+    //      mapper.set_secondary_mappings(): set secondary mappings
+    //      mapper.add_secondary_mappings(); add secondary mappings
     //      mapper.device() :                open device
     //      mapper.viewport():               register viewport
     //      mapper.start_viewports():        start all viewports
@@ -114,24 +114,24 @@ void MapperEngine::initScriptingEnv(){
             }
         });
     };
-    mapper["set_primery_mappings"] = [this](const sol::object def){
-        lua_c_interface(*this, "mapper:set_primery_mappings", [this, &def](){
-            setMapping("mapper.set_primery_mappings()", 0, def);
+    mapper["set_primary_mappings"] = [this](const sol::object def){
+        lua_c_interface(*this, "mapper:set_primary_mappings", [this, &def](){
+            setMapping("mapper.set_primary_mappings()", 0, def);
         });
     };
-    mapper["add_primery_mappings"] = [this](const sol::object def){
-        lua_c_interface(*this, "mapper:add_primery_mappings", [this, &def](){
-            addMapping("mapper.set_primery_mappings()", 0, def);
+    mapper["add_primary_mappings"] = [this](const sol::object def){
+        lua_c_interface(*this, "mapper:add_primary_mappings", [this, &def](){
+            addMapping("mapper.set_primary_mappings()", 0, def);
         });
     };
     mapper["set_secondary_mappings"] = [this](const sol::object def){
         lua_c_interface(*this, "mapper:set_secondary_mappings", [this, &def](){
-            setMapping("mapper.set_primery_mappings()", 1, def);
+            setMapping("mapper.set_secondary_mappings()", 1, def);
         });
     };
     mapper["add_secondary_mappings"] = [this](const sol::object def){
         lua_c_interface(*this, "mapper:add_secondary_mappings", [this, &def](){
-            addMapping("mapper.set_primery_mappings()", 1, def);
+            addMapping("mapper.set_secondary_mappings()", 1, def);
         });
     };
 
@@ -593,9 +593,9 @@ MAPPINGS_STAT MapperEngine::get_mapping_stat(){
     std::lock_guard lock(mutex);
     if (status == Status::running){
         auto&& vstat = scripting.viewportManager->get_mappings_stat();
-        auto primery = static_cast<int>(mapping[0].get() ? mapping[0]->size() : 0);
+        auto primary = static_cast<int>(mapping[0].get() ? mapping[0]->size() : 0);
         auto secondary = static_cast<int>(mapping[1].get() ? mapping[1]->size() : 0);
-        return {primery, secondary, vstat.first, vstat.second};
+        return {primary, secondary, vstat.first, vstat.second};
     }else{
         return {0, 0, 0, 0};
     }

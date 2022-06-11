@@ -160,7 +160,7 @@
                        Text="{x:Bind ViewModel.MappingsSummary, Mode=OneWay}"/>
                         <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"
                           Visibility="{x:Bind ViewModel.MappingsDetailIsVisible, Mode=OneWay}">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primery) :"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primary) :"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>

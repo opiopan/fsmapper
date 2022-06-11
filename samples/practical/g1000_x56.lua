@@ -399,7 +399,7 @@ viewport:add_mappings({
 })
 mapper.start_viewports()
 
-mapper.set_primery_mappings({
+mapper.set_primary_mappings({
     {event=mapper.events.change_aircraft, action=function (event, value)
         if value.host ~= "fs2020" then
             joymap.base = joymap_dcs
