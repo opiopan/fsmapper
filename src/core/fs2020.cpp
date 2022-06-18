@@ -136,11 +136,10 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             status = Status::connected;
 
             //-------------------------------------------------------------------------------
-            // Register data definition
+            // Register data definition then subscribe taht
             //-------------------------------------------------------------------------------
             ::SimConnect_AddToDataDefinition(simconnect, DATA_DEF_SYSTEM, "Title", nullptr, SIMCONNECT_DATATYPE_STRING256);
             ::SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
-
             //-------------------------------------------------------------------------------
             // Subscribe system events
             //-------------------------------------------------------------------------------
@@ -182,9 +181,17 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                 }
             }
 
+            //-------------------------------------------------------------------------------
+            // clean up SimConnect connection
+            //-------------------------------------------------------------------------------
             isActive = false;
+            aircraftName = "";
+            ::SimConnect_ClearClientDataDefinition(simconnect, DATA_DEF_SYSTEM);
             lock.unlock();
             mfwasm_stop();
+            lock.lock();
+            simconnect = nullptr;
+            lock.unlock();
             this->reportConnectivity(false, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
             lock.lock();
@@ -201,7 +208,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
     if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
         SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
         if (evt->uEventID == EVENT_SIM_START){
-            SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
+            ::SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
         }else if (evt->uEventID == EVENT_1SEC){
             watch_dog = std::chrono::steady_clock::now();
             if (status == Status::connected){
