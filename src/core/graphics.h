@@ -141,7 +141,7 @@ namespace graphics{
         std::unique_ptr<render_target> create_render_target() const;
 
         void draw(const render_target& target, const FloatRect& dest_rect);
-        void draw(const render_target& target, const FloatPoint& offset, float scale, float rotation = 0.f);
+        void draw(const render_target& target, const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
     };
 
     //============================================================================================

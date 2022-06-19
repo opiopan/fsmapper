@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <limits>
 #include <sol/sol.hpp>
+#include <d2d1helper.h>
 #include "tools.h"
 #include "engine.h"
 #include "fileops.h"
@@ -283,6 +284,18 @@ namespace graphics{
         auto bitmap = source->get_d2d_bitmap(target);
         target->DrawBitmap(bitmap, drect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
     }
+
+    void bitmap::draw(const render_target& target, const FloatPoint& offset, float scale_x, float scale_y, float angle){
+        auto&& matrix = D2D1::Matrix3x2F::Translation(-origin.x, -origin.y)
+                        * D2D1::Matrix3x2F::Scale(scale_x, scale_y)
+                        * D2D1::Matrix3x2F::Rotation(angle)
+                        * D2D1::Matrix3x2F::Translation(offset.x, offset.y);
+        target->SetTransform(matrix);
+        FloatRect drect{0.f, 0.f, rect.width, rect.height};
+        auto bitmap = source->get_d2d_bitmap(target);
+        target->DrawBitmap(bitmap, drect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
+        target->SetTransform(D2D1::Matrix3x2F::Identity());
+    }
 }
 
 //============================================================================================
@@ -426,6 +439,7 @@ namespace graphics{
             std::optional<float> y;
             std::optional<float> width;
             std::optional<float> height;
+            std::optional<float> angle;
             FloatRect drect{0.f, 0.f, 0.f, 0.f};
             sol::object arg0 = args[0];
             if (arg0.is<graphics::bitmap&>()){
@@ -434,6 +448,7 @@ namespace graphics{
                 y = lua_safevalue<float>(args[2]);
                 width = lua_safevalue<float>(args[3]);
                 height = lua_safevalue<float>(args[4]);
+                angle = lua_safevalue<float>(args[5]);
             }else if (arg0.get_type() == sol::type::table){
                 auto def = arg0.as<sol::table>();
                 sol::object bm = def["bitmap"];
@@ -445,9 +460,11 @@ namespace graphics{
                 y = lua_safevalue<float>(def["y"]);
                 width = lua_safevalue<float>(def["width"]);
                 height = lua_safevalue<float>(def["height"]);
+                angle = lua_safevalue<float>(def["angle"]);
             }else{
                 throw MapperException("invalid parameters");
             }
+
             drect.width = bitmap->get_width() * scale;
             drect.height = bitmap->get_height() * scale;
             if (x && y){
@@ -460,7 +477,10 @@ namespace graphics{
             }
             drect.x += this->rect.x;
             drect.y += this->rect.y;
-            bitmap->draw(*target, drect);
+            bitmap->draw(*target, {drect.x, drect.y},
+                            drect.width / bitmap->get_width(), drect.height / bitmap->get_height(),
+                            angle ? *angle : 0.f);
+            // bitmap->draw(*target, drect);
         });
     }
 
@@ -610,11 +630,12 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                         }
                     }
                 }else if (type == sol::type::string){
+                    sol::object color_name = va[0];
                     auto a = lua_safevalue<float>(va[1]);
                     if (a){
-                        return std::make_shared<graphics::color>(va[0], *a);
+                        return std::make_shared<graphics::color>(color_name, *a);
                     }else{
-                        return std::make_shared<graphics::color>(va[0]);
+                        return std::make_shared<graphics::color>(color_name);
                     }
                 }
                 throw MapperException("invalid arguments");
