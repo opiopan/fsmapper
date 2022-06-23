@@ -201,11 +201,14 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
                 if (object.is<CapturedWindow&>()){
                     auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
                     captured_window_elements.push_back(std::move(element));
-                }else if (object.is<ViewObject&>()){
-                    auto element = std::make_unique<NormalViewElement>(region_def, alignment, object.as<std::shared_ptr<ViewObject>>());
-                    normal_elements.push_back(std::move(element));
                 }else{
-                    throw MapperException("unsupported object is specified as view element object");
+                    auto view_object = as_view_object(object);
+                    if (view_object){
+                        auto element = std::make_unique<NormalViewElement>(region_def, alignment, view_object);
+                        normal_elements.push_back(std::move(element));
+                    }else{
+                        throw MapperException("unsupported object is specified as view element object");
+                    }
                 }
             }
         }

@@ -68,7 +68,7 @@ local function captured_window_view(name, window)
     }
 end
 
-global_mappings = {}
+local global_mappings = {}
 
 local fcu_panel = require("a320nx/fcu")
 fs2020.mfwasm.add_observed_data(fcu_panel.observed_data)

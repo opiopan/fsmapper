@@ -12,21 +12,6 @@
 #include "graphics.h"
 #include "capturedwindow.h"
 
-
-
-void ViewObject::set_value_lua(sol::object value){
-    auto event = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL), std::move(value));
-    set_value(event);
-}
-
-std::shared_ptr<NativeAction::Function> ViewObject::value_setter(){
-    NativeAction::Function::ACTION_FUNCTION func = [this](Event& event, sol::state&){
-        auto value = std::make_unique<Event>(std::move(event));
-        set_value(value);
-    };
-    return std::make_shared<NativeAction::Function>("view_elements:set_value()", func);
-}
-
 //============================================================================================
 // operable object
 //============================================================================================
@@ -312,7 +297,51 @@ public:
         renderer->render(target, actual_region, scale_factor, *value, mapper_EngineInstance()->getLuaState());
         is_dirty = false;
     }
+
+    void set_value_lua(sol::object value){
+        auto event = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL), std::move(value));
+        set_value(event);
+    }
+
+    std::shared_ptr<NativeAction::Function> value_setter(){
+        NativeAction::Function::ACTION_FUNCTION func = [this](Event& event, sol::state&){
+            auto value = std::make_unique<Event>(std::move(event));
+            set_value(value);
+        };
+        return std::make_shared<NativeAction::Function>("canvas:set_value()", func);
+    }
+
+    sol::object get_value_lua(sol::this_state s){
+        sol::state_view lua{s};
+
+        if (value->getType() == Event::Type::bool_value){
+            return sol::lua_value(lua, value->getAs<bool>()).as<sol::object>();
+        }else if (value->getType() == Event::Type::double_value){
+            return sol::lua_value(lua, value->getAs<double>()).as<sol::object>();
+        }else if (value->getType() == Event::Type::int_value){
+            return sol::lua_value(lua, value->getAs<int64_t>()).as<sol::object>();
+        }else if (value->getType() == Event::Type::string_value){
+            return sol::lua_value(lua, value->getAs<const char*>()).as<sol::object>();
+        }else if (value->getType() == Event::Type::lua_value){
+            return value->getAs<sol::object>();
+        }
+
+        return sol::lua_nil;
+    }
 };
+
+//============================================================================================
+// utility function to realize polimophism for lua object
+//============================================================================================
+std::shared_ptr<ViewObject> as_view_object(const sol::object& obj){
+    if (obj.is<operable_area&>()){
+        return obj.as<std::shared_ptr<operable_area>>();
+    }else if (obj.is<canvas&>()){
+        return obj.as<std::shared_ptr<canvas>>();
+    }else{
+        return nullptr;
+    }
+}
 
 //============================================================================================
 // building lua environment
@@ -321,26 +350,27 @@ void viewobject_init_scripting_env(MapperEngine& engine, sol::table& mapper_tabl
     auto& lua = engine.getLuaState();
     auto table = lua.create_table();
 
-    table.new_usertype<ViewObject>(
-        "_view_object",
-        "new", sol::no_constructor,
-        "set_value", &ViewObject::set_value_lua,
-        "value_setter", &ViewObject::value_setter
+    table.new_usertype<operable_area>(
+        "operable_area",
+        sol::call_constructor, sol::factories([&engine](sol::object def){
+            return lua_c_interface(engine, "mapper.view_elements.operable_area", [&def]{
+                return std::make_shared<operable_area>(def);
+            });
+        })
     );
 
-    table["operable_area"] = [&engine](sol::object def){
-        return lua_c_interface(engine, "mapper.view_elements.operable_area", [&def]{
-            std::shared_ptr<ViewObject> ptr = std::make_shared<operable_area>(def);
-            return ptr;
-        });
-    };
-
-    table["canvas"] = [&engine](sol::object def){
-        return lua_c_interface(engine, "mapper.view_elements.canvas", [&def]{
-            std::shared_ptr<ViewObject> ptr = std::make_shared<canvas>(def);
-            return ptr;
-        });
-    };
+    table.new_usertype<canvas>(
+        "canvas",
+        sol::call_constructor, sol::factories([&engine](sol::object def){
+            return lua_c_interface(engine, "mapper.view_elements.canvas", [&def]{
+                return std::make_shared<canvas>(def);
+            });
+        }), 
+        "value", sol::property(&canvas::get_value_lua, &canvas::set_value_lua),
+        "set_value", &canvas::set_value_lua,
+        "get_value", &canvas::get_value_lua,
+        "value_setter", &canvas::value_setter
+    );
 
     mapper_table["view_elements"] = table;
 }

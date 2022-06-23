@@ -28,10 +28,9 @@ public:
     virtual void set_value(std::unique_ptr<Event>& value) = 0;
     virtual void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) = 0;
     virtual void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) = 0;
-
-    void set_value_lua(sol::object value);
-    std::shared_ptr<NativeAction::Function> value_setter();
 };
+
+std::shared_ptr<ViewObject> as_view_object(const sol::object& obj);
 
 class Renderer{
 public:
