@@ -8,7 +8,7 @@ local vratio_menu = 0.0503472222222222     -- 58px
 local vratio_display = 0.666666666666667   -- 768px
 local vratio_panel = 0.282986111111111     -- 326px
 
-local a320_context = {}
+a320_context = {}
 
 --------------------------------------------------------------------------------------
 -- Create viewports
@@ -375,7 +375,7 @@ local mappings = {
     {event=g1000.EC1.increment, action=fs2020.event_sender("MobiFlight.SPD_Increase")},
     {event=g1000.EC1.decrement, action=fs2020.event_sender("MobiFlight.SPD_Decrease")},
     {event=g1000.EC1P.down, action=fs2020.event_sender("MobiFlight.SPD_Push")},
-    {event=g1000.SW12.down, action=fs2020.event_sender("MobiFlight.SPD_Pull")},
+    {event=g1000.SW1.down, action=fs2020.event_sender("MobiFlight.SPD_Pull")},
     {event=g1000.EC3.increment, action=fs2020.event_sender("MobiFlight.HDG_Increase")},
     {event=g1000.EC3.decrement, action=fs2020.event_sender("MobiFlight.HDG_Decrease")},
     {event=g1000.EC3P.down, action=fs2020.event_sender("MobiFlight.HDG_Push")},
@@ -385,11 +385,11 @@ local mappings = {
     {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
     {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
     {event=g1000.EC4P.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_ALT_PUSH")},
-    {event=g1000.SW5.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_ALT_PULL")},
+    {event=g1000.SW12.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_ALT_PULL")},
     {event=g1000.EC5.increment, action=fs2020.event_sender("MobiFlight.A32NX_FCU_VS_INC")},
     {event=g1000.EC5.decrement, action=fs2020.event_sender("MobiFlight.A32NX_FCU_VS_DEC")},
     {event=g1000.EC5P.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_VS_PUSH")},
-    {event=g1000.SW10.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_VS_PULL")},
+    {event=g1000.SW26.down, action=fs2020.event_sender("MobiFlight.A32NX_FCU_VS_PULL")},
     {event=g1000.SW2.down, action=fs2020.event_sender("MobiFlight.Autopilot_1_Push")},
     {event=g1000.SW3.down, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_FD_PUSH")},
     {event=g1000.SW8.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
@@ -405,7 +405,7 @@ local mappings = {
     {event=g1000.EC6X.decrement, action=fs2020.event_sender("MobiFlight.A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE")},
     {event=g1000.EC6Y.increment, action=fs2020.event_sender("MobiFlight.A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE")},
     {event=g1000.EC6Y.decrement, action=fs2020.event_sender("MobiFlight.A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE")},
-    {event=g1000.SW26.down, action=fs2020.event_sender("MobiFlight.A32NX_RMP_L_TRANSFER_BUTTON_PRESSED")},
+    {event=g1000.EC6P.down, action=fs2020.event_sender("MobiFlight.A32NX_RMP_L_TRANSFER_BUTTON_PRESSED")},
 
     {event=g1000.EC7Y.increment, action=fs2020.event_sender("Mobiflight.Baro_increase")},
     {event=g1000.EC7Y.decrement, action=fs2020.event_sender("Mobiflight.Baro_decrease")},

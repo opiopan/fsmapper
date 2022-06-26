@@ -87,6 +87,7 @@ namespace winrt::gui::ViewModels::implementation{
         auto file = co_await picker.PickSingleFileAsync();
         if (file) {
             mapper.ScriptPath(file.Path());
+            mapper.RunScript();
         }
     }
 

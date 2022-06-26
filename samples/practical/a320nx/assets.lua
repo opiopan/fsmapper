@@ -13,7 +13,7 @@ local assets = {
     sbutton_indicator = {x=840, y=151, width=102, height=51},
     engsw = {x=0, y=208, width=144, height=243},
     sseg = {x=578, y=256, width=76, height=100},
-    sseg_td = {x=1338, y=256, width=228, height=100},
+    sseg_td = {x=1338, y=256, width=76, height=100},
     sseg_dot = {x=1490, y=256, width=14, height=100},
     baro_mode = {x=1420, y=76, width=100, height=30},
 
