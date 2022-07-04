@@ -247,6 +247,7 @@ void View::prepare(){
 
 void View::show(){
     for (auto& element : captured_window_elements){
+        element->get_object().set_owner(&viewport);
         element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
     }
     FloatRect rect{viewport.get_output_region()};
@@ -255,7 +256,11 @@ void View::show(){
 
 void View::hide(){
     for (auto& element : captured_window_elements){
-        element->get_object().change_window_pos(IntRect{element->region}, HWND_BOTTOM, false);
+        auto owner = element->get_object().get_owner();
+        if (!owner || owner == &viewport){
+            element->get_object().set_owner(nullptr);
+            element->get_object().change_window_pos(IntRect{element->region}, HWND_BOTTOM, false);
+        }
     }
     for (auto& element : normal_elements){
         element->get_object().reset_touch_status();
@@ -677,7 +682,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         throw MapperException(std::move(os.str()));
     }
     if (!def_display_no){
-        entire_region = view_utils::calculate_actual_rect({0.f, 0.f, 0.f, 0.f}, def_region);
+        entire_region = view_utils::calculate_actual_rect({0.f, 0.f, 0.f, 0.f}, def_region).to_IntRect();
     }else{
         if (displays.size() < *def_display_no){
             std::ostringstream os;
@@ -686,11 +691,11 @@ void ViewPort::enable(const std::vector<IntRect> displays){
             throw MapperException(std::move(os.str()));
         }else{
             auto& drect = displays[*def_display_no - 1];
-            entire_region = view_utils::calculate_actual_rect(drect, def_region);
+            entire_region = view_utils::calculate_actual_rect(drect, def_region).to_IntRect();
         }
     }
     if (def_restriction){
-        region = view_utils::calculate_restricted_rect(entire_region, *def_restriction, def_alignment);
+        region = view_utils::calculate_restricted_rect(entire_region, *def_restriction, def_alignment).to_IntRect();
         scale_factor = view_utils::calculate_scale_factor(region, *def_restriction);
     }else{
         region = entire_region;
@@ -715,6 +720,11 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     }
     cover_window->start(entire_region, region);
     views[current_view]->show();
+
+    std::ostringstream os;
+    os << "mapper-core: Start viewport [" << name << "] [";
+    os << entire_region.width << " x " << entire_region.height << "]";
+    mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, os.str());
 }
 
 void ViewPort::disable(){

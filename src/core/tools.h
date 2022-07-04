@@ -13,6 +13,7 @@
 #include <memory>
 #include <optional>
 #include <algorithm>
+#include <cmath>
 #include <sol/sol.hpp>
 
 inline std::string lua_safestring(const sol::object& object){
@@ -259,6 +260,13 @@ struct RectangleBase{
     RectangleBase(const SRC& src): 
         x(static_cast<T>(src.x)), y(static_cast<T>(src.y)), 
         width(static_cast<T>(src.width)), height(static_cast<T>(src.height)){}
+
+    RectangleBase<int> to_IntRect(){
+        return {
+            static_cast<int>(std::round(x)), static_cast<int>(std::round(y)),
+            static_cast<int>(std::round(width)), static_cast<int>(std::round(height))
+        };
+    }
 
     template<typename SRC>
     RectangleBase& operator = (const SRC& src){

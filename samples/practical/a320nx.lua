@@ -4,9 +4,14 @@ local config = {
     simhid_g1000_display = 2,
 }
 
-local vratio_menu = 0.0503472222222222     -- 58px
-local vratio_display = 0.666666666666667   -- 768px
-local vratio_panel = 0.282986111111111     -- 326px
+local height_menu = 58
+local height_display = 768
+local height_panel = 326
+local height_total = height_menu + height_display + height_panel
+
+local vratio_menu = height_menu / height_total
+local vratio_display = height_display / height_total    
+local vratio_panel = height_panel / height_total
 
 a320_context = {}
 

@@ -20,6 +20,7 @@ protected:
     HWND hwnd = nullptr;
     bool omit_system_region = true;
     ViewPort::BackgroundWindow fallback_window;
+    ViewPort* owner = nullptr;
 
 public:
     CapturedWindow() = delete;
@@ -34,6 +35,8 @@ public:
     const std::string& get_name() const {return name;};
     uint32_t get_cwid() const {return cwid;};
     HWND get_hwnd() const {return hwnd;};
+    ViewPort* get_owner() const {return owner;}
+    void set_owner(ViewPort* new_owner) {owner = new_owner;}
     void attach_window(HWND hwnd);
     void release_window();
     bool change_window_pos(const IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor = 0);
