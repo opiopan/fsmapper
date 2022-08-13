@@ -165,9 +165,17 @@ DLLEXPORT const char* luav_asString(LUAVALUE lv){
 }
 
 DLLEXPORT LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key){
-    return lv->getItemWithKey(key);
+    if (lv->getType() == LV_TABLE){
+        return lv->getItemWithKey(key);
+    }else{
+        return &nullobj;
+    }
 }
 
 DLLEXPORT LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index){
-    return lv->getItemWithIndex(index);
+    if (lv->getType() == LV_TABLE){
+        return lv->getItemWithIndex(index);
+    }else{
+        return &nullobj;
+    }
 }

@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <optional>
+#include <cmath>
 #include <dinput.h>
 #include "dinputdev.h"
 #include "tools.h"
@@ -23,6 +24,9 @@
 
 static constexpr auto AXIS_VALUE_MAX = JOYSTICK_AXIS_VALUE_MAX;
 static constexpr auto AXIS_VALUE_MIN = JOYSTICK_AXIS_VALUE_MIN;
+
+static const auto pi = std::acos(-1.0);
+static const auto pi2 = pi * 2.0;
 
 //============================================================================================
 // Device capabilities representation
@@ -41,6 +45,7 @@ protected:
         DWORD type_and_id;
         int buff_offset;
         int (*unit_value)(const char* buf, int offset);
+        bool map_with_mapper_event = true;
     };
 
     static constexpr auto AXIS_X = 0x1;
@@ -58,13 +63,17 @@ protected:
     std::vector<UnitDef> axes;
     std::vector<UnitDef> povs;
     std::vector<UnitDef> buttons;
+    int unit_num_raw = 0;
     int unit_num = 0;
+    std::unique_ptr<UnitDef* []> units_raw;
     std::unique_ptr<UnitDef* []> units;
     int buf_size = 0;
     std::unique_ptr<char []> last_data;
     std::unique_ptr<char []> current_data;
 
 public:
+    using UnitPtr = UnitDef*;
+
     DeviceCaps(const NameList&& allowlist, const NameList&& denylist) : 
         allowlist(std::move(allowlist)), denylist(std::move(denylist)){}
     DeviceCaps(const DeviceCaps&) = delete;
@@ -76,6 +85,10 @@ public:
     inline FSMDEVUNIT_VALTYPE get_unit_valtype(int index) const {return units.get()[index]->valtype;}
     inline int get_unit_max_value(int index) const {return units.get()[index]->max_value;}
     inline int get_unit_min_value(int index) const {return units.get()[index]->min_value;}
+
+    inline UnitPtr get_unit_ptr(int index) const {return units.get()[index];}
+    inline int get_unit_value(UnitPtr unit) const {return unit->unit_value(current_data.get(), unit->buff_offset);}
+    inline int get_unit_last_value(UnitPtr unit) const {return unit->unit_value(last_data.get(), unit->buff_offset);}
 
     void add_unit(const DIDEVICEOBJECTINSTANCEA* def){
         UnitDef unit_def;
@@ -151,31 +164,65 @@ public:
         }
     }
 
+    UnitPtr mark_unit_as_source_of_meta_unit(const char* name, bool enable_as_raw_unit){
+        for (auto& unit : axes){
+            if (unit.name == name){
+                unit.map_with_mapper_event = enable_as_raw_unit;
+                return &unit;
+            }
+        }
+        // for (auto& unit : povs){
+        //     if (unit.name == name){
+        //         unit.map_with_mapper_event = enable_as_raw_unit;
+        //         return &unit;
+        //     }
+        // }
+        // for (auto& unit : buttons){
+        //     if (unit.name == name){
+        //         unit.map_with_mapper_event = enable_as_raw_unit;
+        //         return &unit;
+        //     }
+        // }
+        return nullptr;
+    }
+
     void fix_definition(ComPtr<IDirectInputDevice8A>& dinput_device){
         //
         // Calculate data buffer size
         //
-        unit_num = axes.size() + povs.size() + buttons.size();
-        units = std::make_unique<UnitDef* []>(unit_num);
-        int unitix = 0;
+        auto max_unit_num = axes.size() + povs.size() + buttons.size();
+        units = std::make_unique<UnitDef* []>(max_unit_num);
+        units_raw = std::make_unique<UnitDef* []>(max_unit_num);
         int offset = 0;
         for (auto& unit : axes){
-            units.get()[unitix] = &unit;
             unit.buff_offset = offset;
             offset += sizeof(LONG);
-            unitix++;
+            units_raw.get()[unit_num_raw] = &unit;
+            unit_num_raw++;
+            if (unit.map_with_mapper_event){
+                units.get()[unit_num] = &unit;
+                unit_num++;
+            }
         }
         for (auto& unit : povs){
-            units.get()[unitix] = &unit;
             unit.buff_offset = offset;
             offset += sizeof(DWORD);
-            unitix++;
+            units_raw.get()[unit_num_raw] = &unit;
+            unit_num_raw++;
+            if (unit.map_with_mapper_event){
+                units.get()[unit_num] = &unit;
+                unit_num++;
+            }
         }
         for (auto& unit : buttons){
-            units.get()[unitix] = &unit;
             unit.buff_offset = offset;
             offset += sizeof(BYTE);
-            unitix++;
+            units_raw.get()[unit_num_raw] = &unit;
+            unit_num_raw++;
+            if (unit.map_with_mapper_event){
+                units.get()[unit_num] = &unit;
+                unit_num++;
+            }
         }
         buf_size = ((offset + 3) / 4) * 4;
         current_data = std::make_unique<char []>(buf_size);
@@ -184,9 +231,9 @@ public:
         //
         // Register data format
         //
-        auto formats = std::make_unique<DIOBJECTDATAFORMAT []>(unit_num);
-        for (int i = 0; i < unit_num; i++){
-            auto unit = units.get()[i];
+        auto formats = std::make_unique<DIOBJECTDATAFORMAT []>(unit_num_raw);
+        for (int i = 0; i < unit_num_raw; i++){
+            auto unit = units_raw.get()[i];
             auto& format = formats.get()[i];
             format.pguid = nullptr;
             format.dwOfs = unit->buff_offset;
@@ -198,7 +245,7 @@ public:
         format.dwObjSize = sizeof(DIOBJECTDATAFORMAT);
         format.dwFlags = DIDF_ABSAXIS;
         format.dwDataSize = buf_size;
-        format.dwNumObjs = unit_num;
+        format.dwNumObjs = unit_num_raw;
         format.rgodf = formats.get();
         auto hr = dinput_device->SetDataFormat(&format);
         if (FAILED(hr)){
@@ -239,6 +286,7 @@ public:
 
     template <typename TFunction>
     void process_event(ComPtr<IDirectInputDevice8A>& dinput_device, TFunction event_callback){
+        last_data.swap(current_data);
         if (FAILED(dinput_device->GetDeviceState(buf_size, current_data.get()))){
             throw std::runtime_error("getting DirectInput device data failed");
         }
@@ -250,12 +298,11 @@ public:
                 event_callback(i, current_val);
             }
         }
-        last_data.swap(current_data);
     }
 
     std::string to_string(const char* device_name){
         std::ostringstream os;
-        os << "\"" << device_name << "\" has " << unit_num << " objects:";
+        os << "\"" << device_name << "\" has " << unit_num_raw << " objects:";
         if (axes.size()){
             os << std::endl << "    " << axes.size() << " axes : ";
             for (auto& axis : axes){
@@ -280,6 +327,133 @@ protected:
         }else{
             return true;
         }
+    }
+};
+
+//============================================================================================
+// Virtual POV unit
+//============================================================================================
+struct VirtualPov{
+    FSMAPPER_HANDLE mapper {nullptr};
+    std::string name;
+    std::string x_unit_name;
+    std::string y_unit_name;
+    DeviceCaps::UnitPtr x_unit {nullptr};
+    DeviceCaps::UnitPtr y_unit {nullptr};
+    int resolution {4};
+    double angle_unit;
+    double angle_allowable_error;
+    double angle_allowable_error_continuous;
+    bool disable_source {true};
+    double th_on {0.8 * AXIS_VALUE_MAX};
+    double th_off {0.3 * AXIS_VALUE_MAX};
+    int last_x {0};
+    int last_y {AXIS_VALUE_MIN};
+    double last_theta {0.};
+
+    VirtualPov() = delete;
+    VirtualPov(const VirtualPov&) = delete;
+    VirtualPov(VirtualPov&& src){
+        *this = std::move(src);
+    }
+    VirtualPov& operator = (VirtualPov&& src){
+        mapper = src.mapper;
+        name = std::move(src.name);
+        x_unit_name = std::move(src.x_unit_name);
+        y_unit_name = std::move(src.y_unit_name);
+        x_unit = src.x_unit;
+        y_unit = src.y_unit;
+        disable_source = src.disable_source;
+        return *this;
+    }
+
+    VirtualPov( FSMAPPER_HANDLE mapper, LUAVALUE def) : mapper(mapper){
+        if (luav_getType(def) != LV_TABLE){
+            throw std::runtime_error("virtual POV difinition must be a table");
+        }
+        auto name = luav_getItemWithKey(def, "name");
+        auto xaxis = luav_getItemWithKey(def, "xaxis");
+        auto yaxis = luav_getItemWithKey(def, "yaxis");
+        auto resolution = luav_getItemWithKey(def, "resolution");
+        auto disable_source = luav_getItemWithKey(def, "disable_source");
+        if (luav_getType(name) == LV_STRING){
+            this->name = luav_asString(name);
+        }else{
+            throw std::runtime_error("name parameter must be specified as string for virtual POV definition");
+        }
+        if (luav_getType(xaxis) == LV_STRING && luav_getType(yaxis) == LV_STRING){
+            this->x_unit_name = luav_asString(xaxis);
+            this->y_unit_name = luav_asString(yaxis);
+        }else{
+            throw std::runtime_error("xaxis parameter and yaxis parameter must be specified as string for virtual POV definition");
+        }
+        if (luav_getType(resolution) == LV_NUMBER){
+            this->resolution = luav_asInt(resolution);
+            if (this->resolution < 1){
+                throw std::runtime_error("resolution parameter for virtual POV definition must be integer grater than zero");
+            }
+        }else{
+            throw std::runtime_error("resolution parameter must be specified as integer grater than zero for virtual POV definition");
+        }
+        if (!luav_isNull(disable_source)){
+            if (luav_getType(disable_source) == LV_BOOL){
+                this->disable_source = luav_asBool(disable_source);
+            }else{
+                throw std::runtime_error("disable_source parameter for virtual POV definition must be bool");
+            }
+        }
+
+        angle_unit = pi2 / this->resolution;
+        angle_allowable_error = angle_unit * 0.5;
+        angle_allowable_error_continuous = angle_unit * 0.75;
+    }
+
+    template <typename TFunction>
+    void update(DeviceCaps& caps, TFunction callback){
+        auto x = caps.get_unit_value(x_unit);
+        auto y = caps.get_unit_value(y_unit);
+        if (x != last_x || y != last_y){
+            last_x = x;
+            last_y = y;
+            auto r = std::sqrt(static_cast<double>(x) * static_cast<double>(x) + static_cast<double>(y) * static_cast<double>(y));
+            double theta = 0.;
+            if (last_theta >= 0){
+                if (r < th_off){
+                    theta = -1.;
+                }else{
+                    theta = calculate_angle(x, y);
+                    if (last_theta == 0.){
+                        if (theta <= angle_allowable_error || theta >= pi2 - angle_allowable_error){
+                            return;
+                        }
+                    }else{
+                        if (theta <= last_theta + angle_allowable_error_continuous && theta >= last_theta - angle_allowable_error_continuous){
+                            return;
+                        }
+                    }
+                    theta = normalize_angle(theta);
+                }
+            }else{
+                if (r < th_on){
+                    return;
+                }else{
+                    theta = normalize_angle(calculate_angle(x, y));
+                }
+            }
+            callback(theta < 0. ? -1 : static_cast<int>(std::round(theta * 18000. / pi)));
+            last_theta = theta;
+        }
+    }
+
+protected:
+    inline double calculate_angle(int x, int y){
+        auto raw = std::atan2(static_cast<double>(x), static_cast<double>(-y));
+        return raw < 0. ? raw + pi2 : raw;
+    }
+
+    inline double normalize_angle(double angle){
+        auto factor = std::round(angle / angle_unit);
+        return angle_unit * (factor == resolution ? 0 : factor);
     }
 };
 
@@ -311,6 +485,7 @@ protected:
     FSMAPPER_HANDLE mapper;
     ComPtr<IDirectInputDevice8A> dinput_device;
     DeviceCaps device_caps;
+    std::vector<VirtualPov> vpovs;
     bool running = false;
     std::unordered_map<MapperDevice*, std::unique_ptr<MapperDevice>> mapper_devices;
     WinHandle event;
@@ -328,13 +503,21 @@ public:
     DirectInputDevice& operator = (DirectInputDevice&&) = delete;
 
     DirectInputDevice(const GUID& guid, const std::string& name, FSMAPPER_HANDLE mapper, IDirectInputDevice8A* dinput_device,
-                      const DeviceCaps::NameList&& allowlist, const DeviceCaps::NameList&& denylist) : 
-        guid(guid), name(name), mapper(mapper), dinput_device(dinput_device), device_caps(std::move(allowlist), std::move(denylist)){
+                      const DeviceCaps::NameList&& allowlist, const DeviceCaps::NameList&& denylist, std::vector<VirtualPov>&& vpovs) : 
+        guid(guid), name(name), mapper(mapper), dinput_device(dinput_device),
+        device_caps(std::move(allowlist), std::move(denylist)), vpovs(std::move(vpovs)){
         event = ::CreateEventA(nullptr, true, false, nullptr);
         CallbackContext ctx = {*this, std::nullopt};
         dinput_device->EnumObjects(enum_object_callback, &ctx, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
         if (ctx.error){
             throw *ctx.error;
+        }
+        for (auto& vpov : this->vpovs){
+            vpov.x_unit = device_caps.mark_unit_as_source_of_meta_unit(vpov.x_unit_name.c_str(), !vpov.disable_source);
+            vpov.y_unit = device_caps.mark_unit_as_source_of_meta_unit(vpov.y_unit_name.c_str(), !vpov.disable_source);
+            if (!vpov.x_unit || !vpov.y_unit){
+                throw std::runtime_error("specified unit of x-axis or y-asis for virtual POV is not found");
+            }
         }
         device_caps.fix_definition(this->dinput_device);
         if (FAILED(dinput_device->SetCooperativeLevel(nullptr, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE))){
@@ -383,12 +566,28 @@ public:
         return device_caps;
     }
 
+    size_t get_vpov_num() const{
+        return vpovs.size();
+    }
+
+    const VirtualPov& get_vpov(size_t index) const{
+        return vpovs.at(index);
+    }
+
     void process_event(){
         device_caps.process_event(dinput_device, [this](int index, int value){
             for (auto& [key, device] : mapper_devices){
                 fsmapper_issueEvent(mapper, device->get_mapper_device(), index, value);
             }
         });
+        for (auto i = 0; i < vpovs.size(); i++){
+            auto& vpov = vpovs.at(i);
+            vpov.update(device_caps, [this, i](int value){
+                for (auto& [key, device] : mapper_devices){
+                    fsmapper_issueEvent(mapper, device->get_mapper_device(), device_caps.get_unit_num() + i, value);
+                }
+            });
+        }
     }
 
 protected:
@@ -471,14 +670,15 @@ public:
 
     std::unique_ptr<DirectInputDevice> create_device(FSMAPPER_HANDLE mapper, const DIDEVICEINSTANCEA& device_id,
                                                      const DeviceCaps::NameList&& allowlist,
-                                                     const DeviceCaps::NameList&& denylist){
+                                                     const DeviceCaps::NameList&& denylist,
+                                                     std::vector<VirtualPov>&& vpovs){
         IDirectInputDevice8A* rawdev = nullptr;
         auto hr = dinput->CreateDevice(device_id.guidInstance, &rawdev, nullptr);
         if (!SUCCEEDED(hr)){
             throw std::runtime_error("failed to create a direct input devce");
         }
         return std::move(std::make_unique<DirectInputDevice>(
-            device_id.guidInstance, device_id.tszInstanceName, mapper, rawdev, std::move(allowlist), std::move(denylist)));
+            device_id.guidInstance, device_id.tszInstanceName, mapper, rawdev, std::move(allowlist), std::move(denylist), std::move(vpovs)));
     }
 
     std::string to_string() const{
@@ -597,12 +797,13 @@ public:
 
     DirectInputDevice::MapperDevice* open_device(FSMDEVICE dev_handle, const DIDEVICEINSTANCEA& device_id,
                                                  const DeviceCaps::NameList&& allowlist,
-                                                 const DeviceCaps::NameList&& denylist){
+                                                 const DeviceCaps::NameList&& denylist,
+                                                 std::vector<VirtualPov>&& vpovs){
         std::unique_lock lock(mutex);
         tools::guid guid(device_id.guidInstance);
         if (dinput_devices.count(static_cast<const char*>(guid)) == 0){
             dinput_devices.emplace(
-                guid, std::move(dinput.create_device(mapper, device_id, std::move(allowlist), std::move(denylist))));
+                guid, std::move(dinput.create_device(mapper, device_id, std::move(allowlist), std::move(denylist), std::move(vpovs))));
         }
         auto& dinput_device = dinput_devices.at(static_cast<const char*>(guid));
         dinput_device->stop();
@@ -724,7 +925,16 @@ static bool dinputdev_open(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, LUAVALU
         if (denylist.size() > 0 && allowlist.size() > 0){
             throw std::runtime_error("both of allowlist and denylist cannot be specified");
         }
-        auto device = dinputdev->open_device(dev_handle, *device_id, std::move(allowlist), std::move(denylist));
+        std::vector<VirtualPov> vpovs;
+        auto vpovs_def = luav_getItemWithKey(options, "vpovs");
+        for (auto i = 1; true; i++){
+            auto def = luav_getItemWithIndex(vpovs_def, i);
+            if (luav_isNull(def)){
+                break;
+            }
+            vpovs.emplace_back(handle, def);
+        }
+        auto device = dinputdev->open_device(dev_handle, *device_id, std::move(allowlist), std::move(denylist), std::move(vpovs));
         fsmapper_setContextForDevice(handle, dev_handle, device);
         return true;
     });
@@ -751,18 +961,27 @@ static bool dinputdev_close(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle){
 static size_t dinputdev_getUnitNum(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle){
     auto device = static_cast<DirectInputDevice::MapperDevice*>(fsmapper_getContextForDevice(handle, dev_handle));
     auto& caps = device->get_dinput_device().get_device_caps();
-    return caps.get_unit_num();
+    return caps.get_unit_num() + device->get_dinput_device().get_vpov_num();
 }
 
 static bool dinputdev_getUnitDef(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle, size_t index, FSMDEVUNITDEF *def){
     return plugin_interface(handle, false, [handle, dev_handle, index, def](){
         auto device = static_cast<DirectInputDevice::MapperDevice*>(fsmapper_getContextForDevice(handle, dev_handle));
         auto& caps = device->get_dinput_device().get_device_caps();
-        def->name = caps.get_unit_name(index).c_str();
-        def->direction = FSMDU_DIR_INPUT;
-        def->type = caps.get_unit_valtype(index);
-        def->maxValue = caps.get_unit_max_value(index);
-        def->minValue = caps.get_unit_min_value(index);
+        if (index < caps.get_unit_num()){
+            def->name = caps.get_unit_name(index).c_str();
+            def->direction = FSMDU_DIR_INPUT;
+            def->type = caps.get_unit_valtype(index);
+            def->maxValue = caps.get_unit_max_value(index);
+            def->minValue = caps.get_unit_min_value(index);
+        }else{
+            const auto& vpos = device->get_dinput_device().get_vpov(index - caps.get_unit_num());
+            def->name = vpos.name.c_str();
+            def->direction = FSMDU_DIR_INPUT;
+            def->type = FSMDU_TYPE_ABSOLUTE;
+            def->maxValue = 360 * 100;
+            def->minValue = -1;
+        }
         return true;
     });
 }
