@@ -700,7 +700,7 @@ namespace graphics{
 
     void rendering_context::draw_geometry(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_geometry", [this, &args]{
-            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scle){
+            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scale){
                 if (this->brush){
                     geometry->draw(*target, brush->brush_interface(*target), stroke_width, nullptr, offset, scale, scale, angle);
                 }
@@ -710,7 +710,7 @@ namespace graphics{
 
     void rendering_context::fill_geometry(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:fill_geometry", [this, &args]{
-            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scle){
+            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scale){
                 if (this->brush){
                     geometry->fill(*target, brush->brush_interface(*target), offset, scale, scale, angle);
                 }
@@ -726,6 +726,7 @@ namespace graphics{
             std::optional<float> width;
             std::optional<float> height;
             std::optional<float> angle;
+            std::optional<float> scale;
             FloatRect drect{0.f, 0.f, 0.f, 0.f};
             sol::object arg0 = args[0];
             if (arg0.is<graphics::bitmap&>()){
@@ -735,6 +736,7 @@ namespace graphics{
                 width = lua_safevalue<float>(args[3]);
                 height = lua_safevalue<float>(args[4]);
                 angle = lua_safevalue<float>(args[5]);
+                scale = lua_safevalue<float>(args[6]);
             }else if (arg0.get_type() == sol::type::table){
                 auto def = arg0.as<sol::table>();
                 sol::object bm = def["bitmap"];
@@ -747,19 +749,21 @@ namespace graphics{
                 width = lua_safevalue<float>(def["width"]);
                 height = lua_safevalue<float>(def["height"]);
                 angle = lua_safevalue<float>(def["angle"]);
+                scale = lua_safevalue<float>(def["scale"]);
             }else{
                 throw MapperException("invalid parameters");
             }
 
-            drect.width = bitmap->get_width() * scale;
-            drect.height = bitmap->get_height() * scale;
+            scale = scale ? *scale * this->scale : this->scale;
+            drect.width = bitmap->get_width() * *scale;
+            drect.height = bitmap->get_height() * *scale;
             if (x && y){
-                drect.x = *x * scale;
-                drect.y = *y * scale;
+                drect.x = *x * this->scale;
+                drect.y = *y * this->scale;
             }
             if (width && height){
-                drect.width = *width * scale;
-                drect.height = *height * scale;
+                drect.width = *width * *scale;
+                drect.height = *height * *scale;
             }
             drect.x += this->rect.x;
             drect.y += this->rect.y;
