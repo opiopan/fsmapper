@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <string.h>
 #include <dcommon.h>
+#include <ostream>
+#include <d2d1.h>
 
 #ifndef NO_SOL
 #include <memory>
@@ -36,6 +38,17 @@ std::optional<T> lua_safevalue(const sol::object& object){
     }
 }
 #endif
+
+template <typename T>
+void write_ordinal_string(std::ostream& os, T number){
+    if (number < 4){
+        os << (number == 1 ? "1st" :
+               number == 2 ? "2nd" :
+                             "3rd");
+    }else{
+        os << number << "th";
+    }
+}
 
 class WinHandle{
 protected:
@@ -233,6 +246,20 @@ struct PointBase{
     template<typename POINT>
     PointBase operator + (const POINT& rvalue) const{
         return {x + static_cast<T>(rvalue.x), y + static_cast<T>(rvalue.y)};
+    }
+
+    template<typename POINT>
+    bool operator == (const POINT& rvalue) const{
+        return x == static_cast<T>(rvalue.x) && y == static_cast<T>(rvalue.y);
+    }
+
+    template<typename POINT>
+    bool operator != (const POINT& rvalue) const{
+        return ! *this == rvalue;
+    }
+
+    operator D2D1_POINT_2F (){
+        return {static_cast<float>(x), static_cast<float>(y)};
     }
 };
 

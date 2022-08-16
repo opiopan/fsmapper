@@ -23,7 +23,7 @@ namespace graphics{
     class color;
 
     //============================================================================================
-    // render_target: abstruction of Direct2D  render target
+    // render_target: abstraction of Direct2D  render target
     //============================================================================================
     class render_target{
     public:
@@ -37,7 +37,7 @@ namespace graphics{
     };
 
     //============================================================================================
-    // brush: abstruct class to express brush
+    // brush: abstract class to express brush
     //============================================================================================
     class brush{
     public:
@@ -110,29 +110,66 @@ namespace graphics{
     };
 
     //============================================================================================
+    // transformable: common base class for the object which has capability to transform coordinates
+    //============================================================================================
+    class transformable{
+        FloatPoint origin {0.f, 0.f};
+    public:
+        transformable(const FloatPoint& origin = {0.f, 0.f}): origin(origin){}
+        transformable(const transformable& src){*this = src;}
+        virtual ~transformable() = default;
+        transformable& operator = (const transformable& src){origin = src.origin;}
+
+        inline const FloatPoint& get_origin() const {return origin;}
+        inline void set_origin(const FloatPoint& new_origin){
+            origin = new_origin;
+        }
+        inline D2D1::Matrix3x2F transformation(const FloatPoint& offset, float scale_x, float scale_y, float angle){
+            return D2D1::Matrix3x2F::Translation(-origin.x, -origin.y)
+                   * D2D1::Matrix3x2F::Scale(scale_x, scale_y)
+                   * D2D1::Matrix3x2F::Rotation(angle)
+                   * D2D1::Matrix3x2F::Translation(offset.x, offset.y);
+        }
+        void lua_set_origin_raw(sol::variadic_args va);
+        virtual void lua_set_origin(sol::variadic_args va) = 0;
+    };
+
+    //============================================================================================
+    // geometry: base class for geometrys
+    //============================================================================================
+    class geometry : public transformable{
+    public:
+        geometry(const FloatPoint& origin = {0.f, 0.f}): transformable(origin){}
+        virtual ~geometry() = default;
+        void draw(const render_target& target, ID2D1Brush* brush, float width, ID2D1StrokeStyle* style,
+                  const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
+        void fill(const render_target& target, ID2D1Brush* brush,
+                  const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
+
+        virtual operator ID2D1Geometry* () = 0;
+    };
+
+    std::shared_ptr<geometry> as_geometry(sol::object& obj);
+
+    //============================================================================================
     // bitmap: WIC based bitmap
     //============================================================================================
     class bitmap_source;
 
-    class bitmap{
+    class bitmap : public transformable{
     protected:
         std::shared_ptr<bitmap_source> source;
         FloatRect rect;
-        FloatPoint origin;
-        float opacity{1.f};
+            float opacity{1.f};
 
     public:
         bitmap(const std::shared_ptr<bitmap_source>& source, const FloatRect& rect, const FloatPoint& origin ={0.f, 0.f}) :
-            source(source), rect(rect), origin(origin){}
+            transformable(origin), source(source), rect(rect){}
         
         const FloatRect& get_rect_in_source() const {return rect;}
         float get_width() const {return rect.width;}
         float get_height() const {return rect.height;}
-        const FloatPoint& get_origin() const {return origin;}
-        void set_origin(const FloatPoint& new_origin){
-            origin = new_origin;
-        }
-        void lua_set_origin(sol::variadic_args va);
+        void lua_set_origin(sol::variadic_args va) override;
         float get_opacity() const {return opacity;}
         void set_opacity(float opacity){this->opacity = opacity;}
 
@@ -186,6 +223,7 @@ namespace graphics{
         float scale = 1.f;
         std::shared_ptr<graphics::brush> brush;
         std::shared_ptr<graphics::font> font;
+        float stroke_width {1.f};
 
     public:
         rendering_context() = delete;
@@ -197,7 +235,10 @@ namespace graphics{
 
         void set_brush(sol::object brush);
         void set_font(sol::object font);
+        void set_stroke_width(sol::object width);
 
+        void draw_geometry(sol::variadic_args args);
+        void fill_geometry(sol::variadic_args args);
         void draw_bitmap(sol::variadic_args args);
         void fill_rectangle(sol::object x, sol::object y, sol::object width, sol::object height);
         void draw_string(sol::variadic_args args);

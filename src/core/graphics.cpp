@@ -160,6 +160,233 @@ namespace graphics{
 }
 
 //============================================================================================
+// transformable: common base class for the object which has capability to transform coordinates
+//============================================================================================
+namespace graphics{
+    void transformable::lua_set_origin_raw(sol::variadic_args va){
+        auto x = lua_safevalue<float>(va[0]);
+        auto y = lua_safevalue<float>(va[1]);
+        if (va[0].get_type() == sol::type::table){
+            sol::table def = va[0];
+            x = lua_safevalue<float>(def["x"]);
+            y = lua_safevalue<float>(def["y"]);
+        }
+        if (x && y){
+            this->set_origin({*x, *y});
+        }else{
+            throw MapperException("invalid argument");
+        }
+    }
+}
+
+//============================================================================================
+// geometry: base class for geometrys
+//============================================================================================
+namespace graphics{
+    void geometry::draw(const render_target& target, ID2D1Brush* brush, float width, ID2D1StrokeStyle* style,
+                        const FloatPoint& offset, float scale_x, float scale_y, float angle){
+        auto&& matrix = transformation(offset, scale_x, scale_y, angle);
+        target->SetTransform(matrix);
+        target->DrawGeometry(*this, brush, width, style);
+        target->SetTransform(D2D1::Matrix3x2F::Identity());
+    }
+
+    void geometry::fill(const render_target& target, ID2D1Brush* brush,
+                        const FloatPoint& offset, float scale_x, float scale_y, float angle){
+        auto&& matrix = transformation(offset, scale_x, scale_y, angle);
+        target->SetTransform(matrix);
+        target->FillGeometry(*this, brush);
+        target->SetTransform(D2D1::Matrix3x2F::Identity());
+    }
+}
+
+//============================================================================================
+// path: path geometry object which encapsulates ID2D1PathGeometry
+//==========================================================================================
+template <>
+std::optional<FloatPoint> lua_safevalue<FloatPoint>(const sol::object& object){
+    if (object.get_type() == sol::type::table){
+        sol::table def = object;
+        auto x = lua_safevalue<float>(def[1]);
+        auto y = lua_safevalue<float>(def[2]);
+        if (x && y){
+            return FloatPoint{*x, *y};
+        }else{
+            return std::nullopt;
+        }
+    }else{
+        return std::nullopt;
+    }
+}
+
+namespace graphics{
+    enum class fill_mode{
+        none = -1,
+        winding = D2D1_FILL_MODE_WINDING,
+        alternate = D2D1_FILL_MODE_ALTERNATE,
+    };
+}
+
+template <>
+std::optional<graphics::fill_mode> lua_safevalue(const sol::object& object){
+    using rtype = std::optional<graphics::fill_mode>;
+    if (object.get_type() == sol::type::lua_nil){
+        return graphics::fill_mode::none;
+    }else if (object.get_type() == sol::type::string){
+        auto &&value = lua_safestring(object);
+        return value == "none" ? rtype{graphics::fill_mode::none} :
+               value == "winding" ? rtype{graphics::fill_mode::winding} :
+               value == "alternate" ? rtype{graphics::fill_mode::alternate} :
+               std::nullopt;
+    }else{
+        std::nullopt;
+    }
+}
+
+namespace graphics{
+    class path : public geometry{
+        CComPtr<ID2D1PathGeometry> path_object{nullptr};
+        CComPtr<ID2D1GeometrySink> sink{nullptr};
+    public:
+        path(sol::object arg){
+            d2d_factory->CreatePathGeometry(&path_object);
+            path_object->Open(&sink);
+            if (arg.get_type() != sol::type::lua_nil){
+                add_figure(arg);
+            }
+        }
+
+        virtual ~path(){
+            fix();
+        };
+
+        void add_figure_lua(sol::object arg){
+            lua_c_interface(*mapper_EngineInstance(), "graphics.path:add_figure_lua", [this, &arg]{
+                add_figure(arg);
+            });
+        }
+
+        void fix(){
+            if (sink){
+                sink->Close();
+                sink = nullptr;
+            }
+        }
+
+        void lua_set_origin(sol::variadic_args va) override{
+            lua_c_interface(*mapper_EngineInstance(), "graphics.path:set_origin", [this, &va]{
+                lua_set_origin_raw(va);
+            });
+        }
+        
+        operator ID2D1Geometry* () override{
+            fix();
+            return path_object;
+        }
+
+    protected:
+        void add_figure(sol::object arg){
+            if (!sink){
+                throw std::runtime_error("no more adding figure due to fixed path geometory, "
+                                         "note that path is in fixed state once path is used to draw or to fill");
+            }
+            if (arg.get_type() != sol::type::table){
+                throw std::runtime_error("argument of this funciton must be a table");
+            }
+            sol::table def = arg;
+            auto&& from = lua_safevalue<FloatPoint>(def["from"]);
+            auto&& fill_mode = lua_safevalue<graphics::fill_mode>(def["fill_mode"]);
+            if (!from){
+                throw std::runtime_error("'from' parameter is not specified or invalid format data is specified");
+            }
+            if (!fill_mode){
+                throw std::runtime_error("the value of 'fill_mode' prameter must be 'none', 'winding', or 'alternate'");
+            }
+            sink->BeginFigure(*from, *fill_mode == fill_mode::none ? D2D1_FIGURE_BEGIN_HOLLOW :  D2D1_FIGURE_BEGIN_FILLED);
+            if (*fill_mode != fill_mode::none){
+                sink->SetFillMode(static_cast<D2D1_FILL_MODE>(*fill_mode));
+            }
+
+            auto segments = def["segments"];
+            if (segments.get_type() != sol::type::table){
+                throw std::runtime_error("'segments' parameter must be specified as a table");
+            }
+            sol::table segments_def = segments;
+            auto same_as_start_point = false;
+            for (auto i = 1; i <= segments_def.size(); i++){
+                auto throw_error = [i](const char* msg) -> int{
+                    std::ostringstream os;
+                    write_ordinal_string(os, i);
+                    os << " element of 'followings' parameter is invalid, " << msg;
+                    throw std::runtime_error(os.str());
+                };
+                auto element = segments_def[i];
+                if (element.get_type() != sol::type::table){
+                    throw_error("that must be a table");
+                }
+                sol::table element_def = element;
+                auto&& to = lua_safevalue<FloatPoint>(element_def["to"]);
+                auto&& radius = lua_safevalue<float>(element_def["radius"]);
+                auto&& direction = lua_safestring(element_def["direction"]);
+                auto&& arc_type = lua_safestring(element_def["arc_type"]);
+                auto&& control1 = lua_safevalue<FloatPoint>(element_def["control1"]);
+                auto&& control2= lua_safevalue<FloatPoint>(element_def["control2"]);
+                if (!to){
+                    throw_error("'to' parameter is not found or invalid format");
+                }
+                same_as_start_point = *from == *to;
+                if (radius || direction.size() || arc_type.size()){
+                    //---------------------------------------------------------
+                    // Arc element deffinition
+                    //---------------------------------------------------------
+                    if (!radius || direction.size() == 0){
+                        throw_error("both of 'radius' parameter and 'direction' parameter must be specified correctly for arc segment definition");
+                    }
+                    auto direction_value = direction == "clockwise" ? D2D1_SWEEP_DIRECTION_CLOCKWISE :
+                                           direction == "counter_clockwise" ? D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE :
+                                           throw_error("the value of 'direction' parameter must be either of 'clockwise' or 'counter_clockwise'");
+                    auto arc_type_value = arc_type == "small" ? D2D1_ARC_SIZE_SMALL :
+                                          arc_type == "large" ? D2D1_ARC_SIZE_LARGE :
+                                          arc_type.size() == 0 ? D2D1_ARC_SIZE_SMALL :
+                                          throw_error("value of 'arc_type' parameter must be either of 'small' or 'large'");
+                    sink->AddArc(D2D1::ArcSegment(
+                        *to, {*radius, *radius}, 0.f, 
+                        static_cast<D2D1_SWEEP_DIRECTION>(direction_value),
+                        static_cast<D2D1_ARC_SIZE>(arc_type_value)
+                    ));
+                }else if (control1 || control2){
+                    //---------------------------------------------------------
+                    // Bezier element deffinition
+                    //---------------------------------------------------------
+                    if (!control1 || !control2){
+                        throw_error("both of 'control1' parametaer and 'control2' parameter must be specified correctly for bezier segment definition");
+                    }
+                    sink->AddBezier(D2D1::BezierSegment(*control1, *control2, *to));
+                }else{
+                    //---------------------------------------------------------
+                    // Line element deffinition
+                    //---------------------------------------------------------
+                    sink->AddLine(*to);
+                }
+            }
+            sink->EndFigure(fill_mode != fill_mode::none || same_as_start_point ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
+        }
+    };
+}
+
+//============================================================================================
+// utility function to check if a lua object can be translated to geometry class pointer
+//============================================================================================
+namespace graphics{
+    std::shared_ptr<geometry> as_geometry(sol::object& obj){
+        if (obj.is<path>()){
+            return obj.as<std::shared_ptr<path>>();
+        }
+        return nullptr;
+    }
+}
+
+//============================================================================================
 // bitmap: WiC based bitmap representation
 //============================================================================================
 namespace graphics{
@@ -230,18 +457,7 @@ namespace graphics{
 
     void bitmap::lua_set_origin(sol::variadic_args va){
         lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap:set_origin", [this, &va]{
-            auto x = lua_safevalue<float>(va[0]);
-            auto y = lua_safevalue<float>(va[1]);
-            if (va[0].get_type() == sol::type::table){
-                sol::table def = va[0];
-                x = lua_safevalue<float>(def["x"]);
-                y = lua_safevalue<float>(def["y"]);
-            }
-            if (x && y){
-                this->set_origin({*x, *y});
-            }else{
-                throw MapperException("invalid argument");
-            }
+            lua_set_origin_raw(va);
         });
     }
 
@@ -277,7 +493,7 @@ namespace graphics{
     }
 
     void bitmap::draw(const render_target& target, const FloatRect& dest_rect){
-        auto shift = origin;
+        auto shift = get_origin();
         shift.x *= dest_rect.width / rect.width;
         shift.y *= dest_rect.height / rect.height;
         auto drect = dest_rect - shift;
@@ -286,10 +502,7 @@ namespace graphics{
     }
 
     void bitmap::draw(const render_target& target, const FloatPoint& offset, float scale_x, float scale_y, float angle){
-        auto&& matrix = D2D1::Matrix3x2F::Translation(-origin.x, -origin.y)
-                        * D2D1::Matrix3x2F::Scale(scale_x, scale_y)
-                        * D2D1::Matrix3x2F::Rotation(angle)
-                        * D2D1::Matrix3x2F::Translation(offset.x, offset.y);
+        auto&& matrix = transformation(offset, scale_x, scale_y, angle);
         target->SetTransform(matrix);
         FloatRect drect{0.f, 0.f, rect.width, rect.height};
         auto bitmap = source->get_d2d_bitmap(target);
@@ -431,6 +644,79 @@ namespace graphics{
         });
     }
 
+    void rendering_context::set_stroke_width(sol::object width){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_stroke_width", [this, &width]{
+            if (width.get_type() == sol::type::lua_nil){
+                stroke_width = 1.f;
+            }else if (width.get_type() == sol::type::number){
+                auto new_width = width.as<float>();
+                if (new_width > 0.f){
+                    stroke_width = new_width;
+                }else{
+                    throw MapperException("stroke width must be grater than 0");
+                }
+            }else{
+                throw MapperException("stroke width must be number grater than 0");
+            }
+        });
+    }
+
+    template <typename TFunction>
+    void process_geometry(sol::variadic_args args, const FloatPoint& offset, float src_scale, TFunction callback){
+            std::shared_ptr<geometry> geometry;
+            std::optional<float> x;
+            std::optional<float> y;
+            std::optional<float> angle;
+            std::optional<float> scale;
+
+            sol::object arg0 = args[0];
+            geometry = as_geometry(arg0);
+            if (geometry){
+                x = lua_safevalue<float>(args[1]);
+                y = lua_safevalue<float>(args[2]);
+                angle = lua_safevalue<float>(args[3]);
+                scale = lua_safevalue<float>(args[4]);
+            }else if (arg0.get_type() == sol::type::table){
+                sol::table def = arg0;
+                sol::object geometry_obj = def["geometry"];
+                geometry = as_geometry(geometry_obj);
+                x = lua_safevalue<float>(def["x"]);
+                y = lua_safevalue<float>(def["y"]);
+                angle = lua_safevalue<float>(def["angle"]);
+                scale = lua_safevalue<float>(def["scale"]);
+            }else{
+                throw MapperException("invalid parameters");
+            }
+            if (!geometry){
+                throw MapperException("no geometry object is specified");
+            }
+            x = x ? *x : 0.f;
+            y = y ? *y : 0.f;
+            angle = angle? *angle : 0.f;
+            scale = scale? *scale : 1.f;
+
+            callback(geometry, FloatPoint(*x * src_scale, *y * src_scale) + offset, *angle, *scale * src_scale);
+    }
+
+    void rendering_context::draw_geometry(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_geometry", [this, &args]{
+            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scle){
+                if (this->brush){
+                    geometry->draw(*target, brush->brush_interface(*target), stroke_width, nullptr, offset, scale, scale, angle);
+                }
+            });
+        });
+    }
+
+    void rendering_context::fill_geometry(sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:fill_geometry", [this, &args]{
+            process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scle){
+                if (this->brush){
+                    geometry->fill(*target, brush->brush_interface(*target), offset, scale, scale, angle);
+                }
+            });
+        });
+    }
 
     void rendering_context::draw_bitmap(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_bitmap", [this, &args]{
@@ -644,6 +930,22 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
     );
 
     //
+    // path
+    //
+    table.new_usertype<graphics::path>(
+        "path",
+        sol::call_constructor, sol::factories([&engine](sol::variadic_args va){
+            sol::object arg = va[0];
+            return lua_c_interface(engine, "graphics.path", [arg](){
+                return std::make_shared<graphics::path>(arg);
+            });
+        }),
+        "add_figure", &path::add_figure_lua,
+        "fix", &path::fix,
+        "set_origin", &path::lua_set_origin
+    );
+
+    //
     // bitmap
     //
     table.new_usertype<graphics::bitmap>(
@@ -702,6 +1004,9 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         "finish_rendering", &graphics::rendering_context::finish_rendering,
         "set_brush", &graphics::rendering_context::set_brush,
         "set_font", &graphics::rendering_context::set_font,
+        "set_stroke_width", &graphics::rendering_context::set_stroke_width,
+        "draw_geometry", &graphics::rendering_context::draw_geometry,
+        "fill_geometry", &graphics::rendering_context::fill_geometry,
         "draw_bitmap", &graphics::rendering_context::draw_bitmap,
         "draw_string", &graphics::rendering_context::draw_string,
         "draw_number", &graphics::rendering_context::draw_number,
