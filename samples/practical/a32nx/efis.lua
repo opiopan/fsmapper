@@ -1,7 +1,7 @@
 local view_width = 1084
 local view_height = 1541
 
-local assets = require("a320nx/assets")
+local assets = require("a32nx/assets")
 
 --------------------------------------------------------------------------------------
 -- register events
@@ -42,7 +42,7 @@ local observed_data = {
     {rpn="(L:A32NX_EFIS_L_NAVAID_2_MODE)", event=events.adfvor2_change},
     {rpn="(L:A32NX_AUTOBRAKES_ARMED_MODE)", event=events.brkmode_change},
     {rpn="(L:A32NX_AUTOBRAKES_DECEL_LIGHT)", event=events.brkdecel_change},
-    {rpn="(L:BTN_TERRONND_1_ACTIVE)", event=events.terronnd_change},
+    {rpn="(L:A32NX_EFIS_TERR_L_ACTIVE)", event=events.terronnd_change},
 }
 
 --------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ local view_mappings = {
         fs2020.event_sender("MobiFlight.Autobrake_Max_Toggle"),
         filter.delay(200, fs2020.event_sender("MobiFlight.Autobrake_Max_Toggle"))
     )},
-    {event=events.terronnd_push, action=fs2020.event_sender("MobiFlight.A320_Neo_MFD_BTN_TERRONND_1")},
+    {event=events.terronnd_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_TERR_L_ACTIVE) ! (>L:A32NX_EFIS_TERR_L_ACTIVE)")},
     {event=events.chrono_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_CHRONO_PUSH")},
 }
 

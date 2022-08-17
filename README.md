@@ -5,9 +5,10 @@ Initially this software was planned to connect my DIY controller device, [SimHID
 But fsmapper is designed to handle common gaming controller device now.
 
 fsmapper allow to:
-- Invoke Microsoft FS2020 event, such as turning autopilot on, according to the operation of SimHID devices or USB gaming controller device
-- Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device
-- Change the mapping rule between SimHID device or USB gaming controller device operation and FS2020 events when device is operated or aircraft is changed
+- Bind the operation of SimHID devices or USB gaming controller device to the operation of arbitary operable unit in a cockpit of a aircraft running on FS2020
+- Observe variables in FS2020 to represent arbitary guage's status such as engine warning lamp, then reflect it's status to real device
+- Build virtual cockpit including original guages on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
+- Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device, that means not only the above virtual cockpit on the secondary display can consits popout window as part, but also one phisical display device can be used for mulitiple purpose by changing the display dynamically ([a movie embedded below](#captured-window) shows this capability, one device is used as G1000 PFD and G1000 MFD with changing dynamically)
 - Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver
 
 The above functions are configuread flexibly by writing a Lua scrip.
@@ -66,6 +67,26 @@ The one of easiest way is using the following shortcut made when Visual Studio w
     ```
 ## How to use fsmapper
 
+### Optional softwares
+fsmapper has funcions to collaborate with softwares below. These softwares are not mandatry to work fsmapper but they can enhance fsmapper's capabilities.<br>
+I strongly recomend to install them.
+
+- [vJoy : https://sourceforge.net/projects/vjoystick](https://sourceforge.net/projects/vjoystick)<br>
+vJoy is a device driver wich behaves as virtual joystick. <br>
+fsmapper has several functions to change button status, axis position, and POV position of vJoy device.
+By using vJoy device, fsmapper provide very flexible cconfigurability of human operable devices.<br>
+Followings are just example what fsmapper can do that collaborate with vJoy.
+    - change the response curve of jyoystick axis for each aircraft
+    - change the relation between phisical button and vJoy virutal button depending on the positon of a switch
+
+- [MobiFlight WASM Module : https://github.com/MobiFlight/MobiFlight-WASM-Module](https://github.com/MobiFlight/MobiFlight-WASM-Module)<br>
+This WASM module working as add-on of FS2020 allows a outer-process utility to execute arbitary [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and to observe change of aircraft inner state holding in local variables such as LVARs.<br>
+fsmapper interact with FS20202 via SimConnect API. 
+SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm), [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll cokcpit all operable object or to know all guage status for presenting on a other DIY guage (or on the secondary display).<br>
+To controll and kow all of cockpit guages, accessing local variables in a aircraft module is needed, and [Guage API]() is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
+MobiFlight WASM Module solves this probrem. fsmapper can access all local variable by communicating with this WASM module.
+
+
 ### Configuration file
 To briefly describe the function of fsmapper is that waiting event such as position change of the joystick axis then invoking the action corrensponds to the occured event.<br> 
 The rule of mapping between the events and the actions is described by [Lua 5.4](https://www.lua.org/manual/5.4/manual.html) script.
@@ -95,12 +116,3 @@ So Lua script defines just placefolder, You need to specify which actual window 
 <p align="center">
 <img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
 </p>
-
-## Convenient Software
-The SimConnect SDK of Flight Simulator 2020 defines many [EVENT IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm) to interact with the guages and panels of aircraft. 
-For example, ```G1000_PFD_FLIGHTPLAN_BUTTON``` is defined for the FPL button on the PFD.<br>
-It seems that outer software can invoke guages or panel operation by sending such events via SimConnect. However almost event case, Flight Simulator 2020 doesn't react even if the event are sent from outer software via SimConnect.<br>
-[MobiFlight WASM Module](https://github.com/MobiFlight/MobiFlight-WASM-Module) solves this problem.
-This WASM module allows to define user defined event and allows to invoke RPN script to operate cockpit items.<br>
-I've installed this module into the ```community``` folder of Flight Simulator 2020.
-And [sample scprits](samples) for fsmapper uses events defined by this WASM module.<br>

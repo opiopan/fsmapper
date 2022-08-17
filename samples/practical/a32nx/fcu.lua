@@ -1,7 +1,7 @@
 local view_width = 1084
 local view_height = 1541
 
-local assets = require("a320nx/assets")
+local assets = require("a32nx/assets")
 
 local mod_context = {}
 

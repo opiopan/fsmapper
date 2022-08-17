@@ -75,19 +75,19 @@ end
 
 local global_mappings = {}
 
-local fcu_panel = require("a320nx/fcu")
+local fcu_panel = require("a32nx/fcu")
 fs2020.mfwasm.add_observed_data(fcu_panel.observed_data)
 global_mappings[#global_mappings + 1] = fcu_panel.mappings
-local ecam_panel = require("a320nx/ecam")
+local ecam_panel = require("a32nx/ecam")
 fs2020.mfwasm.add_observed_data(ecam_panel.observed_data)
 global_mappings[#global_mappings + 1] = ecam_panel.mappings
-local efis_panel = require("a320nx/efis")
+local efis_panel = require("a32nx/efis")
 fs2020.mfwasm.add_observed_data(efis_panel.observed_data)
 global_mappings[#global_mappings + 1] = efis_panel.mappings
-local engine_panel = require("a320nx/engine")
+local engine_panel = require("a32nx/engine")
 fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
 global_mappings[#global_mappings + 1] = engine_panel.mappings
-local mcdu_panel = require("a320nx/cdu")
+local mcdu_panel = require("a32nx/cdu")
 
 local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_window.fcu, captured_window.pfd)
 local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_window.nd)
@@ -114,7 +114,7 @@ local view_right_mcdu = viewport_right:register_view(viewdef_right_mcdu)
 --------------------------------------------------------------------------------------
 -- Register menu view
 --------------------------------------------------------------------------------------
-local assets = require("a320nx/assets")
+local assets = require("a32nx/assets")
 local img_menu = assets.menu
 local img_width = 128
 local img_height = 58
@@ -415,6 +415,15 @@ local mappings = {
     {event=g1000.EC7Y.increment, action=fs2020.event_sender("Mobiflight.Baro_increase")},
     {event=g1000.EC7Y.decrement, action=fs2020.event_sender("Mobiflight.Baro_decrease")},
     {event=g1000.EC7P.down, action=fs2020.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
+
+    {event=g1000.EC2Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC2Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC2X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 + 100 min d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC2X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 - 0 max d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC9Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 + 100 min d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC9Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 - 0 max d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC9X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 + 100 min 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+    {event=g1000.EC9X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 - 0 max 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
 
     {event=g1000.AUX1D.down, action=function() change_typical_view(1) end},
     {event=g1000.AUX1U.down, action=function() change_typical_view(-1) end},

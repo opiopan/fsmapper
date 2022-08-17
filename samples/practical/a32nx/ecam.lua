@@ -40,7 +40,7 @@ local observed_data = {
 --------------------------------------------------------------------------------------
 -- create bitmaps of buttons 
 --------------------------------------------------------------------------------------
-local assets = require("a320nx/assets")
+local assets = require("a32nx/assets")
 local button_width = 96
 local button_height = 66
 local function button_bitmap(ix)

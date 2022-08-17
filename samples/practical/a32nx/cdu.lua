@@ -163,7 +163,7 @@ local rratio_side = 0.1
 local rratio_func = 0.1
 local rratio_num = 0.5
 local rratio_alphabet = 0.1
-local assets = require("a320nx/assets")
+local assets = require("a32nx/assets")
 local scale_factor = assets.cdu.width /view_width
 local bg_image = assets.cdu:create_partial_bitmap(0, 0, view_width * scale_factor, view_height * scale_factor)
 
