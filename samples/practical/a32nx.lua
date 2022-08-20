@@ -57,7 +57,7 @@ local viewport_menu = mapper.viewport{
 --------------------------------------------------------------------------------------
 -- Register views to right & left viewports
 --------------------------------------------------------------------------------------
-local captured_window = {
+local captured_windows = {
     fcu = mapper.view_elements.captured_window{name="A320 FCU"},
     pfd = mapper.view_elements.captured_window{name="A320 PFD"},
     nd = mapper.view_elements.captured_window{name="A320 ND"},
@@ -65,13 +65,6 @@ local captured_window = {
     lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM"},
     mcdu = mapper.view_elements.captured_window{name = "A320 MCDU"},
 }
-
-local function captured_window_view(name, window)
-    return {
-        name = name,
-        elements = {{object = window}},
-    }
-end
 
 local global_mappings = {}
 
@@ -89,16 +82,16 @@ fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
 global_mappings[#global_mappings + 1] = engine_panel.mappings
 local mcdu_panel = require("a32nx/cdu")
 
-local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_window.fcu, captured_window.pfd)
-local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_window.nd)
-local viewdef_left_uecam = engine_panel.viewdef("l-uecam", captured_window.uecam)
-local viewdef_left_lecam = ecam_panel.viewdef("l-uecam", captured_window.lecam)
-local viewdef_left_mcdu = mcdu_panel.viewdef("l-mcdu", captured_window.mcdu)
-local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_window.fcu, captured_window.pfd)
-local viewdef_right_nd = efis_panel.viewdef("r-nd", captured_window.nd)
-local viewdef_right_uecam = engine_panel.viewdef("r-uecam", captured_window.uecam)
-local viewdef_right_lecam = ecam_panel.viewdef("r-lecam", captured_window.lecam)
-local viewdef_right_mcdu = mcdu_panel.viewdef("r-mcdu", captured_window.mcdu)
+local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_windows.fcu, captured_windows.pfd)
+local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_windows.nd)
+local viewdef_left_uecam = engine_panel.viewdef("l-uecam", captured_windows.uecam)
+local viewdef_left_lecam = ecam_panel.viewdef("l-uecam", captured_windows.lecam)
+local viewdef_left_mcdu = mcdu_panel.viewdef("l-mcdu", captured_windows.mcdu)
+local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_windows.fcu, captured_windows.pfd)
+local viewdef_right_nd = efis_panel.viewdef("r-nd", captured_windows.nd)
+local viewdef_right_uecam = engine_panel.viewdef("r-uecam", captured_windows.uecam)
+local viewdef_right_lecam = ecam_panel.viewdef("r-lecam", captured_windows.lecam)
+local viewdef_right_mcdu = mcdu_panel.viewdef("r-mcdu", captured_windows.mcdu)
 
 local view_left_pfd = viewport_left:register_view(viewdef_left_pfd)
 local view_left_nd = viewport_left:register_view(viewdef_left_nd)

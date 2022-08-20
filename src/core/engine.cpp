@@ -61,6 +61,7 @@ void MapperEngine::initScriptingEnv(){
     //      mapper.delay():                  deferred function execution
     //      mapper.register_event():         register event id
     //      mapper.unregister_event():       unregister event id
+    //      mapper.raise_event():            raise an event
     //      mapper.set_primary_mappings():   set primary mappings
     //      mapper.add_primary_mappings();   add primary mappings
     //      mapper.set_secondary_mappings(): set secondary mappings
@@ -112,6 +113,16 @@ void MapperEngine::initScriptingEnv(){
             }else{
                 throw MapperException("event-id must be specified");
             }
+        });
+    };
+    mapper["raise_event"] = [this](const sol::variadic_args va){
+        lua_c_interface(*this, "mapper::raise_event", [this, &va]{
+            auto&& evid = lua_safevalue<int64_t>(va[0]);
+            sol::object value = va[1];
+            if (!evid){
+                throw MapperException("First argument must be specified and that must be event-id");
+            }
+            this->sendEvent(std::move(Event(*evid, std::move(value))));
         });
     };
     mapper["set_primary_mappings"] = [this](const sol::object def){

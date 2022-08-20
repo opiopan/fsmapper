@@ -1,10 +1,12 @@
 fsmapper
 ===
+<img alt="app window" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=400 align="right">
+
 fsmapper is a windows application to connect various input and output devices to filght simulator.<br>
 Initially this software was planned to connect my DIY controller device, [SimHID G1000](https://github.com/opiopan/simhid-g1000), to FS2020.
 But fsmapper is designed to handle common gaming controller device now.
 
-fsmapper allow to:
+fsmapper allows to:
 - Bind the operation of SimHID devices or USB gaming controller device to the operation of arbitary operable unit in a cockpit of a aircraft running on FS2020
 - Observe variables in FS2020 to represent arbitary guage's status such as engine warning lamp, then reflect it's status to real device
 - Build virtual cockpit including original guages on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
@@ -14,7 +16,7 @@ fsmapper allow to:
 The above functions are configuread flexibly by writing a Lua scrip.
 
 <p align="center">
-<img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=700>
+<img alt="fsmapper architecture" src="docs/fsmapper-arch.svg" width=1200>
 </p>
 
 ## How to build and install
@@ -81,9 +83,9 @@ Followings are just example what fsmapper can do that collaborate with vJoy.
 
 - [MobiFlight WASM Module : https://github.com/MobiFlight/MobiFlight-WASM-Module](https://github.com/MobiFlight/MobiFlight-WASM-Module)<br>
 This WASM module working as add-on of FS2020 allows a outer-process utility to execute arbitary [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and to observe change of aircraft inner state holding in local variables such as LVARs.<br>
-fsmapper interact with FS20202 via SimConnect API. 
-SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm), [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll cokcpit all operable object or to know all guage status for presenting on a other DIY guage (or on the secondary display).<br>
-To controll and kow all of cockpit guages, accessing local variables in a aircraft module is needed, and [Guage API]() is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
+fsmapper interacts with FS20202 via SimConnect API. 
+SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll all operable object in  a cockpit or to know all guage status in ac cockpit  for presenting on a other DIY guage (or on the secondary display).<br>
+To controll and kow all of cockpit guages, accessing local variables in a aircraft module is needed, and [Guage API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
 MobiFlight WASM Module solves this probrem. fsmapper can access all local variable by communicating with this WASM module.
 
 
