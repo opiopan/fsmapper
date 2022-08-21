@@ -8,8 +8,8 @@ But fsmapper is designed to handle common gaming controller device now.
 
 fsmapper allows to:
 - Bind the operation of SimHID devices or USB gaming controller device to the operation of arbitary operable unit in a cockpit of a aircraft running on FS2020
-- Observe variables in FS2020 to represent arbitary guage's status such as engine warning lamp, then reflect it's status to real device
-- Build virtual cockpit including original guages on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
+- Observe variables in FS2020 to represent arbitary gauge's status such as engine warning lamp, then reflect it's status to real device
+- Build virtual cockpit including original gauges on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
 - Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device, that means not only the above virtual cockpit on the secondary display can consits popout window as part, but also one phisical display device can be used for mulitiple purpose by changing the display dynamically ([a movie embedded below](#captured-window) shows this capability, one device is used as G1000 PFD and G1000 MFD with changing dynamically)
 - Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver
 
@@ -84,8 +84,8 @@ Followings are just example what fsmapper can do that collaborate with vJoy.
 - [MobiFlight WASM Module : https://github.com/MobiFlight/MobiFlight-WASM-Module](https://github.com/MobiFlight/MobiFlight-WASM-Module)<br>
 This WASM module working as add-on of FS2020 allows a outer-process utility to execute arbitary [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and to observe change of aircraft inner state holding in local variables such as LVARs.<br>
 fsmapper interacts with FS20202 via SimConnect API. 
-SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll all operable object in  a cockpit or to know all guage status in ac cockpit  for presenting on a other DIY guage (or on the secondary display).<br>
-To controll and kow all of cockpit guages, accessing local variables in a aircraft module is needed, and [Guage API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
+SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll all operable object in  a cockpit or to know all gauge status in ac cockpit  for presenting on a other DIY gauge (or on the secondary display).<br>
+To controll and kow all of cockpit gauges, accessing local variables in a aircraft module is needed, and [Gauge API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
 MobiFlight WASM Module solves this probrem. fsmapper can access all local variable by communicating with this WASM module.
 
 
@@ -118,3 +118,89 @@ So Lua script defines just placefolder, You need to specify which actual window 
 <p align="center">
 <img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
 </p>
+
+## Sample Scripts
+This repository includes several configuration scritps for practical use of [SimHID G1000](https://github.com/opiopan/simhid-g1000) at [here](samples/practical).<br>
+To use scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognaized as **COM3** and the display for SimHID G1000 is secondary monitor (**moniter No. is 2**).<br>
+If your environment is not same, change ```config``` table defined at the top of each script as below according to your environment.
+
+``` Lua
+local config = {
+    simhid_g1000_identifier = {path = "COM3"},
+    simhid_g1000_display = 2,
+}
+```
+
+### [samples/pracctical/g1000.lua](samples/practical/g1000.lua)
+<img alt="g1000.lua" src="https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/g1000.jpg" width=500 align="right">
+
+This script can be used with all aircrafts which install Garmin G1000.<br>
+This script handles two poped out windows as captured windows, one is the PFD of G1000 and the other one is the MFD of G1000. <br> 
+The contents displayed on the monitor of SimHID G1000 can be switched between the PFD and the MFD by operationg the switches placed at the right end of the SimHID G1000 housing and left end one.<br>
+All buttons and knobs of the SimHID G1000 are work for every displayed contents. For example, pushing the "menu" button cause displaying the menu on the PFD when the monitor of SimHID G1000 shows the PFD.
+
+In this script, you can see the following example usage of fsmapper.
+- Basic eveent handling for SimHID device
+- Cockpit operable utits of a FS2020 aircraft by sending [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm)
+- Poped out window of FS2020 handling (captured window function)
+- Switchable view
+
+### [samples/practical/g1000_x56.lua](samples/practical/g1000_x56.lua)
+This script is added some codes to the aboeve script.<br>The deference between both scripts is only the part to handle logicool G-56.<br>
+In this scrit, you can see the following example usage of fsmapper.
+- Basic event handling for USB gaming controller
+- Feeding values to vJoy device
+- Deferred event handling
+
+### [samples/practical/a32nx.lua](samples/practical/a32nx.lua)
+<img alt="a32nx.lua" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/a32nx.jpg" width=500 align="right">
+
+This script was written for [FlyByWire A32NX](https://flybywiresim.com).<br>
+This is more complex than the above two scripts. This script provides the integrated virtual cockpit which contains physical operable units such as buttons and knobs, touch controllable units on the monitor, and poped out window contents such as PFD.<br>
+This script includes several sub-module scripts at [here](samples/practical/a32nx), and it also uses several bitmap image at [here](samples/practical/assets) to render each operable units.
+
+This script defines following 5 views. Every view consist FS2020 poped out window and self rendered operable gauges.
+
+|| Poped out windows | Self rendered operable units
+|-|-----------------|----------------------
+|1| PFD<br>FCU       | buttons on the FCU<br>BARO indicator
+|2| ND               | buttons and toggle switches on the EFIS controll unit<br>auto brake buttons<br>etc
+|3| Upper ECAM | engine mode selectors, master engine switch and engine status indicators<br>APU controll switches<br>battery controll switches and voltage indicators
+|4|Lower ECAM| ECAM page selector buttons
+|5|MCDU| MCDU buttons
+
+The width of every view is a half width of the SimHID monitor width. So two views can be displayed simultaneously side by side.<br>
+By pressing soft-keys placed at bottom of SimHID G1000, two views to show can be specified.<br>
+And the switches placed on the left end and the right end of SimHID G1000 housing can also control views to show.
+
+<p align="center">
+<img alt="fsmapper architecture" src="docs/a32nx_script_desc.svg" width=900>
+</p>
+
+The pushbuttons rendered on each view can be operated by tapping them. The toggle switches include engine master switches and the selector knobs can be operated by flicking them.
+The correspondence between SimHID G1000 operations and A32NX operations are shown below.
+
+| SimHID G1000      | A32NX 
+|-------------------|---------
+|NAV volume knob    |SPD/Mac knob on FCU except pull operation
+|NAV swap button    |Pulling Speed Knob on FUC
+|HDG knob           |HDG/TRK knob on FCU except pull operation
+|HDG button         |Pulling HDG/TRK knob on FCU
+|AP button          |AP1 button on FCU
+|FD button          |FD button on EFIS
+|APR button         |APPR button on FCU
+|ALT outer knob     |Increase / Decrease altitute indicator on FCU by 1000 feet
+|ALT inner knob     |Increase / Decrease altitute indicator on FCU by 100 feet
+|ALT knob push button|Pushing ALT knob on FCU
+|FLC button         |Pulling ALT knob on FCU
+|COM volume knob    |V/S or FPA knob on FCU except pull operation
+|COM swap button    |Pulling V/S or FPA knob on FCU
+|COM knob           |Freequency selector knob on RMP panel
+|BARO knob rotation |Manipuration of the value displayed in the barometer reference window
+|BARO knob push button|Switching barometer reference mode between QNH and standard barometer reference
+|Range knob rotation|Range selector switch on EFIS
+|Range knob joystick|Changing the mode displayed on the respective ND
+|NAV inner knob     |Adjusting the brightness of PFD, ND, upper ECAM, and lower ECAM in sync
+|NAV outer knob     | Adjusting the brightness of both the weather rader image and the EGPWS terrain image on ND
+|FMS inner knob     | Adjusting the brightness of FCU display
+|FMS outer knob     | Adjusting the brightness of all glareshields in sync

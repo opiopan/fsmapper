@@ -1,7 +1,12 @@
+local config = {
+    simhid_g1000_identifier = {path = "COM3"},
+    simhid_g1000_display = 2,
+}
+
 g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",
-    identifier = {path = "COM3"},
+    identifier = config.simhid_g1000_identifier,
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
@@ -173,7 +178,7 @@ local mfd_maps = {
 
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
-    displayno = 2,
+    displayno = config.simhid_g1000_display,
     bgcolor = "Black",
     aspect_ratio = 4.0 / 3.0,
 })

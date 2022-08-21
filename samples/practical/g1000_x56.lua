@@ -1,3 +1,9 @@
+local config = {
+    simhid_g1000_identifier = {path = "COM3"},
+    simhid_g1000_display = 2,
+    x56throttle_identifier = {name = "Saitek Pro Flight X-56 Rhino Throttle"},
+}
+
 g1000_dev = mapper.device({
     name = "SimHID G1000",
     type = "simhid",
@@ -206,7 +212,7 @@ viewport:set_mappings({
 x56throttle_dev = mapper.device({
     name = "X-56 Throttle",
     type = "dinput",
-    identifier = {name = "Saitek Pro Flight X-56 Rhino Throttle"},
+    identifier = config.x56throttle_identifier,
     options = {denylist = {"z", "rx", "ry", "rz", "slider1", "slider2"}},
     modifiers = {
         {name = "button33", modtype = "button", modparam={follow_down = 200}},
