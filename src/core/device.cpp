@@ -200,7 +200,9 @@ void DeviceManager::init_scripting_env(sol::table& mapper_table){
             });
         }),
         "events", sol::property(&Device::create_event_table),
+        "get_events", &Device::create_event_table,
         "upstream_ids", sol::property(&Device::create_upstream_id_table),
+        "get_upstream_ids", &Device::create_upstream_id_table,
         "close", &Device::close,
         "send", &Device::sendUnitValue
     );

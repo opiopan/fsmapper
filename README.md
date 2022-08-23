@@ -2,7 +2,7 @@ fsmapper
 ===
 <img alt="app window" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=400 align="right">
 
-fsmapper is a windows application to connect various input and output devices to filght simulator.<br>
+fsmapper is a Windows application to connect various input and output devices to filght simulator.<br>
 Initially this software was planned to connect my DIY controller device, [SimHID G1000](https://github.com/opiopan/simhid-g1000), to FS2020.
 But fsmapper is designed to handle common gaming controller device now.
 
@@ -13,10 +13,12 @@ fsmapper allows to:
 - Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device, that means not only the above virtual cockpit on the secondary display can consits popout window as part, but also one phisical display device can be used for mulitiple purpose by changing the display dynamically ([a movie embedded below](#captured-window) shows this capability, one device is used as G1000 PFD and G1000 MFD with changing dynamically)
 - Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver
 
-The above functions are configuread flexibly by writing a Lua scrip.
+The above functions are configuread flexibly by writing a Lua script.<br>
+fsmapper handles various devices and other softwares as event sources and calls Lua functions defeined in correspondence with the events that occur.
+And fsmapper also provides various objects and functions to interuct with outer environment of fsmapper as below.
 
 <p align="center">
-<img alt="fsmapper architecture" src="docs/fsmapper-arch.svg" width=1200>
+<img alt="fsmapper architecture" src="docs/fsmapper-arch.svg" width=900>
 </p>
 
 ## How to build and install
@@ -121,7 +123,7 @@ So Lua script defines just placefolder, You need to specify which actual window 
 
 ## Sample Scripts
 This repository includes several configuration scritps for practical use of [SimHID G1000](https://github.com/opiopan/simhid-g1000) at [here](samples/practical).<br>
-To use scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognaized as **COM3** and the display for SimHID G1000 is secondary monitor (**moniter No. is 2**).<br>
+To use these scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognaized as **COM3** and the display for SimHID G1000 is secondary monitor (**moniter No. is 2**).<br>
 If your environment is not same, change ```config``` table defined at the top of each script as below according to your environment.
 
 ``` Lua
@@ -130,6 +132,10 @@ local config = {
     simhid_g1000_display = 2,
 }
 ```
+
+More complex scripts can be found in [this repository](https://github.com/opiopan/scripts_for_fsmapper). <br>
+I actually use the scripts stored in that repository, and the way how to switch the configuration correspond to current aircraft can be found in those scripts.
+
 
 ### [samples/pracctical/g1000.lua](samples/practical/g1000.lua)
 <img alt="g1000.lua" src="https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/g1000.jpg" width=500 align="right">
@@ -143,7 +149,7 @@ In this script, you can see the following example usage of fsmapper.
 - Basic eveent handling for SimHID device
 - Cockpit operable utits of a FS2020 aircraft by sending [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm)
 - Poped out window of FS2020 handling (captured window function)
-- Switchable view
+- Switchable views
 
 ### [samples/practical/g1000_x56.lua](samples/practical/g1000_x56.lua)
 This script is added some codes to the aboeve script.<br>The deference between both scripts is only the part to handle logicool G-56.<br>
@@ -158,6 +164,13 @@ In this scrit, you can see the following example usage of fsmapper.
 This script was written for [FlyByWire A32NX](https://flybywiresim.com).<br>
 This is more complex than the above two scripts. This script provides the integrated virtual cockpit which contains physical operable units such as buttons and knobs, touch controllable units on the monitor, and poped out window contents such as PFD.<br>
 This script includes several sub-module scripts at [here](samples/practical/a32nx), and it also uses several bitmap image at [here](samples/practical/assets) to render each operable units.
+
+
+In this scrit, you can see the following example usage of fsmapper in addition to ```g1000_x56.lua``` case.
+- Observing the aircraft status represented by [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm)
+- Changing the aircraft status by executing [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm)
+- Drawing graphics on the screen
+- Handling the touch events and mouse events occured on the screen
 
 This script defines following 5 views. Every view consist FS2020 poped out window and self rendered operable gauges.
 
