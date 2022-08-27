@@ -963,8 +963,8 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                     FloatRect rect{0.f, 0.f, static_cast<float>(source->width()), static_cast<float>(source->height())};
                     return std::make_shared<bitmap>(source, rect);
                 }else if (type == sol::type::number){
-                    auto width = lua_safevalue<int>(va[0]);
-                    auto height = lua_safevalue<int>(va[1]);
+                    auto width = lua_safevalue<float>(va[0]);
+                    auto height = lua_safevalue<float>(va[1]);
                     if (width && height){
                         auto source = std::make_shared<bitmap_source>(*width, *height);
                         FloatRect rect{0.f, 0.f, static_cast<float>(*width), static_cast<float>(*height)};
