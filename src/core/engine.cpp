@@ -14,6 +14,7 @@
 #include "filter.h"
 #include "simplewindow.h"
 #include "graphics.h"
+#include "keyseq.h"
 
 //============================================================================================
 // initialize / terminate environment
@@ -154,6 +155,8 @@ void MapperEngine::initScriptingEnv(){
 
     scripting.vjoyManager = std::make_unique<vJoyManager>(*this);
     scripting.vjoyManager->init_scripting_env(scripting.lua(), mapper);
+
+    keyseq::create_lua_env(*this, mapper);
 
     auto sysevents = scripting.lua().create_table();
     auto ev_change_aircraft = this->registerEvent("mapper:change_aircraft");

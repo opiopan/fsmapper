@@ -272,7 +272,7 @@ void vJoyManager::init_scripting_env(sol::state& lua, sol::table& mapper_table){
     mapper_table.new_usertype<vJoyDevice>(
         "virtual_joystick",
         sol::call_constructor, sol::factories([this](sol::object arg){
-            return lua_c_interface(engine, "vjoy", [this, &arg]{
+            return lua_c_interface(engine, "virtual_joystick", [this, &arg]{
                 return vJoyDevice::create(*this, arg);
             });
         }),

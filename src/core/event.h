@@ -23,6 +23,7 @@ public:
         string_value,
         lua_value,
         api_context,
+        pointer,
     };
 
 protected:
@@ -32,6 +33,7 @@ protected:
         int64_t intValue;
         double doubleValue;
         ApiContext* apiContext;
+        void* pointer;
     }unionValue;
     std::unique_ptr<std::string> stringValue;
     sol::object luaValue;
@@ -49,6 +51,9 @@ public:
     };
     EventValue(ApiContext* value): type(Type::api_context){
         unionValue.apiContext = value;
+    }
+    EventValue(void* value): type(Type::pointer){
+        unionValue.pointer = value;
     }
     EventValue(const char* value) : type(Type::string_value){
         stringValue = std::make_unique<std::string>(value);
@@ -182,6 +187,13 @@ public:
             return nullptr;
         }
     }
+    operator void* () const{
+        if (type == Type::pointer){
+            return unionValue.pointer;
+        }else{
+            return nullptr;
+        }
+    }
 
     template <class T> T getAs() const {return static_cast<T>(*this);};
 };
@@ -207,6 +219,7 @@ public:
     Event(uint64_t id, std::string&& value) : id(id), value(std::move(value)){};
     Event(uint64_t id, sol::object&& value): id(id), value(std::move(value)){};
     Event(uint64_t id, ApiContext* value): id(id), value(value){}
+    Event(uint64_t id, void* value): id(id), value(value){}
     Event(uint64_t id, AssosiativeArray&& value): id(id), array(std::make_unique<AssosiativeArray>(std::move(value))){};
     Event(const Event& src){*this = src;};
     Event(Event&& src): id(src.id), value(std::move(src.value)), array(std::move(src.array)){};
@@ -254,6 +267,9 @@ public:
     };
     operator ApiContext* () const{
         return static_cast<ApiContext*>(value);
+    }
+    operator void* () const{
+        return static_cast<void*>(value);
     }
 
     template <class T> T getAs() const {return static_cast<T>(*this);};
