@@ -237,7 +237,7 @@ namespace keyseq{
     class key_sequence{
         unsigned int size;
         std::unique_ptr<INPUT[]> data;
-        int duration {100};
+        int duration {50};
         int interval {0};
 
     public:
@@ -299,7 +299,7 @@ namespace keyseq{
             }
         }
 
-        key_sequence(const key_sequence& srca, const key_sequence& srcb){
+        key_sequence(const key_sequence& srca, const key_sequence& srcb): duration(srca.duration), interval(srca.interval){
             size = srca.size + srcb.size;
             data = std::make_unique<INPUT[]>(size);
             memcpy(data.get(), srca.data.get(), sizeof(INPUT) * srca.size);
@@ -315,6 +315,8 @@ namespace keyseq{
         }
 
         key_sequence& operator = (const key_sequence& src){
+            duration = src.duration;
+            interval = src.interval;
             size = src.size;
             data = std::make_unique<INPUT[]>(size);
             memcpy(data.get(), src.data.get(), sizeof(INPUT) * size);
@@ -322,15 +324,37 @@ namespace keyseq{
         }
 
         key_sequence& operator = (key_sequence&& src){
+            duration = src.duration;
+            interval = src.interval;
             size = src.size;
             data = std::move(src.data);
             return *this;
         }
 
-        inline int get_duration(){return duration;}
-        inline int get_interval(){return interval;}
+        key_sequence operator + (const key_sequence& rval){
+            return key_sequence{*this, rval};
+        }
 
-        void emulate(){
+        void set_duration(double value){
+            lua_c_interface(*mapper_EngineInstance(), "mapper.keystroke.set_duration", [this, value]{
+                if (value < 0){
+                    throw MapperException("duration property must be grater than zero");
+                }
+                duration = round(value);
+            });
+        }
+        int get_duration(){return duration;}
+        void set_interval(double value){
+            lua_c_interface(*mapper_EngineInstance(), "mapper.keystroke.set_interval", [this, value]{
+                if (value < 0){
+                    throw MapperException("interval property must be grater than zero");
+                }
+                interval = round(value);
+            });
+        }
+        int get_interval(){return interval;}
+
+        void synthesize(){
             auto next = proceed(0);
             if (next < size){
                 auto context = std::make_shared<key_sequence>(*this);
@@ -338,14 +362,14 @@ namespace keyseq{
             }
         }
 
-        std::shared_ptr<NativeAction::Function> emulator(){
+        std::shared_ptr<NativeAction::Function> synthesizer(){
             auto context = std::make_shared<key_sequence>(*this);
 
             NativeAction::Function::ACTION_FUNCTION func = [context](Event&, sol::state&){
                 auto next = context->proceed(0);
                 context->delay(context, next);
             };
-            return std::make_shared<NativeAction::Function>("mapper.key_sequence:emulate()", func);
+            return std::make_shared<NativeAction::Function>("mapper.keystroke:synthesize()", func);
         }
 
     protected:
@@ -372,7 +396,7 @@ namespace keyseq{
                     auto next = object->proceed(from);
                     object->delay(object, next);
                 };
-                auto function = std::make_shared<NativeAction::Function>("mapper.key_sequecne:emulate()", logic);
+                auto function = std::make_shared<NativeAction::Function>("mapper.keystroke:synthesize()", logic);
                 auto action = std::make_shared<NativeAction>(function);
                 Event ev(static_cast<int64_t>(EventID::NILL));
                 mapper_EngineInstance()->invokeActionIn(action, ev, MapperEngine::MILLISEC(delayed_time));
@@ -386,13 +410,16 @@ namespace keyseq{
 //============================================================================================
 void keyseq::create_lua_env(MapperEngine& engine, sol::table& mapper_table){
     mapper_table.new_usertype<key_sequence>(
-        "key_sequence",
+        "keystroke",
         sol::call_constructor, sol::factories([&engine](sol::object arg){
-            return lua_c_interface(engine, "key_sequence", [&arg]{
+            return lua_c_interface(engine, "keystroke", [&arg]{
                 return std::make_shared<key_sequence>(arg);
             });
         }),
-        "emulate", &key_sequence::emulate,
-        "emulator", &key_sequence::emulator
+        "duration", sol::property(&key_sequence::get_duration, &key_sequence::set_duration),
+        "interval", sol::property(&key_sequence::get_interval, &key_sequence::set_interval),
+        "synthesize", &key_sequence::synthesize,
+        "synthesizer", &key_sequence::synthesizer
     );
+    mapper_table["keystroke"][sol::meta_function::addition] = &key_sequence::operator+;
 }
