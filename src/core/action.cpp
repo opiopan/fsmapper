@@ -14,6 +14,9 @@ NativeAction::NativeAction(const sol::object& object) : Action(object){
     function = object.as<std::shared_ptr<Function>>();
 }
 
+NativeAction::NativeAction(std::shared_ptr<Function> function) : function(function){
+}
+
 const char* NativeAction::getName(){
     return function->getName();
 }

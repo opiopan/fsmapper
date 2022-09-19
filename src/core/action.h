@@ -17,12 +17,13 @@ class MapperEngine;
 
 class Action{
 protected:
-    sol::object lua_object;
+    std::optional<sol::object> lua_object;
 
 public:
     Action(const Action&) = delete;
     Action(Action&&) = delete;
     Action(const sol::object& object): lua_object(object){};
+    Action(): lua_object(std::nullopt){};
     virtual ~Action() = default;
 
     virtual const char* getName() = 0;
@@ -55,6 +56,7 @@ public:
     NativeAction(const NativeAction&) = delete;
     NativeAction(NativeAction&&) = delete;
     NativeAction(const sol::object& object);
+    NativeAction(std::shared_ptr<Function> function);
     virtual ~NativeAction() = default;
     virtual const char* getName();
     virtual void invoke(Event& event, sol::state& lua);

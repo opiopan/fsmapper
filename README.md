@@ -11,7 +11,7 @@ fsmapper allows to:
 - Observe variables in FS2020 to represent arbitary gauge's status such as engine warning lamp, then reflect it's status to real device
 - Build virtual cockpit including original gauges on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
 - Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device, that means not only the above virtual cockpit on the secondary display can consits popout window as part, but also one phisical display device can be used for mulitiple purpose by changing the display dynamically ([a movie embedded below](#captured-window) shows this capability, one device is used as G1000 PFD and G1000 MFD with changing dynamically)
-- Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver
+- Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver, or to synthesized keystrokes (emulated keystrokes)
 
 The above functions are configuread flexibly by writing a Lua script.<br>
 fsmapper handles various devices and other softwares as event sources and calls Lua functions defeined in correspondence with the events that occur.

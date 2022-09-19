@@ -237,6 +237,9 @@ namespace keyseq{
     class key_sequence{
         unsigned int size;
         std::unique_ptr<INPUT[]> data;
+        int duration {100};
+        int interval {0};
+
     public:
         key_sequence() = delete;
 
@@ -265,17 +268,17 @@ namespace keyseq{
                     }
                     auto entry = data.get() + i;
                     entry->type = INPUT_KEYBOARD;
-                    entry->ki.wVk = code;
+                    entry->ki.wVk = 0;
                     entry->ki.wScan = ::MapVirtualKey(code, 0);
                     entry->ki.time = 0;
                     entry->ki.dwExtraInfo = extra_info;
-                    entry->ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
+                    entry->ki.dwFlags = KEYEVENTF_SCANCODE;
                 }
                 for (auto i = 0; i < modifiers.size(); i++){
                     auto src = data.get() + i;
                     auto dest = data.get() + size - 1 - i;
                     *dest = *src;
-                    dest->ki.dwFlags = KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP;
+                    dest->ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
                 }
             }else{
                 size = codes.size() * 2;
@@ -286,13 +289,13 @@ namespace keyseq{
                 auto off = on + 1;
                 auto code = translate_to_keycode(codes[i + 1]);
                 on->type = INPUT_KEYBOARD;
-                on->ki.wVk = code;
+                on->ki.wVk = 0;
                 on->ki.wScan = ::MapVirtualKeyA(code, 0);
                 on->ki.time = 0;
                 on->ki.dwExtraInfo = extra_info;
-                on->ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
+                on->ki.dwFlags = KEYEVENTF_SCANCODE;
                 *off = *on;
-                off->ki.dwFlags = KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP;
+                off->ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
             }
         }
 
@@ -324,17 +327,56 @@ namespace keyseq{
             return *this;
         }
 
+        inline int get_duration(){return duration;}
+        inline int get_interval(){return interval;}
+
         void emulate(){
-            ::SendInput(size, data.get(), sizeof(INPUT));
+            auto next = proceed(0);
+            if (next < size){
+                auto context = std::make_shared<key_sequence>(*this);
+                context->delay(context, next);
+            }
         }
 
         std::shared_ptr<NativeAction::Function> emulator(){
             auto context = std::make_shared<key_sequence>(*this);
 
             NativeAction::Function::ACTION_FUNCTION func = [context](Event&, sol::state&){
-                context->emulate();
+                auto next = context->proceed(0);
+                context->delay(context, next);
             };
             return std::make_shared<NativeAction::Function>("mapper.key_sequence:emulate()", func);
+        }
+
+    protected:
+        unsigned int proceed(unsigned int from){
+            if (from < size){
+                auto polarity = data.get()[from].ki.dwFlags & KEYEVENTF_KEYUP;
+                auto to = from;
+                for (; to < size; to++){
+                    if ((data.get()[to].ki.dwFlags & KEYEVENTF_KEYUP) != polarity){
+                        break;
+                    }
+                }
+                ::SendInput(to - from, data.get() + from, sizeof(INPUT));
+                return to;
+            }else{
+                return size;
+            }
+        }
+
+        void delay(std::shared_ptr<key_sequence>object, unsigned int from){
+            if (from < object->size){
+                auto delayed_time = data.get()[from].ki.dwFlags & KEYEVENTF_KEYUP ? object->interval : object->duration;
+                NativeAction::Function::ACTION_FUNCTION logic = [object, from](Event&, sol::state&){
+                    auto next = object->proceed(from);
+                    object->delay(object, next);
+                };
+                auto function = std::make_shared<NativeAction::Function>("mapper.key_sequecne:emulate()", logic);
+                auto action = std::make_shared<NativeAction>(function);
+                Event ev(static_cast<int64_t>(EventID::NILL));
+                mapper_EngineInstance()->invokeActionIn(action, ev, MapperEngine::MILLISEC(delayed_time));
+            }
         }
     };
 }
