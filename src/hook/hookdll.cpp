@@ -17,6 +17,7 @@
 #include "tools.h"
 #include "apihook.h"
 #include "hookdll.h"
+#include "mouseemu.h"
 
 struct FatalException{
     DWORD error;
@@ -314,6 +315,10 @@ protected:
         LONG_PTR saved_style;
         RECT saved_rect;
         int change_request_num;
+        bool need_to_modify_touch = true;
+        int delay_down = 50;
+        int delay_up = 100;
+        mouse_emu::clock::time_point last_down = mouse_emu::clock::now();
     };
     struct ChangeRequest{
         bool change_position:1;
@@ -329,6 +334,9 @@ protected:
     std::mutex lmutex;
     int64_t local_count = 0;
     std::map<HWND, WindowContext> captured_windows;
+    std::unique_ptr<mouse_emu::emulator> mouse_emulator;
+    bool is_touch_down = false;
+    POINT last_touch_point;
 
     HookedApi<LONG_PTR WINAPI (HWND, int, LONG_PTR)> SetWindowLongPtrW;
     HookedApi<BOOL WINAPI (HWND, HWND, int, int, int, int, UINT)> SetWindowPos;
@@ -386,12 +394,18 @@ public:
                 captured_windows.emplace(hWnd, ctx);
                 llock.unlock();
                 glock.unlock();
+                if (ctx.need_to_modify_touch){
+                    RegisterTouchWindow(hWnd, 0);
+                }
                 if (hide_system_region){
                     this->SetWindowLongPtrW(
                         hWnd, GWL_STYLE, 
                         ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
                 }
                 this->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
+                if (ctx.need_to_modify_touch && !mouse_emulator){
+                    mouse_emulator = std::move(mouse_emu::create_emulator());
+                }
             }
         }
     };
@@ -408,11 +422,17 @@ public:
         captured_windows.erase(hWnd);
         local_count++;
         llock.unlock();
+        if (ctx.need_to_modify_touch){
+            UnregisterTouchWindow(hWnd);
+        }
         this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
         this->SetWindowPos(
             hWnd, HWND_TOP, 
             saved_rect.left, saved_rect.top, saved_rect.right - saved_rect.left, saved_rect.bottom - saved_rect.top, 
             SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        if (captured_windows.size() == 0){
+            mouse_emulator = nullptr;
+        }
     };
 
     void changeWindowAttribute(HWND hWnd){
@@ -475,6 +495,50 @@ public:
         }
     };
 
+    void processTouchMessage(HWND hWnd, WPARAM wparam, LPARAM lparam){
+        std::unique_lock llock(lmutex);
+        if (captured_windows.count(hWnd) == 0){
+            // specified window is not captured
+            return;
+        }
+        auto& ctx = captured_windows.at(hWnd);
+        if (!ctx.need_to_modify_touch){
+            // unnecessary to generate touch message
+            return;
+        }
+
+        if (wparam > 1){
+            if (is_touch_down){
+                OutputDebugStringA("touch error\n");
+                is_touch_down = false;
+                mouse_emulator->emulate(
+                    mouse_emu::event::up, last_touch_point.x, last_touch_point.y,
+                    ctx.last_down + mouse_emu::milliseconds(ctx.delay_up));
+            }
+        }else{
+            auto handle = reinterpret_cast<HTOUCHINPUT>(lparam);
+            TOUCHINPUT input;
+            ::GetTouchInputInfo(handle, 1, &input, sizeof(TOUCHINPUT));
+            DWORD event = 0;
+            POINT pt{input.x / 100, input.y / 100};
+            auto now = mouse_emu::clock::now();
+            if (input.dwFlags & TOUCHEVENTF_DOWN){
+                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, now);
+                is_touch_down = true;
+                last_touch_point = pt;
+                ctx.last_down = now + mouse_emu::milliseconds(ctx.delay_down);
+                mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_down);
+            }else if (input.dwFlags & TOUCHEVENTF_UP){
+                is_touch_down = false;
+                mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_down + mouse_emu::milliseconds(ctx.delay_up));
+            }else if ((input.dwFlags & TOUCHEVENTF_MOVE) && is_touch_down){
+                last_touch_point = pt;
+                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, now);
+            }
+        }
+        return;
+    }
+
 protected:
     static LONG_PTR WINAPI SetWindowLongPtrW_Hook(HWND hWnd, int nIndex, LONG_PTR dwNewLong){
         std::unique_lock llock(followingManager->lmutex);
@@ -515,6 +579,8 @@ LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
                 }
             }else if (pMsg->message == WM_DESTROY){
                 followingManager->closeWindow(pMsg->hwnd);
+            }else if (pMsg->message == WM_TOUCH){
+                followingManager->processTouchMessage(pMsg->hwnd, pMsg->wParam, pMsg->lParam);
             }
         }
     }

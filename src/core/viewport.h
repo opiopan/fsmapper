@@ -139,6 +139,11 @@ public:
 // View
 //============================================================================================
 class View{
+public:
+    struct CapturedWindowAttributes{
+        HWND hwnd{nullptr};
+        bool need_to_avoid_touch_probrems{true};
+    };
 protected:
     using CWViewElement = ViewElement<CapturedWindow>;
     using NormalViewElement = ViewElement<ViewObject>;
@@ -174,6 +179,7 @@ public:
     HWND getBottomWnd();
     Action* findAction(uint64_t evid);
     int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
+    bool findCapturedWindow(FloatPoint point, CapturedWindowAttributes& attrs);
 };
 
 //============================================================================================
@@ -287,6 +293,7 @@ public:
     void update();
     Action* findAction(uint64_t evid);
     std::pair<int, int> getMappingsStat();
+    bool findCapturedWindow(FloatPoint point, View::CapturedWindowAttributes& attrs);
 
     // functions for views
     const std::optional<view_utils::region_restriction>& get_region_restriction()const {return def_restriction;}
@@ -333,6 +340,7 @@ public:
     MapperEngine& get_engine() {return engine;};
     void init_scripting_env(sol::table& mapper_table);
     Action* find_action(uint64_t evid);
+    bool findCapturedWindow(FloatPoint point, View::CapturedWindowAttributes& attrs);
 
     Status get_status(){
         std::lock_guard lock{mutex};
