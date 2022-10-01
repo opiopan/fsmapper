@@ -21,18 +21,12 @@
     <ClCompile Include="apihook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mouseemu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hookdll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="apihook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mouseemu.h">
+    <ClInclude Include="hookdll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,8 +20,12 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
         throw MapperException("varid name is not specified for the captured window");
     }
     auto omit_system_region = lua_safevalue<bool>(def["omit_system_region"]);
+    auto fix_touch_issue = lua_safevalue<bool>(def["avoid_touch_problems"]);
     if (omit_system_region){
         this->omit_system_region = *omit_system_region;
+    }
+    if (fix_touch_issue){
+        this->fix_touch_issue = *fix_touch_issue;
     }
     fallback_window.start();
 }

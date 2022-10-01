@@ -165,12 +165,10 @@
   <ItemGroup>
     <ClCompile Include="apihook.cpp" />
     <ClCompile Include="hookdll.cpp" />
-    <ClCompile Include="mouseemu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apihook.h" />
     <ClInclude Include="hookdll.h" />
-    <ClInclude Include="mouseemu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

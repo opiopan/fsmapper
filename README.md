@@ -114,13 +114,35 @@ In this case, refere the error message for details by acessing the message conso
 ### Captured window
 fsmapper has a function to controll visibility and position of any window ownd by other process. This function is designed to enable a display as multipurpose, especially to handle fs2020 puped out instrument window like [this movie](https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/movie.gif).
 
-Those windows controlled by fsmapper are called "captured window" and those are specified by ```mapper.captured_window()``` function in Lua script.<br>
+Those windows controlled by fsmapper are called "captured window" and those are specified by ```mapper.view_elements.captured_window()``` function in Lua script.<br>
 Unfortunately, FS2020 SDK does not allow to controll poped out window and does not provide a way to recognize the difference between poped out windows. From fsmapper point of view, all FS2020 poped out windows looks same.<br>
 So Lua script defines just placefolder, You need to specify which actual window corresponds to captured window definition at run time as below.
 
 <p align="center">
 <img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
 </p>
+
+### Avoiding touch probrems of poped out window
+It is well known that the poped out window of avionics which has touch operable capability such as Garmin G3X doesn't work well with the touch operation, even though it works with the mouse operation.<br>
+fsmapper provides the workaround solution for this probrem. You will be able to operate poped out windows with the touch operation if those window will be managed as  **captured window** mentiond previous section.
+
+I don't know the true reason why touch operations is ignored by FS2020. However I assume that this probrem is caused by the mechanism to recognize the mouse status change.<br>
+I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as ```WM_LBUTTON_DOWN```. This method may drop some status change events when multiple events occur in a time shoter than the polling interval.<br>
+Mouse messages generated as a result of tapping are exactly this situation. To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, ```WM_LBUTTON_DOWN``` and ```WM_LBUTTON_UP``` messages will occur at the almost same time when you tap a display. In this case, FS2020 cannot recognize mouse button state changes.
+
+According to this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.<br>
+If you want to stop this behavior, specify the value as ```false``` for parameter ```avoid_touch_problems``` of ```mapper.view_elements.captured_window()``` function.
+
+``` Lua
+local element1 = mapper.view_elements.captured_window{
+    name = "Apps other than  FS2020",
+    avoid_touch_problems = false,
+}
+
+local element2 = mapper.view_elements.captured_window{
+    name = "Garmin G3X",
+}
+```
 
 ## Sample Scripts
 This repository includes several configuration scritps for practical use of [SimHID G1000](https://github.com/opiopan/simhid-g1000) at [here](samples/practical).<br>

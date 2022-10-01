@@ -20,6 +20,7 @@
 #include "action.h"
 #include "graphics.h"
 #include "viewobject.h"
+#include "mouseemu.h"
 
 class MapperEngine;
 class ViewPortManager;
@@ -327,6 +328,7 @@ protected:
     std::vector<IntRect> displays;
     uint32_t cwid_counter = 1;
     std::unordered_map<uint32_t, std::shared_ptr<CapturedWindow>> captured_windows;
+    std::unique_ptr<mouse_emu::emulator> mouse_emulator;
 
 public:
     ViewPortManager() = delete;
@@ -338,6 +340,7 @@ public:
     ViewPortManager& operator =(ViewPortManager&&) = delete;
 
     MapperEngine& get_engine() {return engine;};
+    mouse_emu::emulator& get_mouse_emulator() {return *mouse_emulator.get();}
     void init_scripting_env(sol::table& mapper_table);
     Action* find_action(uint64_t evid);
     bool findCapturedWindow(FloatPoint point, View::CapturedWindowAttributes& attrs);

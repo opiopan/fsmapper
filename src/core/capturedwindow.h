@@ -19,6 +19,7 @@ protected:
     uint32_t cwid = 0;
     HWND hwnd = nullptr;
     bool omit_system_region = true;
+    bool fix_touch_issue = true;
     ViewPort::BackgroundWindow fallback_window;
     ViewPort* owner = nullptr;
 
@@ -37,6 +38,7 @@ public:
     HWND get_hwnd() const {return hwnd;};
     ViewPort* get_owner() const {return owner;}
     void set_owner(ViewPort* new_owner) {owner = new_owner;}
+    bool need_to_fix_touch_issue()const {return fix_touch_issue;}
     void attach_window(HWND hwnd);
     void release_window();
     bool change_window_pos(const IntRect& rect, HWND hwnd_insert_after, bool show, COLORREF bgcolor = 0);
