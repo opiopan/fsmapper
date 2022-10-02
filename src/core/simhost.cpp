@@ -122,6 +122,12 @@ std::string SimHostManager::getAircraftName(){
     return activeSim < 0 ? std::move(std::string()) : connectivities.at(activeSim).aircraftName;
 }
 
+HWND SimHostManager::getRepresentativeWindow(){
+    std::lock_guard lock(mutex);
+    return activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow();
+}
+
+
 void SimHostManager::changeConnectivity(int simid, bool isActive, const char* aircraftName){
     aircraftName = aircraftName ? aircraftName : "";
     std::lock_guard lock(mutex);

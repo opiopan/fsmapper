@@ -89,7 +89,7 @@ This WASM module working as add-on of FS2020 allows a outer-process utility to e
 fsmapper interacts with FS20202 via SimConnect API. 
 SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll all operable object in  a cockpit or to know all gauge status in ac cockpit  for presenting on a other DIY gauge (or on the secondary display).<br>
 To controll and kow all of cockpit gauges, accessing local variables in a aircraft module is needed, and [Gauge API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
-MobiFlight WASM Module solves this probrem. fsmapper can access all local variable by communicating with this WASM module.
+MobiFlight WASM Module solves this problem. fsmapper can access all local variable by communicating with this WASM module.
 
 
 ### Configuration file
@@ -122,15 +122,15 @@ So Lua script defines just placefolder, You need to specify which actual window 
 <img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
 </p>
 
-### Avoiding touch probrems of poped out window
+### Avoiding touch problems of poped out window
 It is well known that the poped out window of avionics which has touch operable capability such as Garmin G3X doesn't work well with the touch operation, even though it works with the mouse operation.<br>
-fsmapper provides the workaround solution for this probrem. You will be able to operate poped out windows with the touch operation if those window will be managed as  **captured window** mentiond previous section.
+fsmapper provides the workaround solution for this problem. You will be able to operate poped out windows with the touch operation if those windows will be managed as  **captured window** mentiond previous section.
 
-I don't know the true reason why touch operations is ignored by FS2020. However I assume that this probrem is caused by the mechanism to recognize the mouse status change.<br>
+I don't know the true reason why touch operations are ignored by FS2020. However I assume that this problem is caused by the mechanism to recognize the mouse status change.<br>
 I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as ```WM_LBUTTON_DOWN```. This method may drop some status change events when multiple events occur in a time shoter than the polling interval.<br>
 Mouse messages generated as a result of tapping are exactly this situation. To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, ```WM_LBUTTON_DOWN``` and ```WM_LBUTTON_UP``` messages will occur at the almost same time when you tap a display. In this case, FS2020 cannot recognize mouse button state changes.
 
-According to this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.<br>
+Based on this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.<br>
 If you want to stop this behavior, specify the value as ```false``` for parameter ```avoid_touch_problems``` of ```mapper.view_elements.captured_window()``` function.
 
 ``` Lua

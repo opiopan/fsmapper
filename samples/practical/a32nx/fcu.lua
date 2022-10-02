@@ -252,10 +252,10 @@ local function create_view_def(name, fcu_window, main_window)
         elements[#elements + 1] = element
     end
     elements[#elements + 1] = {
-        object=fcu_window, x= 0, y=0, width=view_width, height=view_width
+        object=main_window, x= 0, y=view_height - view_width , width=view_width, height=view_width + 2
     }
     elements[#elements + 1] = {
-        object=main_window, x= 0, y=view_height - view_width , width=view_width, height=view_width + 2
+        object=fcu_window, x= 0, y=0, width=view_width, height=view_width
     }
 
     return {

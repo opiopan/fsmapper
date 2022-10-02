@@ -191,6 +191,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             mfwasm_stop();
             lock.lock();
             simconnect = nullptr;
+            representativeWindow = 0;
             lock.unlock();
             this->reportConnectivity(false, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
@@ -228,6 +229,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 aircraftName = std::move(new_name);
                 status = Status::start;
                 watch_dog = std::chrono::steady_clock::now();
+                updateRepresentativeWindow();
                 lock.unlock();
                 mfwasm_start(*this, simconnect);
                 this->reportConnectivity(true, aircraftName.c_str());
@@ -281,6 +283,28 @@ void FS2020::updateMfwasm(){
     needToUpdateMfwasm = true;
     SetEvent(event_interrupt);
 }
+
+void FS2020::updateRepresentativeWindow(){
+    representativeWindow = 0;
+    ::EnumWindows([](HWND hwnd, LPARAM lparam)->BOOL{
+        static std::string class_name{"AceApp"};
+        static const char title[] = "Microsoft Flight Simulator";
+        char buf[256];
+        auto self = reinterpret_cast<FS2020*>(lparam);
+        if (::GetClassNameA(hwnd, buf, sizeof(buf)) > 0){
+            if (class_name == buf){
+                if (::GetWindowTextA(hwnd, buf, sizeof(buf)) > 0){
+                    if (strncmp(title, buf, sizeof(title) - 1) == 0){
+                        self->representativeWindow = hwnd;
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }, reinterpret_cast<LPARAM>(this));
+}
+
 
 //============================================================================================
 // Create Lua scripting environment

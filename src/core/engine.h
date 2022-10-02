@@ -171,6 +171,8 @@ public:
 
     sol::state& getLuaState(){return scripting.lua();};
 
+    SimHostManager* getSimHostManager(){return scripting.simhostManager.get();}
+
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();
     struct DeviceInfo {

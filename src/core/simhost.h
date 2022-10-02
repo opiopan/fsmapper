@@ -29,6 +29,7 @@ public:
         virtual ~Simulator() = default;
         virtual void initLuaEnv(sol::state& lua) = 0;
         virtual void changeActivity(bool isActive) = 0;
+        virtual HWND getRepresentativeWindow() = 0;
     protected:
         void reportConnectivity(bool connectivity, const char* aircraftname);
         SimHostManager& getManager(){return manager;};
@@ -80,6 +81,7 @@ public:
     // functions for engine
     MAPPER_SIM_CONNECTION getConnection();
     std::string getAircraftName();
+    HWND getRepresentativeWindow();
 
     // fuctions for each Simulator instance
     MapperEngine& getEngine(){return engine;};

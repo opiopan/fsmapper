@@ -171,9 +171,9 @@ namespace view_utils{
 // Low level mouse hook
 //    This funciton avoids several problems to use pop out windows of FS2020 with touch display.
 //    The all mouse messages generated touch action on the captured windows will be droped by
-//    this hook procedure. On the other hand, new other mouse messages wich can be handled by FS2002
-//    correctly will be generated  fsmapperhook.dll instead of the original mouse messages.
-//    The codes which generate new mouse messages are found in src/hook/hookdll.cpp
+//    this hook procedure. On the other hand, new other mouse messages wich can be handled by
+//    FS2020 correctly will be generated on the other thread instead of the original mouse 
+//    messages.
 //============================================================================================
 static HHOOK hookHandle = 0;
 
@@ -673,6 +673,12 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
                 }
             }
             if (event){
+                if (*event == tevent::down){
+                    this->manager.get_mouse_emulator().emulate(mouse_emu::event::cancel_recovery, 0, 0, mouse_emu::clock::now());
+                }else if (*event == tevent::up || *event == tevent::cancel){
+                    this->manager.get_mouse_emulator().emulate(mouse_emu::event::recover, 0, 0, mouse_emu::clock::now());
+                }
+
                 if (!is_touch_captured && *event != tevent::down){
                     return 0;
                 }

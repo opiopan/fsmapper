@@ -14,6 +14,8 @@ namespace mouse_emu{
         down = MOUSEEVENTF_LEFTDOWN,
         up = MOUSEEVENTF_LEFTUP,
         move = MOUSEEVENTF_MOVE,
+        recover =-1,
+        cancel_recovery = -2,
     };
 
     using clock = std::chrono::steady_clock;

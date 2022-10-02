@@ -58,6 +58,7 @@ protected:
     std::string aircraftName;
     std::thread scheduler;
     std::chrono::steady_clock::time_point watch_dog;
+    HWND representativeWindow {0};
 
     SimConnectHandle simconnect;
     WinHandle event_simconnect;
@@ -70,8 +71,9 @@ public:
     FS2020(const FS2020&) = default;
     FS2020(FS2020&&) = default;
     virtual ~FS2020();
-    virtual void initLuaEnv(sol::state& lua);
-    virtual void changeActivity(bool isActive);
+    void initLuaEnv(sol::state& lua) override;
+    void changeActivity(bool isActive) override;
+    HWND getRepresentativeWindow() override{return representativeWindow;};
 
     void updateMfwasm();
     template <typename FUNC>
@@ -82,6 +84,8 @@ public:
 
 protected:
     void processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData);
+
+    void updateRepresentativeWindow();
 
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
     void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid);
