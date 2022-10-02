@@ -319,10 +319,14 @@ void View::prepare(){
 }
 
 void View::show(){
-    for (auto& element : captured_window_elements){
+    std::for_each(std::rbegin(captured_window_elements), std::rend(captured_window_elements), [this](auto& element){
         element->get_object().set_owner(&viewport);
         element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
-    }
+    });
+    // for (auto& element : captured_window_elements){
+    //     element->get_object().set_owner(&viewport);
+    //     element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
+    // }
     FloatRect rect{viewport.get_output_region()};
     viewport.invaridate_rect(rect);
 }
