@@ -127,7 +127,7 @@ It is well known that the poped out window of avionics which has touch operable 
 fsmapper provides the workaround solution for this problem. You will be able to operate poped out windows with the touch operation if those windows will be managed as  **captured window** mentiond previous section.
 
 I don't know the true reason why touch operations are ignored by FS2020. However I assume that this problem is caused by the mechanism to recognize the mouse status change.<br>
-I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as ```WM_LBUTTON_DOWN```. This method may drop some status change events when multiple events occur in a time shoter than the polling interval.<br>
+I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as ```WM_LBUTTON_DOWN```. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br>
 Mouse messages generated as a result of tapping are exactly this situation. To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, ```WM_LBUTTON_DOWN``` and ```WM_LBUTTON_UP``` messages will occur at the almost same time when you tap a display. In this case, FS2020 cannot recognize mouse button state changes.
 
 Based on this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.<br>

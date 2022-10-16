@@ -549,7 +549,7 @@ protected:
         lw_info.pblend = &blend;
         lw_info.dwFlags = ULW_ALPHA;
 
-        ::RegisterTouchWindow(hWnd, 0);
+        ::RegisterTouchWindow(hWnd, TWF_FINETOUCH | TWF_WANTPALM);
         
         return true;
     }
@@ -935,7 +935,11 @@ void ViewPort::setMappings(sol::object mapdef){
 
 void ViewPort::addMappings(sol::object mapdef){
     lua_c_interface(manager.get_engine(), "viewport:add_mappings", [this, &mapdef](){
-        addEventActionMap(manager.get_engine(), mappings, mapdef);
+        if (!mappings){
+            mappings = std::move(createEventActionMap(manager.get_engine(), mapdef));
+        }else{
+            addEventActionMap(manager.get_engine(), mappings, mapdef);
+        }
         manager.get_engine().notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
     });
 }
