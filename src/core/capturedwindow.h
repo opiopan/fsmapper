@@ -21,7 +21,7 @@ protected:
     bool omit_system_region = true;
     bool fix_touch_issue = true;
     ViewPort::BackgroundWindow fallback_window;
-    ViewPort* owner = nullptr;
+    View* owner = nullptr;
 
 public:
     CapturedWindow() = delete;
@@ -36,8 +36,8 @@ public:
     const std::string& get_name() const {return name;};
     uint32_t get_cwid() const {return cwid;};
     HWND get_hwnd() const {return hwnd;};
-    ViewPort* get_owner() const {return owner;}
-    void set_owner(ViewPort* new_owner) {owner = new_owner;}
+    View* get_owner() const {return owner;}
+    void set_owner(View* new_owner) {owner = new_owner;}
     bool need_to_fix_touch_issue()const {return fix_touch_issue;}
     void attach_window(HWND hwnd);
     void release_window();
