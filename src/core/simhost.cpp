@@ -80,7 +80,7 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     this->engine.sendEvent(std::move(Event(this->event_changeAircraft, std::move(Event::AssosiativeArray()))));
                     this->engine.sendHostEvent(MEV_CHANGE_SIMCONNECTION, MAPPER_SIM_NONE);
                     this->engine.sendHostEvent(MEV_CHANGE_AIRCRAFT, reinterpret_cast<int64_t>(""));
-                    os << "connection with flight simulator has been loast";
+                    os << "connection with flight simulator has been lost";
                 }else{
                     Event event(this->event_changeAircraft, std::move(Event::AssosiativeArray{
                         {"host", std::move(EventValue(simname_dict[activeSim]))},

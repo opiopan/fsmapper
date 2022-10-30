@@ -67,6 +67,7 @@ protected:
     std::optional<int> longpress;
     std::optional<int> doubleclick;
     std::optional<int> repeat_interval;
+    std::optional<int> repeat_delay;
     std::optional<int> follow_down;
     std::optional<int> follow_up;
     bool need_timer = false;
@@ -165,6 +166,7 @@ ButtonModifier::ButtonModifier(DeviceModifierManager& manager, sol::object &para
             }
         }
         repeat_interval = get_number("repeat_interval");
+        repeat_delay = get_number("repeat_delay");
         follow_down = get_number("follow_down");
         follow_up = get_number("follow_up");
 
@@ -285,7 +287,8 @@ void ButtonModifier::processUnitValueChangeEvent(int value, DEVICEMOD_TIME now){
     }
     if (repeat_interval.has_value()){
         if (event == CoockedEvent::down){
-            repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repeat_interval.value()));
+            auto delay = repeat_delay ? *repeat_delay : 500;
+            repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(delay));
         }else if (repeat_timer.has_value()){
             manager.cancelTimer(*this, repeat_timer.value());
         }
