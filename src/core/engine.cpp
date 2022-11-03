@@ -51,7 +51,7 @@ MapperEngine::~MapperEngine(){
 //============================================================================================
 void MapperEngine::initScriptingEnv(){
     scripting.lua_ptr = std::make_unique<sol::state>();
-    scripting.lua().open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table);
+    scripting.lua().open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::math);
 
     //-------------------------------------------------------------------------------
     // create 'mapper' table
