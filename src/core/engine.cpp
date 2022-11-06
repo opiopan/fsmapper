@@ -62,6 +62,7 @@ void MapperEngine::initScriptingEnv(){
     //      mapper.delay():                  deferred function execution
     //      mapper.register_event():         register event id
     //      mapper.unregister_event():       unregister event id
+    //      mapper.get_event_name():         get name associated with event id
     //      mapper.raise_event():            raise an event
     //      mapper.set_primary_mappings():   set primary mappings
     //      mapper.add_primary_mappings();   add primary mappings
@@ -111,6 +112,20 @@ void MapperEngine::initScriptingEnv(){
             auto evid = lua_safevalue<int64_t>(obj);
             if (evid){
                 unregisterEvent(*evid);
+            }else{
+                throw MapperException("event-id must be specified");
+            }
+        });
+    };
+    mapper["get_event_name"] = [this](const sol::object obj)->std::optional<std::string> {
+        return lua_c_interface(*this, "mapper:get_event_name", [this, &obj]()->std::optional<std::string> {
+            auto evid = lua_safevalue<int64_t>(obj);
+            if (evid){
+                if (event.names.count(*evid)){
+                    return event.names.at(*evid);
+                }else{
+                    return std::nullopt;
+                }
             }else{
                 throw MapperException("event-id must be specified");
             }
