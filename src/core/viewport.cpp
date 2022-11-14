@@ -369,9 +369,9 @@ void View::process_touch_event(ViewObject::touch_event event, int x, int y){
 
 void View::update_view(){
     FloatRect dirty_rect;
-    for (const auto& element : normal_elements){
+    std::for_each(std::rbegin(normal_elements), std::rend(normal_elements), [&](auto& element){
         element->get_object().merge_dirty_rect(element->object_region, dirty_rect);
-    }
+    });
     if (dirty_rect.width > 0.f && dirty_rect.height > 0.f){
         dirty_rect.x -= 1.f;
         dirty_rect.width += 2.f;

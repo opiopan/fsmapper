@@ -216,6 +216,7 @@ void lua_renderer::render(graphics::render_target& target, const FloatRect& targ
 class canvas : public ViewObject{
     std::optional<view_utils::region_restriction> def_restriction;
     std::unique_ptr<Event> value = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL));
+    bool translucency = false;
     bool is_dirty = true;
     std::shared_ptr<Renderer> renderer;
 
@@ -232,6 +233,10 @@ public:
         sol::object value = def["value"];
         if (value.get_type() != sol::type::lua_nil){
             this->value = std::make_unique<Event>(static_cast<int64_t>(EventID::NILL), std::move(value));
+        }
+        sol::object translucency = def["translucency"];
+        if (translucency.get_type() == sol::type::boolean){
+            this->translucency = translucency.as<bool>();
         }
         sol::object renderer = def["renderer"];
         if (renderer.is<Renderer&>()){
@@ -288,7 +293,7 @@ public:
     }
 
     void merge_dirty_rect(const FloatRect& actual_region, FloatRect& dirty_rect) override{
-        if (is_dirty){
+        if (is_dirty || (translucency && actual_region.isIntersected(dirty_rect))){
             dirty_rect += actual_region;
         }
     }
