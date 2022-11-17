@@ -305,27 +305,34 @@ void FS2020::updateRepresentativeWindow(){
     }, reinterpret_cast<LPARAM>(this));
 }
 
-
 //============================================================================================
 // Create Lua scripting environment
 //============================================================================================
 void FS2020::initLuaEnv(sol::state& lua){
     auto fs2020 = lua.create_table();
 
-    fs2020["send_event"] = [this](sol::object name_o){
+    using eparam = std::optional<int64_t>;
+    constexpr auto evalue = [](const eparam& param){return param ? *param : 0;};
+    fs2020["send_event"] = [this](sol::object name_o, eparam param1, eparam param2, eparam param3, eparam param4, eparam param5){
         auto name = std::move(lua_safestring(name_o));
         auto event_id = this->getSimEventId(name);
-        this->sendSimEventId(event_id);
+        this->sendSimEventId(event_id, evalue(param1), evalue(param2), evalue(param3), evalue(param4), evalue(param5));
     };
 
-    fs2020["event_sender"] = [this](sol::object name_o){
+    fs2020["event_sender"] = [this, evalue](
+        sol::object name_o, eparam param1, eparam param2, eparam param3, eparam param4, eparam param5){
         auto event_name = std::move(lua_safestring(name_o));
         auto event_id = this->getSimEventId(event_name);
+        auto p1 = evalue(param1);
+        auto p2 = evalue(param2);
+        auto p3 = evalue(param3);
+        auto p4 = evalue(param4);
+        auto p5 = evalue(param5);
         std::ostringstream os;
         os << "fs2020.send_event(\"" << event_name << "\")";
         auto func_name = os.str();
-        NativeAction::Function::ACTION_FUNCTION func = [event_id, this](Event&, sol::state&){
-            this->sendSimEventId(event_id);
+        NativeAction::Function::ACTION_FUNCTION func = [event_id, p1, p2, p3, p4, p5, this](Event&, sol::state&){
+            this->sendSimEventId(event_id, p1, p2, p3, p4, p5);
         };
         return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
     };
@@ -364,11 +371,12 @@ SIMCONNECT_CLIENT_EVENT_ID FS2020::getSimEventId(const std::string& event_name){
     }
 }
 
-void FS2020::sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid){
+void FS2020::sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid, DWORD param1, DWORD param2, DWORD param3, DWORD param4, DWORD param5){
     std::lock_guard lock(mutex);
     if (isActive && status == Status::start){
-        SimConnect_TransmitClientEvent(
-            simconnect, 0, eventid, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+        SimConnect_TransmitClientEvent_EX1(
+            simconnect, 0, eventid, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY,
+            param1, param2, param3, param4, param5);
     }
 }
 

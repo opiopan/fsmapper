@@ -88,7 +88,7 @@ protected:
     void updateRepresentativeWindow();
 
     SIMCONNECT_CLIENT_EVENT_ID getSimEventId(const std::string& event_name);
-    void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid);
+    void sendSimEventId(SIMCONNECT_CLIENT_EVENT_ID eventid, DWORD param1=0, DWORD param2=0, DWORD param3=0, DWORD param4=0, DWORD param5=0);
     void addObservedSimVars(sol::object obj);
     void subscribeSimVarGroup(size_t ix);
     void clearObservedSimVars();
