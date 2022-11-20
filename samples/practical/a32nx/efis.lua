@@ -49,25 +49,25 @@ local observed_data = {
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.cstr_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_CSTR_PUSH")},
-    {event=events.wpt_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_WPT_PUSH")},
-    {event=events.vord_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_VORD_PUSH")},
-    {event=events.ndb_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_NDB_PUSH")},
-    {event=events.aprt_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_ARPT_PUSH")},
+    {event=events.cstr_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 1 == if{ 0 } els{ 1 } (>L:A32NX_EFIS_L_OPTION, enum)")},
+    {event=events.wpt_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 3 == if{ 0 } els{ 3 } (>L:A32NX_EFIS_L_OPTION, enum)")},
+    {event=events.vord_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 2 == if{ 0 } els{ 2 } (>L:A32NX_EFIS_L_OPTION, enum)")},
+    {event=events.ndb_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 4 == if{ 0 } els{ 4 } (>L:A32NX_EFIS_L_OPTION, enum)")},
+    {event=events.aprt_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 5 == if{ 0 } els{ 5 } (>L:A32NX_EFIS_L_OPTION, enum)")},
     {event=events.brklo_push, action=filter.duplicator(
-        fs2020.event_sender("MobiFlight.Autobrake_Low_Toggle"),
-        filter.delay(200, fs2020.event_sender("MobiFlight.Autobrake_Low_Toggle"))
+        fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool)"),
+        filter.delay(200, fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool)"))
     )},
     {event=events.brkmed_push, action=filter.duplicator(
-        fs2020.event_sender("MobiFlight.Autobrake_Med_Toggle"),
-        filter.delay(200, fs2020.event_sender("MobiFlight.Autobrake_Med_Toggle"))
+        fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED, bool)"),
+        filter.delay(200, fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED, bool)"))
     )},
     {event=events.brkmax_push, action=filter.duplicator(
-        fs2020.event_sender("MobiFlight.Autobrake_Max_Toggle"),
-        filter.delay(200, fs2020.event_sender("MobiFlight.Autobrake_Max_Toggle"))
+        fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED, bool)"),
+        filter.delay(200, fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED, bool)"))
     )},
     {event=events.terronnd_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_TERR_L_ACTIVE) ! (>L:A32NX_EFIS_TERR_L_ACTIVE)")},
-    {event=events.chrono_push, action=fs2020.event_sender("MobiFlight.A32NX_EFIS_L_CHRONO_PUSH")},
+    {event=events.chrono_push, action=fs2020.mfwasm.rpn_executer("0 (>H:A32NX_EFIS_L_CHRONO_PUSHED)")},
 }
 
 local global_mappings = {
@@ -235,15 +235,15 @@ end
 local function move_switch(ctx, operation)
     if operation == "left" then
         if ctx.value == 0 then
-            fs2020.send_event("MobiFlight.A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE_ADF")
+            fs2020.mfwasm.execute_rpn("1 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         elseif ctx.value == 2 then
-            fs2020.send_event("MobiFlight.A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE_OFF")
+            fs2020.mfwasm.execute_rpn("0 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         end
     else
         if ctx.value == 0 then
-            fs2020.send_event("MobiFlight.A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE_VOR")
+            fs2020.mfwasm.execute_rpn("2 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         elseif ctx.value == 1 then
-            fs2020.send_event("MobiFlight.A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE_OFF")
+            fs2020.mfwasm.execute_rpn("0 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         end
     end
 end

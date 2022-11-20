@@ -145,19 +145,19 @@ end
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.toconfig_push, action=fs2020.event_sender("MobiFlight.A32NX_ECAM_BTN_TOCONFIG_Push")},
-    {event=events.eng_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ENG")},
-    {event=events.bleed_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_BLEED")},
-    {event=events.press_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_PRESS")},
-    {event=events.elec_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ELEC")},
-    {event=events.hyd_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_HYD")},
-    {event=events.fuel_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FUEL")},
-    {event=events.apu_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_APU")},
-    {event=events.cond_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_COND")},
-    {event=events.door_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_DOOR")},
-    {event=events.wheel_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_WHEEL")},
-    {event=events.fctl_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FTCL")},
-    {event=events.sts_push, action=fs2020.event_sender("MobiFlight.A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_STS")},
+    {event=events.toconfig_push, action=fs2020.mfwasm.rpn_executer("1 (>L:A32NX_BTN_TOCONFIG)")},
+    {event=events.eng_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ENG)")},
+    {event=events.bleed_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_BLEED)")},
+    {event=events.press_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_PRESS)")},
+    {event=events.elec_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ELEC)")},
+    {event=events.hyd_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_HYD)")},
+    {event=events.fuel_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FUEL)")},
+    {event=events.apu_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_APU)")},
+    {event=events.cond_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_COND)")},
+    {event=events.door_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_DOOR)")},
+    {event=events.wheel_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_WHEEL)")},
+    {event=events.fctl_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FTCL)")},
+    {event=events.sts_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_STS)")},
 
     -- need to consider which mapping method is reasonable regarding following events
     -- {event=events.all_push, action=},

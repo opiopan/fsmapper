@@ -71,16 +71,16 @@ local observed_data = {
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.master1_up, action=fs2020.event_sender("MobiFlight.A32NX_ENG1_MASTER_SWITCH_ON")},
-    {event=events.master1_down, action=fs2020.event_sender("MobiFlight.A32NX_ENG1_MASTER_SWITCH_OFF")},
-    {event=events.master2_up, action=fs2020.event_sender("MobiFlight.A32NX_ENG2_MASTER_SWITCH_ON")},
-    {event=events.master2_down, action=fs2020.event_sender("MobiFlight.A32NX_ENG2_MASTER_SWITCH_OFF")},
+    {event=events.master1_up, action=fs2020.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_OPEN)")},
+    {event=events.master1_down, action=fs2020.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_CLOSE)")},
+    {event=events.master2_up, action=fs2020.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_OPEN)")},
+    {event=events.master2_down, action=fs2020.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_CLOSE)")},
     {event=events.apumaster_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)")},
-    {event=events.apustart_push, action=fs2020.event_sender("MobiFlight.A32NX_APU_START")},
+    {event=events.apustart_push, action=fs2020.mfwasm.rpn_executer("(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 > (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) and if{ 1 (>L:A32NX_OVHD_APU_START_PB_IS_ON) }")},
     {event=events.apubleed_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)")},
     {event=events.bat1_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)")},
     {event=events.bat2_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)")},
-    {event=events.extpwr_push, action=fs2020.event_sender("MobiFlight.A32NX_OH_ELEC_EXTPWR_TOG")},
+    {event=events.extpwr_push, action=fs2020.mfwasm.rpn_executer("(A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) ! and if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } els{ (A:EXTERNAL POWER ON:1, Bool) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } }")},
 }
 
 local global_mappings = {
@@ -153,16 +153,16 @@ local function create_knob_image(ix)
 end
 local emode_knob = {pos=1, x=194, y=283}
 local emodes ={
-    {image=create_knob_image(1), fsevent="MobiFlight.A32NX_ENG_MODE_CRANK"},
-    {image=create_knob_image(2), fsevent="MobiFlight.A32NX_ENG_MODE_NORMAL"},
-    {image=create_knob_image(3), fsevent="MobiFlight.A32NX_ENG_MODE_IGNSTART"},
+    {image=create_knob_image(1), rpn="0 (>K:TURBINE_IGNITION_SWITCH_SET)"},
+    {image=create_knob_image(2), rpn="1 (>K:TURBINE_IGNITION_SWITCH_SET1) 1 (>K:TURBINE_IGNITION_SWITCH_SET2)"},
+    {image=create_knob_image(3), rpn="2 (>K:TURBINE_IGNITION_SWITCH_SET1) 2 (>K:TURBINE_IGNITION_SWITCH_SET2) (>H:A320_NEO_EICAS2_Ignition_Start)"},
 }
 
 local function move_emode(delta)
     local new_pos = emode_knob.pos + delta
     local mode = emodes[new_pos + 1]
     if mode then
-        fs2020.send_event(mode.fsevent)
+        fs2020.mfwasm.execute_rpn(mode.rpn)
     end
 end
 
