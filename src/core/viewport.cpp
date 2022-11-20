@@ -241,6 +241,10 @@ static void uninstall_mouse_hook(){
 //============================================================================================
 // View implementation
 //============================================================================================
+View::View(ViewPort& viewport, const char* name):viewport(viewport), name(name){
+    def_restriction = viewport.get_region_restriction();
+}
+
 View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : viewport(viewport){
     if (def_obj.get_type() != sol::type::table){
         throw MapperException("view definition must be specified as a table");
@@ -593,6 +597,9 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         bg_color.set_alpha(1.f);
     }
 
+    auto view = std::make_unique<View>(*this, "empty view");
+    views.push_back(std::move(view));
+
     auto window = make_viewport_window(bg_color,
         //
         // processing mouse message and touch message
@@ -871,6 +878,9 @@ int ViewPort::registerView(sol::object def_obj){
         views.push_back(std::move(view));
         manager.get_engine().notifyUpdate(MapperEngine::UPDATED_VIEWPORTS);
         manager.get_engine().notifyUpdate(MapperEngine::UPDATED_MAPPINGS);
+        if (current_view == 0){
+            current_view = 1;
+        }
         return views.size() - 1;
     });
 }
@@ -972,6 +982,7 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
                 return create_viewport(def);
             });
         }),
+        "empty_view", sol::property([]{return 0;}),
         "current_view", sol::property(&ViewPort::getCurrentView),
         "change_view", &ViewPort::setCurrentView,
         "register_view", &ViewPort::registerView,

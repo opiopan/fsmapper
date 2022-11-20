@@ -169,6 +169,7 @@ public:
     View(View&&) = delete;
     View& operator = (const View&) = delete;
     View& operator = (View&&) = delete;
+    View(ViewPort& viewport, const char* name);
     View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj);
     ~View();
     void prepare();
