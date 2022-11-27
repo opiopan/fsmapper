@@ -127,6 +127,18 @@ namespace graphics{
 }
 
 //============================================================================================
+// utility function to check if a lua object can be translated to brush class pointer
+//============================================================================================
+namespace graphics{
+    std::shared_ptr<brush> as_brush(sol::object& obj){
+        if (obj.is<color>()){
+            return obj.as<std::shared_ptr<color>>();
+        }
+        return nullptr;
+    }
+}
+
+//============================================================================================
 // representation of color
 //============================================================================================
 namespace graphics{
@@ -191,11 +203,11 @@ namespace graphics{
         target->SetTransform(D2D1::Matrix3x2F::Identity());
     }
 
-    void geometry::fill(const render_target& target, ID2D1Brush* brush,
+    void geometry::fill(const render_target& target, ID2D1Brush* brush, ID2D1Brush* opacity_mask,
                         const FloatPoint& offset, float scale_x, float scale_y, float angle){
         auto&& matrix = transformation(offset, scale_x, scale_y, angle);
         target->SetTransform(matrix);
-        target->FillGeometry(*this, brush);
+        target->FillGeometry(*this, brush, opacity_mask);
         target->SetTransform(D2D1::Matrix3x2F::Identity());
     }
 }
@@ -509,6 +521,77 @@ namespace graphics{
         target->DrawBitmap(bitmap, drect, opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
         target->SetTransform(D2D1::Matrix3x2F::Identity());
     }
+
+    ID2D1Brush* bitmap::brush_interface(render_target& target){
+        if (target_for_brush == target){
+            return brush;
+        }else{
+            target_for_brush = target;
+            if (source->width() != rect.width || source->height() != rect.height){
+                auto newsrc = std::make_shared<bitmap_source>(std::ceil(rect.width), std::ceil(rect.height));
+                auto tmp_bitmap = std::make_unique<bitmap>(newsrc, FloatRect{0.f, 0.f, static_cast<float>(newsrc->width()), static_cast<float>(newsrc->height())});
+                auto rt = tmp_bitmap->create_render_target();
+                (*rt)->DrawBitmap(source->get_d2d_bitmap(*rt), tmp_bitmap->get_rect_in_source(), 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
+                (*rt)->EndDraw();
+                source = newsrc;
+                rect = {0.f, 0.f, static_cast<float>(newsrc->width()), static_cast<float>(newsrc->height())};
+            }
+            //brush = ;
+            return brush;
+        }
+    }
+
+    static const char* extend_mode_dict[] = {"clamp", "wrap", "mirror", nullptr};
+
+    static D2D1_EXTEND_MODE str_to_extend_mode(const char* mode){
+        for (auto i = 0; extend_mode_dict[i]; i++){
+            if (strcmp(mode, extend_mode_dict[i]) == 0){
+                return static_cast<D2D1_EXTEND_MODE>(i);
+            }
+        }
+        throw std::runtime_error("brush extend mode must be \"clamp\" or \"wrap\" or \"mirror\"");
+    }
+
+    const char* bitmap::get_brush_extend_mode_x(){
+        return extend_mode_dict[brush_extend_mode_x];
+    }
+
+    void bitmap::set_brush_extend_mode_x(const char* mode){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap:set_brush_extend_mode_x", [this, &mode]{
+            brush_extend_mode_x = str_to_extend_mode(mode);
+        });
+    }
+
+    const char* bitmap::get_brush_extend_mode_y(){
+        return extend_mode_dict[brush_extend_mode_y];
+    }
+
+    void bitmap::set_brush_extend_mode_y(const char* mode){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap:set_brush_extend_mode_y", [this, &mode]{
+            brush_extend_mode_y = str_to_extend_mode(mode);
+        });
+    }
+
+    static const char* interpolation_mode_dict[] = {"nearest_neighbor", "linear", nullptr};
+
+    static D2D1_BITMAP_INTERPOLATION_MODE str_to_interpolation_mode(const char* mode){
+        for (auto i = 0; interpolation_mode_dict[i]; i++){
+            if (strcmp(mode, interpolation_mode_dict[i]) == 0){
+                return static_cast<D2D1_BITMAP_INTERPOLATION_MODE>(i);
+            }
+        }
+        throw std::runtime_error("brush interpolation mode must be \"nearest_neighbor\" or \"linear\"");
+    }
+
+    const char* bitmap::get_brush_interpolation_mode(){
+        return interpolation_mode_dict[brush_interpolation_mode];
+    }
+
+    void bitmap::set_brush_interpolation_mode(const char* mode){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.bitmap:set_brush_interpolation_mode", [this, &mode]{
+            brush_interpolation_mode = str_to_interpolation_mode(mode);
+        });
+    }
 }
 
 //============================================================================================
@@ -615,17 +698,27 @@ namespace graphics{
         rect.height *= this->scale;
     }
 
-    void rendering_context::set_brush(sol::object brush){
-        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_brush", [this, &brush]{
-            if (brush.get_type() == sol::type::lua_nil){
-                this->brush = nullptr;
-            }else if (brush.is<graphics::brush&>()){
-                this->brush = brush.as<std::shared_ptr<graphics::brush>>();
-            }else if (brush.is<graphics::color&>()){
-                this->brush = brush.as<std::shared_ptr<graphics::color>>();
-            }else{
+    std::shared_ptr<brush> as_brush_or_nil(sol::object obj){
+        if (obj.get_type() == sol::type::lua_nil){
+            return nullptr;
+        }else{
+            auto brush_ptr = as_brush(obj);
+            if (!brush_ptr){
                 throw MapperException("specified value is not brush object");
             }
+            return brush_ptr;
+        }
+    }
+
+    void rendering_context::set_brush(sol::object brush){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_brush", [this, &brush]{
+            this->brush = as_brush_or_nil(brush);
+        });
+    }
+
+    void rendering_context::set_opacity_mask(sol::object mask){
+        lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:set_opacity_mask", [this, &mask]{
+            this->opacity_mask = as_brush_or_nil(mask);
         });
     }
 
@@ -712,7 +805,9 @@ namespace graphics{
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:fill_geometry", [this, &args]{
             process_geometry(args, {this->rect.x, this->rect.y}, this->scale, [this](auto geometry, auto offset, auto angle, auto scale){
                 if (this->brush){
-                    geometry->fill(*target, brush->brush_interface(*target), offset, scale, scale, angle);
+                    geometry->fill(*target, brush->brush_interface(*target),
+                                   opacity_mask ? opacity_mask->brush_interface(*target) : nullptr,
+                                   offset, scale, scale, angle);
                 }
             });
         });
@@ -978,7 +1073,10 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         "width", sol::property(&bitmap::get_width),
         "height", sol::property(&bitmap::get_height),
         "set_origin", &bitmap::lua_set_origin,
-        "create_partial_bitmap", &bitmap::create_partial_bitmap
+        "create_partial_bitmap", &bitmap::create_partial_bitmap,
+        "brush_extend_mode_x", sol::property(&bitmap::get_brush_extend_mode_x, &bitmap::set_brush_extend_mode_x),
+        "brush_extend_mode_y", sol::property(&bitmap::get_brush_extend_mode_y, &bitmap::set_brush_extend_mode_y),
+        "brush_interpolation_mode", sol::property(&bitmap::get_brush_interpolation_mode, &bitmap::set_brush_interpolation_mode)
     );
 
     //
@@ -1005,6 +1103,12 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
                 }
             });
         }),
+
+        "brush", sol::property(&rendering_context::get_brush, &rendering_context::set_brush),
+        "opacity_mask", sol::property(&rendering_context::get_opacity_mask, &rendering_context::set_opacity_mask),
+        "font", sol::property(&rendering_context::get_font, &rendering_context::set_font),
+        "stroke_width", sol::property(&rendering_context::get_stroke_width, &rendering_context::set_stroke_width),
+
         "finish_rendering", &graphics::rendering_context::finish_rendering,
         "set_brush", &graphics::rendering_context::set_brush,
         "set_font", &graphics::rendering_context::set_font,

@@ -44,6 +44,8 @@ namespace graphics{
         virtual ID2D1Brush* brush_interface(render_target& target) = 0;
     };
 
+    std::shared_ptr<brush> as_brush(sol::object& obj);
+
     //============================================================================================
     // color: representation of color
     //============================================================================================
@@ -55,7 +57,7 @@ namespace graphics{
         float a = 1.0f;
         
         ID2D1RenderTarget* target = nullptr;
-        ID2D1Brush* brush = nullptr;
+        CComPtr<ID2D1Brush> brush;
 
         template <typename T>
         static constexpr T clip(T value){
@@ -143,7 +145,7 @@ namespace graphics{
         virtual ~geometry() = default;
         void draw(const render_target& target, ID2D1Brush* brush, float width, ID2D1StrokeStyle* style,
                   const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
-        void fill(const render_target& target, ID2D1Brush* brush,
+        void fill(const render_target& target, ID2D1Brush* brush, ID2D1Brush* opacity_mask,
                   const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
 
         virtual operator ID2D1Geometry* () = 0;
@@ -156,11 +158,16 @@ namespace graphics{
     //============================================================================================
     class bitmap_source;
 
-    class bitmap : public transformable{
+    class bitmap : public transformable, public brush{
     protected:
         std::shared_ptr<bitmap_source> source;
         FloatRect rect;
-            float opacity{1.f};
+        float opacity{1.f};
+        ID2D1RenderTarget* target_for_brush = nullptr;
+        CComPtr<ID2D1Brush> brush;
+        D2D1_EXTEND_MODE brush_extend_mode_x = D2D1_EXTEND_MODE_CLAMP;
+        D2D1_EXTEND_MODE brush_extend_mode_y = D2D1_EXTEND_MODE_CLAMP;
+        D2D1_BITMAP_INTERPOLATION_MODE brush_interpolation_mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
 
     public:
         bitmap(const std::shared_ptr<bitmap_source>& source, const FloatRect& rect, const FloatPoint& origin ={0.f, 0.f}) :
@@ -179,6 +186,14 @@ namespace graphics{
 
         void draw(const render_target& target, const FloatRect& dest_rect);
         void draw(const render_target& target, const FloatPoint& offset, float scale_x = 1.f, float scale_y = 1.f, float angle = 0.f);
+
+        ID2D1Brush* brush_interface(render_target& target) override;
+        const char* get_brush_extend_mode_x();
+        void set_brush_extend_mode_x(const char* mode);
+        const char* get_brush_extend_mode_y();
+        void set_brush_extend_mode_y(const char* mode);
+        const char* get_brush_interpolation_mode();
+        void set_brush_interpolation_mode(const char* mode);
     };
 
     //============================================================================================
@@ -222,6 +237,7 @@ namespace graphics{
         FloatPoint origin{ 0.f, 0.f };
         float scale = 1.f;
         std::shared_ptr<graphics::brush> brush;
+        std::shared_ptr<graphics::brush> opacity_mask;
         std::shared_ptr<graphics::font> font;
         float stroke_width {1.f};
 
@@ -233,8 +249,13 @@ namespace graphics{
 
         void finish_rendering();
 
+        std::shared_ptr<graphics::brush> get_brush(){return brush;}
         void set_brush(sol::object brush);
+        std::shared_ptr<graphics::brush> get_opacity_mask(){return opacity_mask;}
+        void set_opacity_mask(sol::object mask);
+        std::shared_ptr<graphics::font> get_font(){return font;}
         void set_font(sol::object font);
+        float get_stroke_width(){return stroke_width;}
         void set_stroke_width(sol::object width);
 
         void draw_geometry(sol::variadic_args args);
