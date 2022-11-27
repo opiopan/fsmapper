@@ -164,7 +164,7 @@ namespace graphics{
         FloatRect rect;
         float opacity{1.f};
         ID2D1RenderTarget* target_for_brush = nullptr;
-        CComPtr<ID2D1Brush> brush;
+        CComPtr<ID2D1BitmapBrush> brush;
         D2D1_EXTEND_MODE brush_extend_mode_x = D2D1_EXTEND_MODE_CLAMP;
         D2D1_EXTEND_MODE brush_extend_mode_y = D2D1_EXTEND_MODE_CLAMP;
         D2D1_BITMAP_INTERPOLATION_MODE brush_interpolation_mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;

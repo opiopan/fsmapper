@@ -133,6 +133,8 @@ namespace graphics{
     std::shared_ptr<brush> as_brush(sol::object& obj){
         if (obj.is<color>()){
             return obj.as<std::shared_ptr<color>>();
+        }else if (obj.is<bitmap>()){
+            return obj.as<std::shared_ptr<bitmap>>();
         }
         return nullptr;
     }
@@ -210,6 +212,102 @@ namespace graphics{
         target->FillGeometry(*this, brush, opacity_mask);
         target->SetTransform(D2D1::Matrix3x2F::Identity());
     }
+}
+
+//============================================================================================
+// simple_geometry: built-in geometry generator
+//==========================================================================================
+namespace graphics{
+    class simple_geometry : public geometry{
+        CComPtr<ID2D1Geometry> geometry;
+    public:
+        simple_geometry(ID2D1Geometry* geometry) : geometry(geometry){}
+        operator ID2D1Geometry* () override{
+            return geometry;
+        }
+        void lua_set_origin(sol::variadic_args va) override{
+            lua_c_interface(*mapper_EngineInstance(), "graphics.simple_geometry:set_origin", [this, &va]{
+                lua_set_origin_raw(va);
+            });
+        }
+
+        static std::shared_ptr<graphics::geometry> rectangle(sol::variadic_args args){
+            std::optional<float> x, y, width, height;
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::table){
+                sol::table params = arg0;
+                x = lua_safevalue<float>(params["x"]);
+                y = lua_safevalue<float>(params["y"]);
+                width = lua_safevalue<float>(params["width"]);
+                height = lua_safevalue<float>(params["height"]);
+            }else{
+                x = lua_safevalue<float>(args[0]);
+                y = lua_safevalue<float>(args[1]);
+                width = lua_safevalue<float>(args[2]);
+                height = lua_safevalue<float>(args[3]);
+            }
+            if (!x || !y || !width || !height){
+                throw std::runtime_error("invalid argument");
+            }
+            FloatRect rect{*x, *y, *width, *height};
+            CComPtr<ID2D1RectangleGeometry> rectangle;
+            d2d_factory->CreateRectangleGeometry(rect, &rectangle);
+            return std::make_shared<simple_geometry>(rectangle);
+        }
+
+        static std::shared_ptr<graphics::geometry> rounded_rectangle(sol::variadic_args args){
+            std::optional<float> x, y, width, height, radius_x, radius_y;
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::table){
+                sol::table params = arg0;
+                x = lua_safevalue<float>(params["x"]);
+                y = lua_safevalue<float>(params["y"]);
+                width = lua_safevalue<float>(params["width"]);
+                height = lua_safevalue<float>(params["height"]);
+                radius_x = lua_safevalue<float>(params["radius_x"]);
+                radius_y = lua_safevalue<float>(params["radius_y"]);
+            }else{
+                x = lua_safevalue<float>(args[0]);
+                y = lua_safevalue<float>(args[1]);
+                width = lua_safevalue<float>(args[2]);
+                height = lua_safevalue<float>(args[3]);
+                radius_x = lua_safevalue<float>(args[4]);
+                radius_y = lua_safevalue<float>(args[5]);
+            }
+            if (!x || !y || !width || !height || !radius_x || !radius_y){
+                throw std::runtime_error("invalid argument");
+            }
+            FloatRect rect{*x, *y, *width, *height};
+            D2D1_ROUNDED_RECT rrect{rect, *radius_x, *radius_y};
+            CComPtr<ID2D1RoundedRectangleGeometry> rectangle;
+            d2d_factory->CreateRoundedRectangleGeometry(rrect, &rectangle);
+            return std::make_shared<simple_geometry>(rectangle);
+        }
+
+        static std::shared_ptr<graphics::geometry> ellipse(sol::variadic_args args){
+            std::optional<float> x, y, radius_x, radius_y;
+            sol::object arg0 = args[0];
+            if (arg0.get_type() == sol::type::table){
+                sol::table params = arg0;
+                x = lua_safevalue<float>(params["x"]);
+                y = lua_safevalue<float>(params["y"]);
+                radius_x = lua_safevalue<float>(params["radius_x"]);
+                radius_y = lua_safevalue<float>(params["radius_y"]);
+            }else{
+                x = lua_safevalue<float>(args[0]);
+                y = lua_safevalue<float>(args[1]);
+                radius_x = lua_safevalue<float>(args[2]);
+                radius_y = lua_safevalue<float>(args[3]);
+            }
+            if (!x || !y || !radius_x || !radius_y){
+                throw std::runtime_error("invalid argument");
+            }
+            D2D1_ELLIPSE def{*x, *y, *radius_x, *radius_y};
+            CComPtr<ID2D1EllipseGeometry> ellipse;
+            d2d_factory->CreateEllipseGeometry(def, &ellipse);
+            return std::make_shared<simple_geometry>(ellipse);
+        }
+    };
 }
 
 //============================================================================================
@@ -393,6 +491,8 @@ namespace graphics{
     std::shared_ptr<geometry> as_geometry(sol::object& obj){
         if (obj.is<path>()){
             return obj.as<std::shared_ptr<path>>();
+        }else if (obj.is<geometry>()){
+            return obj.as<std::shared_ptr<geometry>>();
         }
         return nullptr;
     }
@@ -536,7 +636,8 @@ namespace graphics{
                 source = newsrc;
                 rect = {0.f, 0.f, static_cast<float>(newsrc->width()), static_cast<float>(newsrc->height())};
             }
-            //brush = ;
+            D2D1_BITMAP_BRUSH_PROPERTIES props{brush_extend_mode_x, brush_extend_mode_y, brush_interpolation_mode};
+            target->CreateBitmapBrush(source->get_d2d_bitmap(target), props, &brush);
             return brush;
         }
     }
@@ -549,7 +650,7 @@ namespace graphics{
                 return static_cast<D2D1_EXTEND_MODE>(i);
             }
         }
-        throw std::runtime_error("brush extend mode must be \"clamp\" or \"wrap\" or \"mirror\"");
+        throw std::runtime_error("brush extend mode must be \"clamp\" , \"wrap\", or \"mirror\"");
     }
 
     const char* bitmap::get_brush_extend_mode_x(){
@@ -1029,6 +1130,25 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
     );
 
     //
+    // simple geometies
+    //
+    table["rectangle"] = [&engine](sol::variadic_args args){
+        return lua_c_interface(engine, "graphics.rectangle", [&args](){
+            return simple_geometry::rectangle(args);
+        });
+    };
+    table["rounded_rectangle"] = [&engine](sol::variadic_args args){
+        return lua_c_interface(engine, "graphics.rounded_rectangle", [&args](){
+            return simple_geometry::rounded_rectangle(args);
+        });
+    };
+    table["ellipse"] = [&engine](sol::variadic_args args){
+        return lua_c_interface(engine, "graphics.ellipse", [&args](){
+            return simple_geometry::ellipse(args);
+        });
+    };
+
+    //
     // path
     //
     table.new_usertype<graphics::path>(
@@ -1111,6 +1231,7 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
 
         "finish_rendering", &graphics::rendering_context::finish_rendering,
         "set_brush", &graphics::rendering_context::set_brush,
+        "set_opacity_mask", &graphics::rendering_context::set_opacity_mask,
         "set_font", &graphics::rendering_context::set_font,
         "set_stroke_width", &graphics::rendering_context::set_stroke_width,
         "draw_geometry", &graphics::rendering_context::draw_geometry,
