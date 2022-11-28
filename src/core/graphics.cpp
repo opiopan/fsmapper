@@ -631,6 +631,7 @@ namespace graphics{
                 auto newsrc = std::make_shared<bitmap_source>(std::ceil(rect.width), std::ceil(rect.height));
                 auto tmp_bitmap = std::make_unique<bitmap>(newsrc, FloatRect{0.f, 0.f, static_cast<float>(newsrc->width()), static_cast<float>(newsrc->height())});
                 auto rt = tmp_bitmap->create_render_target();
+                (*rt)->BeginDraw();
                 (*rt)->DrawBitmap(source->get_d2d_bitmap(*rt), tmp_bitmap->get_rect_in_source(), 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, rect);
                 (*rt)->EndDraw();
                 source = newsrc;

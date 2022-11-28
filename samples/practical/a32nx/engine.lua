@@ -314,6 +314,7 @@ for key, def in pairs(vmeters) do
                 fraction_precision = 1,
                 leading_zero = false,
             }
+            ctx:draw_bitmap{bitmap=assets.volt_mark, x=225, y=-7, scale=2.5}
         end
     }
     view_elements[#view_elements + 1] = {

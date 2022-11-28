@@ -142,15 +142,9 @@ end
 --------------------------------------------------------------------------------------
 -- create view element definition for baro display
 --------------------------------------------------------------------------------------
-local function create_mode_bitmap(ix)
-    return assets.buttons:create_partial_bitmap(
-        assets.baro_mode.x + assets.baro_mode.width * ix, assets.baro_mode.y,
-        assets.baro_mode.width, assets.baro_mode.height
-    )
-end
 local mode_bitmaps = {
-    create_mode_bitmap(0),
-    create_mode_bitmap(1),
+    assets.baro_mode_images[1],
+    assets.baro_mode_images[2],
 }
 local baro_context = {
     inhg = 29.92,
