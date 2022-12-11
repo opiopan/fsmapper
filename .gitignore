@@ -10,3 +10,4 @@ Generated Files
 *.user
 deploy/fsmapper
 deploy/*.zip
+release.dir

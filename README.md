@@ -22,6 +22,9 @@ And fsmapper also provides various objects and functions to interuct with outer 
 </p>
 
 ## How to build and install
+You can download and install binary packages from [here](releases).<br>
+If you build yourself, follow the steps below.
+
 1. **Requirements**<br>
 Make sure that the following softwares are installed in advance.
     - Visual Studio 2019 or 2022 whilch is instaled with folowing workloads:
@@ -240,3 +243,30 @@ The correspondence between SimHID G1000 operations and A32NX operations are show
 |NAV outer knob     | Adjusting the brightness of both the weather rader image and the EGPWS terrain image on ND
 |FMS inner knob     | Adjusting the brightness of FCU display
 |FMS outer knob     | Adjusting the brightness of all glareshields in sync
+
+### [samples/practical/c172.lua](samples/practical/c172.lua)
+<img alt="c172.lua" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/c172.jpg" width=500 align="right">
+
+This script was written for Cessna 172 Skyhawk analogue instruments version that contains in delux edition.<br>
+This is the example how to implement reusable visual component. 
+The following instruments are implemented as a component and each component written as one lua script at [here](samples/practical/lib/).
+
+- Garmin GNS530 (GPS and NAVCOM)
+- Garmin GNS430 (GPS and NAVCOM)
+- Bendix King KAP 140 (Autopilot Control)
+- Bendix King KT 76C (Transponder)
+- Bendix King KR 87 (ADF)
+- Heading Indicator with Heading Bug
+- Cource Diviation Indicator
+- ADF Indicator
+- Buttons and Indicators whch is used to select navigation source (Sorry, I don't know the model name or official name)
+
+This script defines three views. 
+The above components are placed in different positions, different sizes, and different combinations on each view.<br>
+You can switch between these views with the switches placed on the left end and the right end of SimHID G1000 housing.
+
+Almost component can be activated with tapping it. Component in active state can be distinguished by some areas turning emerald green.<br>
+A part of phisical buttons and knobs on SimHID G1000 will only affect component in active state.<br>
+For example, Course of CDI for NAV1 can be changed by rotationg course knob on SimHID G1000 only when CDI for NAV1 is activated.
+
+Other various components can be found at [here](https://github.com/opiopan/scripts_for_fsmapper/tree/main/simhid_g1000/individuals/lib).
