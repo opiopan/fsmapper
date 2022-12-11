@@ -22,7 +22,7 @@ And fsmapper also provides various objects and functions to interuct with outer 
 </p>
 
 ## How to build and install
-You can download and install binary packages from [here](releases).<br>
+You can download and install binary packages from [here](https://github.com/opiopan/fsmapper/releases).<br>
 If you build yourself, follow the steps below.
 
 1. **Requirements**<br>
