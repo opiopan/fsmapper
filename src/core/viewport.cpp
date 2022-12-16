@@ -920,11 +920,13 @@ std::optional<int> ViewPort::getCurrentView(){
 void ViewPort::setCurrentView(sol::optional<int> view_no){
     lua_c_interface(manager.get_engine(), "viewport:change_view", [this, &view_no](){
         if (view_no && *view_no >= 0 && view_no < views.size()){
-            if (current_view != *view_no && is_enable){
+            if (current_view != *view_no){
                 auto prev = current_view;
                 current_view = *view_no;
-                views[current_view]->show();
-                views[prev]->hide();
+                if (is_enable){
+                    views[current_view]->show();
+                    views[prev]->hide();
+                }
             }
         }else{
             throw MapperException("invalid view number is specified");
