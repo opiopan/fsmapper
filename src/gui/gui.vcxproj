@@ -143,6 +143,7 @@
     <ClInclude Include="ViewModels.ConsolePageViewModel.h" />
     <ClInclude Include="ViewModels.DashboardPageViewModel.h" />
     <ClInclude Include="ViewModels.MainWindowViewModel.h" />
+    <ClInclude Include="ViewModels.SettingsPageViewModel.h" />
     <ClInclude Include="WindowPickerDialog.h">
       <DependentUpon>WindowPickerDialog.xaml</DependentUpon>
     </ClInclude>
@@ -188,6 +189,7 @@
     <ClCompile Include="ViewModels.ConsolePageViewModel.cpp" />
     <ClCompile Include="ViewModels.DashboardPageViewModel.cpp" />
     <ClCompile Include="ViewModels.MainWindowViewModel.cpp" />
+    <ClCompile Include="ViewModels.SettingsPageViewModel.cpp" />
     <ClCompile Include="WindowPickerDialog.cpp">
       <DependentUpon>WindowPickerDialog.xaml</DependentUpon>
     </ClCompile>

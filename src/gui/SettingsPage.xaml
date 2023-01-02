@@ -7,7 +7,52 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock>Settings Page is not implemented yet</TextBlock>
-    </StackPanel>
+    <Page.Resources>
+        <Style x:Key="SettingsStackStyle" TargetType="StackPanel">
+            <Setter Property="Margin" Value="24 0 0 0"/>
+            <Setter Property="Spacing" Value="38"/>
+        </Style>
+        <Style x:Key="GroupStackStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="13"/>
+        </Style>
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="21"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <StackPanel Style="{StaticResource SettingsStackStyle}">
+            <StackPanel Style="{StaticResource GroupStackStyle}">
+                <TextBlock Style="{StaticResource TitleStyle}">App Behaviors</TextBlock>
+                <ToggleSwitch Header="Run Lua script on startup app" OffContent="Don't run" OnContent="Run"
+                              IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
+            </StackPanel>
+            <StackPanel Style="{StaticResource GroupStackStyle}">
+                <TextBlock Style="{StaticResource TitleStyle}">Pre-run Script</TextBlock>
+                <TextBox AutomationProperties.Name="multi-line TextBox"
+                         TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas"
+                         Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
+                    <TextBox.Header>
+                        <TextBlock FontFamily="Default">Pre-run script evaluating before running script file:</TextBlock>
+                    </TextBox.Header>
+                </TextBox>
+                <ToggleSwitch Header="Validity of Pre-run script" OffContent="Invalid" OnContent="Valid"
+                              IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
+            </StackPanel>
+            <StackPanel Style="{StaticResource GroupStackStyle}">
+                <TextBlock Style="{StaticResource TitleStyle}">Graphics Rendering</TextBlock>
+                <RadioButtons Header="Direct2D rendering target type:" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
+                    <RadioButton Content="CPU rendering"/>
+                    <RadioButton Content="GPU rendering"/>
+                </RadioButtons>
+            </StackPanel>
+            <StackPanel Style="{StaticResource GroupStackStyle}">
+                <TextBlock Style="{StaticResource TitleStyle}">Console Message</TextBlock>
+                <NumberBox Header="Logging lines" Minimum="100"
+                           SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
+                           Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

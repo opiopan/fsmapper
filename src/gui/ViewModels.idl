@@ -53,4 +53,14 @@ namespace gui.ViewModels{
         gui.Models.Mapper Mapper{get;};
         void EraseLog(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
+
+    runtimeclass SettingsPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
+        SettingsPageViewModel();
+
+        Boolean RunScriptOnStartup;
+        Int32 MessageLogSize;
+        String PreRunScript;
+        Boolean PreRunScriptIsVarid;
+        Int32 RenderingMethod;
+    }
 }

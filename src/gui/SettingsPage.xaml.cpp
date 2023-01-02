@@ -7,13 +7,13 @@
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+#include "ViewModels.SettingsPageViewModel.h"
 
 namespace winrt::gui::implementation
 {
     SettingsPage::SettingsPage()
     {
+        view_model = winrt::make<gui::ViewModels::implementation::SettingsPageViewModel>();
         InitializeComponent();
     }
 }

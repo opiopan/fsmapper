@@ -17,6 +17,7 @@
 #include <sol/sol.hpp>
 #include "mappercore.h"
 #include "mappercore_inner.h"
+#include "option.h"
 #include "event.h"
 #include "action.h"
 
@@ -59,6 +60,7 @@ protected :
     Logger logger;
     MAPPER_LOGMODE logmode;
     TIME_POINT now = CLOCK::now();
+    MapperOption options;
 
     struct {
         std::string scriptPath;
@@ -107,6 +109,16 @@ public:
     bool run(std::string&& scriptPath);
     bool stop();
     bool abort();
+
+    const MapperOption& getOptions() const{return options;}
+    bool setOption(MAPPER_OPTION type, const char* value){
+        std::lock_guard lock(mutex);
+        return options.set_value(type, value);
+    }
+    bool setOption(MAPPER_OPTION type, int64_t value){
+        std::lock_guard lock(mutex);
+        return options.set_value(type, value);
+    }
 
     void inhibitCallback(){
         std::lock_guard lock(mutex);

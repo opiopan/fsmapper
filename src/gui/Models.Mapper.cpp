@@ -105,6 +105,10 @@ namespace winrt::gui::Models::implementation{
                 }
                 tools::utf16_to_utf8_translator path(script_path.c_str());
                 set_log_mode();
+                if (fsmapper::app_config.get_pre_run_script_is_valid()){
+                    mapper_set_option_string(mapper, MOPT_PRE_RUN_SCRIPT, fsmapper::app_config.get_pre_run_script());
+                }
+                mapper_set_option_integer(mapper, MOPT_RENDERING_METHOD, fsmapper::app_config.get_rendering_method());
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();

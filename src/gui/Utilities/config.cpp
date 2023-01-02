@@ -16,6 +16,9 @@ static const auto* CONFIG_WINDOW_HEIGHT = "window_height";
 static const auto* CONFIG_SCRIPT_PATH = "script_path";
 static const auto* CONFIG_STARTING_SCRIPT_AT_START = "starting_script_at_start";
 static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
+static const auto* CONFIG_PRE_RUN_SCRIPT = "pre_run_script";
+static const auto* CONFIG_PRE_RUN_SCRIPT_IS_VALID = "pre_run_script_is_valid";
+static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -30,6 +33,9 @@ class config_imp : public config{
     std::filesystem::path script_path;
     bool is_starting_script_at_start_up{true};
     uint32_t message_buffer_size{300};
+    std::string pre_run_script;
+    bool pre_run_script_is_valid{true};
+    MAPPER_OPTION_RENDERING_METHOD rendering_method{MOPT_RENDERING_METHOD_CPU};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -77,6 +83,14 @@ class config_imp : public config{
         }
     }
 
+    template <typename T, typename VT>
+    void update_value(T& variable, const VT* value){
+        if (variable != value){
+            variable = value;
+            is_dirty = true;
+        }
+    }
+
 public:
     config_imp(){
         config_path = std::move(fs.get_appdata_path() / L"config.json");
@@ -99,6 +113,9 @@ public:
         script_path = path;
         reflect_bool(data, CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up);
         reflect_number(data, CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size);
+        reflect_string(data, CONFIG_PRE_RUN_SCRIPT, pre_run_script);
+        reflect_bool(data, CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid);
+        reflect_number(data, CONFIG_RENDERING_METHOD, rendering_method);
     }
 
     void save() override{
@@ -111,6 +128,9 @@ public:
                 {CONFIG_SCRIPT_PATH, script_path.string()},
                 {CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up},
                 {CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size},
+                {CONFIG_PRE_RUN_SCRIPT, pre_run_script},
+                {CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid},
+                {CONFIG_RENDERING_METHOD, rendering_method},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -142,6 +162,24 @@ public:
     }
     void set_message_buffer_size(uint32_t value){
         update_value(message_buffer_size, value);
+    }
+    const char* get_pre_run_script(){
+        return pre_run_script.c_str();
+    }
+    void set_pre_run_script(const char* value){
+        update_value(pre_run_script, value);
+    }
+    bool get_pre_run_script_is_valid(){
+        return pre_run_script_is_valid;
+    }
+    void set_pre_run_script_is_valid(bool value){
+        update_value(pre_run_script_is_valid, value);
+    }
+    MAPPER_OPTION_RENDERING_METHOD get_rendering_method(){
+        return rendering_method;
+    }
+    void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value){
+        update_value(rendering_method, value);
     }
 };
 

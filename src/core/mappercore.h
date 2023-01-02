@@ -78,6 +78,16 @@ typedef struct{
     const char* view_name;
 }VIEWPORT_DEF;
 
+typedef enum{
+    MOPT_PRE_RUN_SCRIPT,    // string
+    MOPT_RENDERING_METHOD,  // integer
+}MAPPER_OPTION;
+
+typedef enum{
+    MOPT_RENDERING_METHOD_CPU,
+    MOPT_RENDERING_METHOD_GPU,
+}MAPPER_OPTION_RENDERING_METHOD;
+
 struct MapperContext;
 typedef struct MapperContext* MapperHandle;
 
@@ -89,6 +99,9 @@ typedef bool (*MAPPER_ENUM_VIEWPORT_FUNC)(MapperHandle mapper, void* context, VI
 
 DLLEXPORT MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE_HANDLER logger, void *hostContext);
 DLLEXPORT bool mapper_terminate(MapperHandle handle);
+
+DLLEXPORT bool mapper_set_option_integer(MapperHandle handle, MAPPER_OPTION option, int64_t value);
+DLLEXPORT bool mapper_set_option_string(MapperHandle handle, MAPPER_OPTION option, const char* value);
 
 DLLEXPORT bool mapper_run(MapperHandle handle, const char* scriptPath);
 DLLEXPORT bool mapper_stop(MapperHandle handle);

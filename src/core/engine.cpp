@@ -226,6 +226,21 @@ bool MapperEngine::run(std::string&& scriptPath){
         initScriptingEnv();
 
         //-------------------------------------------------------------------------------
+        // execute pre-run script
+        //-------------------------------------------------------------------------------
+        if (options.pre_run_script.size() > 0){
+            auto result = scripting.lua().safe_script(options.pre_run_script, sol::script_pass_on_error);
+            if (!result.valid()){
+                sol::error err = result;
+                std::ostringstream os;
+                os << "mapper-core: an error occurred while evaluating pre-run script" << std::endl << err.what();
+                lock.unlock();
+                putLog(MCONSOLE_WARNING, os.str());
+                lock.lock();
+            }
+        }
+
+        //-------------------------------------------------------------------------------
         // run the script
         //-------------------------------------------------------------------------------
         status = Status::running;

@@ -1,8 +1,12 @@
+import "ViewModels.idl"; 
+
 namespace gui
 {
     [default_interface]
     runtimeclass SettingsPage : Microsoft.UI.Xaml.Controls.Page
     {
         SettingsPage();
+
+	    gui.ViewModels.SettingsPageViewModel ViewModel{ get; };
     }
 }

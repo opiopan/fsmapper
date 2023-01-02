@@ -7,6 +7,13 @@ namespace winrt::gui::implementation
     struct SettingsPage : SettingsPageT<SettingsPage>
     {
         SettingsPage();
+
+        winrt::gui::ViewModels::SettingsPageViewModel ViewModel() {
+            return view_model;
+        }
+
+    protected:
+        winrt::gui::ViewModels::SettingsPageViewModel view_model{nullptr};
     };
 }
 

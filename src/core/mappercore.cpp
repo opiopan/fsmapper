@@ -79,6 +79,14 @@ DLLEXPORT bool mapper_registerConsoleHandler(MapperHandle handle, MAPPER_CONSOLE
     return true;
 }
 
+DLLEXPORT bool mapper_set_option_integer(MapperHandle handle, MAPPER_OPTION option, int64_t value){
+    return handle->engine->setOption(option, value);
+}
+
+DLLEXPORT bool mapper_set_option_string(MapperHandle handle, MAPPER_OPTION option, const char* value){
+    return handle->engine->setOption(option, value);
+}
+
 DLLEXPORT bool mapper_run(MapperHandle handle, const char *scriptPath){
     return handle->engine->run(std::move(std::string(scriptPath)));
 }
