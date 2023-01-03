@@ -146,4 +146,7 @@
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
 </Project>

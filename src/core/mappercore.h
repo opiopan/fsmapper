@@ -127,6 +127,12 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle);
 //
 DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd, const char* name);
 
+//
+// functions provided as workaround of WindowsApp SDK 1.2 issues
+//
+DLLEXPORT HRESULT mapper_getAppDataPath(PWSTR *ppszPath);
+DLLEXPORT HRESULT mapper_getLocalDataPath(PWSTR *ppszPath);
+
 #ifdef __cplusplus
 }
 #endif

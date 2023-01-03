@@ -806,9 +806,10 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     region_client.x = region.x - entire_region.x;
     region_client.y = region.y - entire_region.y;
     is_enable = true;
+    auto rendering_method = mapper_EngineInstance()->getOptions().rendering_method == MOPT_RENDERING_METHOD_GPU ?
+        graphics::render_target::rendering_method::gpu : graphics::render_target::rendering_method::cpu;
     render_target = std::move(graphics::render_target::create_render_target(
-        entire_region.width, entire_region.height,
-        graphics::render_target::rendering_method::cpu));
+        entire_region.width, entire_region.height, rendering_method));
     (*render_target)->BeginDraw();
     (*render_target)->Clear(D2D1::ColorF(GetRValue(bg_color) / 255., GetGValue(bg_color) / 255., GetBValue(bg_color) / 255., 1.0f));
     (*render_target)->EndDraw();

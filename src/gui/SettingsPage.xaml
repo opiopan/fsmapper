@@ -9,7 +9,7 @@
 
     <Page.Resources>
         <Style x:Key="SettingsStackStyle" TargetType="StackPanel">
-            <Setter Property="Margin" Value="24 0 0 0"/>
+            <Setter Property="Margin" Value="24 0 24 0"/>
             <Setter Property="Spacing" Value="38"/>
         </Style>
         <Style x:Key="GroupStackStyle" TargetType="StackPanel">
@@ -49,7 +49,7 @@
             </StackPanel>
             <StackPanel Style="{StaticResource GroupStackStyle}">
                 <TextBlock Style="{StaticResource TitleStyle}">Console Message</TextBlock>
-                <NumberBox Header="Logging lines" Minimum="100"
+                <NumberBox Header="Buffer size [lines]" Minimum="100"
                            SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
                            Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
             </StackPanel>

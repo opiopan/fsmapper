@@ -11,6 +11,7 @@
 using std::min;
 using std::max;
 #include <gdiplus.h>
+#include <shlobj_core.h>
 
 //============================================================================================
 // MapperContext implementation that hold engine object
@@ -200,4 +201,14 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
         handle->engine->putLog(MCONSOLE_WARNING, os.str());
         return false;
     }
+}
+
+//
+// functions provided as workaround of WindowsApp SDK 1.2 issues
+//
+DLLEXPORT HRESULT mapper_getAppDataPath(PWSTR *ppszPath){
+    return SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, nullptr, ppszPath);
+}
+DLLEXPORT HRESULT mapper_getLocalDataPath(PWSTR *ppszPath){
+    return SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, nullptr, ppszPath);
 }
