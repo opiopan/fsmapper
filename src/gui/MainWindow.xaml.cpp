@@ -14,6 +14,7 @@
 #include "UtilitiesPage.xaml.h"
 #include "SettingsPage.xaml.h"
 #include "App.xaml.h"
+#include "resource.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -31,6 +32,12 @@ namespace winrt::gui::implementation
         this->SetTitleBar(AppTitleBar());
         auto appname = Application::Current().Resources().Lookup(winrt::box_value(L"AppName"));
         this->Title(unbox_value<winrt::hstring>(appname));
+
+        auto module = ::GetModuleHandleW(nullptr);
+        auto icon = ::LoadIconW(module, MAKEINTRESOURCEW(IDI_APP_ICON));
+        HWND hwnd{ nullptr };
+        this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
+        ::SendMessageW(hwnd, WM_SETICON, 1, reinterpret_cast<LPARAM>(icon));
 
         view_model = winrt::make<winrt::gui::ViewModels::implementation::MainWindowViewModel>();
 

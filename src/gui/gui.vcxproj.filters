@@ -108,6 +108,7 @@
     <ClInclude Include="ViewModels.SettingsPageViewModel.h">
       <Filter>ViewModels</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -145,8 +146,12 @@
     <Image Include="Assets\dcslogo.png">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Resources\app.ico" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
 </Project>

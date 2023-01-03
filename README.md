@@ -27,7 +27,7 @@ If you build yourself, follow the steps below.
 
 1. **Requirements**<br>
 Make sure that the following softwares are installed in advance.
-    - Visual Studio 2019 or 2022 whilch is instaled with folowing workloads:
+    - Visual Studio 2022 whilch is instaled with folowing workloads:
         - Universal Windows Platform development
         - C++ desktop development
         - C++ game development
@@ -41,34 +41,32 @@ Make sure that the following softwares are installed in advance.
 Run ```cmd.exe``` or ```PowerShell.exe``` on any console. Note that environment variables must be set to complie x64 binaries.<br>
 The one of easiest way is using the following shortcut made when Visual Studio was installed.
     - x64 Native Tools Command Prompt for VS 2022
-    - x64 Native Tools Command Prompt for VS 2019
 
-
-2. **Downloading source codes**<br>
+3. **Downloading source codes**<br>
     ```shell
     $ git clone --recursive https://github.com/opiopan/fsmapper.git
     ```
 
-3. **Preparing dependent modules**<br>
+4. **Preparing dependent modules**<br>
     Downloading and compiling Lua source codes and downloading vJoySDK will be done by following step.<br>
     ```shell
     $ cd fsmapper\modules
     $ .\prepare_modules.bat
     ```
 
-4. **Compiling**
+5. **Compiling**
     ```shell
     $ cd ..\src
     $ nuget restore fsmapper.sln
     $ msbuild /p:Configuration=Release
     ```
-5. **Making deployable package**
+6. **Making deployable package**
     ```shell
     $ cd ..\deploy
     $ .\deploy.bat
     ```
 
-6. **Installing**<br>
+7. **Installing**<br>
     Copy fsmmapper folder to any folder you want.
     ```shell
     $ xcopy fsmapper <DESTINATION_FOLDER_PATH>
