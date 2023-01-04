@@ -39,9 +39,12 @@ $v1 = $commits[$commits.count - 1].v1
 $v2 = $commits[$commits.count - 1].v2
 $v3 = $commits[$commits.count - 1].v3
 $v4 = $commits.count - 1
+if ($v4 -lt 0){
+    $v4 = 0
+}
 $commit = $commits[0].commit
 $suffix = ''
-$suffix_product = "commit:"
+$suffix_product = "Commit: "
 $file_mode = "0x0L"
 if ((git status --porcelain).count -gt 0){
     $suffix = "+"
@@ -49,26 +52,26 @@ if ((git status --porcelain).count -gt 0){
     $file_mode = "0x4L"
 }
 
-$ver_file = [String]::Format("{0},{1},{2},{3}", $v1, $v2, $v3, $v4)
-$ver_product = [String]::Format("{0},{1},{2},{3}", $v1, $v2, $v3, $v4)
-$ver_file_str = [String]::Format("{0}.{1}.{2}.{3}{4}", $v1, $v2, $v3, $v4, $suffix)
-$ver_product_str = [String]::Format("{0}.{1}.{2} [{3}{4}]", $v1, $v2, $v3, $suffix_product, $commit)
+$ver_file = "{0},{1},{2},{3}" -f $v1, $v2, $v3, $v4
+$ver_product = "{0},{1},{2},{3}" -f $v1, $v2, $v3, $v4
+$ver_file_str = "{0}.{1}.{2}.{3}{4}" -f $v1, $v2, $v3, $v4, $suffix
+$ver_product_str = "{0}.{1}.{2} [{3}{4}]" -f $v1, $v2, $v3, $suffix_product, $commit
 
 if (Test-Path $version_file){
     $saved_ver = Get-Content $version_file
     if ($saved_ver.count -gt 0 -and $saved_ver -eq $ver_file_str){
         "version files are not updated"
-        exit
+        return
     }
 }
 
 $ver_file_str > $version_file
 
 "#pragma once" > $header_file
-[String]::Format("#define VER_FILE_VERSION {0}", $ver_file) >> $header_file
-[String]::Format("#define VER_PRODUCT_VERSION {0}", $ver_product) >> $header_file
-[String]::Format('#define VERSTR_FILE_VERSION "{0}"', $ver_file_str) >> $header_file
-[String]::Format('#define VERSTR_PRODUCT_VERSION "{0}"', $ver_product_str) >> $header_file
-[String]::Format("#define VER_FILE_MODE {0}", $file_mode) >> $header_file
+"#define VER_FILE_VERSION {0}" -f $ver_file >> $header_file
+"#define VER_PRODUCT_VERSION {0}" -f $ver_product >> $header_file
+'#define VERSTR_FILE_VERSION "{0}"' -f $ver_file_str >> $header_file
+'#define VERSTR_PRODUCT_VERSION "{0}"' -f $ver_product_str >> $header_file
+"#define VER_FILE_MODE {0}" -f $file_mode >> $header_file
 
 "version files have been updated"
