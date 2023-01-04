@@ -12,3 +12,5 @@ deploy/fsmapper
 deploy/*.zip
 release.dir
 *.aps
+.version.txt
+.version.h

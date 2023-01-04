@@ -166,6 +166,9 @@
 copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>call $(SolutionDir)tools\update_version_info.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -195,6 +198,9 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
 copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>call $(SolutionDir)tools\update_version_info.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="action.h" />
@@ -219,6 +225,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="mouseemu.h" />
     <ClInclude Include="option.h" />
     <ClInclude Include="pluginapi.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="simhost.h" />
     <ClInclude Include="simplewindow.h" />
     <ClInclude Include="tools.h" />
@@ -263,6 +270,9 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
