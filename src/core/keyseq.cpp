@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include "engine.h"
 #include "simplewindow.h"
+#include "tools.h"
 
 //============================================================================================
 // translate string to virtual key code
@@ -297,6 +298,10 @@ namespace keyseq{
                 *off = *on;
                 off->ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
             }
+            auto duration = lua_safevalue<double>(params["duration"]);
+            this->duration = duration ? std::round(*duration) : this->duration;
+            auto interval = lua_safevalue<double>(params["interval"]);
+            this->interval = interval ? std::round(*interval) : this->interval;
         }
 
         key_sequence(const key_sequence& srca, const key_sequence& srcb): duration(srca.duration), interval(srca.interval){
@@ -391,7 +396,7 @@ namespace keyseq{
 
         void delay(std::shared_ptr<key_sequence>object, unsigned int from){
             if (from < object->size){
-                auto delayed_time = data.get()[from].ki.dwFlags & KEYEVENTF_KEYUP ? object->interval : object->duration;
+                auto delayed_time = data.get()[from].ki.dwFlags & KEYEVENTF_KEYUP ? object->duration : object->interval;
                 NativeAction::Function::ACTION_FUNCTION logic = [object, from](Event&, sol::state&){
                     auto next = object->proceed(from);
                     object->delay(object, next);
