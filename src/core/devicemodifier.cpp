@@ -400,20 +400,63 @@ void ButtonModifier::processTimerEvent(DEVICEMOD_TIME timer_time){
 //============================================================================================
 class IncDecModifier : public DeviceModifier{
 protected:
+    bool pulse_mode{false};
+    int pulse_duration{30};
+    int pulse_interval{30};
     bool is_absolute;
     int last_value;
     uint64_t evid_increment;
     uint64_t evid_decrement;
 
+    enum class Status{
+        init,
+        down,
+        up,
+    };
+    Status status{Status::init};
+    std::optional<DEVICEMOD_TIME> hold_timer;
+    DEVICEMOD_TIME last_event_time{DEVICEMOD_CLOCK::now()};
+    int max_hold_num{4};
+    int hold_top = 0;
+    int hold_bottom = 0;
+    static constexpr auto hold_buffer_len{16};
+    static constexpr auto hold_buffer_mask{0xf};
+    bool hold_buffer[hold_buffer_len];
+
 public:
     IncDecModifier(const IncDecModifier&) = default;
-    IncDecModifier(DeviceModifierManager& manager) : DeviceModifier(manager), evid_increment(0), evid_decrement(0){};
+    IncDecModifier(DeviceModifierManager& manager, sol::object &param) : DeviceModifier(manager), evid_increment(0), evid_decrement(0){
+        if (param.get_type() == sol::type::table){
+            auto table = param.as<sol::table>();
+            sol::object pulse_mode = table["pulse_mode"];
+            if (pulse_mode.get_type() == sol::type::boolean){
+                this->pulse_mode = pulse_mode.as<bool>();
+            }else if (pulse_mode.get_type() != sol::type::lua_nil){
+                throw MapperException("value of pusle_mode parameter for incdec modifier must be boolean");
+            }
+
+            auto pulse_duration = lua_safevalue<double>(table["pulse_duration"]);
+            this->pulse_duration = pulse_duration ? round(*pulse_duration) : this->pulse_duration;
+            auto pulse_interval = lua_safevalue<double>(table["pulse_interval"]);
+            this->pulse_interval = pulse_interval ? round(*pulse_interval) : this->pulse_interval;
+            auto max_hold_num = lua_safevalue<double>(table["max_hold_num"]);
+            this->max_hold_num = max_hold_num ? round(*max_hold_num) : this->max_hold_num;
+            if (this->max_hold_num < 1 || this->max_hold_num > hold_buffer_len){
+                std::ostringstream os;
+                os << "value of max_hold_num for incdec modifier must be between 1 and " << hold_buffer_len;
+                throw MapperException(os.str());
+            }
+        }
+    };
     virtual ~IncDecModifier(){
         if (evid_increment != 0){
             manager.getEngine().unregisterEvent(evid_increment);
         }
         if (evid_decrement != 0){
             manager.getEngine().unregisterEvent(evid_decrement);
+        }
+        if (hold_timer){
+            manager.cancelTimer(*this, *hold_timer);
         }
     }
 
@@ -427,8 +470,8 @@ public:
             os << devname << ":" << unit.name << ":" << evname;
             return this->manager.getEngine().registerEvent(os.str());
         };
-        instanse->evid_increment = new_event_id("increment");
-        instanse->evid_decrement = new_event_id("decrement");
+        instanse->evid_increment = new_event_id(pulse_mode ? "increment_pulse" : "increment");
+        instanse->evid_decrement = new_event_id(pulse_mode ? "decrement_pulse" : "decrement");
 
         return instanse;
     }
@@ -438,22 +481,68 @@ public:
     }
     virtual Event getEvent(size_t index) const{
         if (index == 0){
-            return {evid_increment, "increment"};
+            return {evid_increment, pulse_mode ? "increment_pulse" : "increment"};
         }else{
-            return {evid_decrement, "decrement"};
+            return {evid_decrement, pulse_mode ? "decrement_pulse" : "decrement"};
         }
     }
 
     virtual void processUnitValueChangeEvent(int value){
-        auto delta = is_absolute ? value - last_value : value;
-        last_value = value;
-        if (delta > 0){
-            manager.getEngine().sendEvent(std::move(::Event(evid_increment, static_cast<int64_t>(delta))));
-        }else if (delta < 0){
-            manager.getEngine().sendEvent(std::move(::Event(evid_decrement, static_cast<int64_t>(-delta))));
+        if (pulse_mode){
+            manager.delegateEventProcessing(*this, value);
+        }else{
+            auto delta = is_absolute ? value - last_value : value;
+            last_value = value;
+            if (delta > 0){
+                manager.getEngine().sendEvent(std::move(::Event(evid_increment, static_cast<int64_t>(delta))));
+            }else if (delta < 0){
+                manager.getEngine().sendEvent(std::move(::Event(evid_decrement, static_cast<int64_t>(-delta))));
+            }
         }
     }
 
+    virtual void processUnitValueChangeEvent(int value, DEVICEMOD_TIME now){
+        auto delta = is_absolute ? value - last_value : value;
+        last_value = value;
+        if (hold_bottom - hold_top < max_hold_num){
+            hold_buffer[hold_bottom & hold_buffer_mask] = delta > 0;
+            hold_bottom++;
+            if (status == Status::init){
+                if (now >= last_event_time + DEVICEMOD_MILLISEC(pulse_interval)){
+                    manager.getEngine().sendEvent(std::move(::Event(delta > 0 ? evid_increment : evid_decrement, 1LL)));
+                    status = Status::down;
+                    hold_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(pulse_duration));
+                }else{
+                    status = Status::up;
+                    hold_timer = manager.addTimer(*this, last_event_time + DEVICEMOD_MILLISEC(pulse_interval));
+                }
+            }
+        }
+    }
+
+    virtual void processTimerEvent(DEVICEMOD_TIME timer_time){
+        hold_timer = std::nullopt;
+        last_event_time = timer_time;
+        if (status == Status::down){
+            manager.getEngine().sendEvent(std::move(::Event(hold_buffer[hold_top & hold_buffer_mask] ? evid_increment : evid_decrement, 0LL)));
+            hold_top++;
+            if (hold_bottom - hold_top == 0){
+                status = Status::init;
+            }else{
+                status = Status::up;
+                hold_timer = manager.addTimer(*this, last_event_time + DEVICEMOD_MILLISEC(pulse_interval));
+            }
+        }else if (status == Status::up){
+            if (hold_bottom - hold_top > 0){
+                manager.getEngine().sendEvent(std::move(::Event(hold_buffer[hold_top & hold_buffer_mask] ? evid_increment : evid_decrement, 1LL)));
+                status = Status::down;
+                hold_timer = manager.addTimer(*this, last_event_time + DEVICEMOD_MILLISEC(pulse_duration));
+            }else{
+                // This case must be impossible
+                status = Status::init;
+            }
+        }
+    }
 };
 
 //============================================================================================
@@ -475,7 +564,7 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
                 }else if (modtype == "button"){
                     modifier = std::make_shared<ButtonModifier>(*this, modparam);
                 }else if (modtype == "incdec"){
-                    modifier = std::make_shared<IncDecModifier>(*this);
+                    modifier = std::make_shared<IncDecModifier>(*this, modparam);
                 }else{
                     throw MapperException("\"modtype\" parameter is invalid or that parameter is not specified");
                 }

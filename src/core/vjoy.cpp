@@ -142,9 +142,9 @@ public:
         //
         for (int idx = 0; idx < GetVJDButtonNumber(device_id); idx++){
             std::ostringstream os;
-            os << "button" << idx;
+            os << "button" << idx + 1;
             buttons.push_back(std::make_shared<vJoyDeviceUnit>(*this, std::move(os.str()), [this, idx](int64_t value){
-                SetBtn(value, this->device_id, idx);
+                SetBtn(value, this->device_id, idx + 1);
             }));
         }
 
@@ -209,7 +209,7 @@ public:
     std::shared_ptr<vJoyDeviceUnit> getButton(sol::object o_idx){
         auto idx = lua_safevalue<int64_t>(o_idx);
         if (idx && *idx > 0 && *idx <= static_cast<int>(buttons.size())){
-            return buttons[*idx];
+            return buttons[*idx - 1];
         }else{
             return nullptr;
         }
