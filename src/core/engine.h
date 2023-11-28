@@ -187,6 +187,7 @@ public:
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();
+    std::vector<std::string> get_captured_window_titles(uint32_t cwid);
     struct DeviceInfo {
         std::string device_name;
         const char* class_name;

@@ -1187,10 +1187,20 @@ ViewPortManager::cw_info_list ViewPortManager::get_captured_window_list(){
     std::lock_guard lock(mutex);
     cw_info_list list;
     for (auto& cw : captured_windows){
-        CapturedWindowInfo cwinfo = {cw.first, cw.second->get_name(), cw.second->get_hwnd() != 0};
+        CapturedWindowInfo cwinfo = {cw.first, cw.second->get_name(), cw.second->get_target_class(), cw.second->get_hwnd() != 0};
         list.push_back(std::move(cwinfo));
     }
     return std::move(list);
+}
+
+ViewPortManager::cw_title_list ViewPortManager::get_captured_window_title_list(uint32_t cwid){
+    std::lock_guard lock(mutex);
+    cw_title_list list;
+    if (cwid >= 0 && cwid < captured_windows.size()){
+        return captured_windows[cwid]->get_target_titles();
+    }else{
+        return {};
+    }
 }
 
 void ViewPortManager::register_captured_window(uint32_t cwid, HWND hWnd){

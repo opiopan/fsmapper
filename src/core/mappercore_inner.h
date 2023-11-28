@@ -10,6 +10,7 @@
 struct CapturedWindowInfo{
     uint32_t cwid;
     std::string name;
+    std::string target_class;
     bool is_captured;
 };
 

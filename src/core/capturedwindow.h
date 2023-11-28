@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <string>
+#include <vector>
 #include <sol/sol.hpp>
 #include "viewport.h"
 
@@ -16,6 +17,8 @@ class CapturedWindow{
 protected:
     MapperEngine& engine;
     std::string name;
+    std::string target_class;
+    std::vector<std::string> target_titles;
     uint32_t cwid = 0;
     HWND hwnd = nullptr;
     bool omit_system_region = true;
@@ -35,6 +38,8 @@ public:
 
     const std::string& get_name() const {return name;};
     uint32_t get_cwid() const {return cwid;};
+    const std::string& get_target_class() const {return target_class;}
+    const std::vector<std::string>& get_target_titles() const {return target_titles;}
     HWND get_hwnd() const {return hwnd;};
     View* get_owner() const {return owner;}
     void set_owner(View* new_owner) {owner = new_owner;}

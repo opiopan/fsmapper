@@ -364,6 +364,8 @@ public:
     // functions called from host program via mappercore API
     using cw_info_list = std::vector<CapturedWindowInfo>;
     cw_info_list get_captured_window_list();
+    using cw_title_list = std::vector<std::string>;
+    cw_title_list get_captured_window_title_list(uint32_t cwid);
     void register_captured_window(uint32_t cwid, HWND hWnd);
     void unregister_captured_window(uint32_t cwid);
     using vp_info_list = std::vector<ViewportInfo>;

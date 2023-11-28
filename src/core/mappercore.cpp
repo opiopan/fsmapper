@@ -131,8 +131,19 @@ DLLEXPORT bool mapper_enumDevices(MapperHandle handle, MAPPER_ENUM_DEVICE_FUNC f
 DLLEXPORT bool mapper_enumCapturedWindows(MapperHandle handle, MAPPER_ENUM_CAPUTURED_WINDOW func, void *context){
     auto&& list = handle->engine->get_captured_window_list();
     for (auto info : list){
-        CAPTURED_WINDOW_DEF def = {info.cwid, info.name.c_str(), nullptr, info.is_captured};
+        CAPTURED_WINDOW_DEF def = {info.cwid, info.name.c_str(), nullptr, info.target_class.c_str(), info.is_captured};
         auto rc = func(handle, context, &def);
+        if (!rc){
+            return false;
+        }
+    }
+    return true;
+}
+
+DLLEXPORT bool mapper_enumCapturedWindowTitles(MapperHandle handle, uint32_t cwid, MAPPER_ENUM_CAPTURED_WINDOW_TITLE func, void *context){
+    auto&& list = handle->engine->get_captured_window_titles(cwid);
+    for (auto title : list){
+        auto rc = func(handle, context, title.c_str());
         if (!rc){
             return false;
         }

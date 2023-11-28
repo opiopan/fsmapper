@@ -580,6 +580,15 @@ std::vector<CapturedWindowInfo> MapperEngine::get_captured_window_list(){
     }
 }
 
+std::vector<std::string> MapperEngine::get_captured_window_titles(uint32_t cwid){
+    std::lock_guard lock(mutex);
+    if (status == Status::running){
+        return std::move(scripting.viewportManager->get_captured_window_title_list(cwid));
+    }else{
+        return {};
+    }
+}
+
 void MapperEngine::register_captured_window(uint32_t cwid, HWND hWnd){
     std::lock_guard lock(mutex);
     if (status == Status::running){

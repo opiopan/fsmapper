@@ -14,7 +14,7 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     }
     auto def = def_obj.as<sol::table>();
     auto name = lua_safevalue<std::string>(def["name"]);
-    if (name || name->size() == 0){
+    if (name && name->size() > 0){
         this->name = std::move(*name);
     }else{
         throw MapperException("varid name is not specified for the captured window");
@@ -26,6 +26,20 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     }
     if (fix_touch_issue){
         this->fix_touch_issue = *fix_touch_issue;
+    }
+    sol::object titles_obj = def["window_titles"];
+    if (titles_obj.get_type() == sol::type::table){
+        sol::table titles = titles_obj;
+        for (int i = 1; i <= titles.size(); i++){
+            auto title = lua_safevalue<std::string>(titles[i]);
+            if (title && title->size() > 0){
+                target_titles.emplace_back(std::move(*title));
+            }else{
+                throw MapperException("each element of 'window_titles' have to be specified as a string");
+            }
+        }
+    }else if (titles_obj.valid()){
+        throw MapperException("'window_titles' parameter for captured window definition must be a table");
     }
     fallback_window.start();
 }
