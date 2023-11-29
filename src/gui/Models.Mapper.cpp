@@ -59,8 +59,10 @@ namespace winrt::gui::Models::implementation{
         uint32_t cwid;
         std::string name;
         std::string description;
-        captured_window_def(uint32_t cwid, const char* name, const char* description):
-            cwid(cwid), name(name), description(description ? description : "") {}
+        std::string target_class;
+        std::vector<std::string> target_titles;
+        captured_window_def(uint32_t cwid, const char* name, const char* description, const char* target_class):
+            cwid(cwid), name(name), description(description ? description : ""), target_class(target_class) {}
     };
     using enum_captured_windows_context = std::vector<captured_window_def>;
     struct enum_viewport_context {
@@ -207,8 +209,16 @@ namespace winrt::gui::Models::implementation{
                         auto name = hstring(translator);
                         translator = def.description.c_str();
                         auto description = hstring(translator);
+                        translator = def.target_class.c_str();
+                        auto target_class = hstring(translator);
+                        auto target_titles = single_threaded_vector<hstring>();
+                        for (auto& title : def.target_titles){
+                            translator = title.c_str();
+                            auto wtitle = hstring(translator);
+                            target_titles.Append(wtitle);
+                        }
                         auto cw = winrt::make<winrt::gui::Models::implementation::CapturedWindow>(
-                           *this, def.cwid, name, description);
+                           *this, def.cwid, name, description, target_class, target_titles);
                         captured_windows.Append(cw);
                     }
                     co_await winrt::resume_background();
@@ -498,9 +508,14 @@ namespace winrt::gui::Models::implementation{
         return true;
     }
 
-    bool Mapper::enum_captured_window_callback(MapperHandle, void* context, CAPTURED_WINDOW_DEF* cwdef){
+    bool Mapper::enum_captured_window_callback(MapperHandle mapper, void* context, CAPTURED_WINDOW_DEF* cwdef){
         auto list = reinterpret_cast<enum_captured_windows_context*>(context);
-        list->emplace_back(cwdef->cwid, cwdef->name, cwdef->description);
+        list->emplace_back(cwdef->cwid, cwdef->name, cwdef->description, cwdef->target_class);
+        mapper_enumCapturedWindowTitles(mapper, cwdef->cwid, [](MapperHandle, void* context, const char* title){
+            auto def = reinterpret_cast<captured_window_def*>(context);
+            def->target_titles.emplace_back(title);
+            return true;
+        }, &list->back());
         return true;
     }
 }

@@ -119,11 +119,15 @@ namespace winrt::gui::Models::factory_implementation{
 namespace winrt::gui::Models::implementation
 {
     struct CapturedWindow : CapturedWindowT<CapturedWindow>{
+        using TargetTitleList = winrt::Windows::Foundation::Collections::IVector<hstring>;
+
         CapturedWindow() = delete;
-        CapturedWindow(winrt::Windows::Foundation::IInspectable const& mapper,
-                       uint32_t cwid, hstring const& name, hstring const& description) : 
+        CapturedWindow(winrt::Windows::Foundation::IInspectable const& mapper, uint32_t cwid,
+                       hstring const& name, hstring const& description, hstring const& targetClass,
+                       winrt::Windows::Foundation::Collections::IVector<hstring> const& targetTitles) :
             mapper(winrt::make_weak(mapper.as<winrt::gui::Models::Mapper>())),
-            cwid(cwid), name(name), description(description),
+            cwid(cwid), name(name), description(description), target_class(targetClass),
+            target_titles(targetTitles),
             image(mapper.as<winrt::gui::Models::Mapper>().NullWindowImage()){
             capturing.canvas_device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
             reflect_status_change(false);
@@ -150,7 +154,9 @@ namespace winrt::gui::Models::implementation
         hstring Name(){return name;}
         hstring Description(){return description;}
         hstring StatusString(){return status_string;}
-        bool IsCaptured(){return is_captured;}
+        hstring TargetClass(){return target_class;}
+        TargetTitleList TargetTitles(){return target_titles;}
+        bool IsCaptured() { return is_captured; }
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTitleColor();
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTextColor();
@@ -178,6 +184,8 @@ namespace winrt::gui::Models::implementation
         hstring name;
         hstring description;
         hstring status_string;
+        hstring target_class;
+        TargetTitleList target_titles;
         bool is_captured {false};
         winrt::Microsoft::UI::Xaml::Media::ImageSource image;
         uint64_t window_id {0};

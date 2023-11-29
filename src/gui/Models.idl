@@ -34,12 +34,14 @@ namespace gui.Models{
     }
 
     runtimeclass CapturedWindow : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
-        CapturedWindow(Object mapper, UInt32 cwid, String name, String description);
+        CapturedWindow(Object mapper, UInt32 cwid, String name, String description, String targetClass, Windows.Foundation.Collections.IVector<String> targetTitles);
 
         UInt32 Cwid{get;};
         String Name{get;};
         String Description{get;};
         String StatusString{get;};
+        String TargetClass{get;};
+        Windows.Foundation.Collections.IVector<String> TargetTitles{get;};
         Boolean IsCaptured{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image{get;};
         Microsoft.UI.Xaml.Media.SolidColorBrush ButtonTitleColor{get;};
