@@ -18,6 +18,8 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <chrono>
 
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
@@ -150,6 +152,162 @@ namespace winrt::gui::Models::implementation{
     }
 
     //============================================================================================
+    // Auto window capturing
+    //============================================================================================
+    class AutoWindowCapturerImp : public AutoWindowCapturer{
+    protected:
+        struct cw_attr{
+            uint32_t cwid;
+            std::wstring target_class;
+
+            cw_attr(uint32_t cwid, const wchar_t* target_class): cwid(cwid), target_class(target_class){}
+            cw_attr(cw_attr&& src): cwid(src.cwid), target_class(std::move(src.target_class)){}
+            cw_attr& operator = (cw_attr&& src){
+                cwid = src.cwid;
+                target_class = std::move(src.target_class);
+            }
+        };
+        using cw_attr_map = std::unordered_multimap <std::wstring, cw_attr>;
+        using cw_attr_map_entry = std::pair<std::wstring, cw_attr>;
+
+        winrt::apartment_context ui_thread;
+        gui::Models::Mapper mapper{nullptr};
+        cw_attr_map cw_attrs;
+        std::mutex mutex;
+        std::condition_variable cv;
+        Windows::Foundation::IAsyncOperation<int32_t> obserber;
+        bool should_stop{false};
+        bool is_completed{false};
+        static constexpr auto initial_buff_size{256};
+        static constexpr auto incremental_amount{256};
+        std::vector<wchar_t> buff;
+
+    public:
+        AutoWindowCapturerImp(winrt::apartment_context ui_thread, gui::Models::Mapper mapper, cw_attr_map&& cw_attrs): 
+            ui_thread(ui_thread), mapper(mapper), cw_attrs(std::move(cw_attrs)){
+            buff.resize(initial_buff_size);
+            obserber = observe_window();
+        }
+        AutoWindowCapturerImp() = delete;
+        virtual ~AutoWindowCapturerImp(){
+            std::unique_lock lock{mutex};
+            should_stop = true;
+            cv.notify_all();
+            cv.wait(lock, [this] {return is_completed;});
+        }
+
+        static std::unique_ptr<AutoWindowCapturer> make_auto_window_capturer(winrt::apartment_context& ui_thread, gui::Models::Mapper mapper){
+            cw_attr_map cw_attrs;
+            for (auto cw : mapper.CapturedWindows()){
+                for (auto title : cw.TargetTitles()){
+                    cw_attrs.insert(cw_attr_map_entry{title.c_str(), cw_attr{cw.Cwid(), cw.TargetClass().c_str()}});
+                }
+            }
+            if (cw_attrs.size() > 0){
+                return std::make_unique<AutoWindowCapturerImp>(ui_thread, mapper, std::move(cw_attrs));
+            }else{
+                return nullptr;
+            }
+        }
+
+    protected:
+        Windows::Foundation::IAsyncOperation<int32_t> observe_window(){
+            co_await winrt::resume_background();
+            std::unique_lock lock{mutex};
+
+            bool is_captured = true;
+
+            while (true){
+                cv.wait_for(lock, is_captured ? std::chrono::seconds(0) : std::chrono::milliseconds(1000), [this]{return should_stop;});
+                if (should_stop){
+                    break;
+                }
+                is_captured = false;
+
+                //
+                // find a window that match the criteria
+                //
+                struct CONTEXT {
+                    AutoWindowCapturerImp* self;
+                    HWND target = nullptr;
+                    uint32_t cwid = 0;
+                } ctx;
+                ctx.self = this;
+                ::EnumWindows([](HWND hwnd, LPARAM lParam)->BOOL{
+                    auto ctx = reinterpret_cast<CONTEXT*>(lParam);
+                    auto title = ctx->self->get_text<::GetWindowTextW>(hwnd);
+                    auto range = ctx->self->cw_attrs.equal_range(title);
+                    for (auto it = range.first; it != range.second; it++){
+                        if (it->second.target_class.size() == 0 || 
+                            it->second.target_class == ctx->self->get_text<::GetClassNameW>(hwnd)){
+                            ctx->target = hwnd;
+                            ctx->cwid = it->second.cwid;
+                            return false;
+                        }
+                    }
+                    return true;
+                }, reinterpret_cast<LPARAM>(&ctx));
+
+                if (ctx.target){
+                    //
+                    // capture the found window
+                    //
+                    lock.unlock();
+                    co_await ui_thread;
+                    mapper.CaptureWindowBypassingGUI(ctx.cwid, reinterpret_cast<int64_t>(ctx.target));
+                    co_await winrt::resume_background();
+                    lock.lock();
+                    if (should_stop){
+                        break;
+                    }
+                    is_captured = true;
+
+                    //
+                    // maintain target list
+                    //
+                    for (auto it = cw_attrs.begin(); it != cw_attrs.end();){
+                        auto deletee = it;
+                        it++;
+                        if (deletee->second.cwid == ctx.cwid){
+                            cw_attrs.erase(deletee);
+                        }
+                    }
+
+                    //
+                    // start viewports if there is no capture target
+                    //
+                    if (cw_attrs.size() == 0){
+                        is_completed = true;
+                        cv.notify_all();
+                        auto uit = ui_thread;
+                        lock.unlock();
+                        co_await uit;
+                        mapper.StartViewportsIfReady();
+                        co_await winrt::resume_background();
+                        co_return 0;
+                    }
+                }
+            }
+
+            is_completed = true;
+            cv.notify_all();
+            co_return 0;
+        }
+
+        template <int APIFUNC(HWND, LPWSTR, int)>
+        const wchar_t* get_text(HWND hwnd){
+            while (true){
+                auto rc = APIFUNC(hwnd, &buff.at(0), static_cast<int>(buff.size()));
+                if (rc < buff.size() - 1){
+                    return &buff.at(0);
+                }else{
+                    buff.resize(buff.max_size() + incremental_amount);
+                }
+            };
+        };
+    };
+
+    //============================================================================================
     // Asynchronous event scheduling
     //============================================================================================
     Windows::Foundation::IAsyncOperation<int32_t> Mapper::scheduler_proc(){
@@ -197,6 +355,7 @@ namespace winrt::gui::Models::implementation{
                 }
 
                 if (mask & property_captured_windows){
+                    window_capturer = nullptr;
                     lock.unlock();
                     mapper_stopViewPort(mapper);
                     enum_captured_windows_context cw_list;
@@ -221,8 +380,10 @@ namespace winrt::gui::Models::implementation{
                            *this, def.cwid, name, description, target_class, target_titles);
                         captured_windows.Append(cw);
                     }
+                    auto capturer = std::move(AutoWindowCapturerImp::make_auto_window_capturer(ui_thread, *this));
                     co_await winrt::resume_background();
                     lock.lock();
+                    window_capturer = std::move(capturer);
                 }
 
                 for (auto i = 0; property_names[i]; i++){
@@ -379,6 +540,7 @@ namespace winrt::gui::Models::implementation{
 
     void Mapper::StopScript(){
         std::lock_guard lock{mutex};
+        window_capturer = nullptr;
         if (status == MapperStatus::running){
             mapper_stop(mapper);
         }
@@ -406,12 +568,34 @@ namespace winrt::gui::Models::implementation{
 
     bool Mapper::StartViewports(){
         std::lock_guard lock{mutex};
+        window_capturer = nullptr;
         return mapper_startViewPort(mapper);
     }
 
     bool Mapper::StopViewports(){
         std::lock_guard lock{mutex};
         return mapper_stopViewPort(mapper);
+    }
+
+    //============================================================================================
+    // Funcions for auto window capturer
+    //============================================================================================
+    void Mapper::CaptureWindowBypassingGUI(uint32_t Cwid, uint64_t hWnd){
+        for (auto cw : captured_windows){
+            if (cw.Cwid() == Cwid){
+                cw.CaptureWindow(hWnd);
+                break;
+            }
+        }
+    }
+
+    void Mapper::StartViewportsIfReady(){
+        for (auto cw : captured_windows){
+            if (!cw.IsCaptured()){
+                return;
+            }
+        }
+        StartViewports();
     }
 
     //============================================================================================

@@ -49,6 +49,7 @@ namespace gui.Models{
         Boolean ButtonIsEnabled{get;};
 
         Windows.Foundation.IAsyncAction ToggleCapture(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void CaptureWindow(UInt64 hwnd);
         void ForceRelease();
     }
 
@@ -87,5 +88,8 @@ namespace gui.Models{
         void ReleaseWindow(UInt32 Cwid);
         Boolean StartViewports();
         Boolean StopViewports();
+
+        void CaptureWindowBypassingGUI(UInt32 Cwid, UInt64 hWnd);
+        void StartViewportsIfReady();
     }
 }

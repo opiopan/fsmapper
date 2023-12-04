@@ -962,7 +962,6 @@ ViewPortManager::ViewPortManager(MapperEngine& engine) : engine(engine){
     }
     hookdll_startGlobalHook(&ViewPortManager::notify_close_proc, this);
     mouse_emulator = std::move(mouse_emu::create_emulator());
-    install_mouse_hook();
     the_manager = this;
 }
 
@@ -970,7 +969,6 @@ ViewPortManager::~ViewPortManager(){
     the_manager = nullptr;    
     reset_viewports();
     mouse_emulator = nullptr;
-    uninstall_mouse_hook();
     hookdll_stopGlobalHook();
 }
 
@@ -1195,9 +1193,8 @@ ViewPortManager::cw_info_list ViewPortManager::get_captured_window_list(){
 
 ViewPortManager::cw_title_list ViewPortManager::get_captured_window_title_list(uint32_t cwid){
     std::lock_guard lock(mutex);
-    cw_title_list list;
-    if (cwid >= 0 && cwid < captured_windows.size()){
-        return captured_windows[cwid]->get_target_titles();
+    if (captured_windows.count(cwid) > 0){
+        return captured_windows.at(cwid)->get_target_titles();
     }else{
         return {};
     }
@@ -1291,12 +1288,14 @@ void ViewPortManager::enable_viewport_primitive(){
         }
         throw e;
     }
+    install_mouse_hook();
 }
 
 void ViewPortManager::disable_viewport_primitive(){
     for (auto& viewport : viewports){
         viewport->disable();
     }
+    uninstall_mouse_hook();
 }
 
 BOOL ViewPortManager::monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context){

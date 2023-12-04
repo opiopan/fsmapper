@@ -14,6 +14,7 @@
 #include "tools.hpp"
 #include "encoding.hpp"
 
+#include <memory>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -164,6 +165,11 @@ namespace winrt::gui::Models::implementation
 
         winrt::Windows::Foundation::IAsyncAction ToggleCapture(
             winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
+        void CaptureWindow(uint64_t hwnd){
+            window_id = hwnd;
+            prepare_capture();
+            start_capture();
+        }
 
         void ForceRelease(){
             if (is_captured){
@@ -308,6 +314,10 @@ namespace winrt::gui::Models::factory_implementation{
 // Mapper
 //============================================================================================
 namespace winrt::gui::Models::implementation{
+    struct AutoWindowCapturer{
+        virtual ~AutoWindowCapturer() = default;
+    };
+
     struct Mapper : MapperT<Mapper>{
         using DeviceCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::Device>;
         using ViewCollection = winrt::Windows::Foundation::Collections::IVector<winrt::gui::Models::View>;
@@ -343,6 +353,9 @@ namespace winrt::gui::Models::implementation{
         void ReleaseWindow(uint32_t Cwid);
         bool StartViewports();
         bool StopViewports();
+
+        void CaptureWindowBypassingGUI(uint32_t Cwid, uint64_t hWnd);
+        void StartViewportsIfReady();
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
@@ -380,6 +393,8 @@ namespace winrt::gui::Models::implementation{
         bool message_buffer_is_dirty{false};
         int message_buffer_current{0};
         tools::utf8_to_utf16_translator message_translator;
+
+        std::unique_ptr<AutoWindowCapturer> window_capturer;
 
 		winrt::Microsoft::UI::Xaml::Media::ImageSource null_window_image{ nullptr };
 
