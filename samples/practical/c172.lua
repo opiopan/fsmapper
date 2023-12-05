@@ -27,10 +27,10 @@ local lib_options = {
 }
 
 local captured_window_defs ={
-    {key="gns530", name="GNS530 GPS"},
-    {key="gns430", name="GNS430 GPS"},
-    {key="kap140", name="KAP-140 Auto Pilot Control"},
-    {key="kr87", name="KR-87 ADF"},
+    {key="gns530", name="GNS530 GPS", window_title="AS530"},
+    {key="gns430", name="GNS430 GPS", window_title="AS430"},
+    {key="kap140", name="KAP-140 Auto Pilot Control", window_title="KAP140"},
+    {key="kr87", name="KR-87 ADF", window_title="KR87"},
 }
 
 local bg_color = graphics.color(30, 40, 50)

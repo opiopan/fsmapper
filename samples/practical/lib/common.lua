@@ -119,8 +119,15 @@ end
 function module.arrange_views(viewport, viewport_mappings, captured_window_defs, views, device)
     local captured_windows ={}
     for i, def in ipairs(captured_window_defs) do
+        cwdef = {name=def.name}
+        if def.window_title ~= nil then
+            cwdef.window_title = def.window_title
+        end
+        if def.window_titles ~= nil then
+            cwdef.window_titles = def.window_titles
+        end
         captured_windows[def.key] ={
-            object = mapper.view_elements.captured_window{name=def.name}
+            object = mapper.view_elements.captured_window(cwdef)
         }
     end
 
@@ -246,6 +253,23 @@ function module.component_module_init(cmodule, cmodule_defs)
             cmodule_defs.indicator_orders[typeid] = {}
             for key, value in pairs(indicators[1]) do
                 cmodule_defs.indicator_orders[typeid][#cmodule_defs.indicator_orders[typeid] + 1] = key
+            end
+        end
+    end
+
+    if cmodule_defs.reactions ~= nil then
+        for type, typedef in ipairs(cmodule_defs.reactions) do
+            for i, reactiondefs in ipairs(typedef) do
+                if cmodule.global_mapping_sources[i] == nil then
+                    cmodule.global_mapping_sources[i] = {}
+                end
+                for name, reaction in pairs(reactiondefs) do
+                    if cmodule.events[i][name] == nil then
+                        local evid = mapper.register_event(cmodule_defs.prefix..":"..i..":"..name)
+                        cmodule.events[i][name] = evid
+                        cmodule.observed_data[#cmodule.observed_data + 1] = {rpn=reaction.rpn, event=evid, epsilon=reaction.epsilon}
+                    end
+                end
             end
         end
     end
@@ -387,7 +411,7 @@ function module.component_module_create_instance(cmodule, cmodule_defs, instance
         for i, name in ipairs(cmodule_defs.indicator_orders[option.type]) do
             local indicator = cmodule_defs.indicators[option.type][id][name]
             if indicator.enable_condition == nil or indicator.enable_condition(option) then
-                local renderer = nil
+                local renderer = indicator.renderer
                 if indicator.bitmaps ~= nil then
                     renderer = function (ctx, value)
                         local image = indicator.bitmaps[value + 1]
@@ -426,7 +450,26 @@ function module.component_module_create_instance(cmodule, cmodule_defs, instance
                     end
                     cmodule.global_mapping_sources[id][name][#cmodule.global_mapping_sources[id][name] + 1] = function (value) canvas:set_value(value) end
                 end
+                if indicator.pin ~= nil then
+                    if indicator.pin.canvases == nil then
+                        indicator.pin.canvases = {}
+                    end
+                    if indicator.pin.canvases[name] == nil then
+                        indicator.pin.canvases[name] = {}
+                    end
+                    indicator.pin.canvases[name][#indicator.pin.canvases[name] + 1] = canvas
+                end
             end
+        end
+    end
+
+    -- reactions
+    if cmodule_defs.reactions ~= nil and cmodule_defs.reactions[option.type] then
+        for name, reaction in pairs(cmodule_defs.reactions[option.type][id]) do
+            if cmodule.global_mapping_sources[id][name] == nil then
+                cmodule.global_mapping_sources[id][name] = {}
+            end
+            cmodule.global_mapping_sources[id][name][#cmodule.global_mapping_sources[id][name] + 1] = reaction.action
         end
     end
 

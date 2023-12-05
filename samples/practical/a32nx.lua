@@ -58,12 +58,12 @@ local viewport_menu = mapper.viewport{
 -- Register views to right & left viewports
 --------------------------------------------------------------------------------------
 local captured_windows = {
-    fcu = mapper.view_elements.captured_window{name="A320 FCU", avoid_touch_problems=false},
-    pfd = mapper.view_elements.captured_window{name="A320 PFD"},
-    nd = mapper.view_elements.captured_window{name="A320 ND"},
-    uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM"},
-    lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM"},
-    mcdu = mapper.view_elements.captured_window{name = "A320 MCDU"},
+    fcu = mapper.view_elements.captured_window{name="A320 FCU", window_title="A320_NEO_FCU"},
+    pfd = mapper.view_elements.captured_window{name="A320 PFD", window_title="A32NX_PFD_1"},
+    nd = mapper.view_elements.captured_window{name="A320 ND", window_title="WASMINSTRUMENT"},
+    uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM", window_title="A32NX_EWD_1"},
+    lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM", window_title="SD"},
+    mcdu = mapper.view_elements.captured_window{name = "A320 MCDU", window_title="A320_NEO_CDU"},
 }
 
 local global_mappings = {}

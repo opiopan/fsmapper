@@ -184,12 +184,12 @@ local viewport = mapper.viewport({
 })
 local pfd = viewport:register_view({
     name = "PFD",
-    elements = {{object = mapper.captured_window({name = "G1000 PFD"})}},
+    elements = {{object = mapper.captured_window({name = "G1000 PFD", window_title="AS1000_PFD"})}},
     mappings = pfd_maps,
 })
 local mfd = viewport:register_view({
     name = "MFD",
-    elements = {{object = mapper.captured_window({name = "G1000 MFD"})}},
+    elements = {{object = mapper.captured_window({name = "G1000 MFD", window_title="AS1000_MFD"})}},
     mappings = mfd_maps,
 })
 

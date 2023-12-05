@@ -41,6 +41,10 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     }else if (titles_obj.valid()){
         throw MapperException("'window_titles' parameter for captured window definition must be a table");
     }
+    auto title = lua_safestring(def["window_title"]);
+    if (title.size() > 0){
+        target_titles.emplace_back(std::move(title));
+    }
     fallback_window.start();
 }
 
