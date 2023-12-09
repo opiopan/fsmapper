@@ -123,6 +123,10 @@ So Lua script defines just placefolder, You need to specify which actual window 
 <img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
 </p>
 
+NOTE: December 9th, 2023  |
+:-|
+Asobo has improved the behavior of the popped out window, displaying unique window titles for each instrument. I've added a feature to fsmapper that automatically captures windows based on these window titles.<br>To enable automatic window capture, specify the title string in the ```window_title``` parameter of the ```captured_window()``` function as shown in [this code](https://github.com/opiopan/fsmapper/blob/9d2539517e3b34649b7af382a7c866bdcb111bb2/samples/practical/g1000.lua#L187).
+
 ### Avoiding touch problems of poped out window
 It is well known that the poped out window of avionics which has touch operable capability such as Garmin G3X doesn't work well with the touch operation, even though it works with the mouse operation.<br>
 fsmapper provides the workaround solution for this problem. You will be able to operate poped out windows with the touch operation if those windows will be managed as  **captured window** mentiond previous section.
