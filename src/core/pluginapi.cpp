@@ -44,6 +44,9 @@ DLLEXPORT void fsmapper_issueEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int
     device->device.issueEvent(index, value);
 }
 
+DLLEXPORT void fsmapper_issueEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value){
+    device->device.issueEvent(index, value);
+}
 //============================================================================================
 // LUA value accessor
 //============================================================================================

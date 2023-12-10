@@ -40,7 +40,8 @@ public:
     void close();
 
     void issueEvent(size_t unitIndex, int value);
-    void sendUnitValue(size_t unitIndex, int value);
+    void issueEvent(size_t unitIndex, double value);
+    void sendUnitValue(size_t unitIndex, sol::object value);
 
     sol::object create_event_table(sol::this_state s);
     sol::object create_upstream_id_table(sol::this_state s);

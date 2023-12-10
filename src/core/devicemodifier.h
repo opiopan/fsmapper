@@ -13,6 +13,7 @@
 #include <condition_variable>
 #include <queue>
 #include <chrono>
+#include <cmath>
 #include <sol/sol.hpp>
 #include "mapperplugin.h"
 
@@ -53,6 +54,9 @@ public:
     virtual size_t getEventNum() const = 0;
     virtual Event getEvent(size_t index) const = 0;
     virtual void processUnitValueChangeEvent(int value) = 0;
+    virtual void processUnitValueChangeEvent(double value){
+        processUnitValueChangeEvent(static_cast<int>(std::round(value)));
+    }
     virtual void processUnitValueChangeEvent(int value, DEVICEMOD_TIME now){};
     virtual void processTimerEvent(DEVICEMOD_TIME timer_time){};
 };

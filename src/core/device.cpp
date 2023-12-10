@@ -78,13 +78,41 @@ void Device::issueEvent(size_t unitIndex, int value){
     }
 }
 
-void Device::sendUnitValue(size_t unitIndex, int value){
+void Device::issueEvent(size_t unitIndex, double value){
+    if (is_available){
+        modifiers[unitIndex]->processUnitValueChangeEvent(value);
+    }
+}
+
+void Device::sendUnitValue(size_t unitIndex, sol::object value){
     if (is_available){
         lua_c_interface(engine, "device:send", [this, unitIndex, value](){
             if (unitDefs.size() <= unitIndex || unitDefs[unitIndex].direction != FSMDU_DIR_OUTPUT){
                 throw MapperException("invalid upstream id");
             }
-            deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+            EventValue rval{value};
+            if (rval.getType() == EventValue::Type::int_value){
+                auto value = rval.getAs<int64_t>();
+                if (deviceClass.plugin().sendUnitValue){
+                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+                }else if (deviceClass.plugin().sendUnitValueF){
+                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
+                }
+            }else if (rval.getType() == EventValue::Type::double_value){
+                auto value = rval.getAs<double>();
+                if (deviceClass.plugin().sendUnitValueF){
+                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
+                }else if (deviceClass.plugin().sendUnitValue){
+                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, std::round(value));
+                }
+            }else if (rval.getType() == EventValue::Type::bool_value){
+                auto value = rval.getAs<bool>() ? 1 : 0;
+                if (deviceClass.plugin().sendUnitValue){
+                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
+                }else if (deviceClass.plugin().sendUnitValueF){
+                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
+                }
+            }
         });
     }
 }

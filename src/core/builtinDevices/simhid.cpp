@@ -131,6 +131,7 @@ static MAPPER_PLUGIN_DEVICE_OPS simhid_ops = {
     simhid_getUnitNum,
     simhid_getUnitDef,
     simhid_sendUnitValue,
+    nullptr
 };
 
 MAPPER_PLUGIN_DEVICE_OPS* simhid_PluginDeviceOps = &simhid_ops;

@@ -494,7 +494,7 @@ void MapperEngine::sendEvent(Event &&ev){
     event.cv.notify_all();
 }
 
-std::unique_ptr<Event>&& MapperEngine::receiveEvent(){
+std::unique_ptr<Event> MapperEngine::receiveEvent(){
     std::unique_lock lock(mutex);
     event.cv.wait(lock, [this]{return this->event.queue.size() > 0;});
     auto ev = std::move(event.queue.front());

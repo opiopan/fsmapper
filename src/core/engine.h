@@ -203,7 +203,7 @@ public:
     
 protected:
     void initScriptingEnv();
-    std::unique_ptr<Event>&& receiveEvent();
+    std::unique_ptr<Event> receiveEvent();
     Action* findAction(uint64_t evid);
 
     void setMapping(const char* function_name, int level, const sol::object& mapdef);

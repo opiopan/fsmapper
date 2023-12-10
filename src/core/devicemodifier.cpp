@@ -44,6 +44,10 @@ public:
         manager.getEngine().sendEvent(std::move(event));
     }
 
+    virtual void processUnitValueChangeEvent(double value){
+        ::Event event(evid, value);
+        manager.getEngine().sendEvent(std::move(event));
+    }
 };
 
 //============================================================================================
