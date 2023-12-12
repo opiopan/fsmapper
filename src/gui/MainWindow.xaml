@@ -46,7 +46,9 @@
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7F4;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <!--
                 <NavigationViewItem Tag="utilities" Content="Utilities" Icon="Repair" />
+                -->
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Tag="settings" Content="Settings" Icon="Setting"/>

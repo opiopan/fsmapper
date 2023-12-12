@@ -53,6 +53,30 @@
                            SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
                            Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
             </StackPanel>
+            <StackPanel Style="{StaticResource GroupStackStyle}">
+                <TextBlock Style="{StaticResource TitleStyle}">Plugin Device Management</TextBlock>
+                <RadioButtons Header="Folder path to place plugin modules:" SelectedIndex="{x:Bind ViewModel.PluginFolderType, Mode=TwoWay}">
+                    <RadioButton>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Width="120">Default:</TextBlock>
+                            <TextBlock Foreground="{x:Bind ViewModel.DefaultPluginPathColor, Mode=OneWay}" 
+                                       Text="{x:Bind ViewModel.DefaultPluginPath, Mode=OneWay}"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Width="120">User-specified:</TextBlock>
+                            <TextBlock Foreground="{x:Bind ViewModel.UserSpecifiedPluginPathColor, Mode=OneWay}"
+                                       Text="{x:Bind ViewModel.UserSpecifiedPluginPath, Mode=OneWay}"/>
+                        </StackPanel>
+                    </RadioButton>
+                </RadioButtons>
+                <Button Margin="140 0 0 0"
+                        IsEnabled="{x:Bind ViewModel.ChangePluginPathButtonIsValid, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.ClickChangePluginPathButton}">
+                    Change Folder
+                </Button>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Page>

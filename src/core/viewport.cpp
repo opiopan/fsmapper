@@ -1311,7 +1311,7 @@ void ViewPortManager::notify_close_proc(HWND hWnd, void* context){
 
 void ViewPortManager::process_close_event(HWND hWnd){
     std::unique_lock lock(mutex);
-    for (auto item : captured_windows){
+    for (auto& item : captured_windows){
         if (item.second->get_hwnd() == hWnd){
             item.second->release_window();
             auto cwid = item.first;

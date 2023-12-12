@@ -19,6 +19,8 @@ static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
 static const auto* CONFIG_PRE_RUN_SCRIPT = "pre_run_script";
 static const auto* CONFIG_PRE_RUN_SCRIPT_IS_VALID = "pre_run_script_is_valid";
 static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
+static const auto* CONFIG_PLUGIN_FOLDER_IS_DEFAULT = "plugin_folder_is_default";
+static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -36,6 +38,8 @@ class config_imp : public config{
     std::string pre_run_script;
     bool pre_run_script_is_valid{true};
     MAPPER_OPTION_RENDERING_METHOD rendering_method{MOPT_RENDERING_METHOD_CPU};
+    bool plugin_folder_is_default{true};
+    std::filesystem::path custom_plugin_folder;
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -116,6 +120,10 @@ public:
         reflect_string(data, CONFIG_PRE_RUN_SCRIPT, pre_run_script);
         reflect_bool(data, CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid);
         reflect_number(data, CONFIG_RENDERING_METHOD, rendering_method);
+        reflect_bool(data, CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default);
+        path.clear();
+        reflect_string(data, CONFIG_CUSTOM_PLUGIN_FOLDER, path);
+        custom_plugin_folder = path;
     }
 
     void save() override{
@@ -131,6 +139,8 @@ public:
                 {CONFIG_PRE_RUN_SCRIPT, pre_run_script},
                 {CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid},
                 {CONFIG_RENDERING_METHOD, rendering_method},
+                {CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default},
+                {CONFIG_CUSTOM_PLUGIN_FOLDER, custom_plugin_folder.string()},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -180,6 +190,22 @@ public:
     }
     void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value){
         update_value(rendering_method, value);
+    }
+    bool get_plugin_folder_is_default(){
+        return plugin_folder_is_default;
+    }
+    void set_plugin_folder_is_default(bool value){
+        update_value(plugin_folder_is_default, value);
+    }
+    const std::filesystem::path &get_default_plugin_folder(){
+        return fs.get_default_plugin_path();
+    }
+    const std::filesystem::path &get_custom_plugin_folder()
+    {
+        return custom_plugin_folder;
+    }
+    void set_custom_plugin_folder(std::filesystem::path &&path){
+        update_value(custom_plugin_folder, std::move(path));
     }
 };
 

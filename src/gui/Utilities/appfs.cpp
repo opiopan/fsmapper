@@ -21,4 +21,16 @@ appfs::appfs(const wchar_t* appname){
     localdata = localdata_path;
     localdata /= appname;
     std::filesystem::create_directories(localdata);
+
+    std::vector<wchar_t> buf;
+    buf.resize(256);
+    while(true){
+        if (::GetModuleFileNameW(nullptr, &buf.at(0), buf.size()) < buf.size()){
+            break;
+        }
+        buf.resize(buf.size() + 256);
+    }
+    default_plugin = &buf.at(0);
+    default_plugin.remove_filename();
+    default_plugin = default_plugin / "plugins";
 }

@@ -62,5 +62,13 @@ namespace gui.ViewModels{
         String PreRunScript;
         Boolean PreRunScriptIsVarid;
         Int32 RenderingMethod;
+        Int32 PluginFolderType;
+        String DefaultPluginPath{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush DefaultPluginPathColor{get;};
+        String UserSpecifiedPluginPath{get;};
+        Microsoft.UI.Xaml.Media.SolidColorBrush UserSpecifiedPluginPathColor{get;};
+        Boolean ChangePluginPathButtonIsValid{get;};
+
+        Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 }

@@ -6,8 +6,15 @@
 #include "pch.h"
 #include "ViewModels.SettingsPageViewModel.h"
 #include "ViewModels.SettingsPageViewModel.g.cpp"
+#include "App.xaml.h"
 
 #include <thread>
+#include <shobjidl_core.h>
+#include <winrt/windows.storage.pickers.h>
+
+using namespace winrt;
+using namespace winrt::Microsoft::UI::Xaml;
+using App = winrt::gui::implementation::App;
 
 namespace winrt::gui::ViewModels::implementation
 {
@@ -31,5 +38,21 @@ namespace winrt::gui::ViewModels::implementation
                 save_config(false);
             }
         }
+    }
+
+    winrt::Windows::Foundation::IAsyncAction SettingsPageViewModel::ClickChangePluginPathButton(
+        winrt::Windows::Foundation::IInspectable, winrt::Microsoft::UI::Xaml::RoutedEventArgs){
+        auto picker = winrt::Windows::Storage::Pickers::FolderPicker();
+        picker.as<IInitializeWithWindow>()->Initialize(App::TopWindowHandle());
+        auto folder = co_await picker.PickSingleFolderAsync();
+        if (folder){
+            std::filesystem::path path{folder.Path().c_str()};
+            fsmapper::app_config.set_custom_plugin_folder(std::move(path));
+        }
+        fsmapper::app_config.set_plugin_folder_is_default(
+            fsmapper::app_config.get_custom_plugin_folder().string().size() == 0
+        );
+        save_config();
+        notify_plugin_folder_changed();
     }
 }
