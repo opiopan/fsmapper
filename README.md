@@ -149,7 +149,7 @@ local element2 = mapper.view_elements.captured_window{
 }
 ```
 
-## Supporting custom device
+## Supporting custom devices
 fsmapper only supports Direct Input gaming devices and SimHID devices, but it provides a plugin API to support other devices.　
 [A sample code of a simple plugin module](sdk_samples/simple_mod) and [an example Lua script](sdk_samples/simple_mod/testscript.lua) for its usage are prepared, so please refer to it.<br>
 The plugin DLL can be utilized by placing it in a folder named ```plugins``` under the folder where fsmapper.exe is located, or by placing it in the folder specified in the settings page.<br>

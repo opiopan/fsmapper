@@ -17,7 +17,7 @@ $dest_sdksamples = $dest_sdk + "\samples"
 $package = "fsmapper.zip"
 
 if (Test-Path $dest){
-    Remove-Item $dest -Recurse
+    Remove-Item $dest -Recurse -Force
 }
 if (Test-Path $package){
     Remove-Item $package

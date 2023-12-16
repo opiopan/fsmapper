@@ -25,7 +25,7 @@ appfs::appfs(const wchar_t* appname){
     std::vector<wchar_t> buf;
     buf.resize(256);
     while(true){
-        if (::GetModuleFileNameW(nullptr, &buf.at(0), buf.size()) < buf.size()){
+        if (::GetModuleFileNameW(nullptr, &buf.at(0), static_cast<DWORD>(buf.size())) < buf.size()){
             break;
         }
         buf.resize(buf.size() + 256);
