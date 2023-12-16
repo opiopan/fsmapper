@@ -113,6 +113,11 @@ namespace winrt::gui::Models::implementation{
                     mapper_set_option_string(mapper, MOPT_PRE_RUN_SCRIPT, fsmapper::app_config.get_pre_run_script());
                 }
                 mapper_set_option_integer(mapper, MOPT_RENDERING_METHOD, fsmapper::app_config.get_rendering_method());
+                if (fsmapper::app_config.get_plugin_folder_is_default()){
+                    mapper_set_option_string(mapper, MOPT_PLUGIN_FOLDER, fsmapper::app_config.get_default_plugin_folder().string().c_str());
+                }else{
+                    mapper_set_option_string(mapper, MOPT_PLUGIN_FOLDER, fsmapper::app_config.get_custom_plugin_folder().string().c_str());
+                }
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();

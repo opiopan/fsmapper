@@ -224,6 +224,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="mobiflight_wasm.h" />
     <ClInclude Include="mouseemu.h" />
     <ClInclude Include="option.h" />
+    <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginapi.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="simhost.h" />
@@ -254,6 +255,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="mobiflight_wasm.cpp" />
     <ClCompile Include="mouseemu.cpp" />
     <ClCompile Include="option.cpp" />
+    <ClCompile Include="plugin.cpp" />
     <ClCompile Include="pluginapi.cpp" />
     <ClCompile Include="simhost.cpp" />
     <ClCompile Include="simplewindow.cpp" />

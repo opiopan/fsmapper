@@ -149,6 +149,14 @@ local element2 = mapper.view_elements.captured_window{
 }
 ```
 
+## Supporting custom device
+fsmapper only supports Direct Input gaming devices and SimHID devices, but it provides a plugin API to support other devices.　
+[A sample code of a simple plugin module](sdk_samples/simple_mod) and [an example Lua script](sdk_samples/simple_mod/testscript.lua) for its usage are prepared, so please refer to it.<br>
+The plugin DLL can be utilized by placing it in a folder named ```plugins``` under the folder where fsmapper.exe is located, or by placing it in the folder specified in the settings page.<br>
+
+Note that the sample code above will result in compilation errors in this location. The ```include``` folder and libraries referenced by this sample will be correctly placed via the [```deploy.bat```](deploy/deploy.bat) script.<br>
+In other words, building the sample module included in this installation package [here](https://github.com/opiopan/fsmapper/releases) is straightforward.
+
 ## Sample Scripts
 This repository includes several configuration scritps for practical use of [SimHID G1000](https://github.com/opiopan/simhid-g1000) at [here](samples/practical).<br>
 To use these scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognaized as **COM3** and the display for SimHID G1000 is secondary monitor (**moniter No. is 2**).<br>

@@ -88,7 +88,8 @@ typedef struct {
 }FSMDEVUNITDEF;
 
 typedef struct {
-    const char * name;
+    const char* name;
+    const char* description;
     bool (*init)(FSMAPPER_HANDLE mapper);
     bool (*term)(FSMAPPER_HANDLE mapper);
     bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
@@ -98,6 +99,8 @@ typedef struct {
     bool (*getUnitDef)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF* def);
     bool (*sendUnitValue)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
     bool (*sendUnitValueF)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, double value);
+    // NOTE: Current fspammer does not yet support the following send funciton that accepts general Lua object 
+    bool (*sendUnitValueL)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, LUAVALUE value);
 } MAPPER_PLUGIN_DEVICE_OPS;
 
 // fsmapper will determine that plugin module has a device plugin capability

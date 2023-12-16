@@ -175,6 +175,18 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
         auto device_class = std::make_unique<DeviceClass>(engine, *this, plugin);
         classes.emplace(plugin->name, std::move(device_class));
     }
+    for (int i = 0; i < pluginManager.get_plugin_num(); i++){
+        auto plugin = pluginManager.get_ops_at(i);
+        if (classes.count(plugin->name) == 0){
+            auto device_class = std::make_unique<DeviceClass>(engine, *this, plugin);
+            classes.emplace(plugin->name, std::move(device_class));
+        }else{
+            std::ostringstream os;
+            os << "device name of the plugin module \"" << pluginManager.get_file_name_at(i)
+               << "\" is confict with other device, this module is ignored";
+            engine.putLog(MCONSOLE_WARNING, os.str().c_str());
+        }
+    }
 }
 
 //============================================================================================

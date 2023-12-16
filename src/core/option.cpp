@@ -9,6 +9,7 @@
 
 static std::unordered_map<MAPPER_OPTION, std::string MapperOption::*> string_options{
     {MOPT_PRE_RUN_SCRIPT, &MapperOption::pre_run_script},
+    {MOPT_PLUGIN_FOLDER, &MapperOption::plugin_folder},
 };
 
 static std::unordered_map<MAPPER_OPTION, int64_t MapperOption::*> integer_options{

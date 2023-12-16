@@ -7,11 +7,13 @@ $exe = $src + "\fsmapper.exe"
 $dll = $src + "\*.dll"
 $xbf = $src + "\*.xbf"
 $samples = "..\samples"
+$sdk_samples = "..\sdk_samples"
 
 $dest = "fsmapper"
 $dest_sdk = $dest + "\sdk"
 $dest_sdkinc = $dest_sdk + "\include"
 $dest_sdklib = $dest_sdk + "\lib"
+$dest_sdksamples = $dest_sdk + "\samples"
 $package = "fsmapper.zip"
 
 if (Test-Path $dest){
@@ -33,6 +35,8 @@ New-Item $dest_sdkinc -ItemType Directory
 New-Item $dest_sdklib -ItemType Directory
 Copy-Item "$($coresrc)\mapperplugin.h" $dest_sdkinc
 Copy-Item "$($src)\fsmappercore.lib" $dest_sdklib
+Copy-Item $sdk_samples $dest_sdk -Recurse
+Rename-Item -Path "$($dest_sdk)\sdk_samples" -NewName "samples"
 
 Rename-Item -Path "$($dest)\Assets" -NewName "assets.tmp"
 Rename-Item -Path "$($dest)\assets.tmp" -NewName "assets"

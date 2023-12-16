@@ -123,6 +123,7 @@ static bool simhid_sendUnitValue(FSMAPPER_HANDLE handle, FSMDEVICE device, size_
 
 static MAPPER_PLUGIN_DEVICE_OPS simhid_ops = {
     "simhid",
+    "SimHID device",
     simhid_init,
     simhid_term,
     simhid_open,

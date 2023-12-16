@@ -82,6 +82,7 @@ typedef struct{
 typedef enum{
     MOPT_PRE_RUN_SCRIPT,    // string
     MOPT_RENDERING_METHOD,  // integer
+    MOPT_PLUGIN_FOLDER,     // string
 }MAPPER_OPTION;
 
 typedef enum{

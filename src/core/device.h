@@ -10,6 +10,7 @@
 #include <map>
 #include <sol/sol.hpp>
 #include "pluginapi.h"
+#include "plugin.h"
 #include "devicemodifier.h"
 
 class DeviceClass;
@@ -80,6 +81,7 @@ public:
     };
 protected:
     MapperEngine& engine;
+    PluginManager pluginManager;
     DeviceModifierManager modifierManager;
     std::map<std::string, std::unique_ptr<DeviceClass>> classes;
     std::map<std::string, DeviceInfo> ids;

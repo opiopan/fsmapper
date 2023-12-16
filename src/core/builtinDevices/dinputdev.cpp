@@ -993,6 +993,7 @@ static bool dinputdev_sendUnitValue(FSMAPPER_HANDLE handle, FSMDEVICE dev_handle
 
 static MAPPER_PLUGIN_DEVICE_OPS dinputdev_ops = {
     "dinput",
+    "DirectInput gaming device",
     dinputdev_init,
     dinputdev_term,
     dinputdev_open,
