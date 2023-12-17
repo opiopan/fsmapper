@@ -3,7 +3,7 @@
 //   Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 
-#include "pch.h"
+#include <windows.h>
 #include <mapperplugin.h>
 #include <memory>
 #include <unordered_map>
