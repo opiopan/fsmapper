@@ -99,7 +99,7 @@ public:
                 if (direction == mode::stop){
                     cv.wait(lock);
                 }else{
-                    cv.wait_for(lock, std::chrono::microseconds(200));
+                    cv.wait_for(lock, std::chrono::milliseconds(50));
                 }
                 if (should_be_stop){
                     break;
@@ -112,9 +112,9 @@ public:
                     auto y = std::sin(angle) * radius + radius;
                     prev_time = now;
 
-                    // Issue value change event for the X axis and the Y axis
-                    fsmapper_issueEvent(this->mapper, this->device_handle, unit_x, static_cast<int>(std::round(x)));
-                    fsmapper_issueEvent(this->mapper, this->device_handle, unit_y, static_cast<int>(std::round(y)));
+                    // Raise value change event for the X axis and the Y axis
+                    fsmapper_raiseEvent(this->mapper, this->device_handle, unit_x, static_cast<int>(std::round(x)));
+                    fsmapper_raiseEvent(this->mapper, this->device_handle, unit_y, static_cast<int>(std::round(y)));
                 }
             }
         }));

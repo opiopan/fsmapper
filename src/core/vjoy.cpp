@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
+#include <cmath>
 #include <sol/sol.hpp>
 #include <windows.h>
 #include <public.h>
@@ -118,22 +119,24 @@ public:
         };
         for (auto def = axis_defs; def->name; def++){
             if (GetVJDAxisExist(device_id, def->usage)){
-                LONG axis_max, axis_min;
+                LONG axis_max{0}, axis_min{0};
                 GetVJDAxisMax(device_id, def->usage, &axis_max);
                 GetVJDAxisMin(device_id, def->usage, &axis_min);
                 constexpr auto val_range = JOYSTICK_AXIS_VALUE_MAX - JOYSTICK_AXIS_VALUE_MIN;
-                const auto dev_range = axis_max - axis_min;
+                const float dev_range = axis_max - axis_min;
                 constexpr auto val_bias = JOYSTICK_AXIS_VALUE_MIN;
-                const auto dev_bias = axis_min;
-                axes.emplace(
-                    std::move(std::string(def->name)),
-                    std::make_shared<vJoyDeviceUnit>(
-                        *this,
-                        std::move(std::string(def->name)), 
-                        [this, def, val_range, dev_range, val_bias, dev_bias](int64_t value){
-                            auto axisval = (value - val_bias) * dev_range / val_range + dev_bias;
-                            SetAxis(axisval, this->device_id, def->usage);
-                        }));
+                const float dev_bias = axis_min;
+                if (dev_range > 0){
+                    axes.emplace(
+                        std::move(std::string(def->name)),
+                        std::make_shared<vJoyDeviceUnit>(
+                            *this,
+                            std::move(std::string(def->name)), 
+                            [this, def, val_range, dev_range, val_bias, dev_bias](int64_t value){
+                                auto axisval = (value - val_bias) * dev_range / val_range + dev_bias;
+                                SetAxis(std::floor(axisval), this->device_id, def->usage);
+                            }));
+                }
             }
         }
 

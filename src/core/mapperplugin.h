@@ -38,8 +38,8 @@ DLLEXPORT void *fsmapper_getContext(FSMAPPER_HANDLE mapper);
 typedef struct FSMDEVICECTX* FSMDEVICE;
 DLLEXPORT void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
 DLLEXPORT void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-DLLEXPORT void fsmapper_issueEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
-DLLEXPORT void fsmapper_issueEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value);
+DLLEXPORT void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
+DLLEXPORT void fsmapper_raiseEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value);
 
 //============================================================================================
 // LUA value accessor

@@ -270,36 +270,36 @@ local arm_aux4 = vjoy:get_button(30)
 local joymap_dcs = {
     {event=x56throttle.x.change, action=filter.duplicator(
         filter.lerp(throttle1a:value_setter(),{
-            {-1023, -1023},
-            {-619, -617},
-            {-613, -617},
-            {1023, 1023},
+            {-50000, -50000},
+            {-30254, -30156},
+            {-29961, -30156},
+            {50000, 50000},
         }),
         filter.lerp(throttle1:value_setter(),{
-            {-1023, -1023},
-            {-609, -1023},
-            {1023, 1023},
+            {-50000, -50000},
+            {-29765, -50000},
+            {50000, 50000},
         }),
         filter.branch(
-            {condition="falled", value=-900, action=ab1:value_setter(true)},
-            {condition="exceeded", value=-800, action=ab1:value_setter(false)}
+            {condition="falled", value=-44000, action=ab1:value_setter(true)},
+            {condition="exceeded", value=-39000, action=ab1:value_setter(false)}
         )
     )},
     {event=x56throttle.y.change, action=filter.duplicator(
         filter.lerp(throttle2a:value_setter(),{
-            {-1023, -1023},
-            {-619, -617},
-            {-613, -617},
-            {1023, 1023},
+            {-50000, -50000},
+            {-30254, -30156},
+            {-29961, -30156},
+            {50000, 50000},
         }),
         filter.lerp(throttle2:value_setter(),{
-            {-1023, -1023},
-            {-619, -1023},
-            {1023, 1023},
+            {-50000, -50000},
+            {-30254, -50000},
+            {50000, 50000},
         }),
         filter.branch(
-            {condition="falled", value=-900, action=ab2:value_setter(true)},
-            {condition="exceeded", value=-800, action=ab2:value_setter(false)}
+            {condition="falled", value=-44000, action=ab2:value_setter(true)},
+            {condition="exceeded", value=-39000, action=ab2:value_setter(false)}
         )
     )},
     {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},
@@ -313,24 +313,24 @@ local joymap_dcs = {
 local joymap_noab = {
     {event=x56throttle.x.change, action=filter.duplicator(
         filter.lerp(throttle1:value_setter(),{
-            {-1023, -1023},
-            {-609, -1023},
-            {1023, 1023},
+            {-50000, -50000},
+            {-29765, -50000},
+            {50000, 50000},
         }),
         filter.branch(
-            {condition="falled", value=-900, action=ab1:value_setter(true)},
-            {condition="exceeded", value=-800, action=ab1:value_setter(false)}
+            {condition="falled", value=-44000, action=ab1:value_setter(true)},
+            {condition="exceeded", value=-39000, action=ab1:value_setter(false)}
         )
     )},
     {event=x56throttle.y.change, action=filter.duplicator(
         filter.lerp(throttle2:value_setter(),{
-            {-1023, -1023},
-            {-619, -1023},
-            {1023, 1023},
+            {-50000, -50000},
+            {-30254, -50000},
+            {50000, 50000},
         }),
         filter.branch(
-            {condition="falled", value=-900, action=ab2:value_setter(true)},
-            {condition="exceeded", value=-800, action=ab2:value_setter(false)}
+            {condition="falled", value=-44000, action=ab2:value_setter(true)},
+            {condition="exceeded", value=-39000, action=ab2:value_setter(false)}
         )
     )},
     {event=x56throttle.button33.up, action=airbrake_open:value_setter(true)},

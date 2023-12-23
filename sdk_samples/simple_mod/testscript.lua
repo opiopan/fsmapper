@@ -51,7 +51,6 @@ viewport:register_view{
     mappings = {
         {event=dev_events.x.change, action=function (evid, value)
             point[1] = value
-            canvas.value = point
         end},
         {event=dev_events.y.change, action=function (evid, value)
             point[2] = value

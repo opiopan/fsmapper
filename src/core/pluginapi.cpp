@@ -40,11 +40,11 @@ DLLEXPORT void *fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE d
     return device->pluginContext;
 }
 
-DLLEXPORT void fsmapper_issueEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value){
+DLLEXPORT void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value){
     device->device.issueEvent(index, value);
 }
 
-DLLEXPORT void fsmapper_issueEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value){
+DLLEXPORT void fsmapper_raiseEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value){
     device->device.issueEvent(index, value);
 }
 //============================================================================================

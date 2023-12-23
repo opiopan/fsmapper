@@ -197,7 +197,7 @@ void SimHIDConnection::processReceivedData_S(){
     if (def.index >= 0){
         std::unique_lock lock(mutex);
         for (const auto& device : devices){
-            fsmapper_issueEvent(mapper, device.second->getDevice(), def.index, value);
+            fsmapper_raiseEvent(mapper, device.second->getDevice(), def.index, value);
         }
     }
 }

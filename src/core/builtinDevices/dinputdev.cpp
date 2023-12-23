@@ -577,14 +577,14 @@ public:
     void process_event(){
         device_caps.process_event(dinput_device, [this](int index, int value){
             for (auto& [key, device] : mapper_devices){
-                fsmapper_issueEvent(mapper, device->get_mapper_device(), index, value);
+                fsmapper_raiseEvent(mapper, device->get_mapper_device(), index, value);
             }
         });
         for (auto i = 0; i < vpovs.size(); i++){
             auto& vpov = vpovs.at(i);
             vpov.update(device_caps, [this, i](int value){
                 for (auto& [key, device] : mapper_devices){
-                    fsmapper_issueEvent(mapper, device->get_mapper_device(), device_caps.get_unit_num() + i, value);
+                    fsmapper_raiseEvent(mapper, device->get_mapper_device(), device_caps.get_unit_num() + i, value);
                 }
             });
         }
