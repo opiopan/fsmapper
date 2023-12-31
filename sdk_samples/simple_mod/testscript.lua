@@ -1,7 +1,7 @@
 local s_radius = 200
 local m_radius = 2000
 
-device = mapper.device{
+local device = mapper.device{
     name = "plugin device",
     type = "rotation",
     identifier = {},
