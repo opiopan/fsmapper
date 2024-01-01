@@ -1,6 +1,6 @@
 @powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 1})-join\"`n\");&$s" %*&goto:eof
 
-$lua_version = "5.4.3"
+$lua_version = "5.4.6"
 $vjoysdk = "vJoy218SDK-291116.zip"
 $vjoysdk_dest = "vJoySDK"
 $vjoysdk_header = "vjoyinterface.h"
