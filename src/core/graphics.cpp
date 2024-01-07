@@ -454,7 +454,8 @@ namespace graphics{
                     }
                     auto direction_value = direction == "clockwise" ? D2D1_SWEEP_DIRECTION_CLOCKWISE :
                                            direction == "counter_clockwise" ? D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE :
-                                           throw_error("the value of 'direction' parameter must be either of 'clockwise' or 'counter_clockwise'");
+                                           direction == "counterclockwise" ? D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE :
+                                           throw_error("the value of 'direction' parameter must be either of 'clockwise' or 'counterclockwise'");
                     auto arc_type_value = arc_type == "small" ? D2D1_ARC_SIZE_SMALL :
                                           arc_type == "large" ? D2D1_ARC_SIZE_LARGE :
                                           arc_type.size() == 0 ? D2D1_ARC_SIZE_SMALL :

@@ -13,12 +13,11 @@ local dev_upstreams = device:get_upstream_ids()
 local viewport = mapper.viewport{
     name = "demo",
     displayno = 1,
-    bg_color = "Black",
     x = 0, y = 0,
     width = 0.3, height = 0.3,
 }
 
-local sphere = graphics.ellipse{x=s_radius, y=s_radius, radius_x=s_radius, radius_y=s_radius}
+local circle = graphics.ellipse{x=s_radius, y=s_radius, radius_x=s_radius, radius_y=s_radius}
 local canvas = mapper.view_elements.canvas{
     logical_width = m_radius * 2 + s_radius * 2,
     logical_height = m_radius * 2 + s_radius * 2,
@@ -26,7 +25,7 @@ local canvas = mapper.view_elements.canvas{
     renderer = function (ctx, value)
         ctx:set_brush(graphics.color("Yellow"))
         ctx:fill_geometry{
-            geometry = sphere,
+            geometry = circle,
             x = value[1], y = value[2],
         }
     end
@@ -42,8 +41,7 @@ local is_moving = 1
 local direction = 1
 viewport:register_view{
     name = "test",
-    logical_width = 1, logical_height = 1,
-    background = graphics.color("DarkBlue"),
+    background = graphics.color("DarkBlue", 0.6),
     elements = {
         {object = operable_area, x = 0, y = 0, width = 1, heigt = 1},
         {object = canvas, x = 0, y = 0, width = 1, height = 1},
