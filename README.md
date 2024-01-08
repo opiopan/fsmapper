@@ -1,25 +1,52 @@
+NOTE:|
+:-|
+The [**fsmapper User's Guide**](https://opiopan.github.io/fsmapper-docs) is available [here](https://opiopan.github.io/fsmapper-docs). Please refer to this guide for instructions on how to use fsmapper
+
 fsmapper
 ===
 <img alt="app window" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=400 align="right">
 
-fsmapper is a Windows application to connect various input and output devices to filght simulator.<br>
-Initially this software was planned to connect my DIY controller device, [SimHID G1000](https://github.com/opiopan/simhid-g1000), to FS2020.
-But fsmapper is designed to handle common gaming controller device now.
+fsmapper is a Windows application designed to connect a variety of input and output devices to flight simulators.
+Originally, the development of fsmapper began to connect my DIY controller device, [**SimHID G1000**](https://github.com/opiopan/simhid-g1000), to FS2020. However, it has now evolved to encompass functionalities that allow the creation of a home cockpit using a wide range of devices.<br/>
+fsmapper targets not only home cockpit builders aiming for an exact replica of a specific aircraft's cockpit,
+but also general flight simulator players who have limited equipment and space but want to efficiently operate a wide range of aircraft
+(The truth is, I fall into the latter category as well).
 
-fsmapper allows to:
-- Bind the operation of SimHID devices or USB gaming controller device to the operation of arbitary operable unit in a cockpit of a aircraft running on FS2020
-- Observe variables in FS2020 to represent arbitary gauge's status such as engine warning lamp, then reflect it's status to real device
-- Build virtual cockpit including original gauges on the secondary display (and 3rd display and so on) with touch operable capability, this user defined virtual cockpit interacts with FS2020 using same mechanism as the above two capabilities
-- Change location, size, and/or visibility of pop-out windows of FS2020 such as G1000 PFD according to the operation of SimHID device of USB gaming controller device, that means not only the above virtual cockpit on the secondary display can consits popout window as part, but also one phisical display device can be used for mulitiple purpose by changing the display dynamically ([a movie embedded below](#captured-window) shows this capability, one device is used as G1000 PFD and G1000 MFD with changing dynamically)
-- Remap SimHID device or USB gaming controller device operation to virtual joystick device operation using vJoy driver, or to synthesized keystrokes (emulated keystrokes)
+Although fsmapper offers a multitude of functions, it can be summarized into following three main aspects when viewed from the perspective of improving device and space utilization efficiency, as mentioned earlier.
 
-The above functions are configuread flexibly by writing a Lua script.<br>
-fsmapper handles various devices and other softwares as event sources and calls Lua functions defeined in correspondence with the events that occur.
-And fsmapper also provides various objects and functions to interuct with outer environment of fsmapper as below.
+- **Interaction between devices and FS2020**<br/>
+  You can reflect the operations of various devices, including custom-made ones, onto various cockpit controls. 
+  fsmapper utilize [Gauge API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm), allows support for operations not configurable within FS2020's **Controls options**. Additionally, it's possible to mirror the status of in-flight aircraft lamps and instrument panels onto physical devices.<br/>
+  The interaction rules between devices and FS2020 can be automatically adjusted to suit different aircraft.
+
+- **Changes to Input Device Characteristics**<br/>
+  You can flexibly modify the characteristics and behaviors of input devices,
+  such as altering the linearity of analog axes, changing polarity for alternate switch, generating events that account for the position and hysteresis of analog axes, and so on. 
+  This allows for consistent handling of the same throttle device across aircraft with and without afterburners, or enables adjustments for actions like fuel cut-off and thrust reversal.
+
+- **Virtual instrument panel utilizing Touchscreen Monitors**<br/>
+  In a multi-monitor environment, you can construct virtual instrument panels on the screen. Particularly when using a touchscreen monitor, intuitive actions like tapping or flicking can be used to manipulate switches and knobs displayed on the screen.
+  By configuring windows that pop out with **`[Right Alt]` + `[Mouse Click]`** as elements of the virtual instrument panel, constructing modern glass cockpits becomes seamless.<br/>
+  fsmapper excels in handling FS2020's pop-out windows, allowing natural integration of these as part of the instrument panel by hiding title bars and window frames. It also offers workarounds for touch operation glitches inherent in FS2020's implementation.
+
+If you watch [this video](https://youtu.be/Ee6uw2BYdgE), you'll get a better understanding of what can be achieved with fsmapper as described above.<br/>
+In this video, A320's virtual instrument panels are assembled on a 10.5-inch touchscreen by combining six popup windows 
+(FCU, PFD, ND, ECAM x 2, MCDU) and user-defined instruments and switches. 
+Additionally, by dynamically switching and displaying the instrument panels,
+it enables diverse information representation and manipulation even on a small screen.
+
+All the functionalities mentioned earlier are accessed through [Lua 5.4](https://www.lua.org/manual/5.4/) scripts.
+Although fsmapper is implemented as a Windows GUI application, 
+it actually only features a dashboard to display operational status and a console function to show messages during script execution,　particularly error messages.
+If there wasn't a necessity to allow users to select FS2020's pop-out windows,　I believe it would have been implemented as a command-line interface (CLI).
 
 <p align="center">
 <img alt="fsmapper architecture" src="docs/fsmapper-arch.svg" width=900>
 </p>
+
+The diagram above illustrates how fsmapper works. fsmapper patiently waits for events (***green arrows***) such as operations from various input devices, touchscreen interactions, and changes in the aircraft's status within FS2020. Upon detecting an event, fsmapper executes the corresponding action. These actions are Lua function objects that allow interaction (***orange arrows***) with various objects such as aircraft controls within FS2020, graphical representation on the screen, and data output to devices, facilitated through Lua functions and Lua objects provided by fsmapper.
+
+The '**Configuration File**' specified by the user during fsmapper execution refers to the definition of the correspondence between these events and actions as a Lua script.
 
 ## How to build and install
 You can download and install binary packages from [here](https://github.com/opiopan/fsmapper/releases).<br>
@@ -71,83 +98,28 @@ The one of easiest way is using the following shortcut made when Visual Studio w
     ```shell
     $ xcopy fsmapper <DESTINATION_FOLDER_PATH>
     ```
+## Additional softwares
+While not mandatory for running fsmapper, it's highly recommended to additionally install the following two pieces of software. 
+fsmapper provides users with more convenient features by integrating with these softwares.
+
+- **vJoy ([Dwonload](https://sourceforge.net/projects/vjoystick))**<br/>
+    vJoy is a device driver that functions as a virtual joystick. 
+    fsmapper offers multiple functions to alter button status, axis positions, and POV settings of the vJoy device. <br/>
+    Through the use of the vJoy device, fsmapper provides highly flexible configurability for human interface devices.
+
+- **MobiFlight WASM Module ([GitHub](https://github.com/MobiFlight/MobiFlight-WASM-Module))**<br/>
+    This WASM module, functioning as an add-on for FS2020, 
+    enables an external-process utility to execute arbitrary [**RPN script**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and monitor changes in the aircraft's internal state stored in local variables like LVARs.
+    fsmapper gains unrestricted access to retrieve and modify aircraft states by communicating with the MobiFlight WASM Module operating within the FS2020 process.<br/>
+    The easiest way to install the MobiFlight WASM Module is by downloading and installing the **MobiFlight Connector** from [here](https://www.mobiflight.com/en/download.html).
+    
+    The vanilla fsmapper communicates with FS2020 through the SimConnect API, which allows an external process to access only [**SimVars**](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [**Event IDs**](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). 
+    However, this access isn't sufficient to control all operable objects in a cockpit or retrieve all gauge statuses to display on another DIY gauge or virtual instrument panel.<br/>
+    To control and access all cockpit gauges, accessing local variables within an aircraft module is necessary, and the [**Gauge API**](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) serves this purpose. Regrettably, this API can only be used within the WASM module.<br/>
+    The MobiFlight WASM Module addresses this limitation, enabling fsmapper to access all local variables by communicating with this WASM module.
+
 ## How to use fsmapper
-
-### Optional softwares
-fsmapper has funcions to collaborate with softwares below. These softwares are not mandatry to work fsmapper but they can enhance fsmapper's capabilities.<br>
-I strongly recomend to install them.
-
-- [vJoy : https://sourceforge.net/projects/vjoystick](https://sourceforge.net/projects/vjoystick)<br>
-vJoy is a device driver wich behaves as virtual joystick. <br>
-fsmapper has several functions to change button status, axis position, and POV position of vJoy device.
-By using vJoy device, fsmapper provide very flexible cconfigurability of human operable devices.<br>
-Followings are just example what fsmapper can do that collaborate with vJoy.
-    - change the response curve of jyoystick axis for each aircraft
-    - change the relation between phisical button and vJoy virutal button depending on the positon of a switch
-
-- [MobiFlight WASM Module : https://github.com/MobiFlight/MobiFlight-WASM-Module](https://github.com/MobiFlight/MobiFlight-WASM-Module)<br>
-This WASM module working as add-on of FS2020 allows a outer-process utility to execute arbitary [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and to observe change of aircraft inner state holding in local variables such as LVARs.<br>
-fsmapper interacts with FS20202 via SimConnect API. 
-SimConnect API allows a outer-process to acess only [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and [Event IDs](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). However that isn't sufficient to controll all operable object in  a cockpit or to know all gauge status in ac cockpit  for presenting on a other DIY gauge (or on the secondary display).<br>
-To controll and kow all of cockpit gauges, accessing local variables in a aircraft module is needed, and [Gauge API](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm) is appropriate for this purpose. But unfortunately, this API can be used only in WASM module. <br>
-MobiFlight WASM Module solves this problem. fsmapper can access all local variable by communicating with this WASM module.
-
-
-### Configuration file
-To briefly describe the function of fsmapper is that waiting event such as position change of the joystick axis then invoking the action corrensponds to the occured event.<br> 
-The rule of mapping between the events and the actions is described by [Lua 5.4](https://www.lua.org/manual/5.4/manual.html) script.
-The executable file of fsmapper, fsmapper.exe, provides GUI. However fsmapper has no capability to edit the event-action mapping rules. It just can behave like a dashboard to show the condition and state of event-action mapping process.<br>
-Therefore, the first thing you have to do is writing a configuration file by Lua script.
-
-I haven't writen the specification of this configuration file yet but some examples are pleaced [here](samples).
-
-### Running fsmapper
-The first time of launching fsmapper, you need to specify the configuration Lua script file by press the open button located to the left of the Run button. After that start event-action mapping process by press the Run button.<br>
-At the second and subsequent famapper launches, same script file will be executed automatically.
-
-When event-action mapping process is aborted due to error, the status indicater placed at the top of window blinks red.<br>
-In this case, refere the error message for details by acessing the message console page as below.
-
-<p align="center">
-<img alt="message console" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/console.png" width=600>
-</p>
-
-### Captured window
-fsmapper has a function to controll visibility and position of any window ownd by other process. This function is designed to enable a display as multipurpose, especially to handle fs2020 puped out instrument window like [this movie](https://raw.githubusercontent.com/wiki/opiopan/simhid-g1000/images/movie.gif).
-
-Those windows controlled by fsmapper are called "captured window" and those are specified by ```mapper.view_elements.captured_window()``` function in Lua script.<br>
-Unfortunately, FS2020 SDK does not allow to controll poped out window and does not provide a way to recognize the difference between poped out windows. From fsmapper point of view, all FS2020 poped out windows looks same.<br>
-So Lua script defines just placefolder, You need to specify which actual window corresponds to captured window definition at run time as below.
-
-<p align="center">
-<img alt="description" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/captured_window.gif">
-</p>
-
-NOTE: December 9th, 2023  |
-:-|
-Asobo has improved the behavior of the popped out window, displaying unique window titles for each instrument. I've added a feature to fsmapper that automatically captures windows based on these window titles.<br>To enable automatic window capture, specify the title string in the ```window_title``` parameter of the ```captured_window()``` function as shown in [this code](https://github.com/opiopan/fsmapper/blob/9d2539517e3b34649b7af382a7c866bdcb111bb2/samples/practical/g1000.lua#L187).
-
-### Avoiding touch problems of poped out window
-It is well known that the poped out window of avionics which has touch operable capability such as Garmin G3X doesn't work well with the touch operation, even though it works with the mouse operation.<br>
-fsmapper provides the workaround solution for this problem. You will be able to operate poped out windows with the touch operation if those windows will be managed as  **captured window** mentiond previous section.
-
-I don't know the true reason why touch operations are ignored by FS2020. However I assume that this problem is caused by the mechanism to recognize the mouse status change.<br>
-I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as ```WM_LBUTTON_DOWN```. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br>
-Mouse messages generated as a result of tapping are exactly this situation. To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, ```WM_LBUTTON_DOWN``` and ```WM_LBUTTON_UP``` messages will occur at the almost same time when you tap a display. In this case, FS2020 cannot recognize mouse button state changes.
-
-Based on this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.<br>
-If you want to stop this behavior, specify the value as ```false``` for parameter ```avoid_touch_problems``` of ```mapper.view_elements.captured_window()``` function.
-
-``` Lua
-local element1 = mapper.view_elements.captured_window{
-    name = "Apps other than  FS2020",
-    avoid_touch_problems = false,
-}
-
-local element2 = mapper.view_elements.captured_window{
-    name = "Garmin G3X",
-}
-```
+Please refer the [**Tutrial**](https://opiopan.github.io/fsmapper-docs/getting-started/tutorial) and the [**Configuration Guide**](https://opiopan.github.io/fsmapper-docs/category/configuration-guide).
 
 ## Supporting custom devices
 fsmapper only supports Direct Input gaming devices and SimHID devices, but it provides a plugin API to support other devices.　
