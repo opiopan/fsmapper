@@ -56,7 +56,7 @@ protected:
     static std::unordered_map<uint64_t, std::unique_ptr<device>> devices;
     std::mutex mutex;
     std::condition_variable cv;
-    bool should_be_stop{false};
+    bool should_be_stopped{false};
     std::thread emitter;
     FSMAPPER_HANDLE mapper;
     FSMDEVICE device_handle;
@@ -101,7 +101,7 @@ public:
                 }else{
                     cv.wait_for(lock, std::chrono::milliseconds(50));
                 }
-                if (should_be_stop){
+                if (should_be_stopped){
                     break;
                 }
                 if (direction != mode::stop){
@@ -123,7 +123,7 @@ public:
     ~device(){
         {
             std::lock_guard lock{mutex};
-            should_be_stop = true;
+            should_be_stopped = true;
             cv.notify_all();
         }
         emitter.join();
