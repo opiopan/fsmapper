@@ -1,0 +1,51 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #2270b9;
+  --ifm-color-primary-dark: #1f65a6;
+  --ifm-color-primary-darker: #1d5f9d;
+  --ifm-color-primary-darkest: #184e82;
+  --ifm-color-primary-light: #257bcc;
+  --ifm-color-primary-lighter: #2781d5;
+  --ifm-color-primary-lightest: #4191dc;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --fm-annotation-green: #00a000;
+  --fm-annotation-orange: #e28200;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #00ccff;
+  --ifm-color-primary-dark: #00b8e6;
+  --ifm-color-primary-darker: #00add9;
+  --ifm-color-primary-darkest: #008fb3;
+  --ifm-color-primary-light: #1ad1ff;
+  --ifm-color-primary-lighter: #26d4ff;
+  --ifm-color-primary-lightest: #4ddbff;
+  --docusaurus-highlighted-code-line-bg: rgba(120, 120, 0, 0.3);
+  --fm-annotation-green: #00d000;
+  --fm-annotation-orange: #ff9300;}
+
+.movie {
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+  margin-left: auto;
+  margin-right: auto;
+  aspect-ratio: 560/315;
+  width: 800px;
+  max-width: 95%;
+}
+
+.annotation_green {
+  color: var(--fm-annotation-green);
+}
+
+.annotation_orange {
+  color: var(--fm-annotation-orange);
+}

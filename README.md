@@ -41,7 +41,7 @@ it actually only features a dashboard to display operational status and a consol
 If there wasn't a necessity to allow users to select FS2020's pop-out windows,　I believe it would have been implemented as a command-line interface (CLI).
 
 <p align="center">
-<img alt="fsmapper architecture" src="docs/fsmapper-arch.svg" width=900>
+<img alt="fsmapper architecture" src="docs/static/img/fsmapper-arch.svg" width=900>
 </p>
 
 The diagram above illustrates how fsmapper works. fsmapper patiently waits for events (***green arrows***) such as operations from various input devices, touchscreen interactions, and changes in the aircraft's status within FS2020. Upon detecting an event, fsmapper executes the corresponding action. These actions are Lua function objects that allow interaction (***orange arrows***) with various objects such as aircraft controls within FS2020, graphical representation on the screen, and data output to devices, facilitated through Lua functions and Lua objects provided by fsmapper.
@@ -119,7 +119,7 @@ fsmapper provides users with more convenient features by integrating with these 
     The MobiFlight WASM Module addresses this limitation, enabling fsmapper to access all local variables by communicating with this WASM module.
 
 ## How to use fsmapper
-Please refer the [**Tutrial**](https://opiopan.github.io/fsmapper-docs/getting-started/tutorial) and the [**Configuration Guide**](https://opiopan.github.io/fsmapper-docs/category/configuration-guide).
+Please refer the [**Tutrial**](https://opiopan.github.io/fsmapper/getting-started/tutorial) and the [**Configuration Guide**](https://opiopan.github.io/fsmapper/category/configuration-guide).
 
 ## Supporting custom devices
 fsmapper only supports Direct Input gaming devices and SimHID devices, but it provides a plugin API to support other devices.　
@@ -195,7 +195,7 @@ By pressing soft-keys placed at bottom of SimHID G1000, two views to show can be
 And the switches placed on the left end and the right end of SimHID G1000 housing can also control views to show.
 
 <p align="center">
-<img alt="fsmapper architecture" src="docs/a32nx_script_desc.svg" width=900>
+<img alt="script for a32nx" src="docs/docs/samples/images/a32nx_script_desc.svg" width=900>
 </p>
 
 The pushbuttons rendered on each view can be operated by tapping them. The toggle switches include engine master switches and the selector knobs can be operated by flicking them.

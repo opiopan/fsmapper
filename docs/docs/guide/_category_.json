@@ -1,0 +1,8 @@
+{
+  "label": "Configuration Guide",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "This chapter will cover essential concepts required when writing Lua scripts as configuration files for fsmapper. It will also explain the functionalities of fsmapper accessible from scripts."
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "label": "graphics library",
+  "position": 4,
+  "link": {"type": "doc", "id": "graphics_index"}
+}

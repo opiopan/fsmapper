@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+  release:
+    types: [released]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Retrieve release information
+        working-directory: ./docs
+        run: ./tools/retrieve_release.sh
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          OUTPUT_FILE: ./.version.js
+
+      - name: Build website
+        working-directory: ./docs
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs/build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
