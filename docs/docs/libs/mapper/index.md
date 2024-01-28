@@ -4,7 +4,8 @@ id: mapper_index
 ---
 
 # mapper library
-fsmapper basic library.
+The mapper library provides essential functionalities required for utilizing fsmapper.
+It includes defining Event-Action mappings, opening devices, constructing elements of virtual instrument panels, as well as emulating joysticks and keyboards.
 
 ## Variables
 |Name|Description|

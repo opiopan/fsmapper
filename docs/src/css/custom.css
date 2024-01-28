@@ -30,7 +30,8 @@
   --ifm-color-primary-lightest: #4ddbff;
   --docusaurus-highlighted-code-line-bg: rgba(120, 120, 0, 0.3);
   --fm-annotation-green: #00d000;
-  --fm-annotation-orange: #ff9300;}
+  --fm-annotation-orange: #ff9300;
+}
 
 .movie {
   margin-top: 1.2em;
