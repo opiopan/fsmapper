@@ -36,6 +36,9 @@ jobs:
         working-directory: ./docs
         run: npm run build
 
+      - name: SEO Treatment
+        run: cp docs/seo/googleff749040537ff105.html docs/build
+
       - uses: actions/upload-pages-artifact@v1
         with:
           path: docs/build
