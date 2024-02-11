@@ -285,10 +285,14 @@ public:
         }
         if (need_update){
             this->value = std::move(value);
-            if (!is_dirty){
-                is_dirty = true;
-                mapper_EngineInstance()->invokeViewportsUpdate();
-            }
+            mark_as_dirty();
+        }
+    }
+
+    void mark_as_dirty(){
+        if (!is_dirty){
+            is_dirty = true;
+            mapper_EngineInstance()->invokeViewportsUpdate();
         }
     }
 
@@ -301,6 +305,17 @@ public:
     void update_rect(graphics::render_target& target, const FloatRect& actual_region, float scale_factor) override{
         renderer->render(target, actual_region, scale_factor, *value, mapper_EngineInstance()->getLuaState());
         is_dirty = false;
+    }
+
+    void refresh_lua(){
+        mark_as_dirty();
+    }
+
+    std::shared_ptr<NativeAction::Function> refresher_lua(){
+        NativeAction::Function::ACTION_FUNCTION func = [this](Event&, sol::state&){
+            mark_as_dirty();
+        };
+        return std::make_shared<NativeAction::Function>("canvas:refresher()", func);
     }
 
     void set_value_lua(sol::object value){
@@ -374,7 +389,9 @@ void viewobject_init_scripting_env(MapperEngine& engine, sol::table& mapper_tabl
         "value", sol::property(&canvas::get_value_lua, &canvas::set_value_lua),
         "set_value", &canvas::set_value_lua,
         "get_value", &canvas::get_value_lua,
-        "value_setter", &canvas::value_setter
+        "value_setter", &canvas::value_setter,
+        "refresh", &canvas::refresh_lua,
+        "refresher", &canvas::refresher_lua
     );
 
     mapper_table["view_elements"] = table;
