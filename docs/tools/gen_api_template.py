@@ -79,6 +79,8 @@ libs = [
                     ('Canvas:set_value()', 'Return the value associated with the canvas', 'value'),
                     ('Canvas:get_value()', 'Set a value for the canvas'),
                     ('Canvas:value_setter()', 'Create a native-action to set a value for the canvas', '[value]'),
+                    ('Canvas:refresh()', 'Redraw the canvas area'),
+                    ('Canvas:refresher()', 'Create a native-action to redraw the canvas area'),
                 ],
             },
             {

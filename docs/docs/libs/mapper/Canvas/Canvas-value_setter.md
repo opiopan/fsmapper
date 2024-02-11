@@ -6,7 +6,7 @@ sidebar_position: 4
 ```lua
 Canvas:value_setter([value])
 ```
-This function creates a native-action to set a value for the canvas.
+This method creates a native-action to set a value for the canvas.
 
 
 ## Prameters
@@ -16,4 +16,4 @@ This function creates a native-action to set a value for the canvas.
 
 
 ## Return Values
-This function returns a native-action. 
+This method returns a native-action. 

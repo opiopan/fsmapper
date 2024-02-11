@@ -16,4 +16,4 @@ After calling this method, the [renderer](/libs/mapper/RENDER) registered with t
 
 
 ## Return Values
-This function doesn't return any value.
+This method doesn't return any value.
