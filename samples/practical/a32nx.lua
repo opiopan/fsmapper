@@ -58,7 +58,6 @@ local viewport_menu = mapper.viewport{
 -- Register views to right & left viewports
 --------------------------------------------------------------------------------------
 local captured_windows = {
-    fcu = mapper.view_elements.captured_window{name="A320 FCU", window_title="A320_NEO_FCU"},
     pfd = mapper.view_elements.captured_window{name="A320 PFD", window_title="A32NX_PFD_1"},
     nd = mapper.view_elements.captured_window{name="A320 ND", window_title="WASMINSTRUMENT"},
     uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM", window_title="A32NX_EWD_1"},
@@ -82,12 +81,12 @@ fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
 global_mappings[#global_mappings + 1] = engine_panel.mappings
 local mcdu_panel = require("a32nx/cdu")
 
-local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_windows.fcu, captured_windows.pfd)
+local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_windows.pfd)
 local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_windows.nd)
 local viewdef_left_uecam = engine_panel.viewdef("l-uecam", captured_windows.uecam)
 local viewdef_left_lecam = ecam_panel.viewdef("l-uecam", captured_windows.lecam)
 local viewdef_left_mcdu = mcdu_panel.viewdef("l-mcdu", captured_windows.mcdu)
-local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_windows.fcu, captured_windows.pfd)
+local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_windows.pfd)
 local viewdef_right_nd = efis_panel.viewdef("r-nd", captured_windows.nd)
 local viewdef_right_uecam = engine_panel.viewdef("r-uecam", captured_windows.uecam)
 local viewdef_right_lecam = ecam_panel.viewdef("r-lecam", captured_windows.lecam)
@@ -354,6 +353,10 @@ a320_context.device = mapper.device{
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
+        {name = "EC1P", modtype = "button", modparam={longpress = 500}},
+        {name = "EC3P", modtype = "button", modparam={longpress = 500}},
+        {name = "EC4P", modtype = "button", modparam={longpress = 500}},
+        {name = "EC5P", modtype = "button", modparam={longpress = 500}},
     },
 }
 local g1000 = a320_context.device.events
@@ -372,21 +375,25 @@ local mappings = {
 
     {event=g1000.EC1.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_INC)")},
     {event=g1000.EC1.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_DEC)")},
-    {event=g1000.EC1P.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
+    {event=g1000.EC1P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
+    {event=g1000.EC1P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
     {event=g1000.SW1.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
     {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_INC)")},
     {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_DEC)")},
-    {event=g1000.EC3P.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
+    {event=g1000.EC3P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
+    {event=g1000.EC3P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
     {event=g1000.SW4.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
     {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_INC)")},
     {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_DEC)")},
     {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
     {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
-    {event=g1000.EC4P.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
+    {event=g1000.EC4P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
+    {event=g1000.EC4P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
     {event=g1000.SW12.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
     {event=g1000.EC5.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_INC)")},
     {event=g1000.EC5.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_DEC)")},
-    {event=g1000.EC5P.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
+    {event=g1000.EC5P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
+    {event=g1000.EC5P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
     {event=g1000.SW26.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
     {event=g1000.SW2.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
     {event=g1000.SW3.down, action=fs2020.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},

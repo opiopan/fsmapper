@@ -26,6 +26,7 @@ local assets = {
 local common = require("lib/common")
 
 local fontsrc = common.change_bitmap_color(graphics.bitmap("assets/a320_segdisp.png"), assets.sseg_font_color)
+assets.fcu_parts = common.change_bitmap_color(graphics.bitmap("assets/a320_fcu_parts.png"), assets.sseg_font_color)
 
 assets.baro_mode_images[1] = fontsrc:create_partial_bitmap(assets.baro_mode.x, assets.baro_mode.y, assets.baro_mode.width, assets.baro_mode.height)
 assets.baro_mode_images[2] = fontsrc:create_partial_bitmap(assets.baro_mode.x, assets.baro_mode.y + assets.baro_mode.height, assets.baro_mode.width, assets.baro_mode.height)

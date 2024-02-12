@@ -2,6 +2,7 @@ local view_width = 1084
 local view_height = 1541
 
 local assets = require("a32nx/assets")
+local fcu_disp = require('a32nx/fcu_disp')
 
 local mod_context = {}
 
@@ -52,6 +53,9 @@ local observed_data = {
     {rpn="(A:KOHLSMAN SETTING HG:1,Inches of Mercury)", event=events.baro_inhg_change},
     {rpn="(A:KOHLSMAN SETTING MB:1,Millibars)", event=events.baro_hpa_change},
 }
+for i, def in ipairs(fcu_disp.observed_data) do
+    observed_data[#observed_data + 1] = def
+end
 
 --------------------------------------------------------------------------------------
 -- event-action mappings
@@ -73,6 +77,9 @@ local view_mappings = {
 
 local global_mappings = {
 }
+for i, def in ipairs(fcu_disp.global_mappings) do
+    global_mappings[#global_mappings + 1] = def
+end
 
 --------------------------------------------------------------------------------------
 -- button definitions
@@ -110,6 +117,9 @@ local function button_renderer(ctx, value)
 end
 
 local view_elements={}
+for i, element in ipairs(fcu_disp.view_elements) do
+    view_elements[#view_elements + 1] = element
+end
 for key, button in pairs(buttons) do
     view_elements[#view_elements + 1] = {
         object = mapper.view_elements.operable_area{
@@ -240,7 +250,13 @@ global_mappings[#global_mappings + 1] = {
 --------------------------------------------------------------------------------------
 -- view definition generator
 --------------------------------------------------------------------------------------
-local function create_view_def(name, fcu_window, main_window)
+local function create_view_def(name, main_window)
+    local bgimage = graphics.bitmap(assets.fcu.width, assets.fcu.height)
+    local ctx = graphics.rendering_context(bgimage)
+    fcu_disp.render_base_image(ctx)
+    ctx:draw_bitmap(assets.fcu)
+    ctx:finish_rendering()
+
     local elements = {}
     for i, element in ipairs(view_elements) do
         elements[#elements + 1] = element
@@ -248,15 +264,12 @@ local function create_view_def(name, fcu_window, main_window)
     elements[#elements + 1] = {
         object=main_window, x= 0, y=view_height - view_width , width=view_width, height=view_width + 2
     }
-    elements[#elements + 1] = {
-        object=fcu_window, x= 0, y=0, width=view_width, height=view_width
-    }
 
     return {
         name = name,
         logical_width = view_width,
         logical_height = view_height,
-        background = assets.fcu,
+        background = bgimage,
         elements = elements,
         mappings = view_mappings,
     }
