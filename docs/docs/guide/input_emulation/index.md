@@ -110,7 +110,7 @@ seq4.interval = 500
 ```
 
 :::warning Note
-Due to `duration` and `interval` being attributes held on a per [`Keystroke`](/libs/mapper/Keystroke) basis, be careful when concatenating with the '+' operator. The 'duration' and 'interval' of the new object will assume the values of the left-hand side object.
+Due to `duration` and `interval` being attributes held on a per [`Keystroke`](/libs/mapper/Keystroke) basis, be careful when concatenating with the '+' operator. The `duration` and `interval` of the new object will assume the values of the left-hand side object.
 :::
 
 To actually generate the defined keystroke sequence, use [`Keystroke():synthesize()`](/libs/mapper/Keystroke/Keystroke-synthesize) or the native-action returned by [`Keystroke():synthesizer()`](/libs/mapper/Keystroke/Keystroke-synthesizer).

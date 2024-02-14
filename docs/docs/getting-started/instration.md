@@ -49,7 +49,7 @@ While not mandatory for running fsmapper, it's highly recommended to additionall
 fsmapper provides users with more convenient features by integrating with these softwares.
 Throughout this documentation, starting from the [Tutorial](tutorial), numerous script examples assume that these softwares are installed.
 
-- **vJoy ([Dwonload](https://sourceforge.net/projects/vjoystick))**<br/>
+- **vJoy ([Download](https://sourceforge.net/projects/vjoystick))**<br/>
     vJoy is a device driver that functions as a virtual joystick. 
     fsmapper offers multiple functions to alter button status, axis positions, and POV settings of the vJoy device. <br/>
     Through the use of the vJoy device, fsmapper provides highly flexible configurability for human interface devices.

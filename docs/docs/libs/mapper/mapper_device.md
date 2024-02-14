@@ -46,3 +46,9 @@ For plugin devices, please refer to the plugin's documentation.
 
 ## Return Values
 This function returns a [`Device`](/libs/mapper/Device) object corresponding to the specified device.
+
+## See Also
+- [Device Handling](/guide/device/)
+- [Built-in Devices](/category/built-in-devices)
+- [Event Modifier Specification](/guide/device/modifier)
+- [`Device`](/libs/mapper/Device)

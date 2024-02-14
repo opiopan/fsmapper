@@ -20,3 +20,7 @@ You can reset the secondary Event-Action mappings by specifying an empty table, 
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Event Action Mapping](/guide/event-action-mapping)
+- [`mapper.add_secondary_mappings()`](/libs/mapper/mapper_add_secondary_mappings)

@@ -26,3 +26,7 @@ You can reset the primary Event-Action mappings by specifying an empty table, i.
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Event Action Mapping](/guide/event-action-mapping)
+- [`mapper.add_primary_mappings()`](/libs/mapper/mapper_add_primary_mappings)

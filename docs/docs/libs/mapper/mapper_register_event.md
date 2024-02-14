@@ -16,3 +16,8 @@ This function registers an event.
 
 ## Return Values
 This function returns a numeric value representing the event ID.
+
+## See Also
+- [Event Action Mapping](/guide/event-action-mapping)
+- [`mapper.unregister_event()`](/libs/mapper/mapper_unregister_event)
+- [`mapper.get_event_name()`](/libs/mapper/mapper_get_event_name)

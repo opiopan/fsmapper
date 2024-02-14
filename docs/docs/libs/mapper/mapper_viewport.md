@@ -35,3 +35,10 @@ The viewports registered with this function are inactive until [`mapper.start_vi
 
 ## Return Values
 This function returns [`Viewport`](/libs/mapper/Viewport) object.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [`Viewport`](/libs/mapper/Viewport)
+- [`mapper.start_viewports()`](/libs/mapper/mapper_start_viewports)
+- [`mapper.stop_viewports()`](/libs/mapper/mapper_stop_viewports)
+- [`mapper.reset_viewports()`](/libs/mapper/mapper_reset_viewports)

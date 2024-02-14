@@ -17,3 +17,7 @@ This function adds specified Event-Action mappings to the defined secondary mapp
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Event Action Mapping](/guide/event-action-mapping)
+- [`mapper.set_secondary_mappings()`](/libs/mapper/mapper_set_secondary_mappings)

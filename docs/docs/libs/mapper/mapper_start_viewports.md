@@ -13,3 +13,9 @@ It will only become visible once all windows targeted by [`CapturedWindow`](/lib
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [`Viewport`](/libs/mapper/Viewport)
+- [`mapper.stop_viewports()`](/libs/mapper/mapper_stop_viewports)
+- [`mapper.reset_viewports()`](/libs/mapper/mapper_reset_viewports)

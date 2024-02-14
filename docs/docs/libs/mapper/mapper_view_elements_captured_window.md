@@ -26,3 +26,8 @@ This function creates a [`CapturedWindow`](/libs/mapper/CapturedWindow) view ele
 
 ## Return Values
 This function returens a [`CapturedWindow`](/libs/mapper/CapturedWindow) object.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
+- [`CapturedWindow`](/libs/mapper/CapturedWindow)

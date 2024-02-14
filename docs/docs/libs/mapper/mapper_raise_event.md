@@ -18,3 +18,6 @@ This function raises a event.
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Event Action Mapping](/guide/event-action-mapping)

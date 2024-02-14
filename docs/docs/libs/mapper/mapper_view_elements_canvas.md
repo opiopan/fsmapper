@@ -30,3 +30,8 @@ This function creates a [`Canvas`](/libs/mapper/Canvas) view element object.
 
 ## Return Values
 This function returns a [`Canvas`](/libs/mapper/Canvas) object.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
+- [`Canvas`](/libs/mapper/Canvas)

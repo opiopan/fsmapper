@@ -49,3 +49,7 @@ local keys2 = mapper.Keystroke{codes = {'UP', 'RIGHT'}}
 
 ## Return Values
 This function returns [`Keystroke`](/libs/mapper/Keystroke) object.
+
+## See Also
+- [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)
+- [`Keystroke`](/libs/mapper/Keystroke)

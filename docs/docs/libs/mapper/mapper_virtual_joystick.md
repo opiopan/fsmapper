@@ -19,4 +19,8 @@ If you use this function, you need to have [**vJoy**](https://sourceforge.net/pr
 
 
 ## Return Values
-This function returns a [`vJoy`](/libs/mapper/vJoy) object.
+This function returns a [`vJoy`](/Libs/Mapper/Vjoy) object.
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)
+- [`vJoy`](/Libs/Mapper/Vjoy)

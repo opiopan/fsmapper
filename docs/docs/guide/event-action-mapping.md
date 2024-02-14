@@ -50,9 +50,10 @@ local action_native = axis:value_setter()
 Below is a list of functions or methods that provide native-action
 - [`Device:sender()`](/libs/mapper/Device/Device-sender)
 - [`Canvas:value_setter()`](/libs/mapper/Canvas/Canvas-value_setter)
+- [`Canvas:refresher()`](/libs/mapper/Canvas/Canvas-refresher)
 - [`vJoyUnit:value_setter()`](/libs/mapper/vJoyUnit/vJoyUnit-value_setter)
 - [`Keystroke:synthesize()`](/libs/mapper/Keystroke/Keystroke-synthesizer)
-- [filter library](/libs/filter)
+- [filter library functions](/libs/filter)
 - [`fs2020.event_sender()`](/libs/fs2020/fs2020_event_sender)
 - [`fs2020.mfwasm.rpn_executer()`](/libs/fs2020/fs2020_mfwasm_rpn_executer)
 
