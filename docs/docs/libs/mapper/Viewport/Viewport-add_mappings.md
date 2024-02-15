@@ -16,3 +16,7 @@ This function adds Event-Action mappings associated with the viewport.
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Event-Action Mapping](/guide/event-action-mapping)
+- [`Viewport:set_mappings()`](/libs/mapper/Viewport/Viewport-set_mappings)

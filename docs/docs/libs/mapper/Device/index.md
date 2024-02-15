@@ -25,3 +25,6 @@ Device object represents a device such as USB gaming device or custom input/outp
 |[```Device:close()```](/libs/mapper/Device/Device-close)|Close the device|
 |[```Device:send()```](/libs/mapper/Device/Device-send)|Send a value to output unit|
 |[```Device:sender()```](/libs/mapper/Device/Device-sender)|Create a native-action to send a value to output unit|
+
+## See Also
+- [Device Handling](/guide/device)

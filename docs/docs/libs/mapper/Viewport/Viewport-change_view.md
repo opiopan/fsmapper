@@ -16,3 +16,8 @@ This function changes the current view.
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View](/guide/virtual_instrument_panel#view)
+- [`Viewport.current_view`](/libs/mapper/Viewport/Viewport_current_view)

@@ -11,3 +11,8 @@ By setting a View ID to this property, you can change the current view.
 
 ## Type
 numeric
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View](/guide/virtual_instrument_panel#view)
+- [`Viewport:change_view()`](/libs/mapper/Viewport/Viewport-change_view)

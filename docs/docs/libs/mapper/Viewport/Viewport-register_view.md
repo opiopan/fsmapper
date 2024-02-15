@@ -39,3 +39,7 @@ This method registers a new view to the viewport.
 
 ## Return Values
 This function returns the view ID associated with the registered view.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View](/guide/virtual_instrument_panel#view)

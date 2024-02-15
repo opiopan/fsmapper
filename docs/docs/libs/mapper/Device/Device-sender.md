@@ -17,3 +17,10 @@ This method creates a [native-action](/guide/event-action-mapping#action) to sen
 
 ## Return Values
 This method returns a [native-action](/guide/event-action-mapping#action).
+
+## See Also
+- [Device Handling](/guide/device)
+- [Output Unit IDs Table](/guide/device/#output-unit-ids-table)
+- [`Device.upstream_ids`](/libs/mapper/Device/Device_upstream_ids)
+- [`Device:get_upstream_ids()`](/libs/mapper/Device/Device-get_upstream_ids)
+- [`Device:send()`](/libs/mapper/Device/Device-send)
