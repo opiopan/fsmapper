@@ -27,3 +27,7 @@ This method adds a glyph correnspoinding to a code point.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Bitmap Font](/guide/graphics#bitmap-font)
+- [Bitmap](/guide/graphics#bitmap)

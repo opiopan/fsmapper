@@ -15,3 +15,9 @@ This methods sets the object specified in the [`font`](/libs/graphics/RenderingC
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [font](/guide/graphics#font)
+- [`BitmapFont`](/libs/graphics/BitmapFont)
+- [`RenderingContext.font`](/libs/graphics/RenderingContext/RenderingContext_font)

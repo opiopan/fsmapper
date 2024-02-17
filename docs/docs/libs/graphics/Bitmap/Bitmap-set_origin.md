@@ -17,3 +17,9 @@ This method transitions the coordinate system of a bitmap to a new coordinate sy
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Bitmap](/guide/graphics#bitmap)
+- [Bitmap Font](/guide/graphics#bitmap-font)
+- [`RenderingContext:draw_bitmap()`](/libs/graphics/RenderingContext/RenderingContext-draw_bitmap)
+- [`BitmapFont:add_glyph()`](/libs/graphics/BitmapFont/BitmapFont-add_glyph)

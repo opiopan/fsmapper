@@ -20,3 +20,8 @@ If you use this function, you need to have [**MobiFlight WASM Module**](https://
 
 ## Return Values
 This function returns a native-action.
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)
+- [Changing FS2020's Internal State](/guide/msfs#changing-fs2020s-internal-state)
+- [`fs2020.mfwasm.execute_rpn()`](/libs/fs2020/fs2020_mfwasm_execute_rpn)

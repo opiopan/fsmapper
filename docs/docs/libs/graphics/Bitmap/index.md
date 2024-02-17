@@ -10,6 +10,7 @@ Bitmap object represents a bitmap.
 |Constructor|
 |---|
 |[`graphics.bitmap()`](/libs/graphics/graphics_bitmap)
+|[`Bitmap:create_partial_bitmap()`](/libs/graphics/Bitmap/Bitmap-create_partial_bitmap)
 
 ## Properties
 |Name|Description|
@@ -26,3 +27,10 @@ Bitmap object represents a bitmap.
 |-|-|
 |[```Bitmap:set_origin()```](/libs/graphics/Bitmap/Bitmap-set_origin)|Set new origin of the bitmap|
 |[```Bitmap:create_partial_bitmap()```](/libs/graphics/Bitmap/Bitmap-create_partial_bitmap)|Create a bitmap that corresponds to a specific area within the original bitmap
+
+## See Also
+- [Bitmap](/guide/graphics#bitmap)
+- [Bitmap Brush](/guide/graphics#bitmap-brush)
+- [Bitmap Font](/guide/graphics#bitmap-font)
+- [`RenderingContext.opacity_mask`](/libs/graphics/RenderingContext/RenderingContext_opacity_mask)
+- [`RenderingContext:draw_bitmap()`](/libs/graphics/RenderingContext/RenderingContext-draw_bitmap)

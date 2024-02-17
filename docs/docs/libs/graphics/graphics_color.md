@@ -22,3 +22,10 @@ This function creates a solid color brush object.
 
 ## Return Values
 This function returns a [`Color`](/libs/graphics/Color) object.
+
+## See Also
+- [Graphics](/guide/graphics)
+- [Solid Color](/guide/graphics#solid-color)
+- [`Color`](/libs/graphics/Color)
+- [`RenderingContext.brush`](/libs/graphics/RenderingContext/RenderingContext_brush)
+- [`RenderingContext:set_brush()`](/libs/graphics/RenderingContext/RenderingContext-set_brush)

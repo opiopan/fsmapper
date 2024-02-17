@@ -17,3 +17,9 @@ The Path object represents a user-defined geometry that can encompass complex sh
 |[```Path:add_figure()```](/libs/graphics/Path/Path-add_figure)|Add a figure to the path|
 |[```Path:fix()```](/libs/graphics/Path/Path-fix)|Finalize the path to make it drawable|
 |[```Path:set_origin()```](/libs/graphics/Path/Path-set_origin)|set new origin of the path|
+
+## See Also
+- [Path](/guide/graphics#path)
+- [Drawing Geometry](/guide/graphics#drawing-geometry)
+- [`RenderingContext:draw_geometry()`](/libs/graphics/RenderingContext/RenderingContext-draw_geometry)
+- [`RenderingContext:fill_geometry()`](/libs/graphics/RenderingContext/RenderingContext-fill_geometry)

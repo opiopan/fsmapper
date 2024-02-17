@@ -20,3 +20,6 @@ This method creates a bitmap that corresponds to a specific area within the orig
 
 ## Return Values
 This method returns a [`Bitmap`](/libs/graphics/Bitmap) object.
+
+## See Also
+- [Bitmap](/guide/graphics#bitmap)

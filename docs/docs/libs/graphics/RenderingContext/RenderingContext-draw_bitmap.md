@@ -37,3 +37,7 @@ This method draws a bitmap.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Bitmap](/guide/graphics#bitmap)
+- [`Bitmap`](/libs/graphics/Bitmap)

@@ -11,3 +11,6 @@ This property is not able to be update.
 
 ## Type
 numeric
+
+## See Also
+- [Bitmap](/guide/graphics#bitmap)

@@ -29,3 +29,10 @@ This method renders text using the font set in the rendering context.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [Font](/guide/graphics#font)
+- [`BitmapFont`](/libs/graphics/BitmapFont)
+- [`RenderingContext.font`](/libs/graphics/RenderingContext/RenderingContext_font)
+- [`RenderingContext:draw_number()`](/libs/graphics/RenderingContext/RenderingContext-draw_number)

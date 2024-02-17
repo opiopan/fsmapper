@@ -17,3 +17,6 @@ The fs2020 library provides interactivity features with Microsoft Flight Simulat
 |[```fs2020.mfwasm.rpn_executer()```](/libs/fs2020/fs2020_mfwasm_rpn_executer)|Create a native-action to execute an RPN script within MSFS|
 |[```fs2020.mfwasm.add_observed_data()```](/libs/fs2020/fs2020_mfwasm_add_observed_data)|Register MSFS internal data for observing|
 |[```fs2020.mfwasm.clear_observed_data()```](/libs/fs2020/fs2020_mfwasm_clear_observed_data)|Clear all observed MSFS internal data|
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)

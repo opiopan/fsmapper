@@ -30,3 +30,8 @@ If you use this function, you need to have [**MobiFlight WASM Module**](https://
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)
+- [Retrieving FS2020's Internal State](/guide/msfs#retrieving-fs2020s-internal-state)
+- [`fs2020.mfwasm.clear_observed_data()`](/libs/fs2020/fs2020_mfwasm_clear_observed_data)

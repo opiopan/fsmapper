@@ -13,3 +13,8 @@ The final alpha value of the rendered result is a product of the alpha value spe
 
 ## Type
 [`Bitmap`](/libs/graphics/Bitmap)
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [`Bitmap`](/libs/graphics/Bitmap)
+- [`RenderingContext:set_opacity_mask()`](/libs/graphics/RenderingContext/RenderingContext-set_opacity_mask)

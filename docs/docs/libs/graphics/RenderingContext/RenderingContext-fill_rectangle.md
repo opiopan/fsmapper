@@ -19,3 +19,7 @@ This method fills a rectangular region using the brush set in the rendering cont
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [`RenderingContext.brush`](/libs/graphics/RenderingContext/RenderingContext_brush)

@@ -17,3 +17,7 @@ This methods sets the value specified in the [`stroke_width`](/libs/graphics/Ren
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [`RenderingContext.stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width)

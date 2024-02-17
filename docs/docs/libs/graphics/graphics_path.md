@@ -17,3 +17,10 @@ This function creates a [`Path`](/libs/graphics/Path) geometry object.
 
 ## Return Values
 This function returns a [`Path`](/libs/graphics/Path) object.
+
+## See Also
+- [Graphics](/guide/graphics)
+- [Path](/guide/graphics#path)
+- [`Path`](/libs/graphics/Path)
+- [`RenderingContext:draw_geometry()`](/libs/graphics/RenderingContext/RenderingContext-draw_geometry)
+- [`RenderingContext:fill_geometry()`](/libs/graphics/RenderingContext/RenderingContext-fill_geometry)

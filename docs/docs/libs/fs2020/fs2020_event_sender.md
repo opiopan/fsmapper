@@ -24,3 +24,6 @@ This function is recommended to be replaced with [`fs2020.mfwasm.rpn_executer()`
 
 ## Return Values
 This function returns a native-action.
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)

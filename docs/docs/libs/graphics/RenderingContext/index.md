@@ -33,3 +33,6 @@ RenderingContext object is created for each rendering target, it enables graphic
 |[```RenderingContext:draw_string()```](/libs/graphics/RenderingContext/RenderingContext-draw_string)|Draw a string|
 |[```RenderingContext:draw_number()```](/libs/graphics/RenderingContext/RenderingContext-draw_number)|Draw a formated string of a numeric value|
 |[```RenderingContext:fill_rectangle()```](/libs/graphics/RenderingContext/RenderingContext-fill_rectangle)|Fill a rectangle|
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)

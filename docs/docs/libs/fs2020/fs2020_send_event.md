@@ -25,3 +25,6 @@ This function is recommended to be replaced with [`fs2020.mfwasm.execute_rpn()`]
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)

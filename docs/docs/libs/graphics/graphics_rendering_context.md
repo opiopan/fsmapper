@@ -16,3 +16,7 @@ This function creates a rendering context target to a bitmap.
 
 ## Return Values
 This function returns a [`RenderingContext`](/libs/graphics/RenderingContext) object.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [`RenderingContext`](/libs/graphics/RenderingContext)

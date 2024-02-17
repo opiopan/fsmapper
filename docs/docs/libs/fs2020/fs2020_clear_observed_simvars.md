@@ -10,3 +10,6 @@ This function clear all registerd information and contexts for observing [SimVar
 
 ## Return Values
 This function doesn't return any value.
+
+## See Also
+- [Interaction with MSFS](/guide/msfs)

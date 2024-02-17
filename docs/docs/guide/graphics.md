@@ -291,7 +291,7 @@ Generate a BitmapFont object using [`graphics.bitmap_font()`](/libs/graphics/gra
 The width and height of each glyph can vary per code point based on the bitmap size. 
 Additionally, adjusting the origin of the registered bitmaps allows tweaking the so-called baseline or accommodating glyphs that overlap with the previous character when rendering text.
 
-In [this Lua module](https://github.com/opiopan/fsmapper/blob/v0.9.1/samples/practical/lib/segdisp.lua) used in [this sample script](/samples/c172), we parametrically generate a font for a 7-segment display. Please refer to it as an example of BitmapFont usage.
+In [this Lua module](https://github.com/opiopan/fsmapper/blob/v0.9.1/samples/practical/lib/segdisp.lua) used in [this sample script](/samples/c172), it parametrically generates a font for a 7-segment display. Please refer to it as an example of BitmapFont usage.
 
 ### Drawing Text with Font
 To render text, start by setting the font within the rendering context.

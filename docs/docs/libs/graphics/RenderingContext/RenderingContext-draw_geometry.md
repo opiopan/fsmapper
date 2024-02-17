@@ -35,3 +35,13 @@ This function draws the outline of the specified geometry using following proper
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [Geometry](/guide/graphics#geometry)
+- [`SimpleGeometry`](/libs/graphics/SimpleGeometry)
+- [`Path`](/libs/graphics/Path)
+- [`RenderingContext.brush`](/libs/graphics/RenderingContext/RenderingContext_brush)
+- [`RenderingContext.stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width)
+- [`RenderingContext.opacity_mask`](/libs/graphics/RenderingContext/RenderingContext_opacity_mask)
+- [`RenderingContext:fill_geometry()`](/libs/graphics/RenderingContext/RenderingContext-fill_geometry)

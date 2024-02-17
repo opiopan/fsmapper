@@ -16,3 +16,10 @@ This methods sets the object specified in the [`brush`](/libs/graphics/Rendering
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)
+- [brush](/guide/graphics#brush)
+- [`Color`](/libs/graphics/Color)
+- [`Bitmap`](/libs/graphics/Bitmap)
+- [`RenderingContext.brush`](/libs/graphics/RenderingContext/RenderingContext_brush)

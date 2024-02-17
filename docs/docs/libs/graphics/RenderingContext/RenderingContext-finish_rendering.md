@@ -11,3 +11,6 @@ This method finalizes the drawing process.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Rendering Context](/guide/graphics#rendering-context)

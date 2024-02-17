@@ -54,3 +54,9 @@ The definition of segments is done using one of the following tables.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Path](/guide/graphics#path)
+- [Drawing Geometry](/guide/graphics#drawing-geometry)
+- [`RenderingContext:draw_geometry()`](/libs/graphics/RenderingContext/RenderingContext-draw_geometry)
+- [`RenderingContext:fill_geometry()`](/libs/graphics/RenderingContext/RenderingContext-fill_geometry)

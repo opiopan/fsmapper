@@ -17,3 +17,6 @@ This property is used when a bitmap is employed as a brush.
 
 ## Type
 string
+
+## See Also
+- [Bitmap Brush](/guide/graphics#bitmap-brush)
