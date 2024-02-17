@@ -33,5 +33,7 @@ This function returns a [`Canvas`](/libs/mapper/Canvas) object.
 
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View Element](/guide/virtual_instrument_panel#view-element)
+- [Render on the View](/guide/virtual_instrument_panel#render-on-the-view)
 - [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
 - [`Canvas`](/libs/mapper/Canvas)

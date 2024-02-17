@@ -18,3 +18,6 @@ vJoyUnit object represents an operable unit of the virtual joystick, i.e., an an
 |-|-|
 |[```vJoyUnit:set_value()```](/libs/mapper/vJoyUnit/vJoyUnit-set_value)|Set a value for the operable unit|
 |[```vJoyUnit:value_setter()```](/libs/mapper/vJoyUnit/vJoyUnit-value_setter)|Create a  native-actionn to set a valuev for the operable unit|
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)

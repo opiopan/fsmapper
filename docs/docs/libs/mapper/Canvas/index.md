@@ -24,3 +24,8 @@ Canvas object represents a drawable area on a view.
 |[```Canvas:value_setter()```](/libs/mapper/Canvas/Canvas-value_setter)|Create a native-action to set a value for the canvas|
 |[`Canvas:refresh()`](/libs/mapper/Canvas/Canvas-refresh)|Redraw the canvas area|
 |[`Canvas:refresher()`](/libs/mapper/Canvas/Canvas-refresher)|Create a native-action to redraw the canvas area|
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View Element](/guide/virtual_instrument_panel#view-element)
+- [Render on the View](/guide/virtual_instrument_panel#render-on-the-view)

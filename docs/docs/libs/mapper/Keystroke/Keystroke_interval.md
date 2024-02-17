@@ -11,3 +11,6 @@ The time in milliseconds to wait after releasing one key before pressing the nex
 
 ## Type
 numeric
+
+## See Also
+- [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)

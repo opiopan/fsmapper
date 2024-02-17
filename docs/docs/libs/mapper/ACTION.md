@@ -17,3 +17,7 @@ Action function defined by the user.
 
 ## Return Values
 fsmapper does not reference the return value of this function.
+
+## See Also
+- [Event-Action Mapping](/guide/event-action-mapping)
+- [Action](/guide/event-action-mapping#action)

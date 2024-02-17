@@ -16,3 +16,6 @@ This function creates a native-action that replicates an event for multiple subs
 
 ## Return Values
 This function returns a native-action.
+
+## See Also
+- [Filter](/guide/event-action-mapping#filter)

@@ -11,3 +11,7 @@ This method creates a  native-action to synthesize keystroke sequense hold by th
 
 ## Return Values
 This method returns a native-action.
+
+## See Also
+- [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)
+- [Keystroke:synthesize()](/libs/mapper/Keystroke/Keystroke-synthesize)

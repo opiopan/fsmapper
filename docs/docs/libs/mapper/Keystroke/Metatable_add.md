@@ -20,3 +20,7 @@ You can combine two [`Keystroke`](/libs/mapper/Keystroke) objects to create a ne
 
 ## Return Values
 This operator returns a [`Keystroke`](/libs/mapper/Keystroke) object.
+
+
+## See Also
+- [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)

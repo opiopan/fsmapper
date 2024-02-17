@@ -18,3 +18,6 @@ This function creates a native-action that delays the execution of action.
 
 ## Return Values
 This funciton returns a native-action.
+
+## See Also
+- [Filter](/guide/event-action-mapping#filter)

@@ -28,3 +28,6 @@ The Keystroke object, contrary to its name, does not represent a simple key pres
 |Operator|Description|
 |-|-|
 |[`+`](/libs/mapper/Keystroke/Metatable_add)|Concatenating operation for keystrokes
+
+## See Also
+- [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)

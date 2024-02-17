@@ -19,3 +19,6 @@ For values other than the specified ones, the mapping is determined through line
 
 ## Return Values
 This function returns a native-action.
+
+## See Also
+- [Filter](/guide/event-action-mapping#filter)

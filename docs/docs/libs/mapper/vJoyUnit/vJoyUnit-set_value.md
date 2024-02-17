@@ -24,3 +24,7 @@ The values that can be configured for each unit are as follows.
 
 ## Return Values
 This method doesn't return any value.
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)
+- [vJoyUnit:value_setter()](/libs/mapper/vJoyUnit/vJoyUnit-value_setter)

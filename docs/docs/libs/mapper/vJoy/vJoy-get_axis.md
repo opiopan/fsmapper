@@ -17,3 +17,7 @@ This method is used to get a [`vJoyUnit`](/libs/mapper/vJoyUnit) object correspo
 
 ## Return Values
 This method returns a [`vJoyUnit`](/libs/mapper/vJoyUnit) object.
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)
+- [`vJoyUnit`](/libs/mapper/vJoyUnit)

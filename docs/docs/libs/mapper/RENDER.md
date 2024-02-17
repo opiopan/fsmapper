@@ -19,3 +19,7 @@ Specifically, it is invoked when the view becomes the current view, when the [`v
 
 ## Return Values
 fsmapper does not reference the return value of this function.
+
+## See Also
+- [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [Render on the View](/guide/virtual_instrument_panel#render-on-the-view)

@@ -17,3 +17,6 @@ vJoy object represents a virtual joystick.
 |[```vJoy:get_axis()```](/libs/mapper/vJoy/vJoy-get_axis)|Return a vJoyUnit object corresponding to an analog axis|
 |[```vJoy:get_button()```](/libs/mapper/vJoy/vJoy-get_button)|Return a vJoyUnit object corresponding to a button|
 |[```vJoy:get_pov()```](/libs/mapper/vJoy/vJoy-get_pov)|Return a vJoyUnit object corresponding to a POV|
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)

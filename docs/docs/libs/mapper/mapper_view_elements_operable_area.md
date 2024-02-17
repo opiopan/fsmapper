@@ -34,5 +34,7 @@ This function returns a [`OperableArea`](/libs/mapper/OperableArea) object.
 
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)
+- [View Element](/guide/virtual_instrument_panel#view-element)
+- [Handle Touch Event](/guide/virtual_instrument_panel#handle-touch-event)
 - [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
 - [`OperableArea`](/libs/mapper/OperableArea)

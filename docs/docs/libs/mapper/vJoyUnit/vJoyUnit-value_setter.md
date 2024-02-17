@@ -22,3 +22,7 @@ The values that can be configured for each unit are as follows.
 
 ## Return Values
 This method returns a native-action.
+
+## See Also
+- [Joystick emulation](/guide/input_emulation/#joystick-emulation)
+- [vJoyUnit:set_value()](/libs/mapper/vJoyUnit/vJoyUnit-set_value)

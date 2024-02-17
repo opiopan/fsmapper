@@ -25,3 +25,6 @@ You can specify one or more conditions based on the increase or decrease of the 
 
 ## Return Values
 This function returns a native-action.
+
+## See Also
+- [Filter](/guide/event-action-mapping#filter)
