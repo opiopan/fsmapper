@@ -1,6 +1,6 @@
 NOTE:|
 :-|
-The [**fsmapper User's Guide**](https://opiopan.github.io/fsmapper-docs) is available [here](https://opiopan.github.io/fsmapper-docs). Please refer to this guide for instructions on how to use fsmapper
+The [**fsmapper User's Guide**](https://opiopan.github.io/fsmapper) is available [here](https://opiopan.github.io/fsmapper). Please refer to this guide for instructions on how to use fsmapper
 
 fsmapper
 ===
