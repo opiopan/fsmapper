@@ -85,8 +85,43 @@ const config = {
       footer: {
         style: 'dark',
         links: [
+          {
+            title: 'Documentation',
+            items: [
+              {
+                label: 'Introduction',
+                to: '/',
+              },
+              {
+                label: 'Configuration Guide',
+                to: '/category/configuration-guide',
+              },
+              {
+                label: 'Library Reference',
+                to: '/libs/',
+              },
+            ],
+          },
+          {
+            title: 'Contact',
+            items: [
+              {
+                label: 'opiopan@gmail.com',
+                href: 'mailto:opiopan@gmail.com',
+              },
+            ],
+          },
+          {
+            title: 'More',
+            items: [
+              {
+                label: 'GitHub',
+                href: 'https://github.com/opiopan/fsmapper',
+              },
+            ],
+          },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Hiroshi Murayama. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Hiroshi Murayama &lt;opiopan@gmail.com&gt;.`,
       },
       prism: {
         theme: prismThemes.github,
