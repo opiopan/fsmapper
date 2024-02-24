@@ -253,6 +253,8 @@ bool MapperEngine::run(std::string&& scriptPath){
         sendHostEvent(MEV_START_MAPPING, 0);
         lock.lock();
 
+        event.view_updated_time = CLOCK::now();
+
         while (true){
             //-------------------------------------------------------------------------------
             // collect garbage in Lua environment as needed
@@ -357,6 +359,34 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
 
             //-------------------------------------------------------------------------------
+            // process touch operation on viewports
+            //-------------------------------------------------------------------------------
+            if (event.touch_event_occurred){
+                event.touch_event_occurred = false;
+                lock.unlock();
+                scripting.viewportManager->process_touch_event();
+                lock.lock();
+            }
+
+            //-------------------------------------------------------------------------------
+            // Prioritize event-action mapping processing over view update processes or host notifications
+            //-------------------------------------------------------------------------------
+            if (event.queue.size() > 0 && now - event.view_updated_time < std::chrono::milliseconds(50)){
+                continue;
+            }
+            event.view_updated_time = now;
+
+            //-------------------------------------------------------------------------------
+            // update viewport windows if needed
+            //-------------------------------------------------------------------------------
+            if (event.need_update_viewports){
+                event.need_update_viewports = false;
+                lock.unlock();
+                scripting.viewportManager->update_viewports();
+                lock.lock();
+            }
+
+            //-------------------------------------------------------------------------------
             // notify events if needed
             //-------------------------------------------------------------------------------
             if (scripting.updated_flags){
@@ -392,26 +422,6 @@ bool MapperEngine::run(std::string&& scriptPath){
                 if (flags & UPDATED_LOST_CAPTURED_WINDOW){
                     sendHostEvent(MEV_LOST_CAPTURED_WINDOW, 0);
                 }
-                lock.lock();
-            }
-
-            //-------------------------------------------------------------------------------
-            // process touch operation on viewports
-            //-------------------------------------------------------------------------------
-            if (event.touch_event_occurred){
-                event.touch_event_occurred = false;
-                lock.unlock();
-                scripting.viewportManager->process_touch_event();
-                lock.lock();
-            }
-
-            //-------------------------------------------------------------------------------
-            // update viewport windows if needed
-            //-------------------------------------------------------------------------------
-            if (event.need_update_viewports){
-                event.need_update_viewports = false;
-                lock.unlock();
-                scripting.viewportManager->update_viewports();
                 lock.lock();
             }
 

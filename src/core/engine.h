@@ -98,6 +98,7 @@ protected :
         std::map<TIME_POINT, DeferredAction> deferred_actions;
         bool need_update_viewports = false;
         bool touch_event_occurred = false;
+        TIME_POINT view_updated_time;
     }event;
 
     std::unique_ptr<EventActionMap> mapping[2];
