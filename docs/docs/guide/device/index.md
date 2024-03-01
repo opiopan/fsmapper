@@ -127,7 +127,7 @@ device = Device{
         {class = "binary", modtype = "button"},
     }
 }
-events = device:get_events()
+local events = device:get_events()
 mapper:set_primary_mappings{
     {
         event = events.SW1.down,
@@ -150,7 +150,7 @@ device = Device{
     type = "simhid",
     identifier = {path = 'COM4'},
 }
-ids = device:get_upstream_ids()
+local ids = device:get_upstream_ids()
 device:send(ids.LandingGearLeverIndicator, 1)
 ```
 
