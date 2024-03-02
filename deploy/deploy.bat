@@ -41,4 +41,6 @@ Rename-Item -Path "$($dest_sdk)\sdk_samples" -NewName "samples"
 Rename-Item -Path "$($dest)\Assets" -NewName "assets.tmp"
 Rename-Item -Path "$($dest)\assets.tmp" -NewName "assets"
 
+New-Item "$($dest)\plugins" -ItemType Directory
+
 Compress-Archive -Path $dest -DestinationPath $package
