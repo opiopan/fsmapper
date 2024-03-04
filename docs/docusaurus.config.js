@@ -63,7 +63,7 @@ const config = {
           alt: 'famapper logo',
           src: 'img/logo.svg',
         },
-        hideOnScroll: true,
+        hideOnScroll: false,
         items: [
           {
             href: Version.package,

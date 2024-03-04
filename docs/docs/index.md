@@ -41,7 +41,7 @@ If you watch the following video, you'll get a better understanding of what can 
     </iframe>
 </div>
 
-In this video, A320's virtual instrument panels are assembled on a 10.5-inch touchscreen by combining six popup windows 
+In this video, A320's virtual instrument panels are assembled on a 10.5-inch touchscreen by combining six pop-out windows 
 (FCU, PFD, ND, ECAM x 2, MCDU) and user-defined instruments and switches. 
 Additionally, by dynamically switching and displaying the instrument panels,
 it enables diverse information representation and manipulation even on a small screen.
