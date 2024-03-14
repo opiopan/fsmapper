@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <algorithm>
+#include <unordered_map>
 #include <atlbase.h>
 #include <d2d1.h>
+#include <dwrite.h>
 #include <wincodec.h>
 #include <sol/sol.hpp>
 #include "tools.h"
@@ -201,10 +203,31 @@ namespace graphics{
     //============================================================================================
     class font{
     public:
-        virtual FloatRect draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale = 1.f) = 0;
+        virtual FloatRect draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale = 1.f) = 0;
     };
 
     std::shared_ptr<font> as_font(sol::object& obj);
+
+    //============================================================================================
+    // system_font: represented the font installed into Windows system
+    //============================================================================================
+    class system_font : public font{
+    protected:
+        static std::unordered_map<std::string, DWRITE_FONT_STYLE> style_map;
+        std::string font_family;
+        std::wstring font_family_utf16;
+        const unsigned weight;
+        std::string style;
+        DWRITE_FONT_STYLE style_value;
+        const float height;
+        float height_in_dpi{0};
+        CComPtr<IDWriteTextFormat> text_format{nullptr};
+
+    public:
+        system_font(const char* font_family, unsigned weight, const char* style, float height);
+        virtual ~system_font() = default;
+        FloatRect draw_string(const render_target &target, const char *string, ID2D1Brush* brush, const FloatPoint &pos, float scale = 1.f) override;
+    };
 
     //============================================================================================
     // bitmap_font: font created from bitmap
@@ -221,7 +244,7 @@ namespace graphics{
         virtual ~bitmap_font() = default;
 
         void add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph);
-        FloatRect draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale = 1.f) override;
+        FloatRect draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale = 1.f) override;
 
         void add_glyph_lua(sol::variadic_args args);
     };

@@ -22,12 +22,14 @@
 //============================================================================================
 static CComPtr<ID2D1Factory> d2d_factory;
 static CComPtr<IWICImagingFactory> wic_factory;
+static CComPtr<IDWriteFactory> dwrite_factory;
 static CComPtr<ID3D10Device1> d3d_device;
 
 namespace graphics{
     bool initialize_grahics(){
         auto result = ::D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &d2d_factory) == S_OK;
         result &= wic_factory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER) == S_OK;
+        result &= ::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&dwrite_factory)) == S_OK;
         result &= D3D10CreateDevice1(
             0, // adapter
             D3D10_DRIVER_TYPE_HARDWARE,
@@ -42,6 +44,7 @@ namespace graphics{
     void terminate_graphics(){
         d3d_device = nullptr;
         wic_factory = nullptr;
+        dwrite_factory = nullptr;
         d2d_factory = nullptr;
     }
 }
@@ -703,11 +706,76 @@ namespace graphics{
 namespace graphics{
     std::shared_ptr<font> as_font(sol::object& obj){
         std::shared_ptr<font> font;
-        if (obj.is<bitmap_font>()){
+        if (obj.is<system_font>()){
+            font = obj.as<std::shared_ptr<system_font>>();
+        }else if (obj.is<bitmap_font>()){
             font = obj.as<std::shared_ptr<bitmap_font>>();
         }
         return font;
     }
+
+    std::unordered_map<std::string, DWRITE_FONT_STYLE> system_font::style_map{
+        {"normal", DWRITE_FONT_STYLE_NORMAL},
+        {"oblique", DWRITE_FONT_STYLE_OBLIQUE},
+        {"italic", DWRITE_FONT_STYLE_ITALIC},
+    };
+
+    system_font::system_font(const char* font_family, unsigned weight, const char* style, float height) : 
+        font_family(font_family), weight(weight), style(style), height(height) {
+        tools::utf8_to_utf16_translator utf16string{font_family};
+        font_family_utf16 = utf16string;
+        if (this->style.size() == 0){
+            style_value = DWRITE_FONT_STYLE_NORMAL;
+        }else if (style_map.count(this->style) > 0){
+            style_value = style_map[this->style];
+        }else{
+            throw MapperException("font style must be either 'normal', 'oblique', or 'italic'");
+        }
+        CComPtr<IDWriteTextFormat> format;
+        auto rc = dwrite_factory->CreateTextFormat(
+            font_family_utf16.c_str(), nullptr,
+            static_cast<DWRITE_FONT_WEIGHT>(weight), style_value, DWRITE_FONT_STRETCH_NORMAL,
+            12, L"en-us", &format);
+        if (rc != S_OK){
+            std::ostringstream os;
+            os << "failed to create a SystemFont object with specified parameters:\n";
+            os << "    Font Family: " << font_family << "\n";
+            os << "    Font Weight: " << weight << "\n";
+            os << "    Font Style: " << style;
+            throw MapperException("");
+        }
+    }
+
+    FloatRect system_font::draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale){
+        float dpi_x, dpi_y;
+        target->GetDpi(&dpi_x, &dpi_y);
+        float exact_height = height / dpi_y * 96;
+        if (text_format || exact_height != height_in_dpi){
+            text_format = nullptr;
+            height_in_dpi = exact_height;
+            auto rc = dwrite_factory->CreateTextFormat(
+                font_family_utf16.c_str(), nullptr,
+                static_cast<DWRITE_FONT_WEIGHT>(weight), style_value, DWRITE_FONT_STRETCH_NORMAL,
+                exact_height, L"en-us",
+                &text_format);
+            if (rc != S_OK){
+                std::ostringstream os;
+                os << "failed to create a DirectWrite text format object when rendering the text:\n";
+                os << "    Font Family: " << font_family << "\n";
+                os << "    Font Weight: " << weight << "\n";
+                os << "    Font Style: " << style;
+                mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str().c_str());
+            }
+            auto target_size = target->GetSize();
+            D2D1_RECT_F rect{pos.x, pos.y, 999999, target_size.height - pos.y};
+            tools::utf8_to_utf16_translator utf16string{string};
+            if (brush){
+                target->DrawText(utf16string, utf16string.size(), text_format, rect, brush);
+            }
+        }
+        return {};
+    }
+
 
     void bitmap_font::add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph){
         if (code_point >= code_point_min && code_point <= code_point_max ){
@@ -743,7 +811,7 @@ namespace graphics{
         });
     }
 
-    FloatRect bitmap_font::draw_string(const render_target& target, const char* string, const FloatPoint& pos, float scale){
+    FloatRect bitmap_font::draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale){
         FloatRect rect{pos.x, pos.y, 0.f, 0.f};
         for (const char* code = string; *code; code++){
             if (*code >= code_point_min && *code <= code_point_max){
@@ -1087,7 +1155,7 @@ namespace graphics{
     void rendering_context::draw_string_native(const char* string, const FloatPoint& point){
         auto opoint = point;
         translate_to_context_coordinate(opoint);
-        font->draw_string(*target, string, opoint, this->scale);
+        font->draw_string(*target, string, brush ? brush->brush_interface(*target): nullptr, opoint, this->scale);
     }
 }
 
@@ -1199,6 +1267,39 @@ void graphics::create_lua_env(MapperEngine& engine, sol::state& lua){
         "brush_extend_mode_x", sol::property(&bitmap::get_brush_extend_mode_x, &bitmap::set_brush_extend_mode_x),
         "brush_extend_mode_y", sol::property(&bitmap::get_brush_extend_mode_y, &bitmap::set_brush_extend_mode_y),
         "brush_interpolation_mode", sol::property(&bitmap::get_brush_interpolation_mode, &bitmap::set_brush_interpolation_mode)
+    );
+
+    //
+    // system_font
+    //
+    table.new_usertype<graphics::system_font>(
+        "system_font",
+        sol::call_constructor, sol::factories([&engine](sol::object arg){
+            return lua_c_interface(engine, "graphics.system_font", [&arg](){
+                if (arg.get_type() != sol::type::table){
+                    throw MapperException("argument of this funciton must be a table");
+                }
+                sol::table params = arg;
+                auto family_name = lua_safestring(params["family_name"]);
+                auto weight = lua_safevalue<int>(params["weight"]);
+                auto style = lua_safestring(params["style"]);
+                auto height = lua_safevalue<float>(params["height"]);
+                if (family_name.size() == 0){
+                    throw MapperException("'family_name' parameter must be specified");
+                }
+                if (weight && (*weight < 1 || *weight > 999)){
+                    throw MapperException("the value of `weight` parameter must be between 1 and 999");
+                }
+                if (!height){
+                    throw MapperException("'height' parameter' must be specified");
+                }
+                return std::make_shared<system_font>(
+                    family_name.c_str(), 
+                    weight ? *weight : DWRITE_FONT_WEIGHT_NORMAL,
+                    style.size() == 0 ? "normal" : style.c_str(),
+                    *height);
+            });
+        })
     );
 
     //

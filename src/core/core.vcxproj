@@ -159,7 +159,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.6\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.6-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua5.4.6-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
@@ -191,7 +191,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.6\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.6-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua5.4.6-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
