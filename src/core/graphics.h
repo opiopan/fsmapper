@@ -201,9 +201,14 @@ namespace graphics{
     //============================================================================================
     // font: abstract class for all font implementation
     //============================================================================================
+    enum class valign{top, center, bottom};
+    enum class halign{left, center, right};
+
     class font{
     public:
-        virtual FloatRect draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale = 1.f) = 0;
+        virtual FloatRect draw_string(
+            const render_target& target, const char* string, ID2D1Brush* brush,
+            const FloatRect& rect, float scale = 1.f, valign v_align = valign::top, halign h_align = halign::left) = 0;
     };
 
     std::shared_ptr<font> as_font(sol::object& obj);
@@ -221,12 +226,16 @@ namespace graphics{
         DWRITE_FONT_STYLE style_value;
         const float height;
         float height_in_dpi{0};
+        halign h_align{halign::left};
+        valign v_align{valign::top};
         CComPtr<IDWriteTextFormat> text_format{nullptr};
 
     public:
         system_font(const char* font_family, unsigned weight, const char* style, float height);
         virtual ~system_font() = default;
-        FloatRect draw_string(const render_target &target, const char *string, ID2D1Brush* brush, const FloatPoint &pos, float scale = 1.f) override;
+        FloatRect draw_string(
+            const render_target &target, const char *string, ID2D1Brush *brush,
+            const FloatRect &rect, float scale = 1.f, valign v_align = valign::top, halign h_align = halign::left) override;
     };
 
     //============================================================================================
@@ -244,7 +253,9 @@ namespace graphics{
         virtual ~bitmap_font() = default;
 
         void add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph);
-        FloatRect draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale = 1.f) override;
+        FloatRect draw_string(
+            const render_target &target, const char *string, ID2D1Brush *brush,
+            const FloatRect &rect, float scale = 1.f, valign v_align = valign::top, halign h_align = halign::left) override;
 
         void add_glyph_lua(sol::variadic_args args);
     };
@@ -291,6 +302,7 @@ namespace graphics{
     protected:
         void translate_to_context_coordinate(FloatPoint& point);
         void translate_to_context_coordinate(FloatRect& rect);
-        void draw_string_native(const char* string, const FloatPoint& point);
+        void extract_region(const sol::variadic_args& args, FloatRect& rect, valign& v_align, halign& h_align);
+        void draw_string_native(const char* string, const FloatRect& rect, valign v_align, halign h_align);
     };
 }

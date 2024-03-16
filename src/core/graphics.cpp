@@ -731,28 +731,18 @@ namespace graphics{
         }else{
             throw MapperException("font style must be either 'normal', 'oblique', or 'italic'");
         }
-        CComPtr<IDWriteTextFormat> format;
-        auto rc = dwrite_factory->CreateTextFormat(
-            font_family_utf16.c_str(), nullptr,
-            static_cast<DWRITE_FONT_WEIGHT>(weight), style_value, DWRITE_FONT_STRETCH_NORMAL,
-            12, L"en-us", &format);
-        if (rc != S_OK){
-            std::ostringstream os;
-            os << "failed to create a SystemFont object with specified parameters:\n";
-            os << "    Font Family: " << font_family << "\n";
-            os << "    Font Weight: " << weight << "\n";
-            os << "    Font Style: " << style;
-            throw MapperException("");
-        }
     }
 
-    FloatRect system_font::draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale){
+    FloatRect system_font::draw_string(
+        const render_target &target, const char *string, ID2D1Brush *brush, const FloatRect &rect, float scale, valign v_align, halign h_align){
         float dpi_x, dpi_y;
         target->GetDpi(&dpi_x, &dpi_y);
-        float exact_height = height / dpi_y * 96;
-        if (text_format || exact_height != height_in_dpi){
+        float exact_height = height / dpi_y * 96 * scale;
+        if (!text_format || exact_height != height_in_dpi || this->h_align != h_align || this->v_align != v_align){
             text_format = nullptr;
             height_in_dpi = exact_height;
+            this->h_align = h_align;
+            this->v_align = v_align;
             auto rc = dwrite_factory->CreateTextFormat(
                 font_family_utf16.c_str(), nullptr,
                 static_cast<DWRITE_FONT_WEIGHT>(weight), style_value, DWRITE_FONT_STRETCH_NORMAL,
@@ -766,16 +756,23 @@ namespace graphics{
                 os << "    Font Style: " << style;
                 mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str().c_str());
             }
-            auto target_size = target->GetSize();
-            D2D1_RECT_F rect{pos.x, pos.y, 999999, target_size.height - pos.y};
-            tools::utf8_to_utf16_translator utf16string{string};
-            if (brush){
-                target->DrawText(utf16string, utf16string.size(), text_format, rect, brush);
-            }
+            text_format->SetTextAlignment(
+                h_align == halign::left   ? DWRITE_TEXT_ALIGNMENT_LEADING :
+                h_align == halign::center ? DWRITE_TEXT_ALIGNMENT_CENTER :
+                h_align == halign::right  ? DWRITE_TEXT_ALIGNMENT_TRAILING :
+                                            DWRITE_TEXT_ALIGNMENT_LEADING);
+            text_format->SetParagraphAlignment(
+                v_align == valign::top    ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR :
+                v_align == valign::center ? DWRITE_PARAGRAPH_ALIGNMENT_CENTER :
+                v_align == valign::bottom ? DWRITE_PARAGRAPH_ALIGNMENT_FAR :
+                                            DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+        }
+        tools::utf8_to_utf16_translator utf16string{string};
+        if (brush){
+            target->DrawText(utf16string, utf16string.size(), text_format, rect, brush);
         }
         return {};
     }
-
 
     void bitmap_font::add_glyph(int code_point, const std::shared_ptr<bitmap>& glyph){
         if (code_point >= code_point_min && code_point <= code_point_max ){
@@ -811,25 +808,26 @@ namespace graphics{
         });
     }
 
-    FloatRect bitmap_font::draw_string(const render_target& target, const char* string, ID2D1Brush* brush, const FloatPoint& pos, float scale){
-        FloatRect rect{pos.x, pos.y, 0.f, 0.f};
+    FloatRect bitmap_font::draw_string(
+        const render_target &target, const char *string, ID2D1Brush *brush, const FloatRect &rect, float scale, valign v_align, halign h_align){
+        FloatRect orect{rect.x, rect.y, 0, 0};
         for (const char* code = string; *code; code++){
             if (*code >= code_point_min && *code <= code_point_max){
                 const auto& glyph = glyphs[*code - code_point_min];
                 if (glyph){
                     FloatRect target_rect{
-                        rect.x + rect.width,
-                        rect.y, 
+                        orect.x + orect.width,
+                        orect.y, 
                         glyph->get_width() * scale,
                         glyph->get_height() * scale
                     };
                     glyph->draw(target, target_rect);
                     auto out_rect = target_rect - glyph->get_origin();
-                    rect += out_rect;
+                    orect += out_rect;
                 }
             }
         }
-        return rect;
+        return orect;
     }
 }
 
@@ -1063,35 +1061,26 @@ namespace graphics{
     void rendering_context::draw_string(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_string", [this, &args]{
             std::string string;
-            std::optional<float> x;
-            std::optional<float> y;
             sol::object arg0 = args[0];
             if (arg0.get_type() == sol::type::string){
                 string = std::move(lua_safestring(arg0));
-                x = lua_safevalue<float>(args[1]);
-                y = lua_safevalue<float>(args[2]);
             }else if (arg0.get_type() == sol::type::table){
                 sol::table def = arg0;
                 string = std::move(lua_safestring(def["string"]));
-                x = lua_safevalue<float>(def["x"]);
-                y = lua_safevalue<float>(def["y"]);
             }else{
                 throw MapperException("invalid parameters");
             }
-            FloatPoint point{0.f, 0.f};
-            if (x && y){
-                point.x = *x;
-                point.y = *y;
-            }
-            draw_string_native(string.c_str(), point);
+            FloatRect rect;
+            valign v_align;
+            halign h_align;
+            extract_region(args, rect, v_align, h_align);
+            draw_string_native(string.c_str(), rect, v_align, h_align);
         });
     }
 
     void rendering_context::draw_number(sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "graphics.rendering_context:draw_number", [this, &args]{
             std::optional<double> value;
-            std::optional<float> x;
-            std::optional<float> y;
             std::optional<int> fraction_precision;
             std::optional<int> precision;
             std::optional<bool> leading_zero;
@@ -1099,13 +1088,9 @@ namespace graphics{
             sol::object arg0 = args[0];
             if (arg0.get_type() == sol::type::number){
                 value = lua_safevalue<double>(arg0);
-                x = lua_safevalue<float>(args[1]);
-                y = lua_safevalue<float>(args[2]);
             }else if (arg0.get_type() == sol::type::table){
                 sol::table def = arg0;
                 value = lua_safevalue<double>(def["value"]);
-                x = lua_safevalue<float>(def["x"]);
-                y = lua_safevalue<float>(def["y"]);
                 fraction_precision = lua_safevalue<int>(def["fraction_precision"]);
                 precision = lua_safevalue<int>(def["precision"]);
                 leading_zero = lua_safevalue<bool>(def["leading_zero"]);
@@ -1142,20 +1127,75 @@ namespace graphics{
             }
             os << *value;
 
-            FloatPoint point{0.f, 0.f};
-            if (x && y){
-                point.x = *x;
-                point.y = *y;
-            }
-            draw_string_native(os.str().c_str(), point);
+            FloatRect rect;
+            valign v_align;
+            halign h_align;
+            extract_region(args, rect, v_align, h_align);
+            draw_string_native(os.str().c_str(), rect, v_align, h_align);
         });
     }
 
+    void rendering_context::extract_region(const sol::variadic_args &args, FloatRect &rect, valign &v_align, halign &h_align){
+        static std::unordered_map<std::string, valign> valign_map{
+            {"top", valign::top},
+            {"center", valign::center},
+            {"bottom", valign::bottom},
+        };
+        static std::unordered_map<std::string, halign> halign_map{
+            {"left", halign::left},
+            {"center", halign::center},
+            {"right", halign::right},
+        };
+        rect = {0, 0, 9999999, 9999999};
+        v_align = valign::top;
+        h_align = halign::left;
+        std::optional<float> x;
+        std::optional<float> y;
+        std::optional<float> width;
+        std::optional<float> height;
+        std::string v_align_string;
+        std::string h_align_string;
+        sol::object arg0 = args[0];
+        if (arg0.get_type() == sol::type::table){
+            sol::table def = arg0;
+            x = lua_safevalue<float>(def["x"]);
+            y = lua_safevalue<float>(def["y"]);
+            width = lua_safevalue<float>(def["width"]);
+            height = lua_safevalue<float>(def["height"]);
+            h_align_string = lua_safestring(def["horizontal_alignment"]);
+            v_align_string = lua_safestring(def["vertical_alignment"]);
+        }else{
+            x = lua_safevalue<float>(args[1]);
+            y = lua_safevalue<float>(args[2]);
+            width = lua_safevalue<float>(args[3]);
+            height = lua_safevalue<float>(args[4]);
+            h_align_string = lua_safestring(args[5]);
+            v_align_string = lua_safestring(args[6]);
+        }
+        if (x) rect.x = *x;
+        if (y) rect.y = *y;
+        if (width) rect.width = *width;
+        if (height) rect.height = *height;
+        if (v_align_string.size() > 0){
+            if (valign_map.count(v_align_string)){
+                v_align = valign_map[v_align_string];
+            }else{
+                throw MapperException("the 'vertical_alignment' parameter must be either 'top', 'center', or 'buttom'");
+            }
+        }
+        if (h_align_string.size() > 0){
+            if (halign_map.count(h_align_string)){
+                h_align = halign_map[h_align_string];
+            }else{
+                throw MapperException("the 'horizontal_alignment' parameter must be either 'left', 'center', or 'right'");
+            }
+        }
+    }
 
-    void rendering_context::draw_string_native(const char* string, const FloatPoint& point){
-        auto opoint = point;
-        translate_to_context_coordinate(opoint);
-        font->draw_string(*target, string, brush ? brush->brush_interface(*target): nullptr, opoint, this->scale);
+    void rendering_context::draw_string_native(const char* string, const FloatRect& rect, valign v_align, halign h_align){
+        auto orect{rect};
+        translate_to_context_coordinate(orect);
+        font->draw_string(*target, string, brush ? brush->brush_interface(*target): nullptr, orect, this->scale, v_align, h_align);
     }
 }
 
