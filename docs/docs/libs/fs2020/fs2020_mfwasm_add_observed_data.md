@@ -14,7 +14,7 @@ In this case, the [Event Value](/guide/event-action-mapping#event) corresponds t
 If you use this function, you need to have [**MobiFlight WASM Module**](https://github.com/MobiFlight/MobiFlight-WASM-Module) installed.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`def_array`|table|This parameter specifies the data to be observed as an array of  [Observed Data Definition](#observed-data-definition).

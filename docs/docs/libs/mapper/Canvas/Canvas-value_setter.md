@@ -9,7 +9,7 @@ Canvas:value_setter([value])
 This method creates a native-action to set a value for the canvas.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`value`|Any type|Value to associate with the canvas.<br/>If this parameter is not specified, the event value is set to the canvas.

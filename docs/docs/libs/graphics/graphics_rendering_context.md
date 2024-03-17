@@ -8,7 +8,7 @@ graphics.rendering_context(bitmap)
 ```
 This function creates a rendering context target to a bitmap.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`bitmap`|[`Bitmap`](/libs/graphics/Bitmap)|Bitmap to be used as the output destination for the rendering context.

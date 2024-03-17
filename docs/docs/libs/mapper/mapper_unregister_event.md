@@ -9,7 +9,7 @@ mapper.unregister_event(event_id)
 This function unregisters an event.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`event_id`|numeric|Event ID of the event|

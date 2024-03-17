@@ -9,7 +9,7 @@ Viewport:add_mappings(mapping_defs)
 This function adds Event-Action mappings associated with the viewport.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`mapping_defs`|table|Event-Action mapping array.<br/>It specifis an array table of [Event-Action mapping definiton](/libs/mapper/mapper_set_primary_mappings#event-action-mapping-definition)

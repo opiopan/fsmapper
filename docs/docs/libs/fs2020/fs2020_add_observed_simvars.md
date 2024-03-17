@@ -14,7 +14,7 @@ In this case, the [Event Value](/guide/event-action-mapping#event) corresponds t
 This function is recommended to be replaced with [`fs2020.mfwasm.add_observed_data()`](/libs/fs2020/fs2020_mfwasm_add_observed_data). It becomes possible to access the internal states of MSFS that are not accessible through [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm), allowing for a more flexible data expression.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`def_array`|table|This parameter specifies the SimVars to be observed as an array of  [Observed SimVar Definition](#observed-simvar-definition).

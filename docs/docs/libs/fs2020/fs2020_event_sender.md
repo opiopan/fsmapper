@@ -12,7 +12,7 @@ This function creates a native-action to send a SimConnect client [Event ID](htt
 This function is recommended to be replaced with [`fs2020.mfwasm.rpn_executer()`](/libs/fs2020/fs2020_mfwasm_rpn_executer). It provides greater flexibility for specifying operations, and allows for operations that cannot be achieved with [Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm).
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`event_name`|string|[Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm)

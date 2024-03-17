@@ -9,7 +9,7 @@ vJoy:get_pov(pov_id)
 This method is used to get a [`vJoyUnit`](/libs/mapper/vJoyUnit) object corresponding to a POV.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`pov_id`|number|Specifies a POV number starting from `1`.|

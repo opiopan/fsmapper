@@ -14,7 +14,7 @@ fsmapper and Windows are not designed to guarantee real-time constraints.
 Thus, while the function specified by `func` won’t execute until the specified time `rel_time`, the actual execution time depends on system load.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`rel_time`|number|Specifies the time to delay the execution of the function in milliseconds.|

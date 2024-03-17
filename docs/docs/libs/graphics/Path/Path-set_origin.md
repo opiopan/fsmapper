@@ -8,7 +8,7 @@ Path:set_origin(x, y)
 ```
 This method transitions the coordinate system of a path geometry object to a new coordinate system with the specified point as the origin on the current coordinate system.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`x`|numeric|X-coordinate|

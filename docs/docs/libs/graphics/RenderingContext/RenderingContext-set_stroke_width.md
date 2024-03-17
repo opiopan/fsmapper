@@ -9,7 +9,7 @@ RenderingContext:set_stroke_width(width)
 This methods sets the value specified in the [`stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width) property.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`width`|numeric|Specifies the value to set in the [`stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width) property.

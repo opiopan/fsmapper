@@ -11,7 +11,7 @@ This function creates a native-action to implement conditional branching between
 This filter can handle events with numerical values.
 You can specify one or more conditions based on the increase or decrease of the event value beyond or below a certain threshold, and trigger the specified actions accordingly.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`cond-exp`|table|Specifies an associative array of the [Condition Expression](#condition-expression) type representing the action and the conditions under which it is invoked.

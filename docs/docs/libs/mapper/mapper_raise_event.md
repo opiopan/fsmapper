@@ -9,7 +9,7 @@ mapper.raise_event(event_id, value)
 This function raises a event.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`event_id`|numeric|Specifies the event ID of the event to raise.|

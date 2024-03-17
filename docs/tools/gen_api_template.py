@@ -156,6 +156,7 @@ libs = [
             ('graphics.ellipse()', 'Create a SimpleGeometry object as a ellipse', 'param_table', 'x, y, radius_x, radius_y'),
             ('graphics.path()', 'Create a geometry object defined as a path', '[figure_def]'),
             ('graphics.bitmap()', 'Create a bitmap object', 'path', 'width, height'),
+            ('graphics.system_font()', 'Create a system font object', 'param_table'),
             ('graphics.bitmap_font()', 'Create a bitmap font object'),
             ('graphics.rendering_context()', 'Create a rendering context associated with a bitmap', 'bitmap'),
         ],
@@ -218,6 +219,10 @@ libs = [
                     ('Bitmap:set_origin()', 'set new origin of the bitmap', 'x, y'),
                     ('Bitmap:create_partial_bitmap()', 'create a bitmap corresponding to a partial area of the original bitmap', 'x, y, width, height'),
                 ],
+            },
+            {
+                'name': 'SystemFont',
+                'description': 'Object representing a system font',
             },
             {
                 'name': 'BitmapFont',
@@ -329,7 +334,7 @@ def gen_group(group:dict, pos:int, base:Path, suffix:str, prefix):
                             f.write(data)
                             if len(item) >= 3:
                                 param_table = False
-                                f.write('\n\n## Prameters\n|Parameter|Type|Description|\n|-|-|-|\n')
+                                f.write('\n\n## Parameters\n|Parameter|Type|Description|\n|-|-|-|\n')
                                 for arg in list_args(item[2:]):
                                     argtype = ''
                                     argdesc = ''

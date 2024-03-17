@@ -10,7 +10,7 @@ graphics.bitmap(width, height)
 This function creates a [`Bitmap`](/libs/graphics/Bitmap) object.<br/>
 There are two methods to generate a [`Bitmap`](/libs/graphics/Bitmap) object, one by loading the bitmap file specified in the `path` parameter, and the other by generating a transparent bitmap of the size specified in `width` and `height`.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`path`|string|Path of the bitmap file.

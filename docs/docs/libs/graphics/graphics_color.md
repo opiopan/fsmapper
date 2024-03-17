@@ -10,7 +10,7 @@ graphics.color(r, g, b[, opacity])
 This function creates a solid color brush object.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`color_name`|string|Web standard color specification.<br/>It can be done in the form of [color name similar to CSS](https://www.w3.org/wiki/CSS/Properties/color/keywords) such as `'Red'`, or hexadecimal expression such as `'#ff0000'`.

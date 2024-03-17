@@ -9,7 +9,7 @@ Bitmap:create_partial_bitmap(x, y, width, height)
 This method creates a bitmap that corresponds to a specific area within the original bitmap.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`x`|numeric|X-coordinate of the top-left corner of the specific area.

@@ -9,7 +9,7 @@ filter.delay(rel_time, action)
 This function creates a native-action that delays the execution of action.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`rel_time`|numeric|Specifies the time in milliseconds to delay the execution of the action.

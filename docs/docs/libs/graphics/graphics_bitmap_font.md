@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 7.5
 ---
 
 # graphics.bitmap_font()

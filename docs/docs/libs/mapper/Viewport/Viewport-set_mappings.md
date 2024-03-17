@@ -12,7 +12,7 @@ This function sets Event-Action mappings associated with the viewport.
 You can reset the Event-Action mappings associated with the viewport by specifying an empty table, i.e. `{}`.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`mapping_defs`|table|Event-Action mapping array.<br/>It specifis an array table of [Event-Action mapping definiton](/libs/mapper/mapper_set_primary_mappings#event-action-mapping-definition)

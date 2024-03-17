@@ -8,7 +8,7 @@ RenderingContext:set_brush(brush)
 ```
 This methods sets the object specified in the [`brush`](/libs/graphics/RenderingContext/RenderingContext_brush) property.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`brush`|[Brush](/guide/graphics#brush)|Specifies the value to set in the [`brush`](/libs/graphics/RenderingContext/RenderingContext_brush) property.

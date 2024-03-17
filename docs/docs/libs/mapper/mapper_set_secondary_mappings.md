@@ -12,7 +12,7 @@ This funcion sets up the secondary Event-Action mappings.
 You can reset the secondary Event-Action mappings by specifying an empty table, i.e. `{}`.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`mapping_defs`|table|Event-Action mapping array.<br/>It specifis an array table of [Event-Action mapping definiton](/libs/mapper/mapper_set_primary_mappings#event-action-mapping-definition)

@@ -8,7 +8,7 @@ RenderingContext:fill_rectangle(x, y, width, height)
 ```
 This method fills a rectangular region using the brush set in the rendering context.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`x`|numeric|X-coordinate of the top-left corner of the rectangle.

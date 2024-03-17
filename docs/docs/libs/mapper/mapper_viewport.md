@@ -10,7 +10,7 @@ This funciton registers a new [**Viewport**](/guide/virtual_instrument_panel#com
 The viewports registered with this function are inactive until [`mapper.start_viewports()`](/libs/mapper/mapper_start_viewports) is called. Inactive viewports are not only hidden from the screen but also do not activate associated [**Event-Action mappings**](/guide/event-action-mapping) with the viewport in a paused state.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|

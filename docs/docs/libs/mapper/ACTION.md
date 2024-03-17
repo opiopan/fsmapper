@@ -8,7 +8,7 @@ function ACTION(event_id, value)
 ```
 Action function defined by the user.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`event_id`|numeric|Event ID

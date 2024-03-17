@@ -10,7 +10,7 @@ This function create a native-action to modify the characteristics curve of a de
 You can specify a mapping rule that maps numeric Event Values to other numeric values by specifying pairs of input and output values.
 For values other than the specified ones, the mapping is determined through linear interpolation.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`action`|[Action](/guide/event-action-mapping#action)|An action that receives the mapped value through linear interpolation as the Event Value.

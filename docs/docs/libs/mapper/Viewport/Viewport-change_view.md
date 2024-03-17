@@ -9,7 +9,7 @@ Viewport:change_view(view_id)
 This function changes the current view.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`view_id`|numeric|View ID of the view to be set as the current view.

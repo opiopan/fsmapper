@@ -9,7 +9,7 @@ Device:sender(unit_id[, value])
 This method creates a [native-action](/guide/event-action-mapping#action) to send a value to output unit.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`unit_id`|numeric|Output device unit ID.

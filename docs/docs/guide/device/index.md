@@ -9,7 +9,7 @@ In this section, the explanation will cover how fsmapper deals with flight stick
 fsmapper provides a [`Device`](/libs/mapper/Device/) object to abstract various devices, including those supported by the OS and custom-built devices, for unified handling.
 Users generate a [`Device`](/libs/mapper/Device/) corresponding to the desired device using [`mapper.device()`](/libs/mapper/mapper_device) for each device they want to use.
 
-Below is an example of opening a Direct Input game controller device, which was also mentioned in the [**Tutorial**](/getting-started/tutorial#handle-an-input-device).
+Below is an example of opening a Direct Input  game controller device, which was also mentioned in the [**Tutorial**](/getting-started/tutorial#handle-an-input-device).
 
 ```lua
 device = mapper.device{

@@ -24,7 +24,7 @@ The device context holds the following properties that influence the behavior of
 
 |Property|Type|Description|
 |--------|----|-----------|
-|`brush`|[`Blush`](#brush)|A brush refers to the color or pattern used for filling shapes or outlining their contours.
+|`brush`|[`Brush`](#brush)|A brush refers to the color or pattern used for filling shapes or outlining their contours.
 |`stroke_width`|numeric|This is used as the width of lines when drawing the outlines of shapes.
 |`opacity_mask`|[`Bitmap`](#bitmap)|This is the mask image used when drawing shapes. The final alpha value of the rendered result is a product of the alpha value specified in the `opacity_mask` and the bitmap provided.
 |`font`|[`Font`](#font)|This is the font object used for text rendering.
@@ -278,16 +278,16 @@ local needle_canvas = mapper.canvas{
 
 ## Font
 The **Font** refers to the object targeted by the text-drawing methods of the rendering context.
-Currently, fsmapper implements only the [`BitmapFont`](/libs/graphics/BitmapFont) object, allowing users to provide glyphs as bitmaps on a code point basis.
+There are [`SystemFont`](/libs/graphics/SystemFont) for using fonts registered in Windows and [`BitmapFont`](/libs/graphics/BitmapFont) objects for using glyphs provided by the user as bitmaps.
 
-:::warning Note
-From the start, within fsmapper's internal workings, the handling of fonts was abstracted to accommodate the Windows font system similarly.
-However, integration with the Windows font system is not yet complete.
-I'm planning to roll up my sleeves and get started on this soon. (as of Jan. 2024).
-:::
+### System Font
+The [`SystemFont`](/libs/graphics/SystemFont) object is created using [`graphics.system_font()`](/libs/graphics/graphics_system_font). Parameters specified during creation include familiar CSS or HTML esuch as font family name, font weight, font style, and font size.
+
+What differs from CSS or HTML is that the font size is specified in logical units of the [rendering context](/guide/graphics#rendering-context).
+When the [`SystemFont`](/libs/graphics/SystemFont) object is set on a rendering context associated with a bitmap, it is interpreted in pixel units. Conversely, when set on a rendering context associated with a view, it is interpreted according to [the coordinate system of the Canvas view element](/guide/virtual_instrument_panel#coordinate-system).
 
 ### Bitmap Font
-Generate a BitmapFont object using [`graphics.bitmap_font()`](/libs/graphics/graphics_bitmap_font) and register bitmaps representing glyphs for each code point using [`BitmapFont:add_glyph()`](/libs/graphics/BitmapFont/BitmapFont-add_glyph).
+To use bitmmap font,  generate a BitmapFont object using [`graphics.bitmap_font()`](/libs/graphics/graphics_bitmap_font) and register bitmaps representing glyphs for each code point using [`BitmapFont:add_glyph()`](/libs/graphics/BitmapFont/BitmapFont-add_glyph).
 The width and height of each glyph can vary per code point based on the bitmap size. 
 Additionally, adjusting the origin of the registered bitmaps allows tweaking the so-called baseline or accommodating glyphs that overlap with the previous character when rendering text.
 
@@ -298,11 +298,19 @@ To render text, start by setting the font within the rendering context.
 Afterwards, utilize [`RenderingContext:draw_string()`](/libs/graphics/RenderingContext/RenderingContext-draw_string) to output strings, or [`RenderingContext:draw_number()`](/libs/graphics/RenderingContext/RenderingContext-draw_number) to define formatting parameters, such as precision for decimal values, when rendering numeric data.
 
 ```lua
--- Create a fixed-width font from the pre-rendered bitmap
+-- Create a SystemFont object representing the 'Segoe UI' font
+local generic_font = graphics.system_font{
+    family_name = 'Segoe UI',
+    weight = 200,
+    style = 'italic',
+    height = 25,
+}
+
+-- Create a font for figures from the pre-rendered bitmap
 local font_width = 24
 local bitmap = graphics.bitmap('assets/fixed-width-font')
-local codes='0123456789.-+*/_!abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-local font = graphics.bitmap_font()
+local codes='0123456789.-+*/_'
+local figures_font = graphics.bitmap_font()
 for ix = 1, string.len(codes) do
     local glyph = bitmap:create_partial_bitmap((ix - 1) * font_width, 0, font_width, bitmap.height)
     font:add_glyph(string.sub(codes, ix, ix), glyph)
@@ -310,15 +318,16 @@ end
 
 -- Define the Canvas renderer that draws the static text
 local renderer = function (rctx, value)
-    rctx.font = font
-
-    -- Draw a string
+    -- Draw a string with 'Segoe UI'
+    rctx.font = generic_font
+    rctx.brush = graphics.color('Yellow')
     rctx:draw_string('Hello!', 0, 0)
 
-    -- Draw a numeric value, this formats as the string '003.14'
+    -- Draw a numeric value with a bitmap font, this formats as the string '003.14'
+    rctx.font = figures_font
     rctx:draw_number{
         value = 3.1415926,
-        x = 0, y = 30,
+        x = 0, y = 50,
         precision = 5,
         fraction_precision = 2,
         leading_zero = true

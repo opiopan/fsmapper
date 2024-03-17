@@ -10,7 +10,7 @@ BitmapFont:add_glyph(code_point, bitmap)
 This method adds a glyph correnspoinding to a code point.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|

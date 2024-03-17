@@ -9,7 +9,7 @@ mapper.view_elements.canvas(param_table)
 This function creates a [`Canvas`](/libs/mapper/Canvas) view element object.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|

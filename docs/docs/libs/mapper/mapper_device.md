@@ -9,7 +9,7 @@ mapper.device(param_table)
 This function opens a device and generate a [Device](/libs/mapper/Device) object.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|

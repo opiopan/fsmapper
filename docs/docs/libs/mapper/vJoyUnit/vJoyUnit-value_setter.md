@@ -15,7 +15,7 @@ The values that can be configured for each unit are as follows.
 |Button|1 when the button is pressed, 0 when released
 |POV|The angle in degrees.
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`value`|numeric|Value to be set for the unit.<br/>If this parameter is not specified, the event value is set to the unit.

@@ -15,6 +15,7 @@ The graphics library of fsmapper provides drawing capabilities to [views](/guide
 |[```graphics.ellipse()```](/libs/graphics/graphics_ellipse)|Create a SimpleGeometry object as a ellipse|
 |[```graphics.path()```](/libs/graphics/graphics_path)|Create a geometry object defined as a path|
 |[```graphics.bitmap()```](/libs/graphics/graphics_bitmap)|Create a bitmap object|
+|[`graphics.system_font()`](/libs/graphics/graphics_system_font)|Create a system font object|
 |[```graphics.bitmap_font()```](/libs/graphics/graphics_bitmap_font)|Create a bitmap font object|
 |[```graphics.rendering_context()```](/libs/graphics/graphics_rendering_context)|Create a rendering context associated with a bitmap|
 
@@ -26,6 +27,7 @@ The graphics library of fsmapper provides drawing capabilities to [views](/guide
 |[```SimpleGeometry```](/libs/graphics/SimpleGeometry)|Object representing a predefined simple geometry|
 |[```Path```](/libs/graphics/Path)|Object representing a geometry defined as a path|
 |[```Bitmap```](/libs/graphics/Bitmap)|Object representing a bitmap|
+|[`SystemFont`](/libs/graphics/SystemFont)|Object representing a system font|
 |[```BitmapFont```](/libs/graphics/BitmapFont)|Object representing a bitmap based font|
 
 ## See Also

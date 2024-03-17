@@ -9,7 +9,7 @@ mapper.print(message)
 This function prints a message to the message console.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`message`|string|Specifies the message text to output

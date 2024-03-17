@@ -9,7 +9,7 @@ mapper.get_event_name(evet_id)
 This function returns the name assinged to an event.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`evet_id`|numeric|Event ID|

@@ -10,7 +10,7 @@ RenderingContext:draw_bitmap(bitmap[, x, y[, width, height[, angle[, scale]]])
 This method draws a bitmap.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|

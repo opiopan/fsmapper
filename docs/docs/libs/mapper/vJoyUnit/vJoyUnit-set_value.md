@@ -16,7 +16,7 @@ The values that can be configured for each unit are as follows.
 |POV|The angle in degrees.
 
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`value`|numeric|Value to be set for the unit.

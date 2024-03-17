@@ -12,7 +12,7 @@ This funciton opens the vJoy device and create a [`vJoy`](/libs/mapper/vJoy) obj
 If you use this function, you need to have [**vJoy**](https://sourceforge.net/projects/vjoystick/) installed.
 :::
 
-## Prameters
+## Parameters
 |Parameter|Type|Description|
 |-|-|-|
 |`devid`|numeric|Device ID of the vJoy device.
