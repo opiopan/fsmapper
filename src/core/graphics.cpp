@@ -1146,7 +1146,7 @@ namespace graphics{
             {"center", halign::center},
             {"right", halign::right},
         };
-        rect = {0, 0, 9999999, 9999999};
+        rect = {0.f, 0.f, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
         v_align = valign::top;
         h_align = halign::left;
         std::optional<float> x;
