@@ -38,7 +38,7 @@ fsmapper_x.x.x
 ```
 
 ## Install Windows App SDK 1.0 Runtime
-Run ```WindowsAppRuntimeInstall.exe``` included in the package **with administrator privileges** to install the runtime package for Windows App SDK 1.0.
+Run ```WindowsAppRuntimeInstall.exe``` included in the package to install the runtime package for Windows App SDK 1.0.
 
 ## Copy fsmapper folder
 Copy the ```fsmapper``` folder directly from the package to the location where you want to install fsmapper. 

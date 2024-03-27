@@ -281,7 +281,8 @@ The **Font** refers to the object targeted by the text-drawing methods of the re
 There are [`SystemFont`](/libs/graphics/SystemFont) for using fonts registered in Windows and [`BitmapFont`](/libs/graphics/BitmapFont) objects for using glyphs provided by the user as bitmaps.
 
 ### System Font
-The [`SystemFont`](/libs/graphics/SystemFont) object is created using [`graphics.system_font()`](/libs/graphics/graphics_system_font). Parameters specified during creation include familiar CSS or HTML such as font family name, font weight, font style, and font size.
+The [`SystemFont`](/libs/graphics/SystemFont) object is created using [`graphics.system_font()`](/libs/graphics/graphics_system_font).
+Parameters specified during creation include font family name, font weight, font style, and font size, which closely resemble font specifications in CSS or HTML.
 
 What differs from CSS or HTML is that the font size is specified in logical units of the [rendering context](/guide/graphics#rendering-context).
 When the [`SystemFont`](/libs/graphics/SystemFont) object is set on a rendering context associated with a bitmap, it is interpreted in pixel units. Conversely, when set on a rendering context associated with a view, it is interpreted according to [the coordinate system of the Canvas view element](/guide/virtual_instrument_panel#coordinate-system).
