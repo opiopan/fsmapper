@@ -17,6 +17,7 @@
             <SolidColorBrush x:Key="ScriptStatusColorErrorDark" Color="DarkRed"/>
             <BitmapImage x:Key="SimLogoFS2020" UriSource="/Assets/fs2020logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
+            <SvgImageSource x:Key="AppLogo" UriSource="/Assets/appicon.svg"/>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="Blue"/>

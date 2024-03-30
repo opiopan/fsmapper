@@ -15,6 +15,7 @@
 #include "SettingsPage.xaml.h"
 #include "App.xaml.h"
 #include "resource.h"
+#include "../.version.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -32,6 +33,8 @@ namespace winrt::gui::implementation
         this->SetTitleBar(AppTitleBar());
         auto appname = Application::Current().Resources().Lookup(winrt::box_value(L"AppName"));
         this->Title(unbox_value<winrt::hstring>(appname));
+
+        AppVersion().Text(L"v" VERSTR_FILE_VERSION);
 
         auto module = ::GetModuleHandleW(nullptr);
         auto icon = ::LoadIconW(module, MAKEINTRESOURCEW(IDI_APP_ICON));
