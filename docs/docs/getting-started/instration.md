@@ -34,11 +34,11 @@ fsmapper_x.x.x
 │   ├── fsmapper.exe
 │   └── supplementary files such as DLLs
 ├── README.txt
-└── WindowsAppRuntimeInstall.exe
+└── WindowsAppRuntimeInstall-x64.exe
 ```
 
 ## Install Windows App SDK 1.0 Runtime
-Run ```WindowsAppRuntimeInstall.exe``` included in the package to install the runtime package for Windows App SDK 1.0.
+Run ```WindowsAppRuntimeInstall-x64.exe``` included in the package to install the runtime package for Windows App SDK 1.0.
 
 ## Copy fsmapper folder
 Copy the ```fsmapper``` folder directly from the package to the location where you want to install fsmapper. 
