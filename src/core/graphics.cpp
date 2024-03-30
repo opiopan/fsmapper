@@ -430,7 +430,7 @@ namespace graphics{
                 auto throw_error = [i](const char* msg) -> int{
                     std::ostringstream os;
                     write_ordinal_string(os, i);
-                    os << " element of 'followings' parameter is invalid, " << msg;
+                    os << " element of 'segments' parameter is invalid, " << msg;
                     throw std::runtime_error(os.str());
                 };
                 auto element = segments_def[i];
