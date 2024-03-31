@@ -7,13 +7,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt"/>
+    </Window.SystemBackdrop>
+
     <Grid Grid.RowDefinitions="Auto,*">
+        <!--
         <Grid.Resources>
             <AcrylicBrush x:Key="NavigationViewExpandedPaneBackground" 
                           TintColor="{StaticResource SystemChromeMediumLowColor}"
                           TintOpacity=".1"
                           FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
         </Grid.Resources>
+        -->
 
         <!--=========================================================================
           Window title bar
@@ -56,14 +62,14 @@
                 <NavigationViewItem Tag="settings" Content="Settings" Icon="Setting"/>
             </NavigationView.FooterMenuItems>
 
-            <Grid Grid.RowDefinitions="Auto,*">
+            <Grid Grid.RowDefinitions="Auto,*" Background="{StaticResource LayerOnMicaBaseAltFillColorSecondaryBrush}">
                 <!--=========================================================================
                   Scripting control pane
                 ==========================================================================-->
                 <StackPanel Grid.Row="0" Height="50" Orientation="Horizontal" Padding="0, 0, 0, 0"
                             Spacing="9" HorizontalAlignment="Right" VerticalAlignment="Top">
                     <!--<TextBlock Text="Lua Script:" Padding="20, 0, 0, 0" VerticalAlignment="Center" FontWeight="Bold"/>-->
-                    <StackPanel Orientation="Horizontal" Background="{StaticResource SystemChromeMediumLowColor}" 
+                    <StackPanel Orientation="Horizontal" Background="{StaticResource SystemChromeMediumLowColor}"
                                 Height="30" CornerRadius="5">
                         <Ellipse Height="15" Width="15"
                                  Fill="{x:Bind ViewModel.ScriptStatusBrush, Mode=OneWay}"
