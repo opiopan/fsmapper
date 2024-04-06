@@ -42,6 +42,10 @@ $v4 = $commits.count - 1
 if ($v4 -lt 0){
     $v4 = 0
 }
+$v4str =""
+if ($v4 -gt 1){
+    $v4str = ".{0}" -f $v4
+}
 $commit = $commits[0].commit
 $suffix = ''
 $suffix_product = "Commit: "
@@ -56,6 +60,7 @@ $ver_file = "{0},{1},{2},{3}" -f $v1, $v2, $v3, $v4
 $ver_product = "{0},{1},{2},{3}" -f $v1, $v2, $v3, $v4
 $ver_file_str = "{0}.{1}.{2}.{3}{4}" -f $v1, $v2, $v3, $v4, $suffix
 $ver_product_str = "{0}.{1}.{2} [{3}{4}]" -f $v1, $v2, $v3, $suffix_product, $commit
+$ver_title_str = "{0}.{1}.{2}{3}{4}" -f $v1, $v2, $v3, $v4str, $suffix
 
 if (Test-Path $version_file){
     $saved_ver = Get-Content $version_file
@@ -72,6 +77,7 @@ $ver_file_str > $version_file
 "#define VER_PRODUCT_VERSION {0}" -f $ver_product >> $header_file
 '#define VERSTR_FILE_VERSION "{0}"' -f $ver_file_str >> $header_file
 '#define VERSTR_PRODUCT_VERSION "{0}"' -f $ver_product_str >> $header_file
+'#define VERSTR_TITLE_VERSION "{0}"' -f $ver_title_str >> $header_file
 "#define VER_FILE_MODE {0}" -f $file_mode >> $header_file
 
 "version files have been updated"

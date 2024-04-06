@@ -23,7 +23,7 @@ using std::min;
 using std::max;
 #include <gdiplus.h>
 
-static constexpr auto MOUSE_REJECTION_TIME = std::chrono::milliseconds(500);
+static constexpr auto MOUSE_REJECTION_TIME = std::chrono::milliseconds(1000);
 
 static ViewPortManager* the_manager = nullptr;
 

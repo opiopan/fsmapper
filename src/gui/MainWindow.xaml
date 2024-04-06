@@ -8,19 +8,10 @@
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop Kind="BaseAlt"/>
+        <MicaBackdrop Kind="Base"/>
     </Window.SystemBackdrop>
 
     <Grid Grid.RowDefinitions="Auto,*">
-        <!--
-        <Grid.Resources>
-            <AcrylicBrush x:Key="NavigationViewExpandedPaneBackground" 
-                          TintColor="{StaticResource SystemChromeMediumLowColor}"
-                          TintOpacity=".1"
-                          FallbackColor="{StaticResource SystemChromeMediumLowColor}" />
-        </Grid.Resources>
-        -->
-
         <!--=========================================================================
           Window title bar
         ==========================================================================-->
@@ -62,7 +53,7 @@
                 <NavigationViewItem Tag="settings" Content="Settings" Icon="Setting"/>
             </NavigationView.FooterMenuItems>
 
-            <Grid Grid.RowDefinitions="Auto,*" Background="{StaticResource LayerOnMicaBaseAltFillColorSecondaryBrush}">
+            <Grid Grid.RowDefinitions="Auto,*" Background="{StaticResource LayerFillColorAltBrush}">
                 <!--=========================================================================
                   Scripting control pane
                 ==========================================================================-->
