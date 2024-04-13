@@ -16,7 +16,7 @@
 using namespace mouse_emu;
 
 static constexpr auto ring_buff_size = 64;
-static constexpr auto pointer_position_recovery_time = milliseconds(500);
+static constexpr auto pointer_position_recovery_time = milliseconds(1000);
 static constexpr auto pointer_position_recovery_message_interval = milliseconds(50);
 
 struct command{
@@ -96,7 +96,7 @@ public:
                 input.mi.mouseData = 0;
                 input.mi.dwFlags = static_cast<DWORD>(command.ev) | MOUSEEVENTF_ABSOLUTE;
                 input.mi.time = 0;
-                input.mi.dwExtraInfo = 0;
+                input.mi.dwExtraInfo = signature;
                 ::SendInput(1, &input, sizeof(INPUT));
 
                 lock.lock();
@@ -151,7 +151,7 @@ protected:
             input.mi.mouseData = 0;
             input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
             input.mi.time = 0;
-            input.mi.dwExtraInfo = 0;
+            input.mi.dwExtraInfo = recovery_signature;
             ::SendInput(1, &input, sizeof(INPUT));
             
             if (!with_click){

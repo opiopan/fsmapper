@@ -23,7 +23,8 @@ using std::min;
 using std::max;
 #include <gdiplus.h>
 
-static constexpr auto MOUSE_REJECTION_TIME = std::chrono::milliseconds(1000);
+static constexpr auto touch_mask = 0xFFFFFF00;
+static constexpr auto touch_signature = 0xFF515700;
 
 static ViewPortManager* the_manager = nullptr;
 
@@ -178,8 +179,6 @@ namespace view_utils{
 static HHOOK hookHandle = 0;
 
 static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
-    static constexpr auto touch_mask = 0xFFFFFF00;
-    static constexpr auto touch_signature = 0xFF515700;
     static constexpr auto delay_down = mouse_emu::milliseconds(50);
     static constexpr auto delay_up = mouse_emu::milliseconds(50);
     static auto in_down_state = true;
@@ -469,13 +468,11 @@ protected:
     SIZE window_size;
     BLENDFUNCTION blend;
     UPDATELAYEREDWINDOWINFO lw_info{0};
-    std::chrono::steady_clock::time_point last_touch;
 
 public:
     ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay, const UPDATE_WINDOW& on_update_window):
         bgcolor(bgcolor), relay(relay), on_update_window(on_update_window){
     	update_msg = ::RegisterWindowMessageA("MAPPER_CORE_VIEW_UPDATE");
-        last_touch = std::chrono::steady_clock::now();
     }
     virtual ~ViewPortWindow() = default;
 
@@ -502,14 +499,14 @@ public:
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override{
         if (msg == WM_TOUCH){
-            last_touch = std::chrono::steady_clock::now();
             auto rc = relay(msg, wparam, lparam);
             ::CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(lparam));
             return rc;
         }else if (msg == WM_MOUSEMOVE || 
             msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN){
             auto now = std::chrono::steady_clock::now();
-            if (now - last_touch > MOUSE_REJECTION_TIME){
+            auto extra = ::GetMessageExtraInfo() & touch_mask;
+            if (extra != touch_signature && extra != mouse_emu::signature && extra != mouse_emu::recovery_signature){
                 return relay(msg, wparam, lparam);
             }else{
                 return base_class::messageProc(msg, wparam, lparam);
@@ -682,7 +679,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             if (event){
                 if (*event == tevent::down){
                     this->manager.get_mouse_emulator().emulate(mouse_emu::event::cancel_recovery, 0, 0, mouse_emu::clock::now());
-                }else if (*event == tevent::up || *event == tevent::cancel){
+                }else if (msg == WM_TOUCH && (*event == tevent::up || *event == tevent::cancel)){
                     this->manager.get_mouse_emulator().emulate(mouse_emu::event::recover, 0, 0, mouse_emu::clock::now());
                 }
 

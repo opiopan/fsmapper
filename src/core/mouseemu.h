@@ -27,4 +27,8 @@ namespace mouse_emu{
     };
 
     std::unique_ptr<emulator> create_emulator();
+
+    static constexpr DWORD signature_mask = 0xffffff00;
+    static constexpr DWORD signature = 0xee313400;
+    static constexpr DWORD recovery_signature = 0xee313200;
 }
