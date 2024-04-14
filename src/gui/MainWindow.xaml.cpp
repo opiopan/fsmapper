@@ -7,6 +7,10 @@
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
+#include <winrt/Microsoft.UI.Composition.SystemBackdrops.h>
+#include <winrt/Microsoft.UI.Input.h>
+
+#include <cmath>
 
 #include "config.hpp"
 #include "DashboardPage.xaml.h"
@@ -29,11 +33,36 @@ namespace winrt::gui::implementation
     MainWindow::MainWindow(){
         InitializeComponent();
 
-        this->ExtendsContentIntoTitleBar(true);
-        this->SetTitleBar(AppTitleBar());
-        auto appname = Application::Current().Resources().Lookup(winrt::box_value(L"AppName"));
-        this->Title(unbox_value<winrt::hstring>(appname));
+        if (winrt::Microsoft::UI::Composition::SystemBackdrops::MicaController().IsSupported()) {
+            this->SystemBackdrop(Media::MicaBackdrop());
+        }
+        else if (winrt::Microsoft::UI::Composition::SystemBackdrops::DesktopAcrylicController().IsSupported()) {
+            this->SystemBackdrop(Media::DesktopAcrylicBackdrop());
+        }
 
+        if (winrt::Microsoft::UI::Windowing::AppWindowTitleBar::IsCustomizationSupported()) {
+            auto title_bar = AppWindow().TitleBar();
+            title_bar.ExtendsContentIntoTitleBar(true);
+            title_bar.ButtonBackgroundColor(Colors::Transparent());
+            title_bar.ButtonInactiveBackgroundColor(Colors::Transparent());
+            title_bar.PreferredHeightOption(TitleBarHeightOption::Tall);
+            AppTitleBar().Loaded([this](auto, auto){set_region_for_title_bar();});
+            AppTitleBar().SizeChanged([this](auto, auto){set_region_for_title_bar();});
+            Activated([this](auto sender, WindowActivatedEventArgs args){
+                if (args.WindowActivationState() == WindowActivationState::Deactivated) {
+                    auto brush = unbox_value<Media::SolidColorBrush>(tools::AppResource(L"WindowCaptionForegroundDisabled"));
+                    AppTitle().Foreground(brush);
+                    AppVersion().Foreground(brush);
+                }else{
+                    auto brush = unbox_value<Media::SolidColorBrush>(tools::AppResource(L"WindowCaptionForeground"));
+                    AppTitle().Foreground(brush);
+                    AppVersion().Foreground(brush);
+                }
+            });
+        }
+
+        auto appname = unbox_value<winrt::hstring>(tools::AppResource(L"AppName"));
+        this->Title(appname);
         AppVersion().Text(L"v" VERSTR_TITLE_VERSION);
 
         auto module = ::GetModuleHandleW(nullptr);
@@ -56,6 +85,31 @@ namespace winrt::gui::implementation
             App::Mapper().StopScriptSync();
             save_window_position();
         });
+    }
+
+    void MainWindow::set_region_for_title_bar(){
+        auto scale = AppTitleBar().XamlRoot().RasterizationScale();
+
+        RightPaddingColumn().Width(GridLength{AppWindow().TitleBar().RightInset() / scale});
+        LeftPaddingColumn().Width(GridLength{AppWindow().TitleBar().LeftInset() / scale});
+
+        auto rect_of_control = [scale](auto control) {
+            auto transform = control.TransformToVisual(nullptr);
+            auto bounds = transform.TransformBounds({0, 0, static_cast<float>(control.ActualWidth()), static_cast<float>(control.ActualHeight())});
+            return winrt::Windows::Graphics::RectInt32{
+                static_cast<int32_t>(std::round(bounds.X * scale)),
+                static_cast<int32_t>(std::round(bounds.Y * scale)),
+                static_cast<int32_t>(std::round(bounds.Width * scale)),
+                static_cast<int32_t>(std::round(bounds.Height * scale)),
+            };
+        };
+
+        std::vector<winrt::Windows::Graphics::RectInt32> regions{
+            rect_of_control(OpenButton()),
+            rect_of_control(StartStopButton()),
+        };
+        auto non_client_input_source = winrt::Microsoft::UI::Input::InputNonClientPointerSource::GetForWindowId(AppWindow().Id());
+        non_client_input_source.SetRegionRects(winrt::Microsoft::UI::Input::NonClientRegionKind::Passthrough, regions);
     }
 
     void MainWindow::NavView_Loaded(

@@ -32,6 +32,8 @@ namespace winrt::gui::implementation
         std::vector<page_data> pages;
         winrt::event_token closing_event_token;
 
+        void set_region_for_title_bar();
+
         HWND get_hwnd() {
             HWND hwnd{ 0 };
             auto window_native{ this->try_as<::IWindowNative>() };
