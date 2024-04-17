@@ -19,6 +19,7 @@
         <ListView Grid.Row="0" Grid.Column="0"
                   SelectionMode="None"
                   HorizontalAlignment="Stretch"
+                  Style="{StaticResource CardListViewStyle}"
                   Background="{StaticResource SystemChromeMediumLowColor}"
                   ItemsSource="{x:Bind ViewModel.Mapper.Messages, Mode=OneWay}">
             <ListView.ItemsPanel>
