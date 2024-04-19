@@ -58,8 +58,6 @@ Make sure that the following softwares are installed in advance.
         - Universal Windows Platform development
         - C++ desktop development
         - C++ game development
-    - [Windows App SDK 1.5 runtime](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads):<br>
-      Note: Donwload and install the latest version of **1.5** series.
     - Flight Simulator 2020 SDK 
     - [nuget.exe](https://www.nuget.org/downloads) should be placed at the folder which is indicated by PATH environment variable.
 
