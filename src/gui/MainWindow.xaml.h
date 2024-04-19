@@ -25,6 +25,8 @@ namespace winrt::gui::implementation
         void NavView_SelectionChanged(
             NavigationView const&,
             NavigationViewSelectionChangedEventArgs const& args);
+        void MenuButton_Click(
+            winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
     private:
         static winrt::gui::ViewModels::MainWindowViewModel view_model;

@@ -107,6 +107,7 @@ namespace winrt::gui::implementation
         };
 
         std::vector<winrt::Windows::Graphics::RectInt32> regions{
+            rect_of_control(MenuButton()),
             rect_of_control(OpenButton()),
             rect_of_control(StartStopButton()),
         };
@@ -134,6 +135,12 @@ namespace winrt::gui::implementation
             }
         }
     }
+
+    void MainWindow::MenuButton_Click(
+        winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args) {
+        NavView().IsPaneOpen(!NavView().IsPaneOpen());
+    }
+
 
     winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow() {
         HWND hwnd{ nullptr };

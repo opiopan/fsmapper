@@ -14,9 +14,10 @@
         <Grid Grid.Row="0" Height="48" x:Name="AppTitleBar" 
               HorizontalAlignment="Stretch" 
               VerticalAlignment="Top"
-              Padding="15, 0, 5, 0">
+              Padding="2, 0, 5, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="MenuColumn" Width="Auto"/>
                 <ColumnDefinition x:Name="IconColumn" Width="Auto"/>
                 <ColumnDefinition x:Name="TtitleColumn" Width="Auto"/>
                 <ColumnDefinition x:Name="VersionColumn" Width="Auto"/>
@@ -26,14 +27,19 @@
                 <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <Image Grid.Column="1" Height="20" VerticalAlignment="Center" x:Name="AppIcon" Source="{StaticResource AppLogo}"/>
-            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{StaticResource AppName}" x:Name="AppTitle" Margin="15, 0, 0, 0"/>
-            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="" x:Name="AppVersion" Margin="10, 0, 0, 0"/>
+            <Button Grid.Column="1" x:Name="MenuButton" VerticalAlignment="Center" ToolTipService.ToolTip="Toggle Menu"
+                    Click="MenuButton_Click" Margin="0, 0, 2, 0"
+                    Style="{StaticResource EllipsisButton}" Height="48">
+                <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets" Glyph="&#xE700;"/>
+            </Button>
+            <Image Grid.Column="2" Height="22" VerticalAlignment="Center" x:Name="AppIcon" Source="{StaticResource AppLogo}"/>
+            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{StaticResource AppName}" x:Name="AppTitle" Margin="15, 0, 0, 0"/>
+            <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="" x:Name="AppVersion" Margin="10, 0, 0, 0"/>
 
             <!--=========================================================================
               Scripting control pane
             ==========================================================================-->
-            <StackPanel Grid.Column="5" Height="48" Orientation="Horizontal" Padding="0, 4, 0, 0"
+            <StackPanel Grid.Column="6" Height="48" Orientation="Horizontal" Padding="0, 4, 0, 0"
                             Spacing="9" HorizontalAlignment="Right" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal" Background="{StaticResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
                             Height="30" CornerRadius="5" BorderBrush="{StaticResource ButtonDisabledBorderThemeBrush}" BorderThickness="1"
@@ -46,7 +52,8 @@
                                    MinWidth="150"/>
                 </StackPanel>
                 <Button x:Name="OpenButton" IsEnabled="{x:Bind ViewModel.OpenButtonIsEnabled, Mode=OneWay}"
-                            Click="{x:Bind ViewModel.ClickOpenButton}" VerticalAlignment="Center">
+                        ToolTipService.ToolTip="Open Script File"
+                        Click="{x:Bind ViewModel.ClickOpenButton}" VerticalAlignment="Center">
                     <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
                 </Button>
                 <Button x:Name="StartStopButton" Width="80" Margin="0,0,18,0" VerticalAlignment="Center"
@@ -66,7 +73,9 @@
         ==========================================================================-->
         <NavigationView x:Name="NavView"
                         Grid.Row="1"
+                        OpenPaneLength="250" ExpandedModeThresholdWidth="900"
                         IsBackButtonVisible="Collapsed"
+                        IsPaneToggleButtonVisible="False"
                         Loaded="NavView_Loaded"
                         SelectionChanged="NavView_SelectionChanged"
                         IsSettingsVisible="False">
