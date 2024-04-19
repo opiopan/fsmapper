@@ -20,7 +20,6 @@
                   SelectionMode="None"
                   HorizontalAlignment="Stretch"
                   Style="{StaticResource CardListViewStyle}"
-                  Background="{StaticResource SystemChromeMediumLowColor}"
                   ItemsSource="{x:Bind ViewModel.Mapper.Messages, Mode=OneWay}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>

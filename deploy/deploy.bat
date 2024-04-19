@@ -8,6 +8,7 @@ $dll = $src + "\*.dll"
 $xbf = $src + "\*.xbf"
 $samples = "..\samples"
 $sdk_samples = "..\sdk_samples"
+$redist = "$($env:VCINSTALLDIR)\Redist\MSVC\14.*\x64\*.CRT"
 
 $dest = "fsmapper"
 $dest_sdk = $dest + "\sdk"
@@ -26,9 +27,15 @@ if (Test-Path $package){
 New-Item $dest -ItemType Directory
 Copy-Item $assets $dest -Recurse
 Copy-Item $samples $dest -Recurse
+Copy-Item "$($src)\Microsoft.UI.Xaml" $dest -Recurse
+Copy-Item "$($src)\en-us" $dest -Recurse
 Copy-Item $exe $dest
 Copy-Item $dll $dest
 Copy-Item $xbf $dest
+Copy-Item "$($src)\resources.pri" $dest
+Copy-Item "$($redist)\msvcp140.dll" $dest
+Copy-Item "$($redist)\vcruntime140.dll" $dest
+Copy-Item "$($redist)\vcruntime140_1.dll" $dest
 
 New-Item $dest_sdk -ItemType Directory
 New-Item $dest_sdkinc -ItemType Directory

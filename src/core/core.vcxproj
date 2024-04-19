@@ -183,6 +183,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4.6\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -192,6 +193,8 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>C:\MSFS SDK\SimConnect SDK\lib;$(SolutionDir)..\modules\lua-5.4.6\src;$(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.4.6-static.lib;SimConnect.lib;gdiplus.lib;dwmapi.lib;d2d1.lib;D3D10_1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libucrt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>/DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)

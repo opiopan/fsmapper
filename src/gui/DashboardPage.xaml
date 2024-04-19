@@ -20,6 +20,21 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
+            <Style x:Key="CardTitleText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+            </Style>
+            <Style x:Key="CardSubTitleText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+            </Style>
+            <Style x:Key="CardContentText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Normal"/>
+                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+            </Style>
             <Style x:Key="StopViewText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="26"/>
                 <Setter Property="Foreground" Value="{ThemeResource StopViewTextColor}"/>
@@ -73,11 +88,11 @@
                         Style="{StaticResource CardStackPanelStyle}"
                         Height="54"  VerticalAlignment="Center"
                         Padding="12, 0, 12, 0">
-                <TextBlock FontSize="24" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
+                <TextBlock Style="{StaticResource CardTitleText}" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
                 <Image Visibility="{x:Bind ViewModel.SimIconIsVisible, Mode=OneWay}"
                    Source="{x:Bind ViewModel.SimIconSource, Mode=OneWay}"
                    Height="26" Margin="16, 0, 0, 0"/>
-                <TextBlock Margin="16, 0, 0, 0" VerticalAlignment="Center"
+                <TextBlock Style="{StaticResource CardContentText}" Margin="16, 0, 0, 0" VerticalAlignment="Center"
                        Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
             </StackPanel>
 
@@ -88,7 +103,7 @@
                   Padding="12, 8, 12, 12">
 
                 <Grid Grid.Row="0" Grid.ColumnDefinitions="Auto,*,Auto">
-                    <TextBlock FontSize="24" Grid.Column="0">Viewports</TextBlock>
+                    <TextBlock Style="{StaticResource CardTitleText}" Grid.Column="0">Viewports</TextBlock>
                     <Button Grid.Column="2"
                         Content="{x:Bind ViewModel.ViewportButtonText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.ViewportButtonIsEnabled, Mode=OneWay}"
@@ -96,13 +111,13 @@
                         Click="{x:Bind ViewModel.ToggleViewport}"/>
                 </Grid>
 
-                <TextBlock Grid.Row="1" FontWeight="SemiBold" Margin="0,12,0,0"
+                <TextBlock Grid.Row="1" Style="{StaticResource CardSubTitleText}" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.ViewportSummary, Mode=OneWay}"/>
-                <TextBlock Grid.Row="2" LineHeight="22" Margin="20,4,0,0"
+                <TextBlock Grid.Row="2" Style="{StaticResource CardContentText}" LineHeight="22" Margin="20,4,0,0"
                        Visibility="{x:Bind ViewModel.ViewportDetailIsVisible, Mode=OneWay}"
                        Text="{x:Bind ViewModel.ViewportDetail, Mode=OneWay}"/>
 
-                <TextBlock Grid.Row="3" FontWeight="SemiBold" Margin="0,24,0,8"
+                <TextBlock Grid.Row="3" Style="{StaticResource CardSubTitleText}" Margin="0,24,0,8"
                        Text="{x:Bind ViewModel.CapturedWindowsSummary, Mode=OneWay}"
                        Visibility="{x:Bind ViewModel.CapturedWindowsIsVisible, Mode=OneWay}"/>
 
@@ -119,10 +134,11 @@
                                     <Image Source="{x:Bind Image, Mode=OneWay}"
                                        Width="80" Height="60" Margin="0, 0, 12, 0"/>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"
-                                               Foreground="{x:Bind ButtonTitleColor, Mode=OneWay}"/>
-                                        <TextBlock Text="{x:Bind StatusString, Mode=OneWay}" Margin="10,0,0,0"
-                                               Foreground="{x:Bind ButtonTextColor, Mode=OneWay}"/>
+                                        <TextBlock Style="{StaticResource CardSubTitleText}" Text="{x:Bind Name}"
+                                                   Foreground="{x:Bind ButtonTitleColor, Mode=OneWay}"/>
+                                        <TextBlock Style="{StaticResource CardContentText}" Text="{x:Bind StatusString, Mode=OneWay}"
+                                                   Margin="10,0,0,0"
+                                                   Foreground="{x:Bind ButtonTextColor, Mode=OneWay}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Button>
@@ -139,10 +155,10 @@
                     <StackPanel Visibility="Visible" Style="{StaticResource CardStackPanelStyle}"
                                 Padding="12, 8, 12, 12"
                                 Margin="0,0,0,16">
-                        <TextBlock FontSize="24">Devices</TextBlock>
-                        <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                        <TextBlock Style="{StaticResource CardTitleText}">Devices</TextBlock>
+                        <TextBlock Style="{StaticResource CardSubTitleText}" Margin="0,12,0,0"
                        Text="{x:Bind ViewModel.DeviceSummary, Mode=OneWay}"/>
-                        <TextBlock LineHeight="22" Margin="20,4,0,0"
+                        <TextBlock Style="{StaticResource CardContentText}" LineHeight="22" Margin="20,4,0,0"
                                Visibility="{x:Bind ViewModel.DeviceDetailIsVisible, Mode=OneWay}"
                                Text="{x:Bind ViewModel.DeviceDetail, Mode=OneWay}"/>
                     </StackPanel>
@@ -151,23 +167,23 @@
                     <StackPanel Style="{StaticResource CardStackPanelStyle}"
                                 Padding="12, 8, 12, 12"
                                 Margin="0,0,0,16">
-                        <TextBlock FontSize="24">Mapping definitions</TextBlock>
-                        <TextBlock FontWeight="SemiBold" Margin="0,12,0,0"
+                        <TextBlock Style="{StaticResource CardTitleText}">Mapping definitions</TextBlock>
+                        <TextBlock Style="{StaticResource CardSubTitleText}" Margin="0,12,0,0"
                                    Text="{x:Bind ViewModel.MappingsSummary, Mode=OneWay}"/>
                         <Grid Grid.ColumnDefinitions="160,32"  Grid.RowDefinitions="*,*,*,*"  Margin="20,4,0,0"
                               Visibility="{x:Bind ViewModel.MappingsDetailIsVisible, Mode=OneWay}">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Global (primary) :"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Global (secondary) :"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Attached to viewports :"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Attached to views :"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource CardContentText}" Text="Global (primary) :"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource CardContentText}" Text="Global (secondary) :"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource CardContentText}" Text="Attached to viewports :"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource CardContentText}" Text="Attached to views :"/>
 
-                            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" 
+                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource CardContentText}" HorizontalAlignment="Right" 
                                        Text="{x:Bind ViewModel.MappingsDetailPrimery, Mode=OneWay}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource CardContentText}" HorizontalAlignment="Right"
                                        Text="{x:Bind ViewModel.MappingsDetailSecondary, Mode=OneWay}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource CardContentText}" HorizontalAlignment="Right"
                                        Text="{x:Bind ViewModel.MappingsDetailViewports, Mode=OneWay}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"
+                            <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource CardContentText}" HorizontalAlignment="Right"
                                        Text="{x:Bind ViewModel.MappingsDetailViews, Mode=OneWay}"/>
                         </Grid>
 
