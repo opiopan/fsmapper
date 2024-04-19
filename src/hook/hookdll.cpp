@@ -335,10 +335,7 @@ protected:
 
 public:
     FollowingManager() = delete;
-    FollowingManager(HMODULE hModule) : Manager(false, hModule){
-        SetWindowLongPtrW.setHook("User32.dll", "NtUserSetWindowLongPtr", SetWindowLongPtrW_Hook);
-        SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
-    };
+    FollowingManager(HMODULE hModule) : Manager(false, hModule){};
     ~FollowingManager(){
         std::unique_lock lock(lmutex);
         auto itr = captured_windows.begin();
@@ -371,6 +368,8 @@ public:
                 }
             }
             if (i < MAX_CAPTURED_WINDOW){
+                SetWindowLongPtrW.setHook("User32.dll", "NtUserSetWindowLongPtr", SetWindowLongPtrW_Hook);
+                SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
                 local_count++;
                 WindowContext ctx;
                 ctx.index = i;
