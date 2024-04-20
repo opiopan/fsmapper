@@ -1,9 +1,10 @@
+<img src="docs/static/img/logo.svg" width=48 align="top"> fsmapper
+===
 NOTE:|
 :-|
 The [**fsmapper User's Guide**](https://opiopan.github.io/fsmapper) is available [here](https://opiopan.github.io/fsmapper). Please refer to this guide for instructions on how to use fsmapper
 
-fsmapper
-===
+
 <img alt="app window" src="https://raw.githubusercontent.com/wiki/opiopan/fsmapper/images/fsmapper.png" width=400 align="right">
 
 fsmapper is a Windows application designed to connect a variety of input and output devices to flight simulators.
