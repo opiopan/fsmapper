@@ -115,7 +115,7 @@ namespace winrt::gui::ViewModels::implementation{
         if (sim == Simulators::none) {
             update_property(sim_name, std::wstring(L"No active flight simulator found"), L"SimString");
         }else if (sim == Simulators::fs2020){
-            update_property(sim_name, std::wstring(L"Flight Simulator 2020"), L"SimString");
+            update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2020"), L"SimString");
         }else if (sim == Simulators::dcs){
             update_property(sim_name, std::wstring(L"DCS world"), L"SimString");
         }
@@ -123,13 +123,8 @@ namespace winrt::gui::ViewModels::implementation{
 
     void DashboardPageViewModel::reflect_mapper_AircraftName(){
         auto name = mapper.AircraftName();
-        if (name.size()){
-            std::wstring value{L" : "};
-            value += name;
-            update_property(aircraft_name, value, L"SimString");
-        }else{
-            update_property(aircraft_name, std::wstring(name.c_str()), L"SimString");
-        }
+        update_property(aircraft_name, std::wstring(name), L"AircraftName");
+        update_property(L"AircraftNameIsVisible");
     }
 
     void DashboardPageViewModel::reflect_mapper_MappingsInfo(){

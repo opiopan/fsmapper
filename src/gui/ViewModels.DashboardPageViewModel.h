@@ -25,7 +25,9 @@ namespace winrt::gui::ViewModels::implementation{
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource(){
             return logo_images[static_cast<int>(sim_type)];
         }
-        hstring SimString(){return hstring(sim_name + aircraft_name);}
+        hstring SimString(){return hstring(sim_name);}
+        bool AircraftNameIsVisible(){return aircraft_name.length() >0;}
+        hstring AircraftName(){return hstring(aircraft_name);}
         hstring DeviceSummary(){return device_summary;}
         hstring DeviceDetail(){return device_detail;}
         bool DeviceDetailIsVisible(){return device_detail_is_visible;}

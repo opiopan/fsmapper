@@ -137,7 +137,7 @@ namespace winrt::gui::implementation
     }
 
     void MainWindow::MenuButton_Click(
-        winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args) {
+        winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
         NavView().IsPaneOpen(!NavView().IsPaneOpen());
     }
 

@@ -23,7 +23,7 @@
                 <ColumnDefinition x:Name="VersionColumn" Width="Auto"/>
                 <ColumnDefinition x:Name="LeftDragcolumn" Width="*"/>
                 <ColumnDefinition x:Name="ScriptingColumn" Width="Auto"/>
-                <ColumnDefinition x:Name="RightDragColumn" Width="135"/>
+                <ColumnDefinition x:Name="RightDragColumn" Width="128"/>
                 <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 

@@ -35,6 +35,11 @@
                 <Setter Property="FontWeight" Value="Normal"/>
                 <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
             </Style>
+            <Style x:Key="CardSubContentText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontWeight" Value="Normal"/>
+                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+            </Style>
             <Style x:Key="StopViewText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="26"/>
                 <Setter Property="Foreground" Value="{ThemeResource StopViewTextColor}"/>
@@ -91,9 +96,14 @@
                 <TextBlock Style="{StaticResource CardTitleText}" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
                 <Image Visibility="{x:Bind ViewModel.SimIconIsVisible, Mode=OneWay}"
                    Source="{x:Bind ViewModel.SimIconSource, Mode=OneWay}"
-                   Height="26" Margin="16, 0, 0, 0"/>
-                <TextBlock Style="{StaticResource CardContentText}" Margin="16, 0, 0, 0" VerticalAlignment="Center"
-                       Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
+                   Height="26" Margin="16, 0, 8, 0"/>
+                <StackPanel VerticalAlignment="Center" Margin="16, 0, 0, 0" Orientation="Vertical">
+                    <TextBlock Style="{StaticResource CardSubTitleText}" VerticalAlignment="Center"
+                               Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
+                    <TextBlock Style="{StaticResource CardContentText}" VerticalAlignment="Center"
+                               Text="{x:Bind ViewModel.AircraftName, Mode=OneWay}"
+                               Visibility="{x:Bind ViewModel.AircraftNameIsVisible, Mode=OneWay}"/>
+                </StackPanel>
             </StackPanel>
 
             <!-- Viewport pane-->

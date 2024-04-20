@@ -25,6 +25,8 @@ namespace gui.ViewModels{
         Boolean SimIconIsVisible{get;};
         Microsoft.UI.Xaml.Media.Imaging.BitmapImage SimIconSource{get;};
         String SimString{get;};
+        Boolean AircraftNameIsVisible{get;};
+        String AircraftName{get;};
         String DeviceSummary{get;};
         String DeviceDetail{get;};
         Boolean DeviceDetailIsVisible{get;};
