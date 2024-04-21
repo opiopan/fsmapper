@@ -8,5 +8,5 @@ device = mapper.device{
     --   2: identifier = {guid = '{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}'}
     identifier = {index = 1},
     -----------------------------------------------------------------
-    modifiers = {{},
+    modifiers = {},
 }

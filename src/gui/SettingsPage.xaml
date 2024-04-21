@@ -5,77 +5,117 @@
     xmlns:local="using:gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:angel="using:Mntone.AngelUmbrella.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
         <Style x:Key="SettingsStackStyle" TargetType="StackPanel">
             <Setter Property="Margin" Value="24 0 24 0"/>
-            <Setter Property="Spacing" Value="38"/>
+            <Setter Property="Spacing" Value="24"/>
+        </Style>
+        <Style x:Key="SettingsGroupStackStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="2"/>
         </Style>
         <Style x:Key="GroupStackStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="13"/>
         </Style>
+        <Style x:Key="SettingsExpandedStackStyle" TargetType="StackPanel">
+            <Setter Property="Padding" Value="18 8 40 16"/>
+            <Setter Property="Background" Value="{ThemeResource SettingsCardBackground}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource SettingsCardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1, 0, 1, 1"/>
+            <Setter Property="CornerRadius" Value="0, 0, 4, 4"/>
+        </Style>
         <Style x:Key="TitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="21"/>
+            <Setter Property="FontSize" Value="28"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
     </Page.Resources>
 
     <ScrollViewer>
         <StackPanel Style="{StaticResource SettingsStackStyle}">
-            <StackPanel Style="{StaticResource GroupStackStyle}">
-                <TextBlock Style="{StaticResource TitleStyle}">App Behaviors</TextBlock>
-                <ToggleSwitch Header="Run Lua script on startup app" OffContent="Don't run" OnContent="Run"
-                              IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
+            <!-- Behavior -->
+            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                <angel:SettingsCard Header="Auto run" Description="Run Lua script on startup app">
+                    <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                  FlowDirection="RightToLeft"
+                                  IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
+                </angel:SettingsCard>
             </StackPanel>
-            <StackPanel Style="{StaticResource GroupStackStyle}">
-                <TextBlock Style="{StaticResource TitleStyle}">Pre-run Script</TextBlock>
-                <TextBox AutomationProperties.Name="multi-line TextBox"
-                         TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas"
-                         Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
-                    <TextBox.Header>
-                        <TextBlock FontFamily="Default">Pre-run script evaluating before running script file:</TextBlock>
-                    </TextBox.Header>
-                </TextBox>
-                <ToggleSwitch Header="Validity of Pre-run script" OffContent="Invalid" OnContent="Valid"
-                              IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
+
+            <!-- Scripting -->
+            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                <TextBlock Text="Lua scripting" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                <angel:SettingsExpander Header="Pre-run Script" Description="Lua script block evaluating before running the configuration script file">
+                    <ToggleSwitch  FlowDirection="RightToLeft"
+                                   MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                  IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
+                    <angel:SettingsExpander.ExpanderContent>
+                        <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
+                            <TextBlock Margin="0, 0, 0, 8">Script block:</TextBlock>
+                            <TextBox AutomationProperties.Name="multi-line TextBox"
+                                     TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas" FontSize="14"
+                                     Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
+                            </TextBox>
+                        </StackPanel>
+                    </angel:SettingsExpander.ExpanderContent>
+                </angel:SettingsExpander>
             </StackPanel>
-            <StackPanel Style="{StaticResource GroupStackStyle}">
-                <TextBlock Style="{StaticResource TitleStyle}">Graphics Rendering</TextBlock>
-                <RadioButtons Header="Direct2D rendering target type:" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
-                    <RadioButton Content="CPU rendering"/>
-                    <RadioButton Content="GPU rendering"/>
-                </RadioButtons>
+            
+            <!-- Graphics -->
+            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                <TextBlock Text="Graphics" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
+                    <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
+                        <ComboBoxItem Content="CPU rendering"/>
+                        <ComboBoxItem Content="GPU rendering"/>
+                    </ComboBox>
+                </angel:SettingsCard>
             </StackPanel>
-            <StackPanel Style="{StaticResource GroupStackStyle}">
-                <TextBlock Style="{StaticResource TitleStyle}">Console Message</TextBlock>
-                <NumberBox Header="Buffer size [lines]" Minimum="100"
+            
+            <!-- Message Console-->
+            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                <TextBlock Text="Message Console" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                <angel:SettingsCard Header="Message log size">
+                    <NumberBox Minimum="100" MinWidth="{StaticResource SettingsCardContentMinWidth}"
                            SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
                            Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
+                </angel:SettingsCard>
             </StackPanel>
-            <StackPanel Style="{StaticResource GroupStackStyle}">
-                <TextBlock Style="{StaticResource TitleStyle}">Plugin Device Management</TextBlock>
-                <RadioButtons Header="Folder path to place plugin modules:" SelectedIndex="{x:Bind ViewModel.PluginFolderType, Mode=TwoWay}">
-                    <RadioButton>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Width="120">Default:</TextBlock>
-                            <TextBlock Foreground="{x:Bind ViewModel.DefaultPluginPathColor, Mode=OneWay}" 
-                                       Text="{x:Bind ViewModel.DefaultPluginPath, Mode=OneWay}"/>
+            
+            <!-- Plugin module -->
+            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                <TextBlock Text="Plugin" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                <angel:SettingsExpander Header="Plugin folder" Description="Folder path to place plugin module">
+                    <TextBlock Text="{x:Bind ViewModel.PluginPath, Mode=OneWay}"
+                               FontSize="13"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <angel:SettingsExpander.ExpanderContent>
+                        <StackPanel>
+                            <angel:SettingsCard Header="Folder type" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                <angel:SettingsCard.Description>
+                                    The destination for plugin modules is the 'plugins' folder directly under the installation location of fsmapper.
+                                    By selecting the 'User-specified folder' as folder type, you can specify any folder you desire.
+                                </angel:SettingsCard.Description>
+                                <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" Margin="0, 0, 26, 0"
+                                      SelectedIndex="{x:Bind ViewModel.PluginFolderType, Mode=TwoWay}">
+                                    <ComboBoxItem Content="Default folder"/>
+                                    <ComboBoxItem Content="User-specified folder"/>
+                                </ComboBox>
+                            </angel:SettingsCard>
+                            <angel:SettingsCard Header="Specify plugin folder" Style="{StaticResource SettingsBottomCardAltStyle}"
+                                                Background="{ThemeResource SettingsCardBackground}"
+                                                IsEnabled="{x:Bind ViewModel.ChangePluginPathButtonIsValid, Mode=OneWay}">
+                                <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                        Click="{x:Bind ViewModel.ClickChangePluginPathButton}">
+                                    Change Folder
+                                </Button>
+                            </angel:SettingsCard>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Width="120">User-specified:</TextBlock>
-                            <TextBlock Foreground="{x:Bind ViewModel.UserSpecifiedPluginPathColor, Mode=OneWay}"
-                                       Text="{x:Bind ViewModel.UserSpecifiedPluginPath, Mode=OneWay}"/>
-                        </StackPanel>
-                    </RadioButton>
-                </RadioButtons>
-                <Button Margin="140 0 0 0"
-                        IsEnabled="{x:Bind ViewModel.ChangePluginPathButtonIsValid, Mode=OneWay}"
-                        Click="{x:Bind ViewModel.ClickChangePluginPathButton}">
-                    Change Folder
-                </Button>
+                    </angel:SettingsExpander.ExpanderContent>
+                </angel:SettingsExpander>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

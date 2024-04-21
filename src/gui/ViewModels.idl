@@ -65,6 +65,7 @@ namespace gui.ViewModels{
         Boolean PreRunScriptIsVarid;
         Int32 RenderingMethod;
         Int32 PluginFolderType;
+        String PluginPath{get;};
         String DefaultPluginPath{get;};
         Microsoft.UI.Xaml.Media.SolidColorBrush DefaultPluginPathColor{get;};
         String UserSpecifiedPluginPath{get;};
