@@ -71,6 +71,8 @@ namespace gui.ViewModels{
         String UserSpecifiedPluginPath{get;};
         Microsoft.UI.Xaml.Media.SolidColorBrush UserSpecifiedPluginPathColor{get;};
         Boolean ChangePluginPathButtonIsValid{get;};
+        String Version{get;};
+        String Copyright{get;};
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }

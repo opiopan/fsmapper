@@ -8,6 +8,7 @@
 #include "config.hpp"
 #include "encoding.hpp"
 #include "tools.hpp"
+#include "../.version.h"
 #include <chrono>
 
 namespace winrt::gui::ViewModels::implementation
@@ -91,6 +92,12 @@ namespace winrt::gui::ViewModels::implementation
         }
         bool ChangePluginPathButtonIsValid(){
             return !fsmapper::app_config.get_plugin_folder_is_default();
+        }
+        hstring Version(){
+            return L"v" VERSTR_TITLE_VERSION;
+        }
+        hstring Copyright(){
+            return L"©︎ " COPYRIGHT_STR " Hiroshi Murayama, All rights reserved.";
         }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);

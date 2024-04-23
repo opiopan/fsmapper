@@ -32,91 +32,130 @@
         </Style>
     </Page.Resources>
 
-    <ScrollViewer>
-        <StackPanel Style="{StaticResource SettingsStackStyle}">
-            <!-- Behavior -->
-            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                <angel:SettingsCard Header="Auto run" Description="Run Lua script on startup app">
-                    <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="16, 4, 0, 20">
+            <TextBlock Text="Settings" FontWeight="SemiBold" FontSize="24"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Style="{StaticResource SettingsStackStyle}" Margin="16, 0, 16, 0">
+                <!-- Behavior -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsCard Header="Auto run" Description="Run Lua script on startup app">
+                        <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
                                   FlowDirection="RightToLeft"
                                   IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
-                </angel:SettingsCard>
-            </StackPanel>
+                    </angel:SettingsCard>
+                </StackPanel>
 
-            <!-- Scripting -->
-            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                <TextBlock Text="Lua scripting" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                <angel:SettingsExpander Header="Pre-run Script" Description="Lua script block evaluating before running the configuration script file">
-                    <ToggleSwitch  FlowDirection="RightToLeft"
+                <!-- Scripting -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Lua scripting" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsExpander Header="Pre-run Script" Description="Lua script block evaluating before running the configuration script file">
+                        <ToggleSwitch  FlowDirection="RightToLeft"
                                    MinWidth="{StaticResource SettingsCardContentMinWidth}"
                                   IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
-                    <angel:SettingsExpander.ExpanderContent>
-                        <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
-                            <TextBlock Margin="0, 0, 0, 8">Script block:</TextBlock>
-                            <TextBox AutomationProperties.Name="multi-line TextBox"
+                        <angel:SettingsExpander.ExpanderContent>
+                            <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
+                                <TextBlock Margin="0, 0, 0, 8">Script block:</TextBlock>
+                                <TextBox AutomationProperties.Name="multi-line TextBox"
                                      TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas" FontSize="14"
                                      Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
-                            </TextBox>
-                        </StackPanel>
-                    </angel:SettingsExpander.ExpanderContent>
-                </angel:SettingsExpander>
-            </StackPanel>
-            
-            <!-- Graphics -->
-            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                <TextBlock Text="Graphics" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
-                    <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
-                        <ComboBoxItem Content="CPU rendering"/>
-                        <ComboBoxItem Content="GPU rendering"/>
-                    </ComboBox>
-                </angel:SettingsCard>
-            </StackPanel>
-            
-            <!-- Message Console-->
-            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                <TextBlock Text="Message Console" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                <angel:SettingsCard Header="Message log size">
-                    <NumberBox Minimum="100" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                </TextBox>
+                            </StackPanel>
+                        </angel:SettingsExpander.ExpanderContent>
+                    </angel:SettingsExpander>
+                </StackPanel>
+
+                <!-- Graphics -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Graphics" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
+                        <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
+                            <ComboBoxItem Content="CPU rendering"/>
+                            <ComboBoxItem Content="GPU rendering"/>
+                        </ComboBox>
+                    </angel:SettingsCard>
+                </StackPanel>
+
+                <!-- Message Console-->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Message Console" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsCard Header="Message log size">
+                        <NumberBox Minimum="100" MinWidth="{StaticResource SettingsCardContentMinWidth}"
                            SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
                            Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
-                </angel:SettingsCard>
-            </StackPanel>
-            
-            <!-- Plugin module -->
-            <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                <TextBlock Text="Plugin" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                <angel:SettingsExpander Header="Plugin folder" Description="Folder path to place plugin module">
-                    <TextBlock Text="{x:Bind ViewModel.PluginPath, Mode=OneWay}"
+                    </angel:SettingsCard>
+                </StackPanel>
+
+                <!-- Plugin module -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Plugin" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsExpander Header="Plugin folder" Description="Folder path to place plugin module">
+                        <TextBlock Text="{x:Bind ViewModel.PluginPath, Mode=OneWay}"
                                FontSize="13"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <angel:SettingsExpander.ExpanderContent>
-                        <StackPanel>
-                            <angel:SettingsCard Header="Folder type" Background="{ThemeResource SettingsCardBackground}"
+                        <angel:SettingsExpander.ExpanderContent>
+                            <StackPanel>
+                                <angel:SettingsCard Header="Folder type" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
-                                <angel:SettingsCard.Description>
-                                    The destination for plugin modules is the 'plugins' folder directly under the installation location of fsmapper.
+                                    <angel:SettingsCard.Description>
+                                        The destination for plugin modules is the 'plugins' folder directly under the installation location of fsmapper.
                                     By selecting the 'User-specified folder' as folder type, you can specify any folder you desire.
-                                </angel:SettingsCard.Description>
-                                <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" Margin="0, 0, 26, 0"
+                                    </angel:SettingsCard.Description>
+                                    <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" Margin="0, 0, 26, 0"
                                       SelectedIndex="{x:Bind ViewModel.PluginFolderType, Mode=TwoWay}">
-                                    <ComboBoxItem Content="Default folder"/>
-                                    <ComboBoxItem Content="User-specified folder"/>
-                                </ComboBox>
-                            </angel:SettingsCard>
-                            <angel:SettingsCard Header="Specify plugin folder" Style="{StaticResource SettingsBottomCardAltStyle}"
+                                        <ComboBoxItem Content="Default folder"/>
+                                        <ComboBoxItem Content="User-specified folder"/>
+                                    </ComboBox>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Specify plugin folder" Style="{StaticResource SettingsBottomCardAltStyle}"
                                                 Background="{ThemeResource SettingsCardBackground}"
                                                 IsEnabled="{x:Bind ViewModel.ChangePluginPathButtonIsValid, Mode=OneWay}">
-                                <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                    <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
                                         Click="{x:Bind ViewModel.ClickChangePluginPathButton}">
-                                    Change Folder
-                                </Button>
-                            </angel:SettingsCard>
-                        </StackPanel>
-                    </angel:SettingsExpander.ExpanderContent>
-                </angel:SettingsExpander>
+                                        Change Folder
+                                    </Button>
+                                </angel:SettingsCard>
+                            </StackPanel>
+                        </angel:SettingsExpander.ExpanderContent>
+                    </angel:SettingsExpander>
+                </StackPanel>
+
+                <!-- About -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="About" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsExpander Header="fsmapper" Description="{x:Bind ViewModel.Copyright, Mode=OneTime}">
+                        <angel:SettingsExpander.HeaderIcon>
+                            <ImageIcon Source="{StaticResource AppLogo}"/>
+                        </angel:SettingsExpander.HeaderIcon>
+                        <TextBlock Text="{x:Bind ViewModel.Version, Mode=OneTime}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <angel:SettingsExpander.ExpanderContent>
+                            <StackPanel>
+                                <angel:SettingsCard Header="Related sites" Style="{StaticResource SettingsBottomCardAltStyle}"
+                                                Background="{ThemeResource SettingsCardBackground}">
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <StackPanel>
+                                        <HyperlinkButton NavigateUri="https://opiopan.github.io/fsmapper/">
+                                            User's Guide
+                                        </HyperlinkButton>
+                                        <HyperlinkButton NavigateUri="https://github.com/opiopan/fsmapper">
+                                            GitHub repository
+                                        </HyperlinkButton>
+                                    </StackPanel>
+                                </angel:SettingsCard>
+                            </StackPanel>
+                        </angel:SettingsExpander.ExpanderContent>
+                    </angel:SettingsExpander>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </Page>

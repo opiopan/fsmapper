@@ -63,9 +63,6 @@ namespace winrt::gui::implementation
 
         auto appname = unbox_value<winrt::hstring>(tools::AppResource(L"AppName"));
         this->Title(appname);
-#ifndef _DEBUG
-        AppVersion().Text(L"v" VERSTR_TITLE_VERSION);
-#endif
 
         auto module = ::GetModuleHandleW(nullptr);
         auto icon = ::LoadIconW(module, MAKEINTRESOURCEW(IDI_APP_ICON));

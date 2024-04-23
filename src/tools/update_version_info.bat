@@ -70,6 +70,9 @@ if (Test-Path $version_file){
     }
 }
 
+$year = Get-Date -Format "yyyy"
+$copyright = "2021-{0}" -f $year
+
 $ver_file_str > $version_file
 
 "#pragma once" > $header_file
@@ -79,5 +82,6 @@ $ver_file_str > $version_file
 '#define VERSTR_PRODUCT_VERSION "{0}"' -f $ver_product_str >> $header_file
 '#define VERSTR_TITLE_VERSION "{0}"' -f $ver_title_str >> $header_file
 "#define VER_FILE_MODE {0}" -f $file_mode >> $header_file
+'#define COPYRIGHT_STR "{0}"' -f $copyright >> $header_file
 
 "version files have been updated"
