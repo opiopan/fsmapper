@@ -30,7 +30,7 @@
             <Button Grid.Column="1" x:Name="MenuButton" VerticalAlignment="Center" ToolTipService.ToolTip="Toggle Menu"
                     Click="MenuButton_Click" Margin="0, 0, 2, 0"
                     Style="{StaticResource EllipsisButton}" Height="48">
-                <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets" Glyph="&#xE700;"/>
+                <FontIcon FontSize="16" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE700;"/>
             </Button>
             <Image Grid.Column="2" Height="22" VerticalAlignment="Center" x:Name="AppIcon" Source="{StaticResource AppLogo}"/>
             <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{StaticResource AppName}" x:Name="AppTitle" Margin="15, 0, 0, 0"/>
@@ -54,13 +54,13 @@
                 <Button x:Name="OpenButton" IsEnabled="{x:Bind ViewModel.OpenButtonIsEnabled, Mode=OneWay}"
                         ToolTipService.ToolTip="Open Script File"
                         Click="{x:Bind ViewModel.ClickOpenButton}" VerticalAlignment="Center">
-                    <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                    <FontIcon FontSize="16" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;" />
                 </Button>
                 <Button x:Name="StartStopButton" Width="80" Margin="0,0,18,0" VerticalAlignment="Center"
                             IsEnabled="{x:Bind ViewModel.StartStopButtonIsEnabled, Mode=OneWay}"
                             Click="{x:Bind ViewModel.ClickStartStopButton}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon FontSize="16" FontFamily="Segoe MDL2 Assets"
+                        <FontIcon FontSize="16" FontFamily="{StaticResource SymbolThemeFontFamily}"
                                       Glyph="{x:Bind ViewModel.StartStopButtonIcon, Mode=OneWay}" />
                         <TextBlock Text="{x:Bind ViewModel.StartStopButtonLabel, Mode=OneWay}"/>
                     </StackPanel>
@@ -85,12 +85,12 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="dashboard" Content="Dashboard">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE791;" />
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE791;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Tag="console" Content="Message Console">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7F4;" />
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7F4;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <!--
