@@ -53,6 +53,25 @@
                                   FlowDirection="RightToLeft"
                                   IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
                     </angel:SettingsCard>
+
+                    <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
+                        <angel:SettingsCard.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe91b;"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
+                            <ComboBoxItem Content="CPU rendering"/>
+                            <ComboBoxItem Content="GPU rendering"/>
+                        </ComboBox>
+                    </angel:SettingsCard>
+
+                    <angel:SettingsCard Header="Message log size" Description="Specify how many lines of messages to retain in the message console">
+                        <angel:SettingsCard.HeaderIcon>
+                            <SymbolIcon Symbol="Memo"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <NumberBox Minimum="100" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                           SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
+                           Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
+                    </angel:SettingsCard>
                 </StackPanel>
 
                 <!-- Scripting -->
@@ -75,33 +94,6 @@
                             </StackPanel>
                         </angel:SettingsExpander.ExpanderContent>
                     </angel:SettingsExpander>
-                </StackPanel>
-
-                <!-- Graphics -->
-                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                    <TextBlock Text="Graphics" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                    <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
-                        <angel:SettingsCard.HeaderIcon>
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe91b;"/>
-                        </angel:SettingsCard.HeaderIcon>
-                        <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.RenderingMethod, Mode=TwoWay}">
-                            <ComboBoxItem Content="CPU rendering"/>
-                            <ComboBoxItem Content="GPU rendering"/>
-                        </ComboBox>
-                    </angel:SettingsCard>
-                </StackPanel>
-
-                <!-- Message Console-->
-                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
-                    <TextBlock Text="Message Console" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                    <angel:SettingsCard Header="Message log size">
-                        <angel:SettingsCard.HeaderIcon>
-                            <SymbolIcon Symbol="Memo"/>
-                        </angel:SettingsCard.HeaderIcon>
-                        <NumberBox Minimum="100" MinWidth="{StaticResource SettingsCardContentMinWidth}"
-                           SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
-                           Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
-                    </angel:SettingsCard>
                 </StackPanel>
 
                 <!-- Plugin module -->
