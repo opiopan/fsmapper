@@ -5,6 +5,7 @@
     xmlns:local="using:gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:angel="using:Mntone.AngelUmbrella.Controls"
     mc:Ignorable="d">
 
     <Grid Grid.RowDefinitions="Auto,*">
@@ -41,8 +42,8 @@
             ==========================================================================-->
             <StackPanel Grid.Column="6" Height="48" Orientation="Horizontal" Padding="0, 4, 0, 0"
                             Spacing="9" HorizontalAlignment="Right" VerticalAlignment="Top">
-                <StackPanel Orientation="Horizontal" Background="{StaticResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
-                            Height="30" CornerRadius="5" BorderBrush="{StaticResource ButtonDisabledBorderThemeBrush}" BorderThickness="1"
+                <StackPanel Orientation="Horizontal" Background="{ThemeResource LayerOnMicaBaseAltFillColorSecondaryBrush}"
+                            Height="30" CornerRadius="5" BorderBrush="{ThemeResource SettingsCardBorderBrush}" BorderThickness="1"
                             VerticalAlignment="Center">
                     <Ellipse Height="15" Width="15"
                                  Fill="{x:Bind ViewModel.ScriptStatusBrush, Mode=OneWay}"

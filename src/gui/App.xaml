@@ -17,24 +17,24 @@
             <BitmapImage x:Key="SimLogoFS2020" UriSource="/Assets/fs2020logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
             <SvgImageSource x:Key="AppLogo" UriSource="/Assets/appicon.svg"/>
-            <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorSecondary}"/>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="{StaticResource ControlStrokeColorDefault}"/>
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
+            <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource ControlStrokeColorDefault}"/>
             <x:String x:Key="CardBorderThickness">1</x:String>
             <Style x:Key="CardStackPanelStyle" TargetType="StackPanel">
-                <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}"/>
                 <Setter Property="BorderThickness" Value="{StaticResource ButtonBorderThemeThickness}"/>
                 <Setter Property="CornerRadius" Value="4"/>
             </Style>
             <Style x:Key="CardGridStyle" TargetType="Grid">
-                <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}"/>
                 <Setter Property="BorderThickness" Value="{StaticResource ButtonBorderThemeThickness}"/>
                 <Setter Property="CornerRadius" Value="4"/>
             </Style>
             <Style x:Key="CardListViewStyle" TargetType="ListView">
-                <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}"/>
                 <Setter Property="BorderThickness" Value="{StaticResource ButtonBorderThemeThickness}"/>
                 <Setter Property="CornerRadius" Value="4"/>
             </Style>

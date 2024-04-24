@@ -23,22 +23,22 @@
             <Style x:Key="CardTitleText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="24"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Style>
             <Style x:Key="CardSubTitleText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Style>
             <Style x:Key="CardContentText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontWeight" Value="Normal"/>
-                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Style>
             <Style x:Key="CardSubContentText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="FontWeight" Value="Normal"/>
-                <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Style>
             <Style x:Key="StopViewText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="26"/>
