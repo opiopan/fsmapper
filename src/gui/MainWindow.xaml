@@ -86,7 +86,7 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="dashboard" Content="Dashboard">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE791;" />
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8a1;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Tag="console" Content="Message Console">
