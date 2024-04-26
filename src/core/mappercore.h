@@ -83,12 +83,26 @@ typedef enum{
     MOPT_PRE_RUN_SCRIPT,    // string
     MOPT_RENDERING_METHOD,  // integer
     MOPT_PLUGIN_FOLDER,     // string
+    MOPT_STDLIB,            // integer
 }MAPPER_OPTION;
 
 typedef enum{
     MOPT_RENDERING_METHOD_CPU,
     MOPT_RENDERING_METHOD_GPU,
 }MAPPER_OPTION_RENDERING_METHOD;
+
+typedef enum{
+    MOPT_STDLIB_BASE = 0x1,
+    MOPT_STDLIB_COROUTINE = 0x2,
+    MOPT_STDLIB_DEBUG = 0x4,
+    MOPT_STDLIB_IO = 0x8,
+    MOPT_STDLIB_MATH = 0x10,
+    MOPT_STDLIB_OS = 0x20,
+    MOPT_STDLIB_PACKAGE = 0x40,
+    MOPT_STDLIB_STRING = 0x80,
+    MOPT_STDLIB_TABLE = 0x100,
+    MOPT_STDLIB_UTF8 = 0x200,
+}MAPPER_OPTION_STDLIB;
 
 struct MapperContext;
 typedef struct MapperContext* MapperHandle;

@@ -150,20 +150,25 @@ namespace winrt::gui::implementation
     void MainWindow::save_window_position(){
         HWND hwnd{ nullptr };
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
-        RECT rect;
-        ::GetWindowRect(hwnd, &rect);
-        fsmapper::rect crect{ rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top };
+        WINDOWPLACEMENT wp;
+        ::GetWindowPlacement(hwnd, &wp);
+        auto& rect = wp.rcNormalPosition;
+        auto scale = static_cast<LONG>(::GetDpiForWindow(hwnd) / 96);
+        fsmapper::rect crect{rect.left, rect.top, (rect.right - rect.left) / scale, (rect.bottom - rect.top) / scale};
         fsmapper::app_config.set_window_rect(crect);
         fsmapper::app_config.save();
     }
 
     void MainWindow::restore_window_position(){
+        static constexpr auto minimum_height = 48;
+
         auto& rect = fsmapper::app_config.get_window_rect();
-        if (rect.width <= 0 || rect.height <= 0) {
+        if (rect.width <= 0 || rect.height <= minimum_height) {
             return;
         }
         HWND hwnd{ nullptr };
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
-        ::MoveWindow(hwnd, rect.left, rect.top, rect.width, rect.height, true);
+        auto scale = static_cast<LONG>(::GetDpiForWindow(hwnd) / 96);
+        ::MoveWindow(hwnd, rect.left, rect.top, rect.width * scale, rect.height * scale, true);
     }
 }

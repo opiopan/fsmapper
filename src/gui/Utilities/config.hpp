@@ -51,6 +51,8 @@ namespace fsmapper{
         virtual const std::filesystem::path &get_default_plugin_folder() = 0;
         virtual const std::filesystem::path &get_custom_plugin_folder() = 0;
         virtual void set_custom_plugin_folder(std::filesystem::path&& path) = 0;
+        virtual uint64_t get_lua_standard_libraries() = 0;
+        virtual void set_lua_standard_libraries(uint64_t value) = 0;
     };
 
     void init_app_config();

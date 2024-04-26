@@ -118,6 +118,7 @@ namespace winrt::gui::Models::implementation{
                 }else{
                     mapper_set_option_string(mapper, MOPT_PLUGIN_FOLDER, fsmapper::app_config.get_custom_plugin_folder().string().c_str());
                 }
+                mapper_set_option_integer(mapper, MOPT_STDLIB, fsmapper::app_config.get_lua_standard_libraries());
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();

@@ -17,8 +17,6 @@
             <BitmapImage x:Key="SimLogoFS2020" UriSource="/Assets/fs2020logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
             <SvgImageSource x:Key="AppLogo" UriSource="/Assets/appicon.svg"/>
-            <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
-            <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource ControlStrokeColorDefault}"/>
             <x:String x:Key="CardBorderThickness">1</x:String>
             <Style x:Key="CardStackPanelStyle" TargetType="StackPanel">
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}"/>
@@ -50,6 +48,8 @@
                     <SolidColorBrush x:Key="MessageColorMessage" Color="{ThemeResource SystemColorButtonTextColor}"/>
                     <SolidColorBrush x:Key="MessageColorDebug" Color="{ThemeResource SystemColorGrayTextColor}"/>
                     <SolidColorBrush x:Key="MessageColorEvent" Color="#5050ff"/>
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource ControlStrokeColorDefault}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="SkyBlue"/>
@@ -62,6 +62,8 @@
                     <SolidColorBrush x:Key="MessageColorMessage" Color="#ffffff"/>
                     <SolidColorBrush x:Key="MessageColorDebug" Color="#b0b0b0"/>
                     <SolidColorBrush x:Key="MessageColorEvent" Color="#7070ff"/>
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
+                    <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource CardStrokeColorDefault}"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

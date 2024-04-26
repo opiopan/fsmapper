@@ -50,9 +50,26 @@ MapperEngine::~MapperEngine(){
 // initialize lua scripting environment
 //============================================================================================
 void MapperEngine::initScriptingEnv(){
-    scripting.lua_ptr = std::make_unique<sol::state>();
-    scripting.lua().open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::math);
+    static sol::lib libtypes[] ={
+        sol::lib::base,
+        sol::lib::coroutine,
+        sol::lib::debug,
+        sol::lib::io,
+        sol::lib::math,
+        sol::lib::os,
+        sol::lib::package,
+        sol::lib::string,
+        sol::lib::table,
+        sol::lib::utf8,
+    };
 
+    scripting.lua_ptr = std::make_unique<sol::state>();
+    for (auto i =0; i < sizeof(libtypes) / sizeof(libtypes[0]); i++){
+        if (options.stdlib & static_cast<int32_t>(1 << i)){
+            scripting.lua().open_libraries(libtypes[i]);
+        }
+    }
+    
     //-------------------------------------------------------------------------------
     // create 'mapper' table
     //      mapper.script_path               this script file path
@@ -197,14 +214,16 @@ void MapperEngine::initScriptingEnv(){
     //-------------------------------------------------------------------------------
     // set asset path & package path
     //-------------------------------------------------------------------------------
-    std::filesystem::path path(scripting.scriptPath);
-    scripting.lua()["mapper"]["script_path"] = path.string();
-    path.remove_filename();
-    scripting.lua()["mapper"]["script_dir"] = path.string();
-    scripting.lua()["mapper"]["asset_path"] = path.string();
-    path /= "?.lua";
-    auto package = scripting.lua()["package"];
-    package["path"] = path.string();
+    if (options.stdlib & MOPT_STDLIB_PACKAGE){
+        std::filesystem::path path(scripting.scriptPath);
+        scripting.lua()["mapper"]["script_path"] = path.string();
+        path.remove_filename();
+        scripting.lua()["mapper"]["script_dir"] = path.string();
+        scripting.lua()["mapper"]["asset_path"] = path.string();
+        path /= "?.lua";
+        auto package = scripting.lua()["package"];
+        package["path"] = path.string();
+    }
 }
 
 //============================================================================================

@@ -61,6 +61,16 @@ namespace gui.ViewModels{
 
         Boolean RunScriptOnStartup;
         Int32 MessageLogSize;
+        Boolean LuaLibBaseIsEnable;
+        Boolean LuaLibCoroutineIsEnable;
+        Boolean LuaLibDebugIsEnable;
+        Boolean LuaLibIoIsEnable;
+        Boolean LuaLibMathIsEnable;
+        Boolean LuaLibOsIsEnable;
+        Boolean LuaLibPackageIsEnable;
+        Boolean LuaLibStringIsEnable;
+        Boolean LuaLibTableIsEnable;
+        Boolean LuaLibUtf8IsEnable;
         String PreRunScript;
         Boolean PreRunScriptIsVarid;
         Int32 RenderingMethod;

@@ -14,6 +14,7 @@ static std::unordered_map<MAPPER_OPTION, std::string MapperOption::*> string_opt
 
 static std::unordered_map<MAPPER_OPTION, int64_t MapperOption::*> integer_options{
     {MOPT_RENDERING_METHOD, &MapperOption::rendering_method},
+    {MOPT_STDLIB, &MapperOption::stdlib},
 };
 
 bool MapperOption::set_value(MAPPER_OPTION type, const char* value){

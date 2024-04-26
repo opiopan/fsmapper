@@ -30,6 +30,13 @@
             <Setter Property="FontSize" Value="28"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
+        <Style x:Key="InfoButtonStyle" TargetType="HyperlinkButton">
+            <Setter Property="Margin" Value="8, -5, 0, 0"/>
+        </Style>
+        <Style x:Key="InfoIconStyle" TargetType="FontIcon">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
+            <Setter Property="FontSize" Value="17"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -77,6 +84,116 @@
                 <!-- Scripting -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
                     <TextBlock Text="Lua scripting" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsExpander Header="Lua standard libraries" Description="Specify the Lua standard libraries to enable">
+                        <angel:SettingsExpander.HeaderIcon>
+                            <SymbolIcon Symbol="Library"/>
+                            <!--<FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe82d;"/>-->
+                        </angel:SettingsExpander.HeaderIcon>
+                        <angel:SettingsExpander.ExpanderContent>
+                            <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibBaseIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Basic library"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.1" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibCoroutineIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Coroutine library"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.2" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibPackageIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Package library"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.3" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibStringIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="String manipulation"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.4" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibUtf8IsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Basic UTF-8 support"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.5" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibTableIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Table manipulation"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.6" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibMathIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Mathmatical functions"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.7" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibIoIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Input and output"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.8" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibOsIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Operating system facilities"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.9" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                                <CheckBox IsChecked="{x:Bind ViewModel.LuaLibDebugIsEnable, Mode=TwoWay}">
+                                    <CheckBox.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Debug facilities"/>
+                                            <HyperlinkButton NavigateUri="https://www.lua.org/manual/5.4/manual.html#6.10" Style="{StaticResource InfoButtonStyle}">
+                                                <FontIcon Style="{StaticResource InfoIconStyle}" Glyph="&#xf167;"/>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </CheckBox.Content>
+                                </CheckBox>
+                            </StackPanel>
+                        </angel:SettingsExpander.ExpanderContent>
+                    </angel:SettingsExpander>
                     <angel:SettingsExpander Header="Pre-run script" Description="Lua script block evaluating before running the configuration script file">
                         <angel:SettingsExpander.HeaderIcon>
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe9f5;" />

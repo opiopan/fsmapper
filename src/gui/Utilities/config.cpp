@@ -21,6 +21,7 @@ static const auto* CONFIG_PRE_RUN_SCRIPT_IS_VALID = "pre_run_script_is_valid";
 static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
 static const auto* CONFIG_PLUGIN_FOLDER_IS_DEFAULT = "plugin_folder_is_default";
 static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
+static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -40,6 +41,7 @@ class config_imp : public config{
     MAPPER_OPTION_RENDERING_METHOD rendering_method{MOPT_RENDERING_METHOD_CPU};
     bool plugin_folder_is_default{true};
     std::filesystem::path custom_plugin_folder;
+    uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -124,6 +126,7 @@ public:
         path.clear();
         reflect_string(data, CONFIG_CUSTOM_PLUGIN_FOLDER, path);
         custom_plugin_folder = path;
+        reflect_number(data, CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries);
     }
 
     void save() override{
@@ -141,6 +144,7 @@ public:
                 {CONFIG_RENDERING_METHOD, rendering_method},
                 {CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default},
                 {CONFIG_CUSTOM_PLUGIN_FOLDER, custom_plugin_folder.string()},
+                {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -206,6 +210,12 @@ public:
     }
     void set_custom_plugin_folder(std::filesystem::path &&path){
         update_value(custom_plugin_folder, std::move(path));
+    }
+    uint64_t get_lua_standard_libraries(){
+        return lua_standard_libraries;
+    }
+    void set_lua_standard_libraries(uint64_t value){
+        update_value(lua_standard_libraries, value);
     }
 };
 

@@ -24,6 +24,86 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_is_starting_script_at_start_up(value);
             save_config();
         }
+        bool LuaLibBaseIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_BASE;
+        }
+        void LuaLibBaseIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_BASE;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_BASE : 0));
+            save_config();
+        }
+        bool LuaLibCoroutineIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_COROUTINE;
+        }
+        void LuaLibCoroutineIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_COROUTINE;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_COROUTINE : 0));
+            save_config();
+        }
+        bool LuaLibDebugIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_DEBUG;
+        }
+        void LuaLibDebugIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_DEBUG;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_DEBUG : 0));
+            save_config();
+        }
+        bool LuaLibIoIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_IO;
+        }
+        void LuaLibIoIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_IO;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_IO : 0));
+            save_config();
+        }
+        bool LuaLibMathIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_MATH;
+        }
+        void LuaLibMathIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_MATH;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_MATH : 0));
+            save_config();
+        }
+        bool LuaLibOsIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_OS;
+        }
+        void LuaLibOsIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_OS;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_OS : 0));
+            save_config();
+        }
+        bool LuaLibPackageIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_PACKAGE;
+        }
+        void LuaLibPackageIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_PACKAGE;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_PACKAGE : 0));
+            save_config();
+        }
+        bool LuaLibStringIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_STRING;
+        }
+        void LuaLibStringIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_STRING;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_STRING : 0));
+            save_config();
+        }
+        bool LuaLibTableIsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_TABLE;
+        }
+        void LuaLibTableIsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_TABLE;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_TABLE : 0));
+            save_config();
+        }
+        bool LuaLibUtf8IsEnable(){
+            return fsmapper::app_config.get_lua_standard_libraries() & MOPT_STDLIB_UTF8;
+        }
+        void LuaLibUtf8IsEnable(bool value){
+            auto current = fsmapper::app_config.get_lua_standard_libraries() & ~MOPT_STDLIB_UTF8;
+            fsmapper::app_config.set_lua_standard_libraries(current | (value ? MOPT_STDLIB_UTF8 : 0));
+            save_config();
+        }
         int32_t MessageLogSize(){
             return fsmapper::app_config.get_message_buffer_size();
         }
