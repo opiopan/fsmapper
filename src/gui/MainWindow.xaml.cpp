@@ -153,8 +153,11 @@ namespace winrt::gui::implementation
         WINDOWPLACEMENT wp;
         ::GetWindowPlacement(hwnd, &wp);
         auto& rect = wp.rcNormalPosition;
-        auto scale = static_cast<LONG>(::GetDpiForWindow(hwnd) / 96);
-        fsmapper::rect crect{rect.left, rect.top, (rect.right - rect.left) / scale, (rect.bottom - rect.top) / scale};
+        auto scale = ::GetDpiForWindow(hwnd) / 96.0;
+        fsmapper::rect crect{
+            rect.left, rect.top, 
+            static_cast<LONG>((rect.right - rect.left) / scale), static_cast<LONG>((rect.bottom - rect.top) / scale)
+        };
         fsmapper::app_config.set_window_rect(crect);
         fsmapper::app_config.save();
     }
@@ -168,7 +171,7 @@ namespace winrt::gui::implementation
         }
         HWND hwnd{ nullptr };
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
-        auto scale = static_cast<LONG>(::GetDpiForWindow(hwnd) / 96);
-        ::MoveWindow(hwnd, rect.left, rect.top, rect.width * scale, rect.height * scale, true);
+        auto scale = ::GetDpiForWindow(hwnd) / 96.0;
+        ::MoveWindow(hwnd, rect.left, rect.top, static_cast<int>(rect.width * scale), static_cast<int>(rect.height * scale), true);
     }
 }
