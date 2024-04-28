@@ -57,8 +57,8 @@
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE805;"/>
                         </angel:SettingsCard.HeaderIcon>
                         <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
-                                  FlowDirection="RightToLeft"
-                                  IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
+                                      Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.RunScriptOnStartup, Mode=TwoWay}"/>
                     </angel:SettingsCard>
 
                     <angel:SettingsCard Header="Rendering mode" Description="Select which mode to render virtual cockpit instrument panel">
@@ -198,8 +198,8 @@
                         <angel:SettingsExpander.HeaderIcon>
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe9f5;" />
                         </angel:SettingsExpander.HeaderIcon>
-                        <ToggleSwitch  FlowDirection="RightToLeft"
-                                   MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                        <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                       MinWidth="{StaticResource SettingsCardContentMinWidth}"
                                   IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">

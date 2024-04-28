@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/Mntone.AngelUmbrella/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/fsmapper.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <x:String x:Key="AppName">fsmapper</x:String>
             <SolidColorBrush x:Key="ScriptStatusColorStop" Color="DarkGreen"/>

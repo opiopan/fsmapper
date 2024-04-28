@@ -22,6 +22,9 @@
     <Page Include="WindowPickerDialog.xaml">
       <Filter>Dialogs</Filter>
     </Page>
+    <Page Include="fsmapper.xaml">
+      <Filter>Views</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />

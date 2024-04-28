@@ -164,6 +164,7 @@
     <Page Include="ConsolePage.xaml" />
     <Page Include="DashboardPage.xaml" />
     <Page Include="MainWindow.xaml" />
+    <Page Include="fsmapper.xaml" />
     <Page Include="SettingsPage.xaml" />
     <Page Include="UtilitiesPage.xaml" />
     <Page Include="WindowPickerDialog.xaml">
