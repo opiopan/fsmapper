@@ -194,7 +194,7 @@
                             </StackPanel>
                         </angel:SettingsExpander.ExpanderContent>
                     </angel:SettingsExpander>
-                    <angel:SettingsExpander Header="Pre-run script" Description="Lua script block evaluating before running the configuration script file">
+                    <angel:SettingsExpander Header="Pre-run script" Description="Lua script block evaluating before executing the configuration script file">
                         <angel:SettingsExpander.HeaderIcon>
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe9f5;" />
                         </angel:SettingsExpander.HeaderIcon>
@@ -203,10 +203,10 @@
                                   IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
-                                <TextBlock Margin="0, 0, 0, 8">Script block:</TextBlock>
                                 <TextBox AutomationProperties.Name="multi-line TextBox"
-                                     TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas" FontSize="14"
-                                     Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
+                                         PlaceholderText="Type Lua script block for pre-run script"
+                                         TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False" FontFamily="Consolas" FontSize="14"
+                                         Text="{x:Bind ViewModel.PreRunScript, Mode=TwoWay}">
                                 </TextBox>
                             </StackPanel>
                         </angel:SettingsExpander.ExpanderContent>
