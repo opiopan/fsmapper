@@ -44,8 +44,8 @@ namespace gui.Models{
         Windows.Foundation.Collections.IVector<String> TargetTitles{get;};
         Boolean IsCaptured{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image{get;};
-        Microsoft.UI.Xaml.Media.SolidColorBrush ButtonTitleColor{get;};
-        Microsoft.UI.Xaml.Media.SolidColorBrush ButtonTextColor{get;};
+        Microsoft.UI.Xaml.Style ButtonTitleStyle{get;};
+        Microsoft.UI.Xaml.Style ButtonTextStyle{get;};
         Boolean ButtonIsEnabled{get;};
 
         Windows.Foundation.IAsyncAction ToggleCapture(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
@@ -57,7 +57,7 @@ namespace gui.Models{
         Message(MessageType type, String text);
 
         MessageType Type{get;};
-        Microsoft.UI.Xaml.Media.SolidColorBrush TypeColor{get;};
+        Microsoft.UI.Xaml.Style TextStyle{get;};
         String TypeString{get;};
         String Text{get;};
     }

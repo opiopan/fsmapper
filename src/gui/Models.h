@@ -159,9 +159,9 @@ namespace winrt::gui::Models::implementation
         TargetTitleList TargetTitles(){return target_titles;}
         bool IsCaptured() { return is_captured; }
         winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
-        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTitleColor();
-        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush ButtonTextColor();
-        bool ButtonIsEnabled(){return button_is_enabled;}
+        winrt::Microsoft::UI::Xaml::Style ButtonTitleStyle();
+        winrt::Microsoft::UI::Xaml::Style ButtonTextStyle();
+        bool ButtonIsEnabled() { return button_is_enabled; }
 
         winrt::Windows::Foundation::IAsyncAction ToggleCapture(
             winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
@@ -278,23 +278,23 @@ namespace winrt::gui::Models::implementation{
         }
 
         winrt::gui::Models::MessageType Type(){return type;}
-        winrt::Microsoft::UI::Xaml::Media::SolidColorBrush TypeColor(){
+        winrt::Microsoft::UI::Xaml::Style TextStyle(){
             const wchar_t* key{nullptr};
             if (type == winrt::gui::Models::MessageType::error){
-                key = L"MessageColorError";
+                key = L"MessageTextErrorStyle";
             }else if (type == winrt::gui::Models::MessageType::warning){
-                key = L"MessageColorWarning";
+                key = L"MessageTextWarningStyle";
             }else if (type == winrt::gui::Models::MessageType::info){
-                key = L"MessageColorInfo";
+                key = L"MessageTextInfoStyle";
             }else if (type == winrt::gui::Models::MessageType::message){
-                key = L"MessageColorMessage";
+                key = L"MessageTextMessageStyle";
             }else if (type == winrt::gui::Models::MessageType::debug){
-                key = L"MessageColorDebug";
+                key = L"MessageTextDebugStyle";
             }else if (type == winrt::gui::Models::MessageType::events){
-                key = L"MessageColorEvent";
+                key = L"MessageTextEventStyle";
             }
-            auto value = tools::ThemeResource(key);
-            return value.as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>();
+            auto value = tools::AppResource(key);
+            return value.as<winrt::Microsoft::UI::Xaml::Style>();
         }
         hstring TypeString(){return type_string;}
         hstring Text(){return text;}

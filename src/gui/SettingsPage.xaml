@@ -52,7 +52,7 @@
                 <!-- Behavior -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
                     <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
-                    <angel:SettingsCard Header="Auto run" Description="Run Lua script on startup app">
+                    <angel:SettingsCard Header="Auto run" Description="Execute a configuration script on startup app">
                         <angel:SettingsCard.HeaderIcon>
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE805;"/>
                         </angel:SettingsCard.HeaderIcon>

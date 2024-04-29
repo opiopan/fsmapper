@@ -153,11 +153,9 @@
                                     <Image Source="{x:Bind Image, Mode=OneWay}"
                                        Width="80" Height="60" Margin="0, 0, 12, 0"/>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Style="{StaticResource CardSubTitleText}" Text="{x:Bind Name}"
-                                                   Foreground="{x:Bind ButtonTitleColor, Mode=OneWay}"/>
-                                        <TextBlock Style="{StaticResource CardContentText}" Text="{x:Bind StatusString, Mode=OneWay}"
-                                                   Margin="10,0,0,0"
-                                                   Foreground="{x:Bind ButtonTextColor, Mode=OneWay}"/>
+                                        <TextBlock Style="{x:Bind ButtonTitleStyle, Mode=OneWay}" Text="{x:Bind Name}"/>
+                                        <TextBlock Style="{x:Bind ButtonTextStyle, Mode=OneWay}" Text="{x:Bind StatusString, Mode=OneWay}"
+                                                   Margin="10,0,0,0"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Button>

@@ -22,7 +22,6 @@ winrt::Microsoft::UI::Xaml::Window App::window{nullptr};
 
 App::App()
 {
-    InitializeComponent();
     fsmapper::init_app_config();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION

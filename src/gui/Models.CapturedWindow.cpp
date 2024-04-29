@@ -35,16 +35,16 @@ namespace winrt::gui::Models::implementation{
     //    There is no choice but to do this since current WinUI3 & WinRT/C++ toolchain has a
     //    problem to handle IValueConverter. (as of March 2022)
     //============================================================================================
-    winrt::Microsoft::UI::Xaml::Media::SolidColorBrush CapturedWindow::ButtonTitleColor(){
-        auto key = is_captured ? L"CapturedWindowButtonTitleCaptured" : L"CapturedWindowButtonTitleUncaptured";
-        auto value = tools::ThemeResource(key);
-        return value.as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>();
+    winrt::Microsoft::UI::Xaml::Style CapturedWindow::ButtonTitleStyle(){
+        auto key = is_captured ? L"CapturedWindowButtonTitleCapturedStyle" : L"CapturedWindowButtonTitleUncapturedStyle";
+        auto value = tools::AppResource(key);
+        return value.as<winrt::Microsoft::UI::Xaml::Style>();
     }
 
-    winrt::Microsoft::UI::Xaml::Media::SolidColorBrush CapturedWindow::ButtonTextColor(){
-        auto key = is_captured ? L"CapturedWindowButtonTextCaptured" : L"CapturedWindowButtonTextUncaptured";
-        auto value = tools::ThemeResource(key);
-        return value.as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>();
+    winrt::Microsoft::UI::Xaml::Style CapturedWindow::ButtonTextStyle(){
+        auto key = is_captured ? L"CapturedWindowButtonTextCapturedStyle" : L"CapturedWindowButtonTextUncapturedStyle";
+        auto value = tools::AppResource(key);
+        return value.as<winrt::Microsoft::UI::Xaml::Style>();
     }
 
     //============================================================================================
@@ -64,8 +64,8 @@ namespace winrt::gui::Models::implementation{
             }
         }
         update_property(status_string, std::move(hstring(os.str())), L"StatusString");
-        update_property(L"ButtonTitleColor");
-        update_property(L"ButtonTextColor");
+        update_property(L"ButtonTitleStyle");
+        update_property(L"ButtonTextStyle");
     }
 
     //============================================================================================

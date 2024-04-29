@@ -8,10 +8,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <Style x:Key="MessageTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Consolas"/>
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
         <x:Double x:Key="MessageTypeWidth">65</x:Double>
     </Page.Resources>
 
@@ -34,15 +30,13 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:Models.Message">
                     <Grid Margin="0, 0, 0, 2" Grid.ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Column="0" Style="{StaticResource MessageTextStyle}"
+                        <TextBlock Grid.Column="0" Style="{x:Bind TextStyle}"
                                    Width="{StaticResource MessageTypeWidth}"
                                    VerticalAlignment="Top"
-                                   Text="{x:Bind TypeString}"
-                                   Foreground="{x:Bind TypeColor}"/>
-                        <TextBlock Grid.Column="1" Style="{StaticResource MessageTextStyle}"
+                                   Text="{x:Bind TypeString}"/>
+                        <TextBlock Grid.Column="1" Style="{x:Bind TextStyle}"
                                    TextWrapping="Wrap" VerticalAlignment="Top"
-                                   Text="{x:Bind Text}"
-                                   Foreground="{x:Bind TypeColor}"/>
+                                   Text="{x:Bind Text}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

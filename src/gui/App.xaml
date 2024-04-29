@@ -37,6 +37,42 @@
                 <Setter Property="BorderThickness" Value="{StaticResource ButtonBorderThemeThickness}"/>
                 <Setter Property="CornerRadius" Value="4"/>
             </Style>
+            <Style x:Key="CapturedWindowButtonTitleCapturedStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTitleCaptured}"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
+            <Style x:Key="CapturedWindowButtonTitleUncapturedStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTitleUncaptured}"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
+            <Style x:Key="CapturedWindowButtonTextCapturedStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTextCaptured}"/>
+            </Style>
+            <Style x:Key="CapturedWindowButtonTextUncapturedStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTextUncaptured}"/>
+            </Style>
+            <Style x:Key="MessageTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Consolas"/>
+                <Setter Property="FontSize" Value="14"/>
+            </Style>
+            <Style x:Key="MessageTextErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorError}"/>
+            </Style>
+            <Style x:Key="MessageTextWarningStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorWarning}"/>
+            </Style>
+            <Style x:Key="MessageTextInfoStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorInfo}"/>
+            </Style>
+            <Style x:Key="MessageTextMessageStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorMessage}"/>
+            </Style>
+            <Style x:Key="MessageTextDebugStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorDebug}"/>
+            </Style>
+            <Style x:Key="MessageTextEventStyle" TargetType="TextBlock" BasedOn="{StaticResource MessageTextStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource MessageColorEvent}"/>
+            </Style>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="Blue"/>
