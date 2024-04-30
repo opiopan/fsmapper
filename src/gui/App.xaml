@@ -75,6 +75,7 @@
             </Style>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
+                    <SvgImageSource x:Key="GithubLogo" UriSource="/Assets/github-mark.svg"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="Blue"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleUncaptured" Color="{ThemeResource SystemColorGrayTextColor}"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTextCaptured" Color="{ThemeResource SystemColorButtonTextColor}"/>
@@ -89,6 +90,7 @@
                     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource ControlStrokeColorDefault}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
+                    <SvgImageSource x:Key="GithubLogo" UriSource="/Assets/github-mark-white.svg"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleCaptured" Color="SkyBlue"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTitleUncaptured" Color="{ThemeResource SystemColorButtonFaceColor}"/>
                     <SolidColorBrush x:Key="CapturedWindowButtonTextCaptured" Color="#ffffff"/>

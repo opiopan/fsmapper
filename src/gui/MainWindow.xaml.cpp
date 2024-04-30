@@ -107,6 +107,7 @@ namespace winrt::gui::implementation
             rect_of_control(MenuButton()),
             rect_of_control(OpenButton()),
             rect_of_control(StartStopButton()),
+            rect_of_control(HelpButton()),
         };
         auto non_client_input_source = winrt::Microsoft::UI::Input::InputNonClientPointerSource::GetForWindowId(AppWindow().Id());
         non_client_input_source.SetRegionRects(winrt::Microsoft::UI::Input::NonClientRegionKind::Passthrough, regions);
@@ -137,7 +138,6 @@ namespace winrt::gui::implementation
         winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
         NavView().IsPaneOpen(!NavView().IsPaneOpen());
     }
-
 
     winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow() {
         HWND hwnd{ nullptr };

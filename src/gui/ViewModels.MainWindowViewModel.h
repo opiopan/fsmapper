@@ -19,11 +19,20 @@ namespace winrt::gui::ViewModels::implementation
         bool StartStopButtonIsEnabled();
         hstring StartStopButtonIcon();
         hstring StartStopButtonLabel();
+        hstring StartStopButtonToolTip();
 
         winrt::Windows::Foundation::IAsyncAction ClickOpenButton(
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ClickStartStopButton(
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void MenuButton_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void GuideMenu_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void GithubMenu_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void ReleaseMenu_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
@@ -42,6 +51,7 @@ namespace winrt::gui::ViewModels::implementation
         bool start_stop_button_is_enabled{false};
         hstring start_stop_button_icon;
         hstring start_stop_button_label;
+        hstring start_stop_button_tool_tip;
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 

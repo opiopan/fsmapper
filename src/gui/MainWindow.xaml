@@ -46,25 +46,51 @@
                             Height="30" CornerRadius="5" BorderBrush="{ThemeResource SettingsCardBorderBrush}" BorderThickness="1"
                             VerticalAlignment="Center">
                     <Ellipse Height="15" Width="15"
-                                 Fill="{x:Bind ViewModel.ScriptStatusBrush, Mode=OneWay}"
-                                 VerticalAlignment="Center" Margin="10, 0, 10, 0"/>
+                             Fill="{x:Bind ViewModel.ScriptStatusBrush, Mode=OneWay}"
+                             VerticalAlignment="Center" Margin="10, 0, 10, 0"/>
                     <TextBlock Text="{x:Bind ViewModel.ScriptName, Mode=OneWay}" Padding="0, 0, 10, 0" 
-                                   VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   MinWidth="150"/>
+                               VerticalAlignment="Center" HorizontalAlignment="Left"
+                               MinWidth="150"/>
                 </StackPanel>
                 <Button x:Name="OpenButton" IsEnabled="{x:Bind ViewModel.OpenButtonIsEnabled, Mode=OneWay}"
                         ToolTipService.ToolTip="Open Script File"
                         Click="{x:Bind ViewModel.ClickOpenButton}" VerticalAlignment="Center">
                     <FontIcon FontSize="16" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8E5;" />
                 </Button>
-                <Button x:Name="StartStopButton" Width="80" Margin="0,0,18,0" VerticalAlignment="Center"
-                            IsEnabled="{x:Bind ViewModel.StartStopButtonIsEnabled, Mode=OneWay}"
-                            Click="{x:Bind ViewModel.ClickStartStopButton}">
+                <Button x:Name="StartStopButton" Width="80" Margin="0,0,14,0" VerticalAlignment="Center"
+                        IsEnabled="{x:Bind ViewModel.StartStopButtonIsEnabled, Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.StartStopButtonToolTip, Mode=OneWay}"
+                        Click="{x:Bind ViewModel.ClickStartStopButton}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon FontSize="16" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                      Glyph="{x:Bind ViewModel.StartStopButtonIcon, Mode=OneWay}" />
+                                  Glyph="{x:Bind ViewModel.StartStopButtonIcon, Mode=OneWay}" />
                         <TextBlock Text="{x:Bind ViewModel.StartStopButtonLabel, Mode=OneWay}"/>
                     </StackPanel>
+                </Button>
+                <Button x:Name="HelpButton" Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
+                        ToolTipService.ToolTip="Documentations &amp; related sites"
+                        Margin="0, 0, 18, 0">
+                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xe946;"/>
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="User's Guide" Click="{x:Bind ViewModel.GuideMenu_Click}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe82d;"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem Text="GitHub" Click="{x:Bind ViewModel.GithubMenu_Click}">
+                                <MenuFlyoutItem.Icon>
+                                    <ImageIcon Source="{ThemeResource GithubLogo}"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Install pacakge repository" Click="{x:Bind ViewModel.ReleaseMenu_Click}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7b8;"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
                 </Button>
             </StackPanel>
         </Grid>

@@ -10,9 +10,13 @@ namespace gui.ViewModels{
         Boolean StartStopButtonIsEnabled{get;};
         String StartStopButtonIcon{get;};
         String StartStopButtonLabel{get;};
+        String StartStopButtonToolTip{get;};
 
         Windows.Foundation.IAsyncAction ClickOpenButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickStartStopButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void GuideMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void GithubMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ReleaseMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 
     runtimeclass DashboardPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {

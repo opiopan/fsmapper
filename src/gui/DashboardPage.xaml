@@ -65,7 +65,7 @@
                    TextWrapping="Wrap"
                    Style="{StaticResource StopViewText}"
                    Visibility="{x:Bind ViewModel.StopViewIsVisible, Mode=OneWay}">
-            Event-Action mapping is stopped.<LineBreak/>
+            Event-Action mapping process is stopped.<LineBreak/>
             Select a Lua script which defines event-action mapping rules, then press the Run button.
         </TextBlock>
 

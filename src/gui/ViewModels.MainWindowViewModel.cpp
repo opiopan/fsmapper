@@ -12,10 +12,16 @@
 #include <chrono>
 #include <shobjidl.h>
 #include <winrt/windows.storage.pickers.h>
+#include <shellapi.h>
+#pragma comment(lib, "Shell32.lib")
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 using App = winrt::gui::implementation::App;
+
+static inline void execute_url(const char* url){
+    ::ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWDEFAULT);
+}
 
 namespace winrt::gui::ViewModels::implementation{
     //============================================================================================
@@ -76,6 +82,10 @@ namespace winrt::gui::ViewModels::implementation{
         return start_stop_button_label;
     }
 
+    hstring MainWindowViewModel::StartStopButtonToolTip(){
+        return start_stop_button_tool_tip;
+    }
+
     //============================================================================================
     // event handlers for binding
     //============================================================================================
@@ -99,6 +109,22 @@ namespace winrt::gui::ViewModels::implementation{
             mapper.RunScript();
         }
     }
+
+    void MainWindowViewModel::GuideMenu_Click(
+        winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
+        execute_url("https://opiopan.github.io/fsmapper/");
+    }
+
+    void MainWindowViewModel::GithubMenu_Click(
+        winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
+        execute_url("https://github.com/opiopan/fsmapper/");
+    }
+
+    void MainWindowViewModel::ReleaseMenu_Click(
+        winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
+        execute_url("https://github.com/opiopan/fsmapper/releases/");
+    }
+
 
     //============================================================================================
     // Event notification
@@ -133,6 +159,8 @@ namespace winrt::gui::ViewModels::implementation{
         update_property(open_button_is_enabled, inactive, L"OpenButtonIsEnabled");
         update_property(start_stop_button_icon, hstring(inactive ? L"\xe768" : L"\xe71A"), L"StartStopButtonIcon");
         update_property(start_stop_button_label, hstring(inactive ? L"Run" : L"Stop"), L"StartStopButtonLabel");
+        update_property(start_stop_button_tool_tip, hstring(inactive ? L"Execute configuration script then start the Event-Action mapping process" : 
+                                                                       L"Stop the Event-Action mapping process"), L"StartStopButtonToolTip");
 
         if (status == gui::Models::MapperStatus::stop){
             error_flash_thread_counter++;
