@@ -11,7 +11,7 @@
     <Page.Resources>
         <Style x:Key="SettingsStackStyle" TargetType="StackPanel">
             <Setter Property="Margin" Value="24 0 24 0"/>
-            <Setter Property="Spacing" Value="24"/>
+            <Setter Property="Spacing" Value="28"/>
         </Style>
         <Style x:Key="SettingsGroupStackStyle" TargetType="StackPanel">
             <Setter Property="Spacing" Value="2"/>
@@ -37,6 +37,12 @@
             <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
             <Setter Property="FontSize" Value="17"/>
         </Style>
+        <Style x:Key="LinkIconStyle" TargetType="FontIcon">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0, 4, 12, 0"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -48,7 +54,7 @@
             <TextBlock Text="Settings" FontWeight="SemiBold" FontSize="24"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1">
-            <StackPanel Style="{StaticResource SettingsStackStyle}" Margin="16, 0, 16, 0">
+            <StackPanel Style="{StaticResource SettingsStackStyle}" Margin="16, 0, 16, 24">
                 <!-- Behavior -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
                     <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
@@ -267,23 +273,50 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel>
-                                <angel:SettingsCard Header="Documentations &amp; related sites" Style="{StaticResource SettingsBottomCardAltStyle}"
-                                                Background="{ThemeResource SettingsCardBackground}">
+                                <angel:SettingsCard Header="Source code"
+                                                    Description="This fsmapper binary was compiled from the source code of following commit"
+                                                    Style="{StaticResource SettingsMiddleCardAltStyle}"
+                                                    Background="{ThemeResource SettingsCardBackground}">
                                     <angel:SettingsCard.HeaderIcon>
                                         <FontIcon Glyph=" "/>
                                     </angel:SettingsCard.HeaderIcon>
-                                    <StackPanel Margin="0, 0, 26, 0">
-                                        <HyperlinkButton NavigateUri="https://opiopan.github.io/fsmapper/">
-                                            User's guide
-                                        </HyperlinkButton>
-                                        <HyperlinkButton NavigateUri="https://github.com/opiopan/fsmapper">
-                                            GitHub repository
-                                        </HyperlinkButton>
-                                    </StackPanel>
+                                    <HyperlinkButton Content="{x:Bind ViewModel.Commit}" NavigateUri="{x:Bind ViewModel.CommitUrl}"
+                                                     ToolTipService.ToolTip="{x:Bind ViewModel.CommitUrl}"
+                                                     Margin="0, 0, 26, 0"/>
                                 </angel:SettingsCard>
+                                <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
+                                    <HyperlinkButton Margin="-13, 0, 0, 0"
+                                                     NavigateUri="https://opiopan.github.io/fsmapper/"
+                                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/"
+                                                     Content="User's Guide"/>
+                                    <HyperlinkButton Margin="-13, 0, 0, 0"
+                                                     NavigateUri="https://github.com/opiopan/fsmapper"
+                                                     ToolTipService.ToolTip="https://github.com/opiopan/fsmapper"
+                                                     Content="Project site on GitHub"/>
+                                    <HyperlinkButton Margin="-13, 0, 0, 0"
+                                                     NavigateUri="https://github.com/opiopan/fsmapper/releases"
+                                                     ToolTipService.ToolTip="https://github.com/opiopan/fsmapper/releases"
+                                                     Content="All released packages"/>
+                                </StackPanel>
                             </StackPanel>
                         </angel:SettingsExpander.ExpanderContent>
                     </angel:SettingsExpander>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="10">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Style="{StaticResource LinkIconStyle}" Glyph="&#xe9ce;"/>
+                        <HyperlinkButton NavigateUri="https://opiopan.github.io/fsmapper/"
+                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/"
+                                     Content="Get help"
+                                     Padding="0" Margin="0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Style="{StaticResource LinkIconStyle}" Glyph="&#xe939;"/>
+                        <HyperlinkButton NavigateUri="https://github.com/opiopan/fsmapper/issues"
+                                     ToolTipService.ToolTip="https://github.com/opiopan/fsmapper/issues"
+                                     Content="Report issue"
+                                     Padding="0" Margin="0"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

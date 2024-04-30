@@ -87,6 +87,8 @@ namespace gui.ViewModels{
         Boolean ChangePluginPathButtonIsValid{get;};
         String Version{get;};
         String Copyright{get;};
+        String Commit{get;};
+        String CommitUrl{get;};
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }

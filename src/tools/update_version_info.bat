@@ -83,5 +83,6 @@ $ver_file_str > $version_file
 '#define VERSTR_TITLE_VERSION "{0}"' -f $ver_title_str >> $header_file
 "#define VER_FILE_MODE {0}" -f $file_mode >> $header_file
 '#define COPYRIGHT_STR "{0}"' -f $copyright >> $header_file
+'#define COMMIT_STR "{0}"' -f $commit >> $header_file
 
 "version files have been updated"

@@ -179,6 +179,12 @@ namespace winrt::gui::ViewModels::implementation
         hstring Copyright(){
             return L"©︎ " COPYRIGHT_STR " Hiroshi Murayama, All rights reserved.";
         }
+        hstring Commit(){
+            return L"" COMMIT_STR;
+        }
+        hstring CommitUrl(){
+            return L"https://github.com/opiopan/fsmapper/tree/" COMMIT_STR "/src";
+        }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
 
