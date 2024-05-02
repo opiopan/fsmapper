@@ -35,7 +35,7 @@
                                    VerticalAlignment="Top"
                                    Text="{x:Bind TypeString}"/>
                         <TextBlock Grid.Column="1" Style="{x:Bind TextStyle}"
-                                   TextWrapping="Wrap" VerticalAlignment="Top"
+                                   TextWrapping="Wrap" VerticalAlignment="Top" IsTextSelectionEnabled="True"
                                    Text="{x:Bind Text}"/>
                     </Grid>
                 </DataTemplate>

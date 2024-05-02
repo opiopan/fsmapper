@@ -158,9 +158,9 @@ namespace winrt::gui::Models::implementation
         hstring TargetClass(){return target_class;}
         TargetTitleList TargetTitles(){return target_titles;}
         bool IsCaptured() { return is_captured; }
-        winrt::Microsoft::UI::Xaml::Media::ImageSource Image(){return image;}
-        winrt::Microsoft::UI::Xaml::Style ButtonTitleStyle();
-        winrt::Microsoft::UI::Xaml::Style ButtonTextStyle();
+        bool IsNotCaptured() { return ! is_captured; }
+        winrt::Microsoft::UI::Xaml::Media::ImageSource Image() { return image; }
+        winrt::Microsoft::UI::Xaml::Style ButtonStyle();
         bool ButtonIsEnabled() { return button_is_enabled; }
 
         winrt::Windows::Foundation::IAsyncAction ToggleCapture(
@@ -186,6 +186,7 @@ namespace winrt::gui::Models::implementation
 
     protected:
         winrt::weak_ref<winrt::gui::Models::Mapper> mapper;
+        tools::safe_text_api<::GetWindowTextW> window_text;
         uint32_t cwid;
         hstring name;
         hstring description;

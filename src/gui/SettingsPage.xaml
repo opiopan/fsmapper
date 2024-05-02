@@ -314,7 +314,7 @@
                         <FontIcon Style="{StaticResource LinkIconStyle}" Glyph="&#xe939;"/>
                         <HyperlinkButton NavigateUri="https://github.com/opiopan/fsmapper/issues"
                                      ToolTipService.ToolTip="https://github.com/opiopan/fsmapper/issues"
-                                     Content="Report issue"
+                                     Content="Report an issue"
                                      Padding="0" Margin="0"/>
                     </StackPanel>
                 </StackPanel>

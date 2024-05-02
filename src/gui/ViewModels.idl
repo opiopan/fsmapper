@@ -49,6 +49,7 @@ namespace gui.ViewModels{
         Boolean CapturedWindowsIsVisible{get;};
         String CapturedWindowsSummary{get;};
         Boolean CaptureWindowButtonIsEnabled{get;};
+        Microsoft.UI.Xaml.Style StartStopViewportsButtonStyle{get;};
 
         Windows.Foundation.IAsyncAction ToggleViewport(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }

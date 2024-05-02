@@ -5,6 +5,7 @@
     xmlns:local="using:gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:angel="using:Mntone.AngelUmbrella.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -108,7 +109,8 @@
                                Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
                     <TextBlock Style="{StaticResource CardContentText}" VerticalAlignment="Center"
                                Text="{x:Bind ViewModel.AircraftName, Mode=OneWay}"
-                               Visibility="{x:Bind ViewModel.AircraftNameIsVisible, Mode=OneWay}"/>
+                               Visibility="{x:Bind ViewModel.AircraftNameIsVisible, Mode=OneWay}"
+                               IsTextSelectionEnabled="True"/>
                 </StackPanel>
             </StackPanel>
 
@@ -124,6 +126,7 @@
                         <TextBlock Style="{StaticResource CardTitleText}" Grid.Column="0">Viewports</TextBlock>
                     </StackPanel>
                     <Button Grid.Column="2"
+                        Style="{x:Bind ViewModel.StartStopViewportsButtonStyle, Mode=OneWay}"
                         Content="{x:Bind ViewModel.ViewportButtonText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.ViewportButtonIsEnabled, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.ViewportButtonIsVisible, Mode=OneWay}"
@@ -144,17 +147,21 @@
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.Mapper.CapturedWindows, Mode=OneWay}">
                         <DataTemplate x:DataType="local:Models.CapturedWindow">
                             <Button Height="76" HorizontalAlignment="Stretch"
-                                CornerRadius="10"
+                                Style="{x:Bind ButtonStyle, Mode=OneWay}"
                                 HorizontalContentAlignment="Left"
                                 Padding="12, 0, 12, 0" Margin="0, 0, 0, 12"
                                 IsEnabled="{x:Bind ButtonIsEnabled, Mode=OneWay}"
                                 Click="{x:Bind ToggleCapture}">
                                 <StackPanel Orientation="Horizontal">
-                                    <Image Source="{x:Bind Image, Mode=OneWay}"
-                                       Width="80" Height="60" Margin="0, 0, 12, 0"/>
+                                    <Grid Margin="0, 0, 12, 0">
+                                        <Image Source="{x:Bind Image, Mode=OneWay}" Width="80" Height="60" Visibility="{x:Bind IsCaptured, Mode=OneWay}"/>
+                                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xf8a5;"
+                                                  FontSize="50" FontWeight="ExtraLight" Width="80" Height="60"
+                                                  Visibility="{x:Bind IsNotCaptured, Mode=OneWay}"/>
+                                    </Grid>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Style="{x:Bind ButtonTitleStyle, Mode=OneWay}" Text="{x:Bind Name}"/>
-                                        <TextBlock Style="{x:Bind ButtonTextStyle, Mode=OneWay}" Text="{x:Bind StatusString, Mode=OneWay}"
+                                        <TextBlock FontWeight="SemiBold" Text="{x:Bind Name}"/>
+                                        <TextBlock Text="{x:Bind StatusString, Mode=OneWay}"
                                                    Margin="10,0,0,0"/>
                                     </StackPanel>
                                 </StackPanel>

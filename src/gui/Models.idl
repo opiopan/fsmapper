@@ -43,9 +43,9 @@ namespace gui.Models{
         String TargetClass{get;};
         Windows.Foundation.Collections.IVector<String> TargetTitles{get;};
         Boolean IsCaptured{get;};
+        Boolean IsNotCaptured{get;};
         Microsoft.UI.Xaml.Media.ImageSource Image{get;};
-        Microsoft.UI.Xaml.Style ButtonTitleStyle{get;};
-        Microsoft.UI.Xaml.Style ButtonTextStyle{get;};
+        Microsoft.UI.Xaml.Style ButtonStyle{get;};
         Boolean ButtonIsEnabled{get;};
 
         Windows.Foundation.IAsyncAction ToggleCapture(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);

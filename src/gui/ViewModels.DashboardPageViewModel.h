@@ -46,6 +46,7 @@ namespace winrt::gui::ViewModels::implementation{
         bool CapturedWindowsIsVisible(){return captured_windows_is_visible;}
         hstring CapturedWindowsSummary(){return captured_windows_summary;}
         bool CaptureWindowButtonIsEnabled(){return captured_window_button_is_enabled;}
+        winrt::Microsoft::UI::Xaml::Style StartStopViewportsButtonStyle();
 
         winrt::Windows::Foundation::IAsyncAction ToggleViewport(
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
@@ -88,6 +89,7 @@ namespace winrt::gui::ViewModels::implementation{
         bool captured_windows_is_visible{false};
         hstring captured_windows_summary;
         bool captured_window_button_is_enabled{false};
+        bool all_captured_window_is_captured{false};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 

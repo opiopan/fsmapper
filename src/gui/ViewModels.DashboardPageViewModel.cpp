@@ -73,6 +73,15 @@ namespace winrt::gui::ViewModels::implementation{
     }
 
     //============================================================================================
+    // WinRT object properties
+    //============================================================================================
+    winrt::Microsoft::UI::Xaml::Style DashboardPageViewModel::StartStopViewportsButtonStyle(){
+        auto key = all_captured_window_is_captured && !mapper.ViewportIsActive() ? L"AccentButtonStyle" : L"DefaultButtonStyle";
+        auto value = tools::AppResource(key);
+        return value.as<winrt::Microsoft::UI::Xaml::Style>();
+    }
+
+    //============================================================================================
     // Viewport manipulation
     //============================================================================================
     winrt::Windows::Foundation::IAsyncAction DashboardPageViewModel::ToggleViewport(
@@ -94,7 +103,6 @@ namespace winrt::gui::ViewModels::implementation{
             }
         }
     }
-    
 
     //============================================================================================
     // Reflecting model properties
@@ -216,8 +224,10 @@ namespace winrt::gui::ViewModels::implementation{
             os << cw_num << " captured windows are defined (";
         }
         os << captured_num << "/" << cw_num << " captured):";
+        all_captured_window_is_captured = (cw_num - captured_num == 0);
         update_property(captured_windows_summary, std::move(hstring(os.str())), L"CapturedWindowsSummary");
         update_property(captured_windows_is_visible, cw_num > 0, L"CapturedWindowsIsVisible");
+        update_property(L"StartStopViewportsButtonStyle");
     }
 
     void DashboardPageViewModel::reflect_mapper_ViewportOperability(){
@@ -228,5 +238,6 @@ namespace winrt::gui::ViewModels::implementation{
         update_property(viewport_button_is_enabled, cw_is_registerd, L"ViewportButtonIsEnabled");
         update_property(viewport_button_is_visible, cw_is_registerd, L"ViewportButtonIsVisible");
         update_property(captured_window_button_is_enabled, !viewport_is_active, L"CapturedWindowButtonIsEnabled");
+        update_property(L"StartStopViewportsButtonStyle");
     }
 }

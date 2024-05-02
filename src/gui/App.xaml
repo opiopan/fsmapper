@@ -37,20 +37,8 @@
                 <Setter Property="BorderThickness" Value="{StaticResource ButtonBorderThemeThickness}"/>
                 <Setter Property="CornerRadius" Value="4"/>
             </Style>
-            <Style x:Key="CapturedWindowButtonTitleCapturedStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTitleCaptured}"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-            </Style>
-            <Style x:Key="CapturedWindowButtonTitleUncapturedStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTitleUncaptured}"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-            </Style>
-            <Style x:Key="CapturedWindowButtonTextCapturedStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTextCaptured}"/>
-            </Style>
-            <Style x:Key="CapturedWindowButtonTextUncapturedStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{ThemeResource CapturedWindowButtonTextUncaptured}"/>
-            </Style>
+            <Style x:Key="CapturedWindowButtonCapturedStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}"/>
+            <Style x:Key="CapturedWindowButtonUncapturedStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}"/>
             <Style x:Key="MessageTextStyle" TargetType="TextBlock">
                 <Setter Property="FontFamily" Value="Consolas"/>
                 <Setter Property="FontSize" Value="14"/>

@@ -88,7 +88,7 @@ namespace winrt::gui::Models::implementation{
 
         auto device = winrt::Microsoft::Graphics::Canvas::CanvasDevice::GetSharedDevice();
         auto source = winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasImageSource(device, 40, 30, 96);
-        auto ds = source.CreateDrawingSession(winrt::Microsoft::UI::Colors::DarkSlateBlue());
+        auto ds = source.CreateDrawingSession(winrt::Microsoft::UI::Colors::DimGray());
         ds.Close();
         null_window_image = source;
 

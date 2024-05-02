@@ -27,6 +27,7 @@
 
 using App = winrt::gui::implementation::App;
 
+
 namespace winrt::gui::Models::implementation{
     //============================================================================================
     // property implementations
@@ -35,14 +36,8 @@ namespace winrt::gui::Models::implementation{
     //    There is no choice but to do this since current WinUI3 & WinRT/C++ toolchain has a
     //    problem to handle IValueConverter. (as of March 2022)
     //============================================================================================
-    winrt::Microsoft::UI::Xaml::Style CapturedWindow::ButtonTitleStyle(){
-        auto key = is_captured ? L"CapturedWindowButtonTitleCapturedStyle" : L"CapturedWindowButtonTitleUncapturedStyle";
-        auto value = tools::AppResource(key);
-        return value.as<winrt::Microsoft::UI::Xaml::Style>();
-    }
-
-    winrt::Microsoft::UI::Xaml::Style CapturedWindow::ButtonTextStyle(){
-        auto key = is_captured ? L"CapturedWindowButtonTextCapturedStyle" : L"CapturedWindowButtonTextUncapturedStyle";
+    winrt::Microsoft::UI::Xaml::Style CapturedWindow::ButtonStyle(){
+        auto key = is_captured ? L"CapturedWindowButtonCapturedStyle" : L"CapturedWindowButtonUncapturedStyle";
         auto value = tools::AppResource(key);
         return value.as<winrt::Microsoft::UI::Xaml::Style>();
     }
@@ -52,9 +47,12 @@ namespace winrt::gui::Models::implementation{
     //============================================================================================
     void CapturedWindow::reflect_status_change(bool captured_state){
         update_property(is_captured, captured_state, L"IsCaptured");
+        update_property(L"IsNotCaptured");
         std::wostringstream os;
         if (is_captured) {
-            os << L"Captured: HWND = 0x"
+            auto title = window_text(reinterpret_cast<HWND>(window_id));
+            os << title << std::endl
+               << L"HWND:  0x"
                << std::hex << std::setw(8) << std::setfill(L'0')
                << window_id;
         }else{
@@ -64,8 +62,7 @@ namespace winrt::gui::Models::implementation{
             }
         }
         update_property(status_string, std::move(hstring(os.str())), L"StatusString");
-        update_property(L"ButtonTitleStyle");
-        update_property(L"ButtonTextStyle");
+        update_property(L"ButtonStyle");
     }
 
     //============================================================================================
@@ -126,7 +123,6 @@ namespace winrt::gui::Models::implementation{
             reflect_status_change(false);
         }
     }
-
 
     //============================================================================================
     // Window image capturing
