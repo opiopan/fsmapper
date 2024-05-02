@@ -378,6 +378,7 @@ When all the windows targeted by CapturedWindows are captured, the views registe
 When the `window_title` parameter is not specified during the definition of a [`CapturedWindow`](/libs/mapper/CapturedWindow) or if the specified text is not correct, resulting in the automatic capture of the window not happening, you need to explicitly indicate the window corresponding to the [`CapturedWindow`](/libs/mapper/CapturedWindow) element.
 
 The [`CapturedWindow`](/libs/mapper/CapturedWindow) elements listed on the dashboard are buttons. Clicking on a button transitions to a mode to select a window. Use the mouse to click on the corresponding instrument window. When the instrument window is captured, the appearance of the button will also change.
+Before capturing, the color of the buttons, which was the accent color, changes to the default control color, and a snapshot image of the window is displayed on the button.
 
 In the case of manually capturing a window, remember to click the `Activate Viewports` button last.
 This action enables the defined viewports and displays the views registered to the viewports.
