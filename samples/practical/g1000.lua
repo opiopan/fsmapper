@@ -3,10 +3,11 @@ local config = {
     simhid_g1000_display = 2,
 }
 
-g1000_dev = mapper.device({
-    name = "SimHID G1000",
-    type = "simhid",
-    identifier = config.simhid_g1000_identifier,
+local common = require("lib/common")
+common.commit_config(config)
+
+g1000_dev = common.open_simhid_g1000{
+    config = config,
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
@@ -17,7 +18,7 @@ g1000_dev = mapper.device({
         {name = "EC8R", modtype = "button", modparam={repeat_interval = 80}},
         {name = "EC8L", modtype = "button", modparam={repeat_interval = 80}},
     },
-})
+}
 local g1000 = g1000_dev.events
 
 local pfd_maps = {
@@ -176,10 +177,12 @@ local mfd_maps = {
     {event=g1000.SW32.down, action=fs2020.mfwasm.rpn_executer("(>H:AS1000_MFD_ENT_Push)")},
 }
 
+local scale = config.simhid_g1000_display_scale
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = config.simhid_g1000_display,
     bgcolor = "Black",
+    x = 0, y =0, width = scale, height = scale,
     aspect_ratio = 4.0 / 3.0,
 })
 local pfd = viewport:register_view({

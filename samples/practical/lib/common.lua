@@ -4,6 +4,20 @@ local module = {
 }
 
 --------------------------------------------------------------------------------------
+-- configuration management
+--------------------------------------------------------------------------------------
+function module.commit_config(config)
+    if override_config ~= nil then
+        for key, value in pairs(override_config) do
+            config[key] = value
+        end
+    end
+    if config.simhid_g1000_display_scale == nil then
+        config.simhid_g1000_display_scale = 1
+    end
+end
+
+--------------------------------------------------------------------------------------
 -- graphical assets
 --------------------------------------------------------------------------------------
 module.circle = graphics.path()
@@ -484,6 +498,107 @@ function module.component_module_create_instance(cmodule, cmodule_defs, instance
     end
 
     return component
+end
+
+--------------------------------------------------------------------------------------
+-- SimHID G1000 virtualization
+--------------------------------------------------------------------------------------
+function module.open_simhid_g1000(args)
+    if args.config.simhid_g1000_mock then
+        return module.simhid_g1000_mock(args.config)
+    else
+        return mapper.device{
+            name = "SimHID G1000",
+            type = "simhid",
+            identifier = args.config.simhid_g1000_identifier,
+            modifiers = args.modifiers,
+        }
+    end
+end
+
+local simhid_g1000_units = {
+    'AUX1U', 'AUX1D', 'AUX1P',
+    'AUX2U', 'AUX2D', 'AUX2P',
+    'EC1', 'EC1P', 
+    'EC2X', 'EC2Y', 'EC2P',
+    'EC3', 'EC3P', 
+    'EC4X', 'EC4Y', 'EC4P',
+    'EC5', 'EC5P', 
+    'EC6X', 'EC6Y', 'EC6P',
+    'EC7X', 'EC7Y', 'EC7P',
+    'EC8', 'EC8P', 'EC8U', 'EC8D', 'EC8L', 'EC8R',
+    'EC9X', 'EC9Y', 'EC9P',
+    'SW1', 'SW2', 'SW3', 'SW4', 'SW5', 'SW6', 'SW7', 'SW8', 'SW9', 'SW10', 'SW11', 'SW12',
+    'SW13', 'SW14', 'SW15', 'SW16', 'SW17', 'SW18', 'SW19', 'SW20', 'SW21', 'SW22', 'SW23', 'SW24',
+    'SW25', 'SW26', 'SW27', 'SW28', 'SW29', 'SW30', 'SW31', 'SW32',
+}
+
+local simhid_g1000_dummy_event = mapper.register_event('simhid_g1000_dummy')
+
+function module.simhid_g1000_mock(config)
+    local events = {}
+    for i, key in ipairs(simhid_g1000_units) do
+        events[key] = {
+            change = simhid_g1000_dummy_event,
+            up = simhid_g1000_dummy_event,
+            down = simhid_g1000_dummy_event,
+            longpressed = simhid_g1000_dummy_event,
+            doubleclicked = simhid_g1000_dummy_event,
+            singleclicked = simhid_g1000_dummy_event,
+            increment = simhid_g1000_dummy_event,
+            decrement = simhid_g1000_dummy_event,
+        }
+    end
+
+    local mock = {
+        events = events,
+        get_events = function () return events end,
+        upstreamids = {},
+        get_upstream_ids = function () return upstreamids end,
+        proxy = nil,
+        close = function (self)
+            if self.proxy ~= nil then
+                self.proxy:close()
+                self.proxy = nil
+            end
+        end,
+        send = function () end,
+        sender = function () return function () end end,
+    }
+
+    local proxy = config.simhid_g1000_mock_proxy
+    if proxy ~= nil then
+        local device_config = {
+            name = 'SimHID G1000 proxy',
+            type = proxy.type,
+            identifier = proxy.identifier,
+            options = proxy.options,
+            modifiers = {},
+        }
+        local event_map = {
+            aux_up = 'AUX1U',
+            aux_down = 'AUX1D',
+            aux_push = 'AUX1P',
+        }
+        for key, unit in pairs(event_map) do
+            if proxy[key] ~= nil then
+                device_config.modifiers[#device_config.modifiers + 1] = {
+                    name = proxy[key],
+                    modtype = 'button',
+                }
+            end
+        end
+        mock.proxy = mapper.device(device_config)
+        local events = mock.proxy.events
+        for key, unit in pairs(event_map) do
+            if proxy[key] ~= nil then
+                mock.events[unit].up = events[proxy[key]].down
+                mock.events[unit].down = events[proxy[key]].down
+            end
+        end        
+    end
+
+    return mock
 end
 
 return module

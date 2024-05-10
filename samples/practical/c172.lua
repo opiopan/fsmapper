@@ -1,10 +1,11 @@
 local config = {
-    -- debug = true,
     simhid_g1000_identifier = {path = "COM3"},
     simhid_g1000_display = 2,
 }
 
 local common = require("lib/common")
+common.commit_config(config)
+
 local libs = {
     gns530 = require("lib/gns530"),
     gns430 = require("lib/gns430"),
@@ -99,17 +100,8 @@ local views = {
     },
 }
 
-local display = config.simhid_g1000_display
-local scale = 1.0
-if config.debug then
-    display = 1
-    scale = 0.5
-end
-
-device = mapper.device{
-    name = "SimHID G1000",
-    type = "simhid",
-    identifier = config.simhid_g1000_identifier,
+device = common.open_simhid_g1000{
+    config = config,
     modifiers = {
         {class = "binary", modtype = "button"},
         {class = "relative", modtype = "incdec"},
@@ -120,6 +112,8 @@ local g1000 = device.events
 
 common.init_component_modules(libs, lib_options)
 
+local display = config.simhid_g1000_display
+local scale = config.simhid_g1000_display_scale
 local viewport = mapper.viewport{
     name = "C172 viewport",
     displayno = display,
