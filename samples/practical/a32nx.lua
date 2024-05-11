@@ -1,5 +1,4 @@
 local config = {
-    -- debug = true,
     simhid_g1000_identifier = {path = "COM3"},
     simhid_g1000_display = 2,
 }
@@ -16,429 +15,512 @@ local vratio_menu = height_menu / height_total
 local vratio_display = height_display / height_total    
 local vratio_panel = height_panel / height_total
 
-a320_context = {}
+local common = require("lib/common")
 
---------------------------------------------------------------------------------------
--- Create viewports
---------------------------------------------------------------------------------------
-local display = config.simhid_g1000_display
-local scale = config.simhid_g1000_display_scale
+local a320_context = {}
 
-local viewport_left = mapper.viewport{
-    name = "A320 left Viewport",
-    displayno = display,
-    x = 0, y = 0,
-    width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
-    aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
-    horizontal_alignment = "right",
-    vertical_alignment = "bottom",
+local events = {
+    dc_bus_change = mapper.register_event("A32NX:DC_BUS:change"),
+    nd_brightness = mapper.register_event("A32NX:ND_BRT:change"),
 }
 
-local viewport_right = mapper.viewport{
-    name = "A320 right Viewport",
-    displayno = display,
-    x = 0.5 * scale, y = 0,
-    width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
-    aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
-    horizontal_alignment = "left",
-    vertical_alignment = "bottom",
+local observed_data = {
+    -- {rpn="(A:LIGHT POTENTIOMETER:89,Percent Over 100)", event=events.nd_brightness},
 }
 
-local viewport_menu = mapper.viewport{
-    name = "A320 menu Viewport",
-    displayno = display,
-    x = 0, y = (vratio_display + vratio_panel) * scale,
-    width = scale, height = vratio_menu * scale,
-    aspect_ratio = 4 / 3 / vratio_menu,
-    vertical_alignment = "top",
-}
+local function start(config)
+    --------------------------------------------------------------------------------------
+    -- Create viewports
+    --------------------------------------------------------------------------------------
+    local display = config.simhid_g1000_display
+    local scale = config.simhid_g1000_display_scale
+    
+    local viewport_left = mapper.viewport{
+        name = "A320 left Viewport",
+        displayno = display,
+        x = 0, y = 0,
+        width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
+        aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
+        horizontal_alignment = "right",
+        vertical_alignment = "bottom",
+    }
 
---------------------------------------------------------------------------------------
--- Register views to right & left viewports
---------------------------------------------------------------------------------------
-local captured_windows = {
-    pfd = mapper.view_elements.captured_window{name="A320 PFD", window_title="A32NX_PFD_1"},
-    nd = mapper.view_elements.captured_window{name="A320 ND", window_title="WASMINSTRUMENT"},
-    uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM", window_title="A32NX_EWD_1"},
-    lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM", window_title="SD"},
-    mcdu = mapper.view_elements.captured_window{name = "A320 MCDU", window_title="A320_NEO_CDU"},
-}
+    local viewport_right = mapper.viewport{
+        name = "A320 right Viewport",
+        displayno = display,
+        x = 0.5 * scale, y = 0,
+        width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
+        aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
+        horizontal_alignment = "left",
+        vertical_alignment = "bottom",
+    }
 
-local global_mappings = {}
+    local viewport_menu = mapper.viewport{
+        name = "A320 menu Viewport",
+        displayno = display,
+        x = 0, y = (vratio_display + vratio_panel) * scale,
+        width = scale, height = vratio_menu * scale,
+        aspect_ratio = 4 / 3 / vratio_menu,
+        vertical_alignment = "top",
+    }
 
-local fcu_panel = require("a32nx/fcu")
-fs2020.mfwasm.add_observed_data(fcu_panel.observed_data)
-global_mappings[#global_mappings + 1] = fcu_panel.mappings
-local ecam_panel = require("a32nx/ecam")
-fs2020.mfwasm.add_observed_data(ecam_panel.observed_data)
-global_mappings[#global_mappings + 1] = ecam_panel.mappings
-local efis_panel = require("a32nx/efis")
-fs2020.mfwasm.add_observed_data(efis_panel.observed_data)
-global_mappings[#global_mappings + 1] = efis_panel.mappings
-local engine_panel = require("a32nx/engine")
-fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
-global_mappings[#global_mappings + 1] = engine_panel.mappings
-local mcdu_panel = require("a32nx/cdu")
+    local viewport_efb = mapper.viewport{
+        name = "A320 EFB Viewport",
+        displayno = display,
+        x = 0, y = 0,
+        width = scale, height = scale,
+        aspect_ratio = 4 / 3,
+    }
 
-local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_windows.pfd)
-local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_windows.nd)
-local viewdef_left_uecam = engine_panel.viewdef("l-uecam", captured_windows.uecam)
-local viewdef_left_lecam = ecam_panel.viewdef("l-uecam", captured_windows.lecam)
-local viewdef_left_mcdu = mcdu_panel.viewdef("l-mcdu", captured_windows.mcdu)
-local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_windows.pfd)
-local viewdef_right_nd = efis_panel.viewdef("r-nd", captured_windows.nd)
-local viewdef_right_uecam = engine_panel.viewdef("r-uecam", captured_windows.uecam)
-local viewdef_right_lecam = ecam_panel.viewdef("r-lecam", captured_windows.lecam)
-local viewdef_right_mcdu = mcdu_panel.viewdef("r-mcdu", captured_windows.mcdu)
+    --------------------------------------------------------------------------------------
+    -- Register views to right & left viewports
+    --------------------------------------------------------------------------------------
+    local captured_windows = {
+        pfd = mapper.view_elements.captured_window{name="A320 PFD", window_title="A32NX_PFD_1"},
+        nd = mapper.view_elements.captured_window{name="A320 ND", window_title="WASMINSTRUMENT"},
+        uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM", window_title="A32NX_EWD_1"},
+        lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM", window_title="SD"},
+        mcdu = mapper.view_elements.captured_window{name = "A320 MCDU", window_title="A320_NEO_CDU"},
+        efb = mapper.view_elements.captured_window{name = "A320 EFB", window_title="EFB"},
+    }
 
-local view_left_pfd = viewport_left:register_view(viewdef_left_pfd)
-local view_left_nd = viewport_left:register_view(viewdef_left_nd)
-local view_left_uecam = viewport_left:register_view(viewdef_left_uecam)
-local view_left_lecam = viewport_left:register_view(viewdef_left_lecam)
-local view_left_mcdu = viewport_left:register_view(viewdef_left_mcdu)
-local view_right_nd = viewport_right:register_view(viewdef_right_nd)
-local view_right_pfd = viewport_right:register_view(viewdef_right_pfd)
-local view_right_uecam = viewport_right:register_view(viewdef_right_uecam)
-local view_right_lecam = viewport_right:register_view(viewdef_right_lecam)
-local view_right_mcdu = viewport_right:register_view(viewdef_right_mcdu)
+    local global_mappings = {}
 
---------------------------------------------------------------------------------------
--- Register menu view
---------------------------------------------------------------------------------------
-local assets = require("a32nx/assets")
-local img_menu = assets.menu
-local img_width = 128
-local img_height = 58
-local function make_label_image(x, y)
-    return img_menu:create_partial_bitmap(x * img_width, y * img_height, img_width, img_height)
-end
-local img_pfd_selected = make_label_image(0, 0)
-local img_pfd_unselected = make_label_image(0, 1)
-local img_pfd_disabled = make_label_image(0, 2)
-local img_nd_selected = make_label_image(1, 0)
-local img_nd_unselected = make_label_image(1, 1)
-local img_nd_disabled = make_label_image(1, 2)
-local img_uecam_selected = make_label_image(2, 0)
-local img_uecam_unselected = make_label_image(2, 1)
-local img_uecam_disabled = make_label_image(2, 2)
-local img_lecam_selected = make_label_image(3, 0)
-local img_lecam_unselected = make_label_image(3, 1)
-local img_lecam_disabled = make_label_image(3, 2)
-local img_mcdu_selected = make_label_image(4, 0)
-local img_mcdu_unselected = make_label_image(4, 1)
-local img_mcdu_disabled = make_label_image(4, 2)
-local img_blank = make_label_image(5, 0)
+    fs2020.mfwasm.add_observed_data(observed_data)
+    local fcu_panel = require("a32nx/fcu")
+    fs2020.mfwasm.add_observed_data(fcu_panel.observed_data)
+    global_mappings[#global_mappings + 1] = fcu_panel.mappings
+    local ecam_panel = require("a32nx/ecam")
+    fs2020.mfwasm.add_observed_data(ecam_panel.observed_data)
+    global_mappings[#global_mappings + 1] = ecam_panel.mappings
+    local efis_panel = require("a32nx/efis")
+    fs2020.mfwasm.add_observed_data(efis_panel.observed_data)
+    global_mappings[#global_mappings + 1] = efis_panel.mappings
+    local engine_panel = require("a32nx/engine")
+    fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
+    global_mappings[#global_mappings + 1] = engine_panel.mappings
+    local mcdu_panel = require("a32nx/cdu")
 
-local rule_left = {
-    pfd = {
-        pos = 0, 
-        view = view_left_pfd,
-        selected = img_pfd_selected,
-        unselected = img_pfd_unselected,
-        disabled = img_pfd_disabled,
-        next = "nd", 
-        prev = "mcdu",
-        mutex = {pfd = true},
-    },
-    nd = {
-        pos = 1, 
-        view = view_left_nd,
-        selected = img_nd_selected,
-        unselected = img_nd_unselected,
-        disabled = img_nd_disabled,
-        next = "uecam", 
-        prev = "pfd",
-        mutex = {nd = true},
-    },
-    uecam = {
-        pos = 2, 
-        view = view_left_uecam,
-        selected = img_uecam_selected,
-        unselected = img_uecam_unselected,
-        disabled = img_uecam_disabled,
-        next = "lecam", 
-        prev = "nd",
-        mutex = {uecam = true},
-    },
-    lecam = {
-        pos = 3, 
-        view = view_left_lecam,
-        selected = img_lecam_selected,
-        unselected = img_lecam_unselected,
-        disabled = img_lecam_disabled,
-        next = "mcdu",
-        prev = "uecam",
-        mutex = {lecam = true},
-    },
-    mcdu = {
-        pos = 4, 
-        view = view_left_mcdu,
-        selected = img_mcdu_selected,
-        unselected = img_mcdu_unselected,
-        disabled = img_mcdu_disabled,
-        next = "pfd",
-        prev = "lecam",
-        mutex = {mcdu = true},
-    },
-}
+    local viewdef_left_pfd = fcu_panel.viewdef("l-pfd", captured_windows.pfd)
+    local viewdef_left_nd = efis_panel.viewdef("l-nd", captured_windows.nd)
+    local viewdef_left_uecam = engine_panel.viewdef("l-uecam", captured_windows.uecam)
+    local viewdef_left_lecam = ecam_panel.viewdef("l-uecam", captured_windows.lecam)
+    local viewdef_left_mcdu = mcdu_panel.viewdef("l-mcdu", captured_windows.mcdu)
+    local viewdef_right_pfd = fcu_panel.viewdef("r-pfd", captured_windows.pfd)
+    local viewdef_right_nd = efis_panel.viewdef("r-nd", captured_windows.nd)
+    local viewdef_right_uecam = engine_panel.viewdef("r-uecam", captured_windows.uecam)
+    local viewdef_right_lecam = ecam_panel.viewdef("r-lecam", captured_windows.lecam)
+    local viewdef_right_mcdu = mcdu_panel.viewdef("r-mcdu", captured_windows.mcdu)
 
-local rule_right = {
-    pfd = {
-        pos = 7, 
-        view = view_right_pfd,
-        selected = img_pfd_selected,
-        unselected = img_pfd_unselected,
-        disabled = img_pfd_disabled,
-        next = "nd", 
-        prev = "mcdu",
-        mutex = {pfd = true},
-    },
-    nd = {
-        pos = 8, 
-        view = view_right_nd,
-        selected = img_nd_selected,
-        unselected = img_nd_unselected,
-        disabled = img_nd_disabled,
-        next = "uecam", 
-        prev = "pfd",
-        mutex = {nd = true},
-    },
-    uecam = {
-        pos = 9, 
-        view = view_right_uecam,
-        selected = img_uecam_selected,
-        unselected = img_uecam_unselected,
-        disabled = img_uecam_disabled,
-        next = "lecam", 
-        prev = "nd",
-        mutex = {uecam = true},
-    },
-    lecam = {
-        pos = 10, 
-        view = view_right_lecam,
-        selected = img_lecam_selected,
-        unselected = img_lecam_unselected,
-        disabled = img_lecam_disabled,
-        next = "mcdu",
-        prev = "uecam",
-        mutex = {lecam = true},
-    },
-    mcdu = {
-        pos = 11,
-        view = view_right_mcdu,
-        selected = img_mcdu_selected,
-        unselected = img_mcdu_unselected,
-        disabled = img_mcdu_disabled,
-        next = "pfd",
-        prev = "lecam",
-        mutex = {mcdu = true},
-    },
-}
+    local view_left_pfd = viewport_left:register_view(viewdef_left_pfd)
+    local view_left_nd = viewport_left:register_view(viewdef_left_nd)
+    local view_left_uecam = viewport_left:register_view(viewdef_left_uecam)
+    local view_left_lecam = viewport_left:register_view(viewdef_left_lecam)
+    local view_left_mcdu = viewport_left:register_view(viewdef_left_mcdu)
+    local view_right_nd = viewport_right:register_view(viewdef_right_nd)
+    local view_right_pfd = viewport_right:register_view(viewdef_right_pfd)
+    local view_right_uecam = viewport_right:register_view(viewdef_right_uecam)
+    local view_right_lecam = viewport_right:register_view(viewdef_right_lecam)
+    local view_right_mcdu = viewport_right:register_view(viewdef_right_mcdu)
 
+    --------------------------------------------------------------------------------------
+    -- Register EFB view
+    --------------------------------------------------------------------------------------
+    local efb_view = viewport_efb:register_view{
+        name = "EFB View", elements={{object=captured_windows.efb}},
+        auto_reterun_focus = false,
+    }
+    viewport_efb:change_view(viewport_efb.empty_view)
 
-local menu_context = {
-    left = {current = "pfd", rule = rule_left, viewport = viewport_left},
-    right = {current = "nd", rule = rule_right, viewport = viewport_right},
-}
-
-local typical_views = {
-    {left="pfd", right="nd"},
-    {left="uecam", right="lecam"},
-    {left="nd", right="mcdu"},
-}
-
-local function make_renderer_value()
-    value = {}
-    for k, v in pairs(menu_context.left.rule) do
-        if k == menu_context.left.current then
-            value[v.pos] = v.selected
-        elseif v.mutex[menu_context.right.current] then
-            value[v.pos] = v.disabled
-        else
-            value[v.pos] = v.unselected
-        end
+    --------------------------------------------------------------------------------------
+    -- Register menu view
+    --------------------------------------------------------------------------------------
+    local assets = require("a32nx/assets")
+    local img_menu = assets.menu
+    local img_width = 128
+    local img_height = 58
+    local function make_label_image(x, y)
+        return img_menu:create_partial_bitmap(x * img_width, y * img_height, img_width, img_height)
     end
-    for k, v in pairs(menu_context.right.rule) do
-        if k == menu_context.right.current then
-            value[v.pos] = v.selected
-        elseif v.mutex[menu_context.left.current] then
-            value[v.pos] = v.disabled
-        else
-            value[v.pos] = v.unselected
-        end
-    end
-    return value
-end
+    local img_pfd_selected = make_label_image(0, 0)
+    local img_pfd_unselected = make_label_image(0, 1)
+    local img_pfd_disabled = make_label_image(0, 2)
+    local img_nd_selected = make_label_image(1, 0)
+    local img_nd_unselected = make_label_image(1, 1)
+    local img_nd_disabled = make_label_image(1, 2)
+    local img_uecam_selected = make_label_image(2, 0)
+    local img_uecam_unselected = make_label_image(2, 1)
+    local img_uecam_disabled = make_label_image(2, 2)
+    local img_lecam_selected = make_label_image(3, 0)
+    local img_lecam_unselected = make_label_image(3, 1)
+    local img_lecam_disabled = make_label_image(3, 2)
+    local img_mcdu_selected = make_label_image(4, 0)
+    local img_mcdu_unselected = make_label_image(4, 1)
+    local img_mcdu_disabled = make_label_image(4, 2)
+    local img_blank = make_label_image(5, 0)
 
-local menu_bar = mapper.view_elements.canvas{
-    logical_width = 1536,
-    logical_height = 58,
-    value = make_renderer_value(),
-    renderer = function (ctx, value)
-        for i = 0, 11 do
-            local img = value[i]
-            if img then
-                ctx:draw_bitmap(img, img_width * i, 0)
+    local rule_left = {
+        pfd = {
+            pos = 0, 
+            view = view_left_pfd,
+            selected = img_pfd_selected,
+            unselected = img_pfd_unselected,
+            disabled = img_pfd_disabled,
+            next = "nd", 
+            prev = "mcdu",
+            mutex = {pfd = true},
+        },
+        nd = {
+            pos = 1, 
+            view = view_left_nd,
+            selected = img_nd_selected,
+            unselected = img_nd_unselected,
+            disabled = img_nd_disabled,
+            next = "uecam", 
+            prev = "pfd",
+            mutex = {nd = true},
+        },
+        uecam = {
+            pos = 2, 
+            view = view_left_uecam,
+            selected = img_uecam_selected,
+            unselected = img_uecam_unselected,
+            disabled = img_uecam_disabled,
+            next = "lecam", 
+            prev = "nd",
+            mutex = {uecam = true},
+        },
+        lecam = {
+            pos = 3, 
+            view = view_left_lecam,
+            selected = img_lecam_selected,
+            unselected = img_lecam_unselected,
+            disabled = img_lecam_disabled,
+            next = "mcdu",
+            prev = "uecam",
+            mutex = {lecam = true},
+        },
+        mcdu = {
+            pos = 4, 
+            view = view_left_mcdu,
+            selected = img_mcdu_selected,
+            unselected = img_mcdu_unselected,
+            disabled = img_mcdu_disabled,
+            next = "pfd",
+            prev = "lecam",
+            mutex = {mcdu = true},
+        },
+    }
+
+    local rule_right = {
+        pfd = {
+            pos = 7, 
+            view = view_right_pfd,
+            selected = img_pfd_selected,
+            unselected = img_pfd_unselected,
+            disabled = img_pfd_disabled,
+            next = "nd", 
+            prev = "mcdu",
+            mutex = {pfd = true},
+        },
+        nd = {
+            pos = 8, 
+            view = view_right_nd,
+            selected = img_nd_selected,
+            unselected = img_nd_unselected,
+            disabled = img_nd_disabled,
+            next = "uecam", 
+            prev = "pfd",
+            mutex = {nd = true},
+        },
+        uecam = {
+            pos = 9, 
+            view = view_right_uecam,
+            selected = img_uecam_selected,
+            unselected = img_uecam_unselected,
+            disabled = img_uecam_disabled,
+            next = "lecam", 
+            prev = "nd",
+            mutex = {uecam = true},
+        },
+        lecam = {
+            pos = 10, 
+            view = view_right_lecam,
+            selected = img_lecam_selected,
+            unselected = img_lecam_unselected,
+            disabled = img_lecam_disabled,
+            next = "mcdu",
+            prev = "uecam",
+            mutex = {lecam = true},
+        },
+        mcdu = {
+            pos = 11,
+            view = view_right_mcdu,
+            selected = img_mcdu_selected,
+            unselected = img_mcdu_unselected,
+            disabled = img_mcdu_disabled,
+            next = "pfd",
+            prev = "lecam",
+            mutex = {mcdu = true},
+        },
+    }
+
+
+    local menu_context = {
+        left = {current = "pfd", rule = rule_left, viewport = viewport_left},
+        right = {current = "nd", rule = rule_right, viewport = viewport_right},
+    }
+
+    local typical_views = {
+        {left="pfd", right="nd"},
+        {left="uecam", right="lecam"},
+        {left="nd", right="mcdu"},
+    }
+
+    local function make_renderer_value()
+        value = {}
+        for k, v in pairs(menu_context.left.rule) do
+            if k == menu_context.left.current then
+                value[v.pos] = v.selected
+            elseif v.mutex[menu_context.right.current] then
+                value[v.pos] = v.disabled
             else
-                ctx:draw_bitmap(img_blank, img_width * i, 0)
+                value[v.pos] = v.unselected
             end
         end
-    end,
-}
-
-local function change_view(target, view_name, opposite)
-    target_ctx = menu_context[target]
-    opposite_ctx = menu_context[opposite]
-    rule = target_ctx.rule[view_name]
-    if rule.mutex[opposite_ctx.current] then
-        return false
-    elseif target_ctx.current ~= view_name then
-        target_ctx.current = view_name
-        target_ctx.viewport:change_view(rule.view)
-        menu_bar:set_value(make_renderer_value())
-        return true
-    else
-        return true
+        for k, v in pairs(menu_context.right.rule) do
+            if k == menu_context.right.current then
+                value[v.pos] = v.selected
+            elseif v.mutex[menu_context.left.current] then
+                value[v.pos] = v.disabled
+            else
+                value[v.pos] = v.unselected
+            end
+        end
+        return value
     end
-end
 
-local function change_typical_view(direction)
-    local left = menu_context.left.current
-    local right = menu_context.right.current
-    local ix = nil
-    for i, set in ipairs(typical_views) do
-        if left == set.left and right == set.right then
-            ix = i
-            break
+    local menu_bar = mapper.view_elements.canvas{
+        logical_width = 1536,
+        logical_height = 58,
+        value = make_renderer_value(),
+        renderer = function (ctx, value)
+            for i = 0, 11 do
+                local img = value[i]
+                if img then
+                    ctx:draw_bitmap(img, img_width * i, 0)
+                else
+                    ctx:draw_bitmap(img_blank, img_width * i, 0)
+                end
+            end
+        end,
+    }
+
+    local efb_is_visible = false
+    local main_views = {}
+
+    local function toggle_efb()
+        efb_is_visible = not efb_is_visible
+        if efb_is_visible then
+            main_views.left = viewport_left.current_view
+            main_views.right = viewport_right.current_view
+            main_views.menu = viewport_menu.current_view
+            viewport_efb:change_view(efb_view)
+            viewport_left:change_view(viewport_left.empty_view)
+            viewport_right:change_view(viewport_right.empty_view)
+            viewport_menu:change_view(viewport_menu.empty_view)
+        else
+            viewport_left:change_view(main_views.left)
+            viewport_right:change_view(main_views.right)
+            viewport_menu:change_view(main_views.menu)
+            viewport_efb:change_view(viewport_efb.empty_view)
         end
     end
-    if ix then
-        if direction > 0 then
-            ix = ix + 1
-            if ix > #typical_views then
-                ix = 1
+
+    local function change_view(target, view_name, opposite)
+        if efb_is_visible then
+            toggle_efb()
+            return true
+        end
+        target_ctx = menu_context[target]
+        opposite_ctx = menu_context[opposite]
+        rule = target_ctx.rule[view_name]
+        if rule.mutex[opposite_ctx.current] then
+            return false
+        elseif target_ctx.current ~= view_name then
+            target_ctx.current = view_name
+            target_ctx.viewport:change_view(rule.view)
+            menu_bar:set_value(make_renderer_value())
+            return true
+        else
+            return true
+        end
+    end
+
+    local function change_typical_view(direction)
+        if efb_is_visible then
+            toggle_efb()
+            return
+        end
+        local left = menu_context.left.current
+        local right = menu_context.right.current
+        local ix = nil
+        for i, set in ipairs(typical_views) do
+            if left == set.left and right == set.right then
+                ix = i
+                break
+            end
+        end
+        if ix then
+            if direction > 0 then
+                ix = ix + 1
+                if ix > #typical_views then
+                    ix = 1
+                end
+            else
+                ix = ix - 1
+                if ix < 1 then
+                    ix = #typical_views
+                end
             end
         else
-            ix = ix - 1
-            if ix < 1 then
+            if direction > 0 then
+                ix = 1
+            else
                 ix = #typical_views
             end
         end
-    else
+        local set = typical_views[ix]
+        menu_context.left.current = set.left
+        menu_context.right.current = set.right
         if direction > 0 then
-            ix = 1
+            menu_context.left.viewport:change_view(menu_context.left.rule[set.left].view)
+            menu_context.right.viewport:change_view(menu_context.right.rule[set.right].view)
         else
-            ix = #typical_views
+            menu_context.right.viewport:change_view(menu_context.right.rule[set.right].view)
+            menu_context.left.viewport:change_view(menu_context.left.rule[set.left].view)
         end
-    end
-    local set = typical_views[ix]
-    menu_context.left.current = set.left
-    menu_context.right.current = set.right
-    if direction > 0 then
-        menu_context.left.viewport:change_view(menu_context.left.rule[set.left].view)
-        menu_context.right.viewport:change_view(menu_context.right.rule[set.right].view)
-    else
-        menu_context.right.viewport:change_view(menu_context.right.rule[set.right].view)
-        menu_context.left.viewport:change_view(menu_context.left.rule[set.left].view)
+
+        menu_bar:set_value(make_renderer_value())
     end
 
-    menu_bar:set_value(make_renderer_value())
+    a320_context.device = common.open_simhid_g1000{
+        config = config,
+        modifiers = {
+            {class = "binary", modtype = "button"},
+            {class = "relative", modtype = "incdec"},
+            {name = "EC1P", modtype = "button", modparam={longpress = 500}},
+            {name = "EC3P", modtype = "button", modparam={longpress = 500}},
+            {name = "EC4P", modtype = "button", modparam={longpress = 500}},
+            {name = "EC5P", modtype = "button", modparam={longpress = 500}},
+        },
+    }
+    local g1000 = a320_context.device.events
+
+    local mappings = {
+        {event=g1000.SW14.down, action=function () change_view("left", "pfd", "right") end},
+        {event=g1000.SW15.down, action=function () change_view("left", "nd", "right") end},
+        {event=g1000.SW16.down, action=function () change_view("left", "uecam", "right") end},
+        {event=g1000.SW17.down, action=function () change_view("left", "lecam", "right") end},
+        {event=g1000.SW18.down, action=function () change_view("left", "mcdu", "right") end},
+        {event=g1000.SW21.down, action=function () change_view("right", "pfd", "left") end},
+        {event=g1000.SW22.down, action=function () change_view("right", "nd", "left") end},
+        {event=g1000.SW23.down, action=function () change_view("right", "uecam", "left") end},
+        {event=g1000.SW24.down, action=function () change_view("right", "lecam", "left") end},
+        {event=g1000.SW25.down, action=function () change_view("right", "mcdu", "left") end},
+
+        {event=g1000.EC1.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_INC)")},
+        {event=g1000.EC1.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_DEC)")},
+        {event=g1000.EC1P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
+        {event=g1000.EC1P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
+        {event=g1000.SW1.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
+        {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_INC)")},
+        {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_DEC)")},
+        {event=g1000.EC3P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
+        {event=g1000.EC3P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
+        {event=g1000.SW4.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
+        {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_INC)")},
+        {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_DEC)")},
+        {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
+        {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
+        {event=g1000.EC4P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
+        {event=g1000.EC4P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
+        {event=g1000.SW12.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
+        {event=g1000.EC5.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_INC)")},
+        {event=g1000.EC5.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_DEC)")},
+        {event=g1000.EC5P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
+        {event=g1000.EC5P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
+        {event=g1000.SW26.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
+        {event=g1000.SW2.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
+        {event=g1000.SW3.down, action=fs2020.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},
+        {event=g1000.SW8.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
+
+        {event=g1000.EC8.increment, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) ++ 5 min (>L:A32NX_EFIS_L_ND_RANGE)")},
+        {event=g1000.EC8.decrement, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) -- 0 max (>L:A32NX_EFIS_L_ND_RANGE)")},
+        {event=g1000.EC8L.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
+        {event=g1000.EC8U.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
+        {event=g1000.EC8R.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
+        {event=g1000.EC8D.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
+
+        {event=g1000.EC6X.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE)")},
+        {event=g1000.EC6X.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE)")},
+        {event=g1000.EC6Y.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE)")},
+        {event=g1000.EC6Y.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE)")},
+        {event=g1000.EC6P.down, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_TRANSFER_BUTTON_PRESSED)")},
+
+        {event=g1000.EC7Y.increment, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_INC)")},
+        {event=g1000.EC7Y.decrement, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_DEC)")},
+        {event=g1000.EC7P.down, action=fs2020.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
+
+        {event=g1000.EC2Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 + 100 min d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 - 0 max d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 + 100 min d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 - 0 max d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 + 100 min 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 - 0 max 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+
+        {event=g1000.AUX1D.down, action=function() change_typical_view(1) end},
+        {event=g1000.AUX1U.down, action=function() change_typical_view(-1) end},
+        {event=g1000.AUX2D.down, action=function() change_typical_view(1) end},
+        {event=g1000.AUX2U.down, action=function() change_typical_view(-1) end},
+        {event=g1000.AUX1P.down, action=toggle_efb},
+        {event=g1000.AUX2P.down, action=toggle_efb},
+    }
+
+    viewport_menu:add_mappings(mappings)
+
+    viewport_menu:register_view{
+        name = "menu",
+        background = "black",
+        elements = {
+            {object = menu_bar},
+        },
+    }
+
+    mapper.set_secondary_mappings{}
+    for i, mappings in ipairs(global_mappings) do
+        mapper.add_secondary_mappings(mappings)
+    end
+
+    mapper.start_viewports()
 end
 
-a320_context.device = common.open_simhid_g1000{
-    config = config,
-    modifiers = {
-        {class = "binary", modtype = "button"},
-        {class = "relative", modtype = "incdec"},
-        {name = "EC1P", modtype = "button", modparam={longpress = 500}},
-        {name = "EC3P", modtype = "button", modparam={longpress = 500}},
-        {name = "EC4P", modtype = "button", modparam={longpress = 500}},
-        {name = "EC5P", modtype = "button", modparam={longpress = 500}},
-    },
-}
-local g1000 = a320_context.device.events
-
-local mappings = {
-    {event=g1000.SW14.down, action=function () change_view("left", "pfd", "right") end},
-    {event=g1000.SW15.down, action=function () change_view("left", "nd", "right") end},
-    {event=g1000.SW16.down, action=function () change_view("left", "uecam", "right") end},
-    {event=g1000.SW17.down, action=function () change_view("left", "lecam", "right") end},
-    {event=g1000.SW18.down, action=function () change_view("left", "mcdu", "right") end},
-    {event=g1000.SW21.down, action=function () change_view("right", "pfd", "left") end},
-    {event=g1000.SW22.down, action=function () change_view("right", "nd", "left") end},
-    {event=g1000.SW23.down, action=function () change_view("right", "uecam", "left") end},
-    {event=g1000.SW24.down, action=function () change_view("right", "lecam", "left") end},
-    {event=g1000.SW25.down, action=function () change_view("right", "mcdu", "left") end},
-
-    {event=g1000.EC1.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_INC)")},
-    {event=g1000.EC1.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_DEC)")},
-    {event=g1000.EC1P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
-    {event=g1000.EC1P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
-    {event=g1000.SW1.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
-    {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_INC)")},
-    {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_DEC)")},
-    {event=g1000.EC3P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
-    {event=g1000.EC3P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
-    {event=g1000.SW4.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
-    {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_INC)")},
-    {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_DEC)")},
-    {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
-    {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
-    {event=g1000.EC4P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
-    {event=g1000.EC4P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
-    {event=g1000.SW12.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
-    {event=g1000.EC5.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_INC)")},
-    {event=g1000.EC5.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_DEC)")},
-    {event=g1000.EC5P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
-    {event=g1000.EC5P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
-    {event=g1000.SW26.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
-    {event=g1000.SW2.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
-    {event=g1000.SW3.down, action=fs2020.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},
-    {event=g1000.SW8.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
-
-    {event=g1000.EC8.increment, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) ++ 5 min (>L:A32NX_EFIS_L_ND_RANGE)")},
-    {event=g1000.EC8.decrement, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) -- 0 max (>L:A32NX_EFIS_L_ND_RANGE)")},
-    {event=g1000.EC8L.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-    {event=g1000.EC8U.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-    {event=g1000.EC8R.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
-    {event=g1000.EC8D.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
-
-    {event=g1000.EC6X.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE)")},
-    {event=g1000.EC6X.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE)")},
-    {event=g1000.EC6Y.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE)")},
-    {event=g1000.EC6Y.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE)")},
-    {event=g1000.EC6P.down, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_TRANSFER_BUTTON_PRESSED)")},
-
-    {event=g1000.EC7Y.increment, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_INC)")},
-    {event=g1000.EC7Y.decrement, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_DEC)")},
-    {event=g1000.EC7P.down, action=fs2020.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
-
-    {event=g1000.EC2Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC2Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC2X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 + 100 min d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC2X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 - 0 max d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC9Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 + 100 min d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC9Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 - 0 max d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC9X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 + 100 min 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-    {event=g1000.EC9X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 - 0 max 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-
-    {event=g1000.AUX1D.down, action=function() change_typical_view(1) end},
-    {event=g1000.AUX1U.down, action=function() change_typical_view(-1) end},
-    {event=g1000.AUX2D.down, action=function() change_typical_view(1) end},
-    {event=g1000.AUX2U.down, action=function() change_typical_view(-1) end},
-}
-
-viewport_menu:register_view{
-    name = "menu",
-    background = "black",
-    elements = {
-        {object = menu_bar},
-    },
-    mappings = mappings,
-}
-
-for i, mappings in ipairs(global_mappings) do
-    mapper.add_primary_mappings(mappings)
+local function stop()
+    if a320_context.device then
+        a320_context.device:close()
+        a320_context.device = nil
+    end
+    fs2020.mfwasm.clear_observed_data()
+    mapper.reset_viewports()
 end
 
-mapper.start_viewports()
+mapper.add_primary_mappings({
+    {event=mapper.events.change_aircraft, action=function ()
+        stop()
+        start(config)
+    end},
+})
+
+start(config)

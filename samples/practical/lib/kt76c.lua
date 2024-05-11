@@ -169,17 +169,14 @@ local function relay(self, value)
             fs2020.mfwasm.execute_rpn("(>H:TransponderCLR)")
             return
         end
-    else
+    elseif #self.editing_code < 4 then
         self.in_edit_mode = true
         self.editing_code = self.editing_code .. value
     end
     self:reflect()
     if #self.editing_code >= 4 then
-        local rpn = ""
-        for i = 1, #self.editing_code do
-            rpn = rpn .. "(>H:Transponder" .. self.editing_code:sub(i, i) .. ") "
-        end
-        fs2020.mfwasm.execute_rpn(rpn)
+        local freq = tonumber(self.editing_code:sub(1,1)) * 0x1000 + tonumber(self.editing_code:sub(2,2)) * 0x0100 + tonumber(self.editing_code:sub(3,3)) * 0x0010 + tonumber(self.editing_code:sub(4,4))
+        fs2020.send_event("XPNDR_SET", freq)
     end
 end
 xmtr_ctx[1].relay = relay

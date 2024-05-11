@@ -77,7 +77,7 @@ function module.create_component(component_name, id, captured_window, x, y, scal
     })
 
     -- update view background bitmap
-    local background = graphics.bitmap("assets/kr87.png")
+    local background = graphics.bitmap("assets/kr87.png"):create_partial_bitmap(0, 0, module.width, module.height)
     rctx:draw_bitmap{bitmap=background, x=x, y=y, scale=scale}
 
     -- Event-Action mappings which are enabled when the component is activated
@@ -89,6 +89,11 @@ function module.create_component(component_name, id, captured_window, x, y, scal
             {event=g1000.EC2X.increment, action=module.actions[id].knob_small_inc},
             {event=g1000.EC2X.decrement, action=module.actions[id].knob_small_dec},
             {event=g1000.EC2P.down, action=module.actions[id].knob_push},
+            {event=g1000.EC9Y.increment, action=module.actions[id].knob_large_inc},
+            {event=g1000.EC9Y.decrement, action=module.actions[id].knob_large_dec},
+            {event=g1000.EC9X.increment, action=module.actions[id].knob_small_inc},
+            {event=g1000.EC9X.decrement, action=module.actions[id].knob_small_dec},
+            {event=g1000.EC9P.down, action=module.actions[id].knob_push},
             {event=g1000.SW1.down, action=module.actions[id].frq},
         }
     end

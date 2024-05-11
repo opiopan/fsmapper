@@ -3,21 +3,25 @@ local config = {
     simhid_g1000_display = 2,
 }
 
+local module = {}
+
 local common = require("lib/common")
 common.commit_config(config)
-
 local libs = {
     gns530 = require("lib/gns530"),
     gns430 = require("lib/gns430"),
     kap140 = require("lib/kap140"),
     kt76c = require("lib/kt76c"),
-    kr87 = require("lib/kr87"),
+    kr87 = require("lib/kr87_emu"),
     c172navgps = require("lib/c172navgps"),
     cdi = require("lib/cdi"),
     adf = require("lib/adf"),
     dg = require("lib/dg"),
 }
 local lib_options = {
+    kr87 = {
+        {power_rpn = "1 (>A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:4, Bool) 2 (>A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:5, Bool) or (A:ADF VOLUME:1, Percent Over 100) 0 > and"}
+    },
     cdi = {
         {type=libs.cdi.type.general, gps_dependency=true, enable_nav=false, source_is_gps="(L:AS530_CDI_Source_1)"}, -- NAV1
         {type=libs.cdi.type.general, gps_dependency=true, enable_nav=false, source_is_gps="(L:AS430_CDI_Source_1)"}, -- NAV2
@@ -31,7 +35,6 @@ local captured_window_defs ={
     {key="gns530", name="GNS530 GPS", window_title="AS530"},
     {key="gns430", name="GNS430 GPS", window_title="AS430"},
     {key="kap140", name="KAP-140 Auto Pilot Control", window_title="KAP140"},
-    {key="kr87", name="KR-87 ADF", window_title="KR87"},
 }
 
 local bg_color = graphics.color(30, 40, 50)
@@ -51,7 +54,7 @@ local views = {
             {name="gns430", module=libs.gns430, cw="gns430", type_id=1, x=1112, y=942, scale=1},
             {name="kap140", module=libs.kap140, cw="kap140", type_id=1, x=0, y=0, scale=1},
             {name="kt76c", module=libs.kt76c, cw=nil, type_id=1, x=0, y=296, scale=1},
-            {name="kr87", module=libs.kr87, cw="kr87", type_id=1, x=1112, y=1408, scale=1},
+            {name="kr87", module=libs.kr87, cw=nil, type_id=1, x=1112, y=1408, scale=1},
             {name="navgps", module=libs.c172navgps, cw=nil, type_id=1, x=1481.333, y=0, scale=1},
             {name="NAV1 CDI", module=libs.cdi, cw=nil, type_id=1, x=579.119, y=601, scale=1},
             {name="NAV2 CDI", module=libs.cdi, cw=nil, type_id=2, x=579.119, y=1136, scale=1},
@@ -100,47 +103,68 @@ local views = {
     },
 }
 
-device = common.open_simhid_g1000{
-    config = config,
-    modifiers = {
-        {class = "binary", modtype = "button"},
-        {class = "relative", modtype = "incdec"},
-        {name = "SW31", modtype = "button", modparam={longpress = 2000}},
-    },
-}
-local g1000 = device.events
+function module.start(config, aircraft)
+    local display = config.simhid_g1000_display
+    local scale = config.simhid_g1000_display_scale
 
-common.init_component_modules(libs, lib_options)
-
-local display = config.simhid_g1000_display
-local scale = config.simhid_g1000_display_scale
-local viewport = mapper.viewport{
-    name = "C172 viewport",
-    displayno = display,
-    x = 0, y = 0, width = scale, height = scale,
-    aspect_ratio = 4 / 3,
-}
-local viewport_mappings = {}
-local view_changer = common.create_default_view_changer(viewport, views, 1, viewport_mappings, device, {})
-common.arrange_views(viewport, viewport_mappings, captured_window_defs, views, device)
-viewport:set_mappings(viewport_mappings)
-local target_view = views[1]
-viewport:add_mappings(target_view.components[target_view.active_component].instance.component_mappings)
-
-local global_mappings = {
-    {
-        {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_INC)")},
-        {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_DEC)")},
-        {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_INC)")},
-        {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_DEC)")},
-        {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_INC)")},
-        {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_DEC)")},
+    module.device = common.open_simhid_g1000{
+        config = config,
+        modifiers = {
+            {class = "binary", modtype = "button"},
+            {class = "relative", modtype = "incdec"},
+            {name = "SW31", modtype = "button", modparam={longpress = 2000}},
+        },
     }
-}
-common.set_global_mappings(global_mappings, libs)
+    local g1000 = module.device.events
 
-for i, mappings in ipairs(global_mappings) do
-    mapper.add_primary_mappings(mappings)
+    common.init_component_modules(libs, lib_options)
+
+    local viewport = mapper.viewport{
+        name = "C172 viewport",
+        displayno = display,
+        x = 0, y = 0, width = scale, height = scale,
+        aspect_ratio = 4 / 3,
+    }
+    local viewport_mappings = {}
+    local view_changer = common.create_default_view_changer(viewport, views, 1, viewport_mappings, module.device, {})
+    common.arrange_views(viewport, viewport_mappings, captured_window_defs, views, module.device)
+    viewport:set_mappings(viewport_mappings)
+    local target_view = views[1]
+    viewport:add_mappings(target_view.components[target_view.active_component].instance.component_mappings)
+
+    local global_mappings = {
+        {
+            {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_INC)")},
+            {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_DEC)")},
+            {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_INC)")},
+            {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_DEC)")},
+            {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_INC)")},
+            {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_DEC)")},
+        }
+    }
+    common.set_global_mappings(global_mappings, libs)
+
+
+    mapper.set_secondary_mappings{}
+    for i, mappings in ipairs(global_mappings) do
+        mapper.add_secondary_mappings(mappings)
+    end
+
+    mapper.start_viewports()
 end
 
-mapper.start_viewports()
+function module.stop()
+    common.clear_component_instance(views)
+    module.device:close()
+    module.device = nil
+    mapper.reset_viewports()
+end
+
+mapper.add_primary_mappings({
+    {event=mapper.events.change_aircraft, action=function ()
+        module.stop()
+        module.start(config)
+    end},
+})
+
+module.start(config)
