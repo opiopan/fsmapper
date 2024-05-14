@@ -139,7 +139,42 @@ local config = {
 }
 ```
 
-More complex scripts can be found in [this repository](https://github.com/opiopan/scripts_for_fsmapper). <br>
+Alternatively, you can define the `override_config` global variable in the **Pre-run script** of fsmapper's **Settings page** to override the contents of the `config` variable without directly modifying the script.
+This method also supports those who do not own the SimHID G1000 but want to try the operation of the virtual instrument panel.
+
+Here is an example of a script to specify in the **Pre-run script**.
+
+```lua
+override_config = {
+    simhid_g1000_display = 1,
+    simhid_g1000_display_scale = 0.5,
+
+    simhid_g1000_mock = true, 
+    simhid_g1000_mock_proxy = {
+        type = 'dinput',
+        identifier = {name = 'your_device_name_here'},
+        aux_up = 'button1',
+        aux_down = 'button2',
+        aux_push = 'button3',
+    },
+ }
+```
+
+Please replace placeholders like "your_device_name_here" and specific button names with appropriate values for your setup.
+This script will override the configuration variables accordingly when fsmapper is launched.
+
+Here is the meaning of each parameter.
+
+|Parameter|Description
+|---------|------------
+|`simhid_g1000_display`| Specify the display number for showing the virtual instrument panel. This display should ideally be a touchscreen, but it can also be operated using a mouse.
+|`simhid_g1000_display_scale`|Specify the size of the virtual instrument panel display. Use `1` to use the entire screen.
+|`simhid_g1000_mock`|If you are not using [SimHID G1000](https://github.com/opiopan/simhid-g1000) or do not own it at all, specify `true`.
+|`simhid_g1000_mock_proxy`|The following sample scripts allow you to operate multiple virtual instrument panels by switching between them. This switching operation is assigned to the left and right AUX switches of [SimHID G1000](https://github.com/opiopan/simhid-g1000). If you are not using [SimHID G1000](https://github.com/opiopan/simhid-g1000), you can assign the switching operation to another device using this parameter.<br>Specify the device to use for this purpose in the `identifier` parameter. Refer to [this guide](https://opiopan.github.io/fsmapper/getting-started/tutorial#handle-an-input-device) for descriptions of the `identifier` parameters corresponding to the devices you own.<br>Specify which buttons of the device identified by `identifier` to use for switching virtual instrument panels using `aux_up`, `aux_down`, and `aux_push` parameters.
+
+
+**NOTE:**
+More complex scripts can be found in [this repository](https://github.com/opiopan/scripts_for_fsmapper).
 I actually use the scripts stored in that repository, and the way how to switch the configuration correspond to current aircraft can be found in those scripts.
 
 
@@ -158,8 +193,8 @@ In this script, you can see the following example usage of fsmapper.
 - Switchable views
 
 ### [samples/practical/g1000_x56.lua](samples/practical/g1000_x56.lua)
-This script is added some codes to the aboeve script.<br>The deference between both scripts is only the part to handle logicool G-56.<br>
-In this scrit, you can see the following example usage of fsmapper.
+This script is added some codes to the aboeve script.<br>The deference between both scripts is only the part to handle logicool X56.<br>
+In this script, you can see the following example usage of fsmapper.
 - Basic event handling for USB gaming controller
 - Feeding values to vJoy device
 - Deferred event handling
@@ -178,19 +213,22 @@ In this scrit, you can see the following example usage of fsmapper in addition t
 - Drawing graphics on the screen
 - Handling the touch events and mouse events occured on the screen
 
-This script defines following 5 views. Every view consist a FS2020 poped out instrument window and self rendered operable gauges.
+This script defines following 6 views. Every view consist a FS2020 poped out instrument window and self rendered operable gauges.
 
 || Poped out instruments | Self rendered operable units
 |-|-----------------|----------------------
-|1| PFD       | FCU display<br>buttons on the FCU<br>BARO indicator
-|2| ND               | buttons and toggle switches on the EFIS controll unit<br>auto brake buttons<br>etc
-|3| Upper ECAM | engine mode selectors, master engine switch and engine status indicators<br>APU controll switches<br>battery controll switches and voltage indicators
-|4|Lower ECAM| ECAM page selector buttons
-|5|MCDU| MCDU buttons
+|1|PFD        |FCU display<br>buttons on the FCU<br>BARO indicator
+|2|ND         |buttons and toggle switches on the EFIS controll unit<br>auto brake buttons<br>etc
+|3|Upper ECAM |engine mode selectors, master engine switch and engine status indicators<br>APU controll switches<br>battery controll switches and voltage indicators
+|4|Lower ECAM |ECAM page selector buttons
+|5|MCDU       |MCDU buttons
+|6|EFB        | - 
 
-The width of every view is a half width of the SimHID monitor width. So two views can be displayed simultaneously side by side.<br>
+The width of every view except EFB is a half width of the SimHID monitor width. So two views can be displayed simultaneously side by side.<br>
 By pressing soft-keys placed at bottom of SimHID G1000, two views to show can be specified.<br>
-And the switches placed on the left end and the right end of SimHID G1000 housing can also control views to show.
+And the switches placed on the left end and the right end of SimHID G1000 housing (AUX switches) can also control views to show.
+When you operate the AUX switch up or down, it will sequentially switch between three preset left-right view combinations.
+Pressing the AUX switch toggles between EFB display mode and other instrument display modes.
 
 <p align="center">
 <img alt="script for a32nx" src="docs/docs/samples/images/a32nx_script_desc.svg" width=900>
