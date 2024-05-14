@@ -218,8 +218,8 @@ This script defines following 6 views. Every view consist a FS2020 poped out ins
 || Poped out instruments | Self rendered operable units
 |-|-----------------|----------------------
 |1|PFD        |FCU display<br>buttons on the FCU<br>BARO indicator
-|2|ND         |buttons and toggle switches on the EFIS controll unit<br>auto brake buttons<br>etc
-|3|Upper ECAM |engine mode selectors, master engine switch and engine status indicators<br>APU controll switches<br>battery controll switches and voltage indicators
+|2|ND         |buttons and toggle switches on the EFIS control unit<br>auto brake buttons<br>etc
+|3|Upper ECAM |engine mode selectors, master engine switch and engine status indicators<br>APU control switches<br>battery control switches and voltage indicators
 |4|Lower ECAM |ECAM page selector buttons
 |5|MCDU       |MCDU buttons
 |6|EFB        | - 

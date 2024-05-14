@@ -20,19 +20,22 @@ In this scrit, you can see the following example usage of fsmapper in addition t
 - Drawing graphics on the screen
 - Handling the touch events and mouse events occured on the screen
 
-This script defines following 5 views. Every view consist a FS2020 poped out instrument window and self rendered operable gauges.
+This script defines following 6 views. Every view consist a FS2020 poped out instrument window and self rendered operable gauges.
 
 || Poped out instruments | Self rendered operable units
 |-|-----------------|----------------------
 |1| PFD       | FCU display<br/>buttons on the FCU<br/>BARO indicator
-|2| ND               | buttons and toggle switches on the EFIS controll unit<br/>auto brake buttons<br/>etc
-|3| Upper ECAM | engine mode selectors, master engine switch and engine status indicators<br/>APU controll switches<br/>battery controll switches and voltage indicators
+|2| ND               | buttons and toggle switches on the EFIS control unit<br/>auto brake buttons<br/>etc
+|3| Upper ECAM | engine mode selectors, master engine switch and engine status indicators<br/>APU control switches<br/>battery control switches and voltage indicators
 |4|Lower ECAM| ECAM page selector buttons
 |5|MCDU| MCDU buttons
+|6|EFB        | - 
 
-The width of every view is a half width of the SimHID monitor width. So two views can be displayed simultaneously side by side.<br/>
+The width of every view except EFB is a half width of the SimHID monitor width. So two views can be displayed simultaneously side by side.<br/>
 By pressing soft-keys placed at bottom of SimHID G1000, two views to show can be specified.<br/>
-And the switches placed on the left end and the right end of SimHID G1000 housing can also control views to show.
+And the switches placed on the left end and the right end of SimHID G1000 housing (AUX switches) can also control views to show.
+When you operate the AUX switch up or down, it will sequentially switch between three preset left-right view combinations.
+Pressing the AUX switch toggles between EFB display mode and other instrument display modes.
 
 ![a32nx scripting](images/a32nx_script_desc.svg)
 
