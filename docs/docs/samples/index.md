@@ -15,10 +15,10 @@ local config = {
 ```
 
 Alternatively, you can define the `override_config` global variable in the **Pre-run script** of fsmapper's **Settings page** to override the contents of the `config` variable without directly modifying the script.
-This method also supports those who do not own the [SimHID G1000](https://github.com/opiopan/simhid-g1000) but want to try the operation of the virtual instrument panel.
 
 ![Pre-run script in settings page](images/pre_run_script.png)
 
+This method also supports those who do not own the [SimHID G1000](https://github.com/opiopan/simhid-g1000) but want to try the operation of the virtual instrument panel.<br/>
 Here is an example of a pre-run script to specify when using the sample script in an environment without [SimHID G1000](https://github.com/opiopan/simhid-g1000).
 
 ```lua
