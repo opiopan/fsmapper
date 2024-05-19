@@ -17,7 +17,7 @@ enum STATIC_EVENTS{
     EVENT_SIM_START = 1,
     EVENT_1SEC,
 };
-static const auto DINAMIC_EVENT_MIN = 100;
+static const auto DYNAMIC_EVENT_MIN = 100;
 
 enum STATIC_DATA_DEFS{
     DATA_DEF_SYSTEM = 1,
@@ -25,12 +25,12 @@ enum STATIC_DATA_DEFS{
 struct SystemData{
     char title[256];
 };
-static constexpr auto DINAMIC_DATA_DEF_MIN = 100;
+static constexpr auto DYNAMIC_DATA_DEF_MIN = 100;
 
 enum STATIC_REQESTS{
     REQUEST_SYSTEM_DATA = 1,
 };
-static constexpr auto DINAMIC_REQUEST_MIN = 100;
+static constexpr auto DYNAMIC_REQUEST_MIN = 100;
 
 //============================================================================================
 // represatation of observed simulation variables
@@ -218,6 +218,11 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 this->reportConnectivity(true, nullptr);
                 lock.lock();
             }
+            if (is_waiting_enum_input_event){
+                enum_input_event_id++;
+                ::SimConnect_EnumerateInputEvents(simconnect, enum_input_event_id);
+                mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "fs2020: Requested to enumerate InputEvents");
+            }
         }
     }else if (pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE){
         auto pObjData = reinterpret_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE*>(pData);
@@ -225,6 +230,9 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
             auto object_id = pObjData->dwObjectID;
             auto data = reinterpret_cast<SystemData*>(&pObjData->dwData);
             std::string new_name = data->title;
+            enum_input_event_id++;
+            input_events.clear();
+            is_waiting_enum_input_event = true;
             if (new_name != aircraftName){
                 aircraftName = std::move(new_name);
                 status = Status::start;
@@ -257,6 +265,26 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
         lock.unlock();
         mfwasm_process_client_data(pClientData);
         lock.lock();
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_ENUMERATE_INPUT_EVENTS){
+        auto pObjData = reinterpret_cast<SIMCONNECT_RECV_ENUMERATE_INPUT_EVENTS*>(pData);
+        if (pObjData->dwRequestID == enum_input_event_id){
+            std::ostringstream os;
+            os << "fs2020: Received an data to enumerate InputEvent: num = " << pObjData->dwArraySize;
+            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, os.str());
+            is_waiting_enum_input_event = false;
+            for (DWORD i = 0; i < pObjData->dwArraySize; i++){
+                auto data = std::make_unique<SIMCONNECT_INPUT_EVENT_DESCRIPTOR>(pObjData->rgData[i]);
+                input_events[data->Name] = std::move(data);
+            }
+        }
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_EXCEPTION){
+        auto pObjData = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pData);
+        std::ostringstream os;
+        os << "fs2020: Received an exception data:\n";
+        os << "    dwException: " << pObjData->dwException;
+        os << "\n    dwSendID: " << pObjData->dwSendID;
+        os << "\n    dwIndex: " << pObjData->dwIndex;
+        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, os.str());
     }else if (pData->dwID == SIMCONNECT_RECV_ID_QUIT){
         status = Status::disconnected;
     }
@@ -349,6 +377,56 @@ void FS2020::initLuaEnv(sol::state& lua){
         });
     };
 
+    fs2020["send_input_event"] = [this](const std::string& event_name, sol::object event_value){
+        lua_c_interface(*mapper_EngineInstance(), "fs2020.send_input_event", [this, &event_name, event_value]{
+            if (event_value.get_type() == sol::type::number){
+                raiseInputEvent(event_name, event_value.as<double>());
+            }else if (event_value.get_type() == sol::type::string){
+                raiseInputEvent(event_name, event_value.as<std::string>());
+            }else{
+                throw MapperException("the data type of event value specified as the 2nd argument must be a number or string");
+            }
+        });
+    };
+
+    fs2020["input_event_sender"] = [this](const std::string &event_name, sol::object event_value) {
+        return lua_c_interface(*mapper_EngineInstance(), "fs2020.input_event_sender", [this, &event_name, event_value]{
+            std::ostringstream os;
+            os << "fs2020.send_input_event(\"" << event_name << "\")";
+            auto func_name = os.str();
+            if (event_value.get_type() == sol::type::number){
+                auto value = event_value.as<double>();
+                NativeAction::Function::ACTION_FUNCTION func = [this, func_name, event_name, value](Event&, sol::state&){
+                    raiseInputEvent(event_name, value);
+                };
+                return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+            }else if (event_value.get_type() == sol::type::string){
+                auto&& value = event_value.as<std::string>();
+                NativeAction::Function::ACTION_FUNCTION func = [this, func_name, event_name, value](Event&, sol::state&){
+                    raiseInputEvent(event_name, value);
+                };
+                return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+            }else if (event_value.get_type() == sol::type::nil){
+                NativeAction::Function::ACTION_FUNCTION func = [this, func_name, event_name](Event& event, sol::state&){
+                    auto type = event.getType();
+                    if (type == Event::Type::int_value || type == Event::Type::double_value){
+                        raiseInputEvent(event_name, static_cast<double>(event));
+                    }else if (type ==Event::Type::string_value){
+                        raiseInputEvent(event_name, static_cast<const char*>(event));
+                    }else{
+                        std::ostringstream os;
+                        os << "fs2020.input_event_sender(): The InputEvent could not be send due to incorreect value type.";
+                        mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
+                    }
+                };
+                return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+            }else{
+                throw MapperException("the data type of event value specified as the 2nd argument must be a number or string");
+            }
+        });
+    };
+
+
     mfwasm_create_lua_env(*this, fs2020);
     lua["fs2020"] = fs2020;
 }
@@ -361,7 +439,7 @@ SIMCONNECT_CLIENT_EVENT_ID FS2020::getSimEventId(const std::string& event_name){
     if (sim_events.count(event_name) > 0){
         return sim_events.at(event_name);
     }else{
-        auto evid = DINAMIC_EVENT_MIN + sim_events.size();
+        auto evid = DYNAMIC_EVENT_MIN + sim_events.size();
         sim_events.emplace(event_name, evid);
         if (status == Status::connected || status == Status::start){
             SimConnect_MapClientEventToSimEvent(simconnect, evid, event_name.c_str());
@@ -430,5 +508,38 @@ void FS2020::clearObservedSimVars(){
 void FS2020::unsubscribeSimVarGroups(){
     for (auto i = 0; i < simvar_groups.size(); i++){
         simvar_groups[i].unsubscribe(simconnect, i);
+    }
+}
+
+//============================================================================================
+// InputEvent handling functions
+//============================================================================================
+void FS2020::raiseInputEvent(const std::string& event_name, double value){
+    if (input_events.count(event_name) > 0){
+        auto& event_def = input_events[event_name];
+        if (event_def->eType == SIMCONNECT_INPUT_EVENT_TYPE_DOUBLE){
+            ::SimConnect_SetInputEvent(simconnect, event_def->Hash, sizeof(value), &value);
+        }else{
+            throw MapperException("the data type for the specified InputEvent is string, but the specified data type is number");
+        }
+    }else{
+        std::ostringstream os;
+        os << "fs2020.send_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
+    }
+}
+
+void FS2020::raiseInputEvent(const std::string& event_name, const std::string& value){
+    if (input_events.count(event_name) > 0){
+        auto& event_def = input_events[event_name];
+        if (event_def->eType == SIMCONNECT_INPUT_EVENT_TYPE_STRING){
+            ::SimConnect_SetInputEvent(simconnect, event_def->Hash, value.length() + 1, const_cast<char*>(value.c_str()));
+        }else{
+            throw MapperException("the data type for the specified InputEvent is number, but the specified data type is string");
+        }
+    }else{
+        std::ostringstream os;
+        os << "fs2020.send_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
     }
 }

@@ -11,6 +11,7 @@
 #include <thread>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <chrono>
 #include <windows.h>
 #include <SimConnect.h>
@@ -65,9 +66,12 @@ protected:
     WinHandle event_interrupt;
     std::map<std::string, SIMCONNECT_CLIENT_EVENT_ID> sim_events;
     std::vector<SimVarGroup> simvar_groups;
+    SIMCONNECT_DATA_REQUEST_ID enum_input_event_id{0};
+    bool is_waiting_enum_input_event{false};
+    std::unordered_map <std::string, std::unique_ptr<SIMCONNECT_INPUT_EVENT_DESCRIPTOR>> input_events;
 
 public:
-    FS2020(SimHostManager& manager, int id);
+    FS2020(SimHostManager &manager, int id);
     FS2020(const FS2020&) = default;
     FS2020(FS2020&&) = default;
     virtual ~FS2020();
@@ -93,4 +97,6 @@ protected:
     void subscribeSimVarGroup(size_t ix);
     void clearObservedSimVars();
     void unsubscribeSimVarGroups();
+    void raiseInputEvent(const std::string& event_name, double value);
+    void raiseInputEvent(const std::string& event_name, const std::string& value);
 };
