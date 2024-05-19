@@ -230,9 +230,6 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
             auto object_id = pObjData->dwObjectID;
             auto data = reinterpret_cast<SystemData*>(&pObjData->dwData);
             std::string new_name = data->title;
-            enum_input_event_id++;
-            input_events.clear();
-            is_waiting_enum_input_event = true;
             if (new_name != aircraftName){
                 aircraftName = std::move(new_name);
                 status = Status::start;
@@ -245,6 +242,9 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 for (auto i = 0; i < simvar_groups.size(); i++){
                     subscribeSimVarGroup(i);
                 }
+                enum_input_event_id++;
+                input_events.clear();
+                is_waiting_enum_input_event = true;
             }
         }else if (pObjData->dwRequestID >= SIMVAR_GROUP_DEFINITION_ID_OFFSET && 
             pObjData->dwRequestID < SIMVAR_GROUP_DEFINITION_ID_OFFSET + simvar_groups.size()){
