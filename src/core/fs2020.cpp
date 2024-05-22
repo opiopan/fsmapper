@@ -377,8 +377,8 @@ void FS2020::initLuaEnv(sol::state& lua){
         });
     };
 
-    fs2020["send_input_event"] = [this](const std::string& event_name, sol::object event_value){
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.send_input_event", [this, &event_name, event_value]{
+    fs2020["execute_input_event"] = [this](const std::string& event_name, sol::object event_value){
+        lua_c_interface(*mapper_EngineInstance(), "fs2020.execute_input_event", [this, &event_name, event_value]{
             if (event_value.get_type() == sol::type::number){
                 raiseInputEvent(event_name, event_value.as<double>());
             }else if (event_value.get_type() == sol::type::string){
@@ -389,10 +389,10 @@ void FS2020::initLuaEnv(sol::state& lua){
         });
     };
 
-    fs2020["input_event_sender"] = [this](const std::string &event_name, sol::object event_value) {
-        return lua_c_interface(*mapper_EngineInstance(), "fs2020.input_event_sender", [this, &event_name, event_value]{
+    fs2020["input_event_executer"] = [this](const std::string &event_name, sol::object event_value) {
+        return lua_c_interface(*mapper_EngineInstance(), "fs2020.input_event_executer", [this, &event_name, event_value]{
             std::ostringstream os;
-            os << "fs2020.send_input_event(\"" << event_name << "\")";
+            os << "fs2020.execute_input_event(\"" << event_name << "\")";
             auto func_name = os.str();
             if (event_value.get_type() == sol::type::number){
                 auto value = event_value.as<double>();
@@ -415,7 +415,7 @@ void FS2020::initLuaEnv(sol::state& lua){
                         raiseInputEvent(event_name, static_cast<const char*>(event));
                     }else{
                         std::ostringstream os;
-                        os << "fs2020.input_event_sender(): The InputEvent could not be send due to incorreect value type.";
+                        os << "fs2020.input_event_executer(): The InputEvent could not be executed due to incorreect value type.";
                         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
                     }
                 };
@@ -524,7 +524,7 @@ void FS2020::raiseInputEvent(const std::string& event_name, double value){
         }
     }else{
         std::ostringstream os;
-        os << "fs2020.send_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        os << "fs2020.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
     }
 }
@@ -539,7 +539,7 @@ void FS2020::raiseInputEvent(const std::string& event_name, const std::string& v
         }
     }else{
         std::ostringstream os;
-        os << "fs2020.send_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        os << "fs2020.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
     }
 }
