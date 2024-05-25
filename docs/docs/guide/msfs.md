@@ -36,6 +36,13 @@ Here's a code snippet that increases the VOR1 OBI setting by 10 degrees in many 
 mapper.mfwasm.execute_rpn('(>K:VOR1_OBI_FAST_INC)')
 ```
 
+:::warning B variables issue
+Although [**RPN**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) itself is very powerful in terms of expressive capability, 
+due to the limitations of [`execute_calculator_code()`](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/execute_calculator_code.htm) in the [**Gauge API**](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm), 
+it cannot access [**B variables**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm?#Types), meaning it cannot get or set values from an [**Input Event**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm). fsmapper provides separate functions for setting value of an Input Event (i.e., issuing an Input Event). 
+For details on how to issue an Input Event, refer to [**Issuing an Input Event**](#issueing-an-input-event).
+:::
+
 ## Retrieving FS2020's Internal State
 fsmapper provides a mechanism to monitor the evaluated values of [**RPN**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and notify any changes in values as [**Event**](/guide/event-action-mapping#event)s for referencing the internal state of FS2020. 
 You can register the monitored RPN expressions by specifying an array of tables following the definitions below in [`fs2020.mfwasm.add_observed_data()`](/libs/fs2020/fs2020_mfwasm_add_observed_data).
@@ -66,5 +73,29 @@ mapper.add_primary_mappings{
             mapper.print('Heading: ' .. value)
         end
     }
+}
+```
+
+## Issueing an Input Event
+[**Input Events**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm) is a system in MSFS used to define the behavior of cockpit interactable objects when accessed with a mouse. 
+While it is possible to implement cockpit behavior without defining Input Events, in most cases, Input Events are defined for each type of interaction with objects such as switches and knobs.
+
+Therefore, using [**Input Events**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm) to link the operations of physical devices or virtual cockpit controls with the operations in the MSFS cockpit is a logical strategy.
+
+However, due to the limitations of [`execute_calculator_code()`](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/execute_calculator_code.htm) in the [**Gauge API**](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm), [**RPN scripts**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) that issue [**Input Events**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm) do not function correctly.
+To address this, fsmapper provides separate functions for issuing an Input Event. 
+Similar to the functions for executing RPN, there is [`fs2020.execute_input_event()`](/libs/fs2020/fs2020_execute_input_event) for issuing an Input Event and [`fs2020.input_event_executer()`](/libs/fs2020/fs2020_input_event_executer) which returns the Native Event for issuing an Input Event.
+
+```lua
+-- definition of event-action mappings to issue Input Events
+local mappings = {
+    {
+        event = joystick.button1.down,
+        action = function () fs2020.execute_input_event('LIGHTING_LANDING_0', 1) end,
+    },
+    {
+        event = joystick.button2.down,
+        action = fs2020.input_event_executer('LIGHTING_LANDING_0', 0),
+    },
 }
 ```

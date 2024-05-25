@@ -242,7 +242,7 @@ The parameters that can be specified for [`RenderingContext:fill_geometry()`](/l
 
 |Key|Type|Description|
 |---|----|-----------|
-|`geometry`|[`Geometry`](#geometry)|**REQUIRED PARAMETER**<br/>The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) of [`Path`](/libs/graphics/Path).
+|`geometry`|[`Geometry`](#geometry)|**REQUIRED PARAMETER**<br/>The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) or [`Path`](/libs/graphics/Path).
 |`x`|numeric|Draw the gemometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`y`|numeric|Draw the geometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`angle`|numeric|Rotate counterclockwise by the specified angle in degrees around the geometry's origin.The default is `0`.

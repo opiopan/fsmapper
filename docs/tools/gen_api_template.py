@@ -140,6 +140,8 @@ libs = [
             ('fs2020.event_sender()', 'Create a native-action to send a SimConnect client event','event_name[, param1[, param2[, param3[, param4[, param5]]]]'),
             ('fs2020.add_observed_simvars()', 'Register SimVars for observing', 'param_table'),
             ('fs2020.clear_observed_simvars()', 'Clear all observed SimVars'),
+            ('fs2020.execute_input_event()', 'Execute an InputEvent', 'input_event, value'),
+            ('fs2020.input_event_executer()', 'Create a native-action to execute an InputEvent', 'input_event[, value]'),
             ('fs2020.mfwasm.execute_rpn()', 'Execute an RPN script within MSFS', 'rpn'),
             ('fs2020.mfwasm.rpn_executer()', 'Create a native-action to execute an RPN script within MSFS', 'rpn'),
             ('fs2020.mfwasm.add_observed_data()', 'Register MSFS internal data for observing', 'def_array'),
