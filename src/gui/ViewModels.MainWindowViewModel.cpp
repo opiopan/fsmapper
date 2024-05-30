@@ -112,7 +112,7 @@ namespace winrt::gui::ViewModels::implementation{
 
     void MainWindowViewModel::GuideMenu_Click(
         winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&){
-        execute_url("https://opiopan.github.io/fsmapper/");
+        execute_url("https://opiopan.github.io/fsmapper/intro");
     }
 
     void MainWindowViewModel::GithubMenu_Click(

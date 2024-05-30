@@ -286,8 +286,8 @@
                                 </angel:SettingsCard>
                                 <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
                                     <HyperlinkButton Margin="-13, 0, 0, 0"
-                                                     NavigateUri="https://opiopan.github.io/fsmapper/"
-                                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/"
+                                                     NavigateUri="https://opiopan.github.io/fsmapper/intro"
+                                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/intro"
                                                      Content="User's Guide"/>
                                     <HyperlinkButton Margin="-13, 0, 0, 0"
                                                      NavigateUri="https://github.com/opiopan/fsmapper"
@@ -305,8 +305,8 @@
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Style="{StaticResource LinkIconStyle}" Glyph="&#xe9ce;"/>
-                        <HyperlinkButton NavigateUri="https://opiopan.github.io/fsmapper/"
-                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/"
+                        <HyperlinkButton NavigateUri="https://opiopan.github.io/fsmapper/intro"
+                                     ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/intro"
                                      Content="Get help"
                                      Padding="0" Margin="0"/>
                     </StackPanel>
