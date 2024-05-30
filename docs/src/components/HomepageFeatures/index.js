@@ -1,45 +1,51 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/logo.svg').default,
+    title: 'Enhanced Touchscreen Cockpit',
+    imagesrc: 'img/touchscreen.png',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Seamlessly integrate Microsoft Flight Simulator’s pop-out instruments and 
+        your own custom-drawn instruments using touchscreen devices. 
+        Easily switch between multiple panels on the screen, 
+        maximizing the use of small displays for a realistic and intuitive cockpit experience.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/logo.svg').default,
+    title: 'Versatile Home Cockpit Building',
+    imagesrc: 'img/homemade.png',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Unlock the potential of home cockpit building with fsmapper.
+        The fsmapper Plugin SDK empowers you to create custom plugins to support new protocols, 
+        while seamlessly integrating with standard USB gaming devices such as flight sticks.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/logo.svg').default,
+    title: 'Flexibility by Lua',
+    imagesrc: 'img/lua.png',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Manage all functions with Lua scripts, 
+        offering comprehensive control and customization. 
+        Create, reuse, and manage your configurations with ease using your preferred editor 
+        and version control systems like Git, eliminating the need for complex GUIs.
       </>
     ),
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({imagesrc, title, description}) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <img className={styles.featureImg} src={useBaseUrl(imagesrc)}/>
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>

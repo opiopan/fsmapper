@@ -9,8 +9,8 @@ import {Version} from './.version.js';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'fsmapper User\'s Guide',
-  tagline: 'Good relation between various devices and filght simurator',
+  title: 'fsmapper',
+  tagline: 'A Virtual Instrument Panel and Home Cockpit Builder for Microsoft Flight Simulator',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -58,13 +58,19 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'fsmapper User\'s Guide',
+        title: 'fsmapper',
         logo: {
           alt: 'famapper logo',
           src: 'img/logo.svg',
         },
         hideOnScroll: false,
         items: [
+          {
+            type: 'docSidebar',
+            sidebarId: 'guideSidebar',
+            position: 'left',
+            label: 'User\'s Guide',
+          },
           {
             href: Version.package,
             label: 'Download fsmapper',
@@ -90,7 +96,7 @@ const config = {
             items: [
               {
                 label: 'Introduction',
-                to: '/',
+                to: '/intro',
               },
               {
                 label: 'Configuration Guide',

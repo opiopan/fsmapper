@@ -17,6 +17,7 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --fm-annotation-green: #00a000;
   --fm-annotation-orange: #e28200;
+  --fm-background: white;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -31,6 +32,7 @@
   --docusaurus-highlighted-code-line-bg: rgba(120, 120, 0, 0.3);
   --fm-annotation-green: #00d000;
   --fm-annotation-orange: #ff9300;
+  --fm-background: var(--ifm-background-color);
 }
 
 .movie {
