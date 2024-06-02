@@ -37,7 +37,7 @@ If you watch the following video, you'll get a better understanding of what can 
         src="https://www.youtube.com/embed/Ee6uw2BYdgE" 
         title="YouTube video player" frameborder="0" 
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen>
+        allowfullscreen="">
     </iframe>
 </div>
 

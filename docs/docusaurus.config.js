@@ -109,20 +109,20 @@ const config = {
             ],
           },
           {
-            title: 'Contact',
-            items: [
-              {
-                label: 'opiopan@gmail.com',
-                href: 'mailto:opiopan@gmail.com',
-              },
-            ],
-          },
-          {
-            title: 'More',
+            title: 'Project',
             items: [
               {
                 label: 'GitHub',
                 href: 'https://github.com/opiopan/fsmapper',
+              },
+            ],
+          },
+          {
+            title: 'More for me',
+            items: [
+              {
+                label: 'My GitHub profile',
+                href: 'https://github.com/opiopan/',
               },
             ],
           },

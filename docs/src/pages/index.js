@@ -1,12 +1,13 @@
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
+import HomepageTopics from '@site/src/components/HomepageTopics';
 
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 
 import { Version } from '@site/.version';
 
@@ -46,6 +47,7 @@ export default function Home() {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <HomepageTopics />
       </main>
     </Layout>
   );

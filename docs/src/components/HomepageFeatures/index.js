@@ -35,7 +35,7 @@ const FeatureList = [
         Manage all functions with Lua scripts, 
         offering comprehensive control and customization. 
         Create, reuse, and manage your configurations with ease using your preferred editor 
-        and version control systems like Git, eliminating the need for complex GUIs.
+        and version control systems like git, eliminating the need for complex GUIs.
       </>
     ),
   },
