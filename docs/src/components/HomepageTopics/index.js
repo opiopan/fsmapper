@@ -41,7 +41,7 @@ const TopicList = [
                     which displays the Garmin G1000 on a touchscreen, 
                     you can see instrument panels seamlessly integrating custom touch-operated components 
                     and pop-out instrument windows from Microsoft Flight Simulator, 
-                    using <code>[Right Alt]></code> + <code>[Left Click]</code>. 
+                    using <code>[Right Alt]</code> + <code>[Left Click]</code>. 
                     The video demonstrates switching between and operating multiple such instrument panels.
                 </p>
                 <p>
