@@ -3,7 +3,7 @@ import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Heading from '@theme/Heading';
 import {Version} from '@site/.version';
-import styles from './styles.module.css';
+import styles from './styles.module.scss';
 
 const TopicList = [
     {
@@ -73,7 +73,7 @@ function Topic({imagesrc, videosrc, title, description}) {
     return (
         <div className={clsx("row", styles.topicRow)}>
             <div className={clsx('col col--6', styles.topicCol)}>
-                <div className={clsx('text-left')}>
+                <div className={clsx('text-left', styles.topicContents)}>
                     <Heading as="h1">{title}</Heading>
                     {description}
                 </div>

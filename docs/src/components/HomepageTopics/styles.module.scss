@@ -1,0 +1,60 @@
+:root{
+    --topic-odd-background: rgb(230, 230, 230);
+}
+
+[data-theme='dark'] {
+    --topic-odd-background: rgb(40, 40, 40);
+}
+
+.topics {
+    section:nth-child(odd) {
+        background: var(--topic-odd-background);
+
+        > div > div {
+            flex-direction: row-reverse;
+        }
+    }
+}
+
+.topic {
+    padding: 1em 2em;
+    width: 100%;
+    font-size: 1.1em;
+}
+
+.topicRow {
+    margin: 0 -30px;
+    @media screen and (max-width: 996px){
+        margin: 0 -5px;
+    }
+
+    .topicCol {
+        padding: 30px;
+
+        @media screen and (max-width: 996px) {
+            padding: 5px;
+        }
+    }
+}
+
+.topicContents {
+    > p:last-child{
+        margin-bottom: 0;
+    }
+}
+
+.topicImgContainer {
+    text-align: center;
+    padding-top: 10px;
+}
+
+.topicImg {
+    width: 100%;
+    max-width: 700px;
+}
+
+.topicMovie {
+    margin-left: auto;
+    margin-right: auto;
+    aspect-ratio: 16/9;
+}

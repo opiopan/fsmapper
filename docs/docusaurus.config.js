@@ -73,7 +73,7 @@ const config = {
           },
           {
             href: Version.package,
-            label: 'Download fsmapper',
+            label: 'Download',
             position: 'right',
           },
           {
@@ -136,9 +136,12 @@ const config = {
       },
     }),
 
-  plugins: [[require.resolve('docusaurus-lunr-search'), {
-    languages: ['en', 'de'] // language codes
-  }]],
+  plugins: [
+    'docusaurus-plugin-sass',
+    [require.resolve('docusaurus-lunr-search'), {
+      languages: ['en', 'de'] // language codes
+    },
+  ]],
 };
 
 export default config;
