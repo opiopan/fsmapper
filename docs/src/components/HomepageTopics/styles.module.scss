@@ -1,3 +1,5 @@
+$screen_threshold: 996px;
+
 :root{
     --topic-odd-background: rgb(230, 230, 230);
 }
@@ -19,19 +21,18 @@
 .topic {
     padding: 1em 2em;
     width: 100%;
-    font-size: 1.1em;
 }
 
 .topicRow {
     margin: 0 -30px;
-    @media screen and (max-width: 996px){
+    @media screen and (max-width: $screen_threshold){
         margin: 0 -5px;
     }
 
     .topicCol {
         padding: 30px;
 
-        @media screen and (max-width: 996px) {
+        @media screen and (max-width: $screen_threshold) {
             padding: 5px;
         }
     }

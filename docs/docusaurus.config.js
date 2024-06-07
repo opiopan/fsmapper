@@ -43,6 +43,11 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
+          async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+            const sidebarItems = await defaultSidebarItemsGenerator(args);
+            console.log('GenIndex: %s', args.item.dirName);
+            return sidebarItems.filter(item => !(args.item.dirName == '.' && item.type == 'category' && item.label == 'Plugin SDK'));
+          },
         },
         blog: {
           showReadingTime: true,
@@ -69,7 +74,13 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'guideSidebar',
             position: 'left',
-            label: 'User\'s Guide',
+            label: 'Docs',
+          },
+          {
+            type: 'docSidebar',
+            sidebarId: 'sdkSidebar',
+            position: 'left',
+            label: 'SDK',
           },
           {
             href: Version.package,
@@ -137,11 +148,12 @@ const config = {
     }),
 
   plugins: [
-    'docusaurus-plugin-sass',
-    [require.resolve('docusaurus-lunr-search'), {
-      languages: ['en', 'de'] // language codes
-    },
-  ]],
+    'docusaurus-plugin-sass', [
+      require.resolve('docusaurus-lunr-search'), {
+        languages: ['en', 'de'] // language codes
+      }
+    ],
+  ],
 };
 
 export default config;
