@@ -45,8 +45,9 @@ const config = {
           sidebarPath: './sidebars.js',
           async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
             const sidebarItems = await defaultSidebarItemsGenerator(args);
-            console.log('GenIndex: %s', args.item.dirName);
-            return sidebarItems.filter(item => !(args.item.dirName == '.' && item.type == 'category' && item.label == 'Plugin SDK'));
+            return sidebarItems.filter(
+              item => !(args.item.dirName == '.' && item.type == 'category' && item.label == 'Plugin SDK')
+            );
           },
         },
         blog: {
