@@ -17,13 +17,14 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Versatile Home Cockpit Building',
-    imagesrc: 'img/homemade.png',
+    title: 'Custom Input Mapping',
+    imagesrc: 'img/axis_mapping.png',
     description: (
       <>
-        Unlock the potential of home cockpit building with fsmapper.
-        The fsmapper Plugin SDK empowers you to create custom plugins to support new protocols, 
-        while seamlessly integrating with standard USB gaming devices such as flight sticks.
+        With fsmapper, you can fully customize the characteristics of your input devices, 
+        such as flight sticks and throttles. 
+        For example, you can adjust analog axis curves, or invert button states.
+        This level of control ensures a highly personalized and precise simulation experience.
       </>
     ),
   },
