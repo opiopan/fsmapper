@@ -81,6 +81,9 @@
     <ClCompile Include="ViewModels.SettingsPageViewModel.cpp">
       <Filter>ViewModels</Filter>
     </ClCompile>
+    <ClCompile Include="Utilities\winicon.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -112,6 +115,9 @@
       <Filter>ViewModels</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Utilities\winicon.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

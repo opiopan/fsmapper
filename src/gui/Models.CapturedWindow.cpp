@@ -9,6 +9,7 @@
 #include "App.xaml.h"
 #include "tools.hpp"
 #include "WindowPickerDialog.h"
+#include "winicon.hpp"
 #include "mappercore.h"
 
 //#include <shobjidl.h>
@@ -16,6 +17,7 @@
 #include <iomanip>
 
 #include <dwmapi.h>
+#include <MemoryBuffer.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
 #include <winrt/Microsoft.Graphics.DirectX.h>
@@ -23,10 +25,102 @@
 #include <Windows.Graphics.Capture.Interop.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Windows.Graphics.Imaging.h>
+#include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
+
+#pragma comment(lib, "Gdi32.lib")
 
 using App = winrt::gui::implementation::App;
 
+using namespace winrt;
+using namespace Microsoft::UI::Xaml::Media::Imaging;
+using namespace Microsoft::UI::Xaml::Media;
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace winrt::Windows::Graphics::Imaging;
+using namespace winrt::Windows::Storage::Streams;
+using namespace winrt::Windows::Foundation;
+
+//============================================================================================
+// Utility functions
+//============================================================================================
+struct __declspec(uuid("5b0d3235-4dba-4d44-865e-8f1d0e4fd04d")) __declspec(novtable) IMemoryBufferByteAccess : ::IUnknown{
+    virtual HRESULT __stdcall GetBuffer(uint8_t** value, uint32_t* capacity) = 0;
+};
+
+template <typename Function>
+static IAsyncAction icon_to_image(HICON icon, Function completion) {
+    if (icon == nullptr) {
+        completion(nullptr);
+        return;
+    }
+
+    // Get icon info
+    ICONINFO icon_info;
+    if (!GetIconInfo(icon, &icon_info)) {
+        completion(nullptr);
+        return;
+    }
+    tools::gdi_object<HBITMAP> color_bitmap{icon_info.hbmColor};
+    tools::gdi_object<HBITMAP> mask_bitmap{icon_info.hbmMask};
+
+    // Get icon dimensions
+    BITMAP bm;
+    if (!GetObject(icon_info.hbmColor, sizeof(bm), &bm)) {
+        completion(nullptr);
+        return;
+    }
+
+    int width = bm.bmWidth;
+    int height = bm.bmHeight;
+
+    // Create bitmap from HICON
+    BITMAPINFO bmi = {0};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+
+    {
+        tools::win_dc hdc{nullptr};
+        if (!GetDIBits(hdc, icon_info.hbmColor, 0, height, pixels.get(), &bmi, DIB_RGB_COLORS)) {
+            completion(nullptr);
+            return;
+        }
+    }
+
+    // Create a SoftwareBitmap
+    SoftwareBitmap softwareBitmap(BitmapPixelFormat::Bgra8, width, height, BitmapAlphaMode::Premultiplied);
+
+    // Copy pixels to SoftwareBitmap
+    uint8_t* dstPixels;
+    uint32_t dstCapacity;
+    BitmapBuffer buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode::Write);
+    auto reference = buffer.CreateReference();
+    auto byteAccess = reference.as<IMemoryBufferByteAccess>();
+    byteAccess->GetBuffer(&dstPixels, &dstCapacity);
+
+    memcpy(dstPixels, pixels.get(), width * height * sizeof(uint32_t));
+
+    byteAccess = nullptr;
+    reference = nullptr;
+    buffer = nullptr;
+
+    // Create a BitmapImage from SoftwareBitmap
+    InMemoryRandomAccessStream stream;
+    BitmapEncoder encoder = co_await BitmapEncoder::CreateAsync(BitmapEncoder::PngEncoderId(), stream);
+    encoder.SetSoftwareBitmap(softwareBitmap);
+    co_await encoder.FlushAsync();
+    stream.Seek(0);
+
+    BitmapImage bitmapImage;
+    bitmapImage.SetSource(stream);
+
+    completion(bitmapImage);
+}
 
 namespace winrt::gui::Models::implementation{
     //============================================================================================
@@ -157,7 +251,20 @@ namespace winrt::gui::Models::implementation{
             capturing.session.IsCursorCaptureEnabled(false);
             capturing.session.StartCapture();
         }else{
-            do_capture_window();
+            auto icon = utils::get_window_icon(reinterpret_cast<HWND>(window_id));
+            if (icon){
+                winrt::gui::Models::CapturedWindow self{*this};
+                winrt::weak_ref<winrt::gui::Models::CapturedWindow> weak_self = winrt::make_weak(self);
+                icon_to_image(icon, [weak_self, this](ImageSource icon_image){
+                    if (weak_self.get()){
+                        if (icon_image){
+                            image = icon_image;
+                            update_property(L"Image");
+                        }
+                        do_capture_window();
+                    }
+                });
+            }
         }
     }
 
