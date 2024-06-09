@@ -383,6 +383,15 @@ Before capturing, the color of the buttons, which was the accent color, changes 
 In the case of manually capturing a window, remember to click the `Activate Viewports` button last.
 This action enables the defined viewports and displays the views registered to the viewports.
 
+:::info Note
+fsmapper captures the specified window image using the Windows Runtime API, [`Windows.Graphics.Capture`](https://learn.microsoft.com/en-us/uwp/api/windows.graphics.capture). 
+Although it is not explicitly documented, this API cannot capture some types of windows. 
+From my experiments, it appears that capturing fails for [**layered windows**](https://learn.microsoft.com/en-us/windows/win32/winmsg/window-features#layered-windows) and windows within HyperV.
+Unfortunately, despite not fitting either condition, capturing also fails for the pop-out instrument windows of Microsoft Flight Simulator.
+
+When the window image capture fails, as shown in the image above, the icon image associated with the window is displayed on the button.
+:::
+
 ### Avoiding touch problems of FS2020
 It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation. <br/>
 fsmapper provides a workaround solution for this problem. 
