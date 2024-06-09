@@ -23,8 +23,8 @@ The [`mapper.device()`](/libs/mapper/mapper_device) function takes an associativ
 There are currently no options available for specification.
 
 ## Device Units
-The [**SimHID protocol**](https://github.com/opiopan/simhid-g1000#simhid-protocol) can support various input and output operations, making the provided [**Device Unit**](/guide/device#device-unit)s significantly different for each device.<br/>
-Here, I'll focus on explaining the [**Device Unit**](/guide/device#device-unit) offered by the SimHID G1000 as a representative example.
+The [**SimHID protocol**](https://github.com/opiopan/simhid-g1000#simhid-protocol) can support various input and output operations, making the provided [**Device Unit**](/guide/device/#device-unit)s significantly different for each device.<br/>
+Here, I'll focus on explaining the [**Device Unit**](/guide/device/#device-unit) offered by the SimHID G1000 as a representative example.
 
 ### Buttons
 |Attribute|Description|

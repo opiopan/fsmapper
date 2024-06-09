@@ -194,7 +194,7 @@ In fsmapper, users can define coordinate systems for each space with a nested st
     The interpretation of parameters `x`, `y`, `width`, and `height` of each element in the array specified in [`Viewport:register_view()`](/libs/mapper/Viewport/viewport-register_view) is interpreted by this coordinate system.
 
 - **Canvas Space:**<br/>
-    The coordinate system of th canvas is determined during [**Canvas**](/libs/mapper/canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
+    The coordinate system of th canvas is determined during [**Canvas**](/libs/mapper/canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext/#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
 
 The specifics of how these coordinate systems are determined will be explained further in subsequent sections.
 

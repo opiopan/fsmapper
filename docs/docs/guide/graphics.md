@@ -8,7 +8,7 @@ The graphic rendering capabilities of fsmapper are provided as the [graphics lib
 
 ## Rendering Context
 The rendering context ([`RenderingContext`](/libs/graphics/RenderingContext)) in fsmapper forms the central concept and functionality within its graphic rendering capabilities.
-Created for each rendering target, it enables graphic rendering to the specified destination through [method](/libs/graphics/RenderingContext#methods) calls within the rendering context. Additionally, the rendering context retains context-specific elements such as line width and fill colors that affect the rendering process.
+Created for each rendering target, it enables graphic rendering to the specified destination through [method](/libs/graphics/RenderingContext/#methods) calls within the rendering context. Additionally, the rendering context retains context-specific elements such as line width and fill colors that affect the rendering process.
 
 The targets for rendering within fsmapper include views and bitmaps. <br/>
 As explained in the [**Render on the View**](/guide/virtual_instrument_panel#render-on-the-view), the rendering context for outputting to a view is created by fsmapper and passed as the first argument to the [renderer](/libs/mapper/RENDER) of the [`Canvas`](/libs/mapper/Canvas) view element.

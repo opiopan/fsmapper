@@ -119,8 +119,8 @@ Check **[Show Events and Actions]** in the message console and then manipulate t
 You would have observed the name of each button and analog axis and noticed the change in values as events when manipulated. <br/>
 Buttons are represented by binary values of 0 or 1. Analog axes are normalized from -50,000 to 50,000 regardless of the device's resolution. Additionally, POV is represented by degrees from 0 to 360 for direction.
 
-At the end of the tutorial on handling input devices, let's briefly touch upon one crucial concept: [**Event Modifier**](/guide/device#event-modifier).
-So far, all the events from the devices you've seen have been associated with a numerical value under the name ```change```. With [**Event Modifier**](/guide/device#event-modifier), you can alter the type of events that occur and their timing.<br/>
+At the end of the tutorial on handling input devices, let's briefly touch upon one crucial concept: [**Event Modifier**](/guide/device/#event-modifier).
+So far, all the events from the devices you've seen have been associated with a numerical value under the name ```change```. With [**Event Modifier**](/guide/device/#event-modifier), you can alter the type of events that occur and their timing.<br/>
 As an example, modify the ```modifiers``` parameter in ```tutorial2.lua``` as follows.
 
 ```lua
