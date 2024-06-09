@@ -42,7 +42,7 @@ jobs:
       - name: SEO Treatment
         run: cp docs/seo/googleff749040537ff105.html docs/build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/build
 
