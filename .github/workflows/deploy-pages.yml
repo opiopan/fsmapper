@@ -42,7 +42,7 @@ jobs:
       - name: SEO Treatment
         run: cp docs/seo/googleff749040537ff105.html docs/build
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           path: docs/build
 
@@ -59,4 +59,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
