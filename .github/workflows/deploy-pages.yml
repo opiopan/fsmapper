@@ -42,6 +42,13 @@ jobs:
       - name: SEO Treatment
         run: cp docs/seo/googleff749040537ff105.html docs/build
 
+      - name: Build release information JSON
+        run: ./tools/retrieve_release_json.sh
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          OUTPUT_FILE: docs/build/release.json
+
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/build
