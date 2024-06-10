@@ -191,10 +191,10 @@ In fsmapper, users can define coordinate systems for each space with a nested st
 
 - **View Space:**<br/>
     The coordinate system of the view space is determined during [**View**](#view) definition and affects the positions and sizes of each view element within the view. 
-    The interpretation of parameters `x`, `y`, `width`, and `height` of each element in the array specified in [`Viewport:register_view()`](/libs/mapper/Viewport/viewport-register_view) is interpreted by this coordinate system.
+    The interpretation of parameters `x`, `y`, `width`, and `height` of each element in the array specified in [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view) is interpreted by this coordinate system.
 
 - **Canvas Space:**<br/>
-    The coordinate system of th canvas is determined during [**Canvas**](/libs/mapper/canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext/#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
+    The coordinate system of th canvas is determined during [**Canvas**](/libs/mapper/Canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext/#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
 
 The specifics of how these coordinate systems are determined will be explained further in subsequent sections.
 
@@ -410,10 +410,10 @@ Based on this hypothesis, fsmapper removes mouse events generated as a result of
 :::
 
 ## Hiding Viewport
-Each [**Viewport**](#viewport) holds a system defined view called [`empty_view`](/libs/mapper/Viewport/viewport_empty_view). 
+Each [**Viewport**](#viewport) holds a system defined view called [`empty_view`](/libs/mapper/Viewport/Viewport_empty_view). 
 This special view doesn’t contain any view elements or background images, in other words, it’s transparent and doesn’t interfere with interactions on the underlying windows.
 
-To hide a viewport, set [`empty_view`](/libs/mapper/Viewport/viewport_empty_view) as the current view.
+To hide a viewport, set [`empty_view`](/libs/mapper/Viewport/Viewport_empty_view) as the current view.
 
 ```lua
 my_viewport:change_view(my_viewport.empty_view)
