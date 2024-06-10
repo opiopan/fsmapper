@@ -47,7 +47,7 @@ jobs:
         run: ./tools/retrieve_release_json.sh
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          OUTPUT_FILE: docs/build/release.json
+          OUTPUT_FILE: ./build/release.json
 
 
       - uses: actions/upload-pages-artifact@v3
