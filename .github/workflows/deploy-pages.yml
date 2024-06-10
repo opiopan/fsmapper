@@ -43,6 +43,7 @@ jobs:
         run: cp docs/seo/googleff749040537ff105.html docs/build
 
       - name: Build release information JSON
+        working-directory: ./docs
         run: ./tools/retrieve_release_json.sh
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
