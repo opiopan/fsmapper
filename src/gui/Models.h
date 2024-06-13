@@ -344,6 +344,10 @@ namespace winrt::gui::Models::implementation{
         void EventMessageIsEnabled(bool value);
         bool DebugMessageIsEnabled();
         void DebugMessageIsEnabled(bool value);
+        bool IsAvailableNewRelease();
+        hstring LatestRelease();
+        bool IsIgnoredUpdate();
+        void IsIgnoredUpdate(bool value);
 
         winrt::Microsoft::UI::Xaml::Media::ImageSource NullWindowImage();
 
@@ -354,6 +358,7 @@ namespace winrt::gui::Models::implementation{
         void ReleaseWindow(uint32_t Cwid);
         bool StartViewports();
         bool StopViewports();
+        void DownloadLatestRelease();
 
         void CaptureWindowBypassingGUI(uint32_t Cwid, uint64_t hWnd);
         void StartViewportsIfReady();
@@ -386,6 +391,10 @@ namespace winrt::gui::Models::implementation{
         MessageCollection messages {nullptr};
         bool event_message_is_enabled{false};
         bool debug_message_is_enabled{false};
+        bool is_available_new_release{false};
+        hstring latest_release;
+        bool is_ignored_update{false};
+        hstring latest_release_uri;
 
         std::mutex message_mutex;
         std::condition_variable message_cv;
@@ -421,6 +430,10 @@ namespace winrt::gui::Models::implementation{
             }
         }
 
+        void update_property(const wchar_t* name){
+            property_changed(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{name});
+        }
+
         static bool event_callback(MapperHandle mapper, MAPPER_EVENT event, int64_t data);
         bool proc_event(MAPPER_EVENT event, int64_t data);
         static bool message_callback(MapperHandle mapper, MCONSOLE_MESSAGE_TYPE type, const char*msg, size_t len);
@@ -437,6 +450,8 @@ namespace winrt::gui::Models::implementation{
                         (debug_message_is_enabled ? MAPPER_LOG_DEBUG : 0);
             mapper_setLogMode(mapper, mode);
         }
+
+        winrt::Windows::Foundation::IAsyncAction check_new_release_async();
     };
 }
 

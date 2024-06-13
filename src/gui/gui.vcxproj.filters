@@ -84,6 +84,9 @@
     <ClCompile Include="Utilities\winicon.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Utilities\version_parser.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -116,6 +119,9 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="Utilities\winicon.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\version_parser.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,6 +20,8 @@ namespace winrt::gui::ViewModels::implementation
         hstring StartStopButtonIcon();
         hstring StartStopButtonLabel();
         hstring StartStopButtonToolTip();
+        bool NewReleaseNotificationIsNecessary();
+        hstring LatestVersion();
 
         winrt::Windows::Foundation::IAsyncAction ClickOpenButton(
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
@@ -32,6 +34,10 @@ namespace winrt::gui::ViewModels::implementation
         void GithubMenu_Click(
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
         void ReleaseMenu_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void ClickCloseNewReleaseButton(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void ClickDownloadNewReleaseButton(
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
@@ -52,6 +58,8 @@ namespace winrt::gui::ViewModels::implementation
         hstring start_stop_button_icon;
         hstring start_stop_button_label;
         hstring start_stop_button_tool_tip;
+        bool is_ignored_new_release_notification{false};
+        bool new_release_is_available{false};
 
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> property_changed;
 
@@ -77,6 +85,7 @@ namespace winrt::gui::ViewModels::implementation
 
         void reflect_mapper_ScriptPath();
         void reflect_mapper_Status();
+        void reflect_mapper_NewRelease();
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation

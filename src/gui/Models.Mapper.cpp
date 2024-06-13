@@ -15,6 +15,7 @@
 #include "config.hpp"
 #include "encoding.hpp"
 #include "tools.hpp"
+#include "version_parser.hpp"
 
 #include <memory>
 #include <vector>
@@ -23,10 +24,18 @@
 
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Web.Http.h>
+#include <winrt/Windows.Data.Json.h>
+#include <shellapi.h>
+#pragma comment(lib, "Shell32.lib")
 
+using namespace winrt;
+using namespace Windows::Foundation;
 using namespace winrt::gui::Models;
+using namespace std::literals::chrono_literals;
 
-static constexpr auto property_script_path             = 1 << 0;
+    static constexpr auto property_script_path = 1 << 0;
 static constexpr auto property_status                  = 1 << 1;
 static constexpr auto property_active_sim              = 1 << 2;
 static constexpr auto property_aircraft_name           = 1 << 3;
@@ -142,6 +151,11 @@ namespace winrt::gui::Models::implementation{
         // coroutine to read  message
         //-----------------------------------------------------------------------------------------
         message_reader = message_reader_proc();
+
+        //-----------------------------------------------------------------------------------------
+        // run coroutine to check new release in background
+        //-----------------------------------------------------------------------------------------
+        check_new_release_async();
     }
 
     Mapper::~Mapper(){
@@ -531,6 +545,26 @@ namespace winrt::gui::Models::implementation{
         cv.notify_all();
         set_log_mode();
     }
+    
+    bool Mapper::IsAvailableNewRelease(){
+        std::lock_guard lock{mutex};
+        return is_available_new_release;
+    }
+
+    hstring Mapper::LatestRelease(){
+        std::lock_guard lock{mutex};
+        return latest_release;
+    }
+
+    bool Mapper::IsIgnoredUpdate(){
+        std::lock_guard lock{mutex};
+        return is_ignored_update;
+    }
+    void Mapper::IsIgnoredUpdate(bool value){
+        std::unique_lock lock{mutex};
+        update_property(lock, is_ignored_update, value, L"NewRelease");
+    }
+
 
     //============================================================================================
     // Funcions exported as runtime class
@@ -707,5 +741,45 @@ namespace winrt::gui::Models::implementation{
             return true;
         }, &list->back());
         return true;
+    }
+
+    //============================================================================================
+    // new release handling
+    //============================================================================================
+    winrt::Windows::Foundation::IAsyncAction Mapper::check_new_release_async(){
+        co_await winrt::resume_background();
+        Windows::Web::Http::HttpClient client;
+        auto current_version = utils::this_version;
+        while (true){
+            try{
+                Uri requestUri{L"https://opiopan.github.io/fsmapper/release.json"};
+                auto result = co_await client.GetStringAsync(requestUri);
+                auto json = Windows::Data::Json::JsonObject::Parse(result);
+                auto latest_version_string = json.GetNamedString(L"version");
+                auto latest_version_uri = json.GetNamedString(L"package");
+                utils::parsed_version latest_version{latest_version_string.c_str()};
+                if (latest_version > current_version){
+                    current_version = latest_version;
+                    co_await ui_thread;
+                    std::unique_lock lock{mutex};
+                    latest_release_uri = latest_version_uri;
+                    is_available_new_release = true;
+                    latest_release = latest_version_string;
+                    is_ignored_update = false;
+                    lock.unlock();
+                    update_property(L"NewRelease");
+                    co_await winrt::resume_background();
+                }
+
+            }
+            catch (winrt::hresult_error const &){}
+
+            co_await winrt::resume_after(1h);
+        }
+    }
+
+
+    void Mapper::DownloadLatestRelease(){
+        ::ShellExecuteW(nullptr, L"open", latest_release_uri.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
     }
 }

@@ -44,11 +44,14 @@ namespace winrt::gui::ViewModels::implementation{
                 reflect_mapper_ScriptPath();
             }else if (name == L"Status"){
                 reflect_mapper_Status();
+            }else if (name == L"NewRelease"){
+                reflect_mapper_NewRelease();
             }
         });
      
         reflect_mapper_ScriptPath();
         reflect_mapper_Status();
+        reflect_mapper_NewRelease();
     }
 
     MainWindowViewModel::~MainWindowViewModel(){
@@ -84,6 +87,14 @@ namespace winrt::gui::ViewModels::implementation{
 
     hstring MainWindowViewModel::StartStopButtonToolTip(){
         return start_stop_button_tool_tip;
+    }
+
+    bool MainWindowViewModel::NewReleaseNotificationIsNecessary(){
+        return !is_ignored_new_release_notification && new_release_is_available;
+    }
+
+    hstring MainWindowViewModel::LatestVersion(){
+        return mapper.LatestRelease();
     }
 
     //============================================================================================
@@ -125,6 +136,16 @@ namespace winrt::gui::ViewModels::implementation{
         execute_url("https://github.com/opiopan/fsmapper/releases/");
     }
 
+    void MainWindowViewModel::ClickCloseNewReleaseButton(
+        winrt::Windows::Foundation::IInspectable const &, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &){
+        mapper.IsIgnoredUpdate(true);
+    }
+
+    void MainWindowViewModel::ClickDownloadNewReleaseButton(
+        winrt::Windows::Foundation::IInspectable const &, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &){
+        mapper.DownloadLatestRelease();
+        mapper.IsIgnoredUpdate(true);
+    }
 
     //============================================================================================
     // Event notification
@@ -195,5 +216,12 @@ namespace winrt::gui::ViewModels::implementation{
                 error_flasher = flasher();
             }
         }
+    }
+
+    void MainWindowViewModel::reflect_mapper_NewRelease(){
+        is_ignored_new_release_notification = mapper.IsIgnoredUpdate();
+        new_release_is_available = mapper.IsAvailableNewRelease();
+        update_property(L"NewReleaseNotificationIsNecessary");
+        update_property(L"LatestVersion");
     }
 }
