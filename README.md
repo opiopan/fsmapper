@@ -157,7 +157,7 @@ override_config = {
         aux_down = 'button2',
         aux_push = 'button3',
     },
- }
+}
 ```
 
 Please replace placeholders like "your_device_name_here" and specific button names with appropriate values for your setup.

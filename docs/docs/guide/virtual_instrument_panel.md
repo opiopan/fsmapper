@@ -344,7 +344,7 @@ mapper.add_global_mappings{
 The comprehensive overview of the graphics rendering capabilities offered by fsmapper can be found under the [**Graphics**](/guide/graphics).
 :::
 
-## Handle Touch Event
+## Handling Touch Event　{#handle-touch-event}
 As explained in the [**View Element**](#view-element), to handle touch interactions on the view, you need to place OperableArea view elements within the view to trigger events corresponding to touch actions.
 For each OperableArea object, you can individually set the types of touch actions to recognize.
 This is determined by the parameters you specify in [`mapper.view_elements.operable_area()`](/libs/mapper/mapper_view_elements_operable_area).
@@ -361,7 +361,7 @@ Please specify the event ID corresponding to the supported action alongside the 
 |event_rotate_clockwise|numeric|**CURRENTRY NOT IMPLEMENTED**
 |event_rotate__counterclockwise|numeric|**CURRENTRY NOT IMPLEMENTED**
 
-## Handle Poped out Windows
+## Handling Poped out Windows {#handle-poped-out-windows}
 For integrating FS2020's popped-out instrument windows into the virtual instrument window, define a [`CapturedWindow`](/libs/mapper/CapturedWindow) view element corresponding to the area where the popped-out window should be placed.
 If a [**Viewport**](#viewport) containing a [**View**](#view) with [`CapturedWindow`](/libs/mapper/CapturedWindow) placements is present, calling [`mapper.start_viewports()`](/libs/mapper/mapper_start_viewports) won’t immediately display the view. Instead, a list of defined [`CapturedWindow`](/libs/mapper/CapturedWindow) elements will appear on the left side of the dashboard as shown below.
 
