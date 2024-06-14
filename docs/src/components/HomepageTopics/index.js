@@ -4,11 +4,14 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import Heading from '@theme/Heading';
 import {Version} from '@site/.version';
 import styles from './styles.module.scss';
+import { lazy } from 'react';
 
 const TopicList = [
     {
         title: 'Get Started with Smaple scripts',
         imagesrc: 'img/sample-execution.webp',
+        imagewidth:1400,
+        imageheight:768,
         description: (
             <>
                 <p>
@@ -69,7 +72,7 @@ function Video({src}) {
     );
 }
 
-function Topic({imagesrc, videosrc, title, description}) {
+function Topic({imagesrc, imagewidth, imageheight, videosrc, title, description}) {
     return (
         <div className={clsx("row", styles.topicRow)}>
             <div className={clsx('col col--6', styles.topicCol)}>
@@ -81,7 +84,7 @@ function Topic({imagesrc, videosrc, title, description}) {
             <div className={clsx('col col--6', styles.topicCol)}>
                 {imagesrc ? 
                     <div className={clsx('text-center', styles.topicImgContainer)}>
-                        <img className={styles.topicImg} src={useBaseUrl(imagesrc)} />
+                        <img className={styles.topicImg} loading='lazy' width={imagewidth} height={imageheight} src={useBaseUrl(imagesrc)} />
                     </div>
                 : videosrc ?
                     <div className={clsx('text-center', styles.topicImgContainer)}>
