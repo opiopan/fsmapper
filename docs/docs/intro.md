@@ -31,14 +31,17 @@ Although fsmapper offers a multitude of functions, it can be summarized into fol
 
 If you watch the following video, you'll get a better understanding of what can be achieved with fsmapper as described above.
 
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
+
 <div align="center" className="movie">
-    <iframe
-        width="100%" height="100%"
-        src="https://www.youtube.com/embed/Ee6uw2BYdgE" 
-        title="YouTube video player" frameborder="0" 
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen="">
-    </iframe>
+  <LiteYouTubeEmbed
+    id='Ee6uw2BYdgE'
+    params="autoplay=1&autohide=1&showinfo=0&rel=0"
+    title='fsmapper example'
+    poster="maxresdefault"
+    webp
+  />
 </div>
 
 In this video, A320's virtual instrument panels are assembled on a 10.5-inch touchscreen by combining six pop-out windows 

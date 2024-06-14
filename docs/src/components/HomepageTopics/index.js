@@ -1,10 +1,11 @@
 import clsx from 'clsx';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Heading from '@theme/Heading';
 import {Version} from '@site/.version';
 import styles from './styles.module.scss';
-import { lazy } from 'react';
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 const TopicList = [
     {
@@ -35,7 +36,8 @@ const TopicList = [
     },
     {
         title: 'Touchscreen Cockpit Showcase',
-        videosrc: 'https://www.youtube.com/embed/rIp1M2r1_ko',
+        videosrc: 'rIp1M2r1_ko',
+        videotitle: 'Touchscreen Cockpit Showcase',
         description: (
             <>
                 <p>
@@ -58,21 +60,21 @@ const TopicList = [
     },
 ];
 
-function Video({src}) {
+function Video({src, title}) {
     return (
         <div className={clsx(styles.topicMovie, styles.topicImg)}>
-            <iframe
-                width="100%" height="100%"
-                src={src}
-                title="YouTube video player" frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen="">
-            </iframe>
+            <LiteYouTubeEmbed
+                id={src}
+                params="autoplay=1&autohide=1&showinfo=0&rel=0"
+                title={title}
+                poster="maxresdefault"
+                webp
+            />
         </div>
     );
 }
 
-function Topic({imagesrc, imagewidth, imageheight, videosrc, title, description}) {
+function Topic({imagesrc, imagewidth, imageheight, videosrc, videotitle, title, description}) {
     return (
         <div className={clsx("row", styles.topicRow)}>
             <div className={clsx('col col--6', styles.topicCol)}>
@@ -88,7 +90,7 @@ function Topic({imagesrc, imagewidth, imageheight, videosrc, title, description}
                     </div>
                 : videosrc ?
                     <div className={clsx('text-center', styles.topicImgContainer)}>
-                        <Video src={videosrc}/>
+                        <Video src={videosrc} title={videotitle}/>
                     </div>
                 :
                     <div/>
