@@ -8,7 +8,7 @@ import styles from './styles.module.scss';
 const TopicList = [
     {
         title: 'Get Started with Smaple scripts',
-        imagesrc: 'img/sample-execution.jpg',
+        imagesrc: 'img/sample-execution.webp',
         description: (
             <>
                 <p>

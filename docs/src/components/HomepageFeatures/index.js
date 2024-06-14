@@ -6,7 +6,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 const FeatureList = [
   {
     title: 'Enhanced Touchscreen Cockpit',
-    imagesrc: 'img/touchscreen.png',
+    imagesrc: 'img/touchscreen.webp',
     description: (
       <>
         Seamlessly integrate Microsoft Flight Simulator’s pop-out instruments and 
@@ -18,7 +18,7 @@ const FeatureList = [
   },
   {
     title: 'Custom Input Mapping',
-    imagesrc: 'img/axis_mapping.png',
+    imagesrc: 'img/axis_mapping.webp',
     description: (
       <>
         With fsmapper, you can fully customize the characteristics of your input devices, 
@@ -30,7 +30,7 @@ const FeatureList = [
   },
   {
     title: 'Flexibility by Lua',
-    imagesrc: 'img/lua.png',
+    imagesrc: 'img/lua.webp',
     description: (
       <>
         Manage all functions with Lua scripts, 
