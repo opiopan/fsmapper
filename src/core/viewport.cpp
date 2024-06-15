@@ -1022,6 +1022,31 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
             });
         })
     );
+
+    //
+    // functions to retrieve screen information
+    //
+    mapper_table["get_all_display_info"] = [this](sol::this_state lua){
+        return lua_c_interface(engine, "get_all_display_info", [this, lua](){
+            sol::state_view lua_state{lua};
+            sol::table displays = lua_state.create_table();
+            struct CONTEXT {
+                sol::state_view lua_state;
+                sol::table displays;
+            } context {lua_state, displays};
+            ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmontor, HDC hdc, LPRECT rect, LPARAM context_param) -> BOOL {
+                auto context = reinterpret_cast<CONTEXT*>(context_param);
+                sol::table display = context->lua_state.create_table();
+                display["x"] = rect->left;
+                display["y"] = rect->top;
+                display["width"] = rect->right - rect->left;
+                display["height"] = rect->bottom - rect->top;
+                context->displays.add(display);
+                return TRUE;
+            }, reinterpret_cast<LPARAM>(&context));
+            return displays;
+        });
+    };
 }
 
 Action* ViewPortManager::find_action(uint64_t evid){
