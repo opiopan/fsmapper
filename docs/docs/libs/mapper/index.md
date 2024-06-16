@@ -38,6 +38,7 @@ It includes defining Event-Action mappings, opening devices, constructing elemen
 |[```mapper.reset_viewports()```](/libs/mapper/mapper_reset_viewports)|Stop all viewports then unregister all viewports|
 |[```mapper.virtual_joystick()```](/libs/mapper/mapper_virtual_joystick)|Create vJoy feeder object|
 |[```mapper.keystroke()```](/libs/mapper/mapper_keystroke)|Create Keystroke object for keybord emulation|
+|[```mapper.enumerate_display_info()```](/libs/mapper/mapper_enumerate_display_info)|Enumerate infomation for all displays
 
 ## Objects
 |Name|Description|

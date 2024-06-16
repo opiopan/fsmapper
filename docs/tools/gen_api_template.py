@@ -33,7 +33,8 @@ libs = [
             ('mapper.stop_viewports()', 'Stop all viewports'),
             ('mapper.reset_viewports()', 'Stop all viewports then unregister all viewports'),
             ('mapper.virtual_joystick()', 'Create vJoy feeder object', 'devid'),
-            ('mapper.keystroke()', 'Create Keystroke object for keybord emulation', 'param_table')
+            ('mapper.keystroke()', 'Create Keystroke object for keybord emulation', 'param_table'),
+            ('mapper.enumerate_display_info()', 'Enumerate information for all displays'),
         ],
         'objects': [
             {
