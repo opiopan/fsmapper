@@ -1026,8 +1026,8 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     //
     // functions to retrieve screen information
     //
-    mapper_table["get_all_display_info"] = [this](sol::this_state lua){
-        return lua_c_interface(engine, "get_all_display_info", [this, lua](){
+    mapper_table["enumerate_display_info"] = [this](sol::this_state lua){
+        return lua_c_interface(engine, "enumerate_display_info", [this, lua](){
             sol::state_view lua_state{lua};
             sol::table displays = lua_state.create_table();
             struct CONTEXT {
