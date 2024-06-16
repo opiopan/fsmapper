@@ -15,6 +15,20 @@ function module.commit_config(config)
     if config.simhid_g1000_display_scale == nil then
         config.simhid_g1000_display_scale = 1
     end
+    local displays = mapper.enumerate_display_info()
+    if displays[config.simhid_g1000_display] == nil then
+        config.simhid_g1000_display = 1
+        config.simhid_g1000_display_scale = 0.5
+    end
+    local disp = displays[config.simhid_g1000_display]
+    config.simhid_g1000_display_height = disp.height * config.simhid_g1000_display_scale
+    if config.simhid_g1000_display_scale < 1 then
+        config.simhid_g1000_display_width = config.simhid_g1000_display_height * (4/3)
+    else
+        config.simhid_g1000_display_width = disp.width * config.simhid_g1000_display_scale
+    end
+    config.scale_horizontal = config.simhid_g1000_display_width / disp.width
+    config.scale_vertical = config.simhid_g1000_display_height / disp.height
 end
 
 --------------------------------------------------------------------------------------
@@ -507,12 +521,16 @@ function module.open_simhid_g1000(args)
     if args.config.simhid_g1000_mock then
         return module.simhid_g1000_mock(args.config)
     else
-        return mapper.device{
+        local result, device = pcall(mapper.device, {
             name = "SimHID G1000",
             type = "simhid",
             identifier = args.config.simhid_g1000_identifier,
             modifiers = args.modifiers,
-        }
+        })
+        if result then
+            return device
+        end
+        return module.simhid_g1000_mock(args.config)
     end
 end
 
@@ -554,7 +572,7 @@ function module.simhid_g1000_mock(config)
         events = events,
         get_events = function () return events end,
         upstreamids = {},
-        get_upstream_ids = function () return upstreamids end,
+        get_upstream_ids = function () return mock.upstreamids end,
         proxy = nil,
         close = function (self)
             if self.proxy ~= nil then
@@ -595,10 +613,85 @@ function module.simhid_g1000_mock(config)
                 mock.events[unit].up = events[proxy[key]].down
                 mock.events[unit].down = events[proxy[key]].down
             end
-        end        
+        end
+    else
+        module.create_g1000_mock_view_changer(config)
+        mock.events.AUX1U.down = module.view_changer_events.up
+        mock.events.AUX1U.up = module.view_changer_events.up
+        mock.events.AUX1D.down = module.view_changer_events.down
+        mock.events.AUX1D.up = module.view_changer_events.down
+        mock.events.AUX1P.down = module.view_changer_events.push
+        mock.events.AUX1P.up = module.view_changer_events.push
     end
 
     return mock
+end
+
+function module.create_g1000_mock_view_changer(config)
+    local height = config.simhid_g1000_display_height * 0.2
+    local width = height * (15 / 40)
+    local y = (config.simhid_g1000_display_height - height) / 2
+    local x = config.simhid_g1000_display_scale < 1 and config.simhid_g1000_display_width + width / 5 or width / 5
+    local display = config.simhid_g1000_display ~= 1 and config.simhid_g1000_display_scale == 1 and 1 or config.simhid_g1000_display
+
+
+    local circle = graphics.ellipse{x=0, y=0, radius_x=41, radius_y=41}
+    local triangle = graphics.path{
+        fill_mode = 'winding',
+        from = {0, -40.305},
+        segments = {
+            {to = {46.54, 40.305}},
+            {to = {-46.54, 40.305}},
+        }
+    }
+
+    local bgimage = graphics.bitmap(150, 400)
+    local rctx = graphics.rendering_context(bgimage)
+    rctx.brush = graphics.color(50, 50, 50)
+    rctx:fill_rectangle(0, 0, 150, 400)
+    rctx.brush = graphics.color(45, 131, 226)
+    rctx:fill_geometry(circle, 75, 200)
+    rctx:fill_geometry(triangle, 75, 67)
+    rctx:fill_geometry(triangle, 75, 338, 180)
+    rctx:finish_rendering()
+
+    if module.view_changer_events == nil then
+        module.view_changer_events = {}
+        module.view_changer_events.up = mapper.register_event('view_change_up')
+        module.view_changer_events.down = mapper.register_event('view_change_down')
+        module.view_changer_events.push = mapper.register_event('view_change_push')
+    end
+
+    local viewport = mapper.viewport{
+        name = 'View Changing Controller',
+        coordinate = 'absolute',
+        displayno = display,
+        x = x, y = y, width = width, height = height,
+    }
+
+    local up_button = mapper.view_elements.operable_area{
+        reaction_color = graphics.color('black', 0),
+        event_tap = module.view_changer_events.up,
+    }
+    local down_button = mapper.view_elements.operable_area{
+        reaction_color = graphics.color('black', 0),
+        event_tap = module.view_changer_events.down,
+    }
+    local push_button = mapper.view_elements.operable_area{
+        reaction_color = graphics.color('black', 0),
+        event_tap = module.view_changer_events.push,
+    }
+
+    viewport:register_view{
+        name = 'view change buttons',
+        background = bgimage,
+        logical_width = 150, logical_height = 400,
+        elements = {
+            {object=up_button, x=28.46, y=26.695, width=93.081, height=80.61},
+            {object=down_button, x=28.46, y=297.695, width=93.081, height=80.61},
+            {object=push_button, x=34.5, y=159.5, width=81, height=81},
+        }
+    }
 end
 
 return module

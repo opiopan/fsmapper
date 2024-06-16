@@ -177,12 +177,11 @@ local mfd_maps = {
     {event=g1000.SW32.down, action=fs2020.mfwasm.rpn_executer("(>H:AS1000_MFD_ENT_Push)")},
 }
 
-local scale = config.simhid_g1000_display_scale
 local viewport = mapper.viewport({
     name = "G1000 Viewport",
     displayno = config.simhid_g1000_display,
     bgcolor = "Black",
-    x = 0, y =0, width = scale, height = scale,
+    x = 0, y =0, width = config.scale_horizontal, height = config.scale_vertical,
     aspect_ratio = 4.0 / 3.0,
 })
 local pfd = viewport:register_view({

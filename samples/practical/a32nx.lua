@@ -33,13 +33,14 @@ local function start(config)
     -- Create viewports
     --------------------------------------------------------------------------------------
     local display = config.simhid_g1000_display
-    local scale = config.simhid_g1000_display_scale
+    local scale_horizontal = config.scale_horizontal
+    local scale_vertical = config.scale_vertical
     
     local viewport_left = mapper.viewport{
         name = "A320 left Viewport",
         displayno = display,
         x = 0, y = 0,
-        width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
+        width = 0.5 * scale_horizontal, height = (vratio_display + vratio_panel) * scale_vertical,
         aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
         horizontal_alignment = "right",
         vertical_alignment = "bottom",
@@ -48,8 +49,8 @@ local function start(config)
     local viewport_right = mapper.viewport{
         name = "A320 right Viewport",
         displayno = display,
-        x = 0.5 * scale, y = 0,
-        width = 0.5 * scale, height = (vratio_display + vratio_panel) * scale,
+        x = 0.5 * scale_horizontal, y = 0,
+        width = 0.5 * scale_horizontal, height = (vratio_display + vratio_panel) * scale_vertical,
         aspect_ratio = 2 / 3 / (vratio_panel + vratio_display),
         horizontal_alignment = "left",
         vertical_alignment = "bottom",
@@ -58,8 +59,8 @@ local function start(config)
     local viewport_menu = mapper.viewport{
         name = "A320 menu Viewport",
         displayno = display,
-        x = 0, y = (vratio_display + vratio_panel) * scale,
-        width = scale, height = vratio_menu * scale,
+        x = 0, y = (vratio_display + vratio_panel) * scale_vertical,
+        width = scale_horizontal, height = vratio_menu * scale_vertical,
         aspect_ratio = 4 / 3 / vratio_menu,
         vertical_alignment = "top",
     }
@@ -68,7 +69,7 @@ local function start(config)
         name = "A320 EFB Viewport",
         displayno = display,
         x = 0, y = 0,
-        width = scale, height = scale,
+        width = scale_horizontal, height = scale_vertical,
         aspect_ratio = 4 / 3,
     }
 

@@ -122,7 +122,7 @@ function module.start(config, aircraft)
     local viewport = mapper.viewport{
         name = "C172 viewport",
         displayno = display,
-        x = 0, y = 0, width = scale, height = scale,
+        x = 0, y = 0, width = config.scale_horizontal, height = config.scale_vertical,
         aspect_ratio = 4 / 3,
     }
     local viewport_mappings = {}
