@@ -35,7 +35,7 @@ using namespace Windows::Foundation;
 using namespace winrt::gui::Models;
 using namespace std::literals::chrono_literals;
 
-    static constexpr auto property_script_path = 1 << 0;
+static constexpr auto property_script_path = 1 << 0;
 static constexpr auto property_status                  = 1 << 1;
 static constexpr auto property_active_sim              = 1 << 2;
 static constexpr auto property_aircraft_name           = 1 << 3;
@@ -301,6 +301,7 @@ namespace winrt::gui::Models::implementation{
                         cv.notify_all();
                         auto uit = ui_thread;
                         lock.unlock();
+                        co_await winrt::resume_after(200ms);
                         co_await uit;
                         mapper.StartViewportsIfReady();
                         co_await winrt::resume_background();
