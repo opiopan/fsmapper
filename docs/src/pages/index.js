@@ -7,7 +7,7 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import HomepageTopics from '@site/src/components/HomepageTopics';
 
 import Heading from '@theme/Heading';
-import styles from './index.module.css';
+import styles from './index.module.scss';
 
 import { Version } from '@site/.version';
 
