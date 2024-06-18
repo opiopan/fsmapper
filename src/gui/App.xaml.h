@@ -9,8 +9,7 @@ namespace winrt::gui::implementation
     {
         App();
 
-        void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
-        
+        winrt::fire_and_forget OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const &);
         static winrt::Microsoft::UI::Xaml::Window TopWindow(){return window;}
         static HWND TopWindowHandle();
         static winrt::gui::Models::Mapper Mapper(){return mapper;}

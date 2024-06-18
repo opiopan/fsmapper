@@ -8,12 +8,14 @@
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Xaml.Media.h>
+#include <winrt/Microsoft.Windows.AppLifecycle.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Navigation;
+using namespace Microsoft::Windows::AppLifecycle;
 using namespace gui;
 using namespace gui::implementation;
 
@@ -42,8 +44,16 @@ HWND App::TopWindowHandle() {
     return hwnd;
 }
 
-void App::OnLaunched(LaunchActivatedEventArgs const&)
-{
+winrt::fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&){
+    auto mainInstance{ AppInstance::FindOrRegisterForKey(L"fsmapper") };
+    if (!mainInstance.IsCurrent()){
+        // Redirect the activation (and args) to the "main" instance, and exit.
+        auto activatedEventArgs{AppInstance::GetCurrent().GetActivatedEventArgs()};
+        co_await mainInstance.RedirectActivationToAsync(activatedEventArgs);
+        ::ExitProcess(0);
+        co_return;
+    }
+
     mapper = winrt::make<gui::Models::implementation::Mapper>();
     window = make<MainWindow>();
     window.Activate();
