@@ -22,6 +22,7 @@
   color:white;
 
   @media screen and (max-width: $screen_threshold) {
+    padding: 2rem;
     background: 
       linear-gradient(to bottom, transparent 40%, var(--fm-background) 100%),
       linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2)  100%),
@@ -46,12 +47,20 @@
   justify-content: center;
   font-size: 5em;
   font-weight:bold;
+  @media screen and (max-width: $screen_threshold) {
+    font-size: 3em;
+  }
 }
 
 .titleIcon{
   height: 80px;
   width: 80px;
-  margin-right: 1rem
+  margin-right: 1rem;
+  @media screen and (max-width: $screen_threshold) {
+    height: 50px;
+    width: 50px;
+    margin-right: 1rem;
+  }
 }
 
 .buttons {
@@ -59,44 +68,25 @@
   align-items: center;
   justify-content: center;
   margin-top: 5em;
+  @media screen and (max-width: $screen_threshold) {
+    flex-direction: column;
+    margin-top: 0;
+  }
 }
 
 .button {
   margin-left: 2em;
-}
-
-.button:nth-child(1) {
-  margin-left: 0;
-}
-
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
-
-  .heroTitle {
-    font-size: 3em;
-  }
-
-  .titleIcon {
-    height: 50px;
-    width: 50px;
-    margin-right: 1rem
-  }
-
-  .buttons {
-    flex-direction: column;
-    margin-top: 0;
-  }
-
-  .button {
+  @media screen and (max-width: $screen_threshold) {
     max-width: 400px;
     width: 80%;
     margin-left: 0;
     margin-top: 1.5em;
   }
+}
 
-  .button:nth-child(1) {
+.button:nth-child(1) {
+  margin-left: 0;
+  @media screen and (max-width: $screen_threshold) {
     margin-top: 0;
   }
 }
