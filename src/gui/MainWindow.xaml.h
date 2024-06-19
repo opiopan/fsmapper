@@ -39,6 +39,7 @@ namespace winrt::gui::implementation
         using page_data = std::pair<std::wstring, Windows::UI::Xaml::Interop::TypeName>;
         std::vector<page_data> pages;
         winrt::event_token closing_event_token;
+        winrt::event_token activate_event_token;
 
         void set_region_for_title_bar();
 
@@ -52,6 +53,8 @@ namespace winrt::gui::implementation
         winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow();
         void save_window_position();
         void restore_window_position();
+
+        void activate_window();
     };
 }
 

@@ -9,6 +9,7 @@
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include <winrt/Microsoft.UI.Composition.SystemBackdrops.h>
 #include <winrt/Microsoft.UI.Input.h>
+#include <winrt/Microsoft.Windows.AppLifecycle.h>
 
 #include <cmath>
 
@@ -23,6 +24,7 @@
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::Windows::AppLifecycle;
 
 using App = winrt::gui::implementation::App;
 
@@ -83,6 +85,11 @@ namespace winrt::gui::implementation
         closing_event_token = app_window.Closing([this](const auto&, const auto&) {
             App::Mapper().StopScriptSync();
             save_window_position();
+        });
+
+        auto this_instance = AppInstance::GetCurrent();
+        activate_event_token = this_instance.Activated([this](const auto&, const AppActivationArguments&){
+            activate_window();
         });
     }
 
@@ -173,5 +180,35 @@ namespace winrt::gui::implementation
         this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
         auto scale = ::GetDpiForWindow(hwnd) / 96.0;
         ::MoveWindow(hwnd, rect.left, rect.top, static_cast<int>(rect.width * scale), static_cast<int>(rect.height * scale), true);
+    }
+
+    void MainWindow::activate_window(){
+        auto hwnd{get_hwnd()};
+        if (!hwnd){
+            return;
+        }
+
+        int lock_time_out{0};
+        auto current_wnd{GetForegroundWindow()};
+		DWORD pid{ 0 };
+        auto this_tid{GetCurrentThreadId()};
+        auto current_tid{GetWindowThreadProcessId(current_wnd, &pid)};
+        if (this_tid != current_tid){
+            AttachThreadInput(this_tid, current_tid, true);
+            SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lock_time_out, 0);
+            int new_lock_time_out = 0;
+            SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &new_lock_time_out, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+            AllowSetForegroundWindow(static_cast<DWORD>(-1));
+        }
+        if (IsIconic(hwnd)){
+            ShowWindow(hwnd, SW_RESTORE);
+        }
+        auto hwnd_last_active_popup{GetLastActivePopup(hwnd)};
+        SwitchToThisWindow(hwnd_last_active_popup, true);
+        SetForegroundWindow(hwnd);
+        if (this_tid != current_tid){
+            SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &lock_time_out, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+            AttachThreadInput(this_tid, current_tid, false);
+        }
     }
 }
