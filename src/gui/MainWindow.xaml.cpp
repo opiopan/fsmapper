@@ -188,16 +188,11 @@ namespace winrt::gui::implementation
             return;
         }
 
-        int lock_time_out{0};
         auto current_wnd{GetForegroundWindow()};
 		DWORD pid{ 0 };
         auto this_tid{GetCurrentThreadId()};
         auto current_tid{GetWindowThreadProcessId(current_wnd, &pid)};
         if (this_tid != current_tid){
-            AttachThreadInput(this_tid, current_tid, true);
-            SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lock_time_out, 0);
-            int new_lock_time_out = 0;
-            SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &new_lock_time_out, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
             AllowSetForegroundWindow(static_cast<DWORD>(-1));
         }
         if (IsIconic(hwnd)){
@@ -207,7 +202,6 @@ namespace winrt::gui::implementation
         SwitchToThisWindow(hwnd_last_active_popup, true);
         SetForegroundWindow(hwnd);
         if (this_tid != current_tid){
-            SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &lock_time_out, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
             AttachThreadInput(this_tid, current_tid, false);
         }
     }
