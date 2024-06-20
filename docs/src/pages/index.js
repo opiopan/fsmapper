@@ -17,7 +17,7 @@ function HomepageHeader() {
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
         <Heading as="h1" className={clsx('hero__title', styles.heroTitleText, styles.heroTitle)}>
-          <img src={useBaseUrl('img/logo.svg')} className={styles.titleIcon}/>
+          <img src={useBaseUrl('img/logo.svg')} className={styles.titleIcon} alt='fsmapper logo'/>
           {siteConfig.title}
         </Heading>
         <p className={clsx('hero__subtitle', styles.heroTitleText)}>{siteConfig.tagline}</p>

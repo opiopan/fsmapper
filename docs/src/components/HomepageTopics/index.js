@@ -86,7 +86,7 @@ function Topic({imagesrc, imagewidth, imageheight, videosrc, videotitle, title, 
             <div className={clsx('col col--6', styles.topicCol)}>
                 {imagesrc ? 
                     <div className={clsx('text-center', styles.topicImgContainer)}>
-                        <img className={styles.topicImg} loading='lazy' width={imagewidth} height={imageheight} src={useBaseUrl(imagesrc)} />
+                        <img className={styles.topicImg} loading='lazy' width={imagewidth} height={imageheight} src={useBaseUrl(imagesrc)} alt={title}/>
                     </div>
                 : videosrc ?
                     <div className={clsx('text-center', styles.topicImgContainer)}>
