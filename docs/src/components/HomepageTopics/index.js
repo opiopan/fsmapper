@@ -25,7 +25,7 @@ const TopicList = [
                 </p>
                 <p>
                     Additional virtual cockpit script examples for more aircraft can be 
-                    found <Link to='https://github.com/opiopan/scripts_for_fsmapper'>here</Link>.
+                    found in  <Link to='https://github.com/opiopan/scripts_for_fsmapper'>this GitHub repository</Link>.
                 </p>
                 <p>
                     If you are creating scripts for other aircraft or customizing scripts for your own setup, 
