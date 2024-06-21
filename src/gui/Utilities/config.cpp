@@ -22,6 +22,7 @@ static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
 static const auto* CONFIG_PLUGIN_FOLDER_IS_DEFAULT = "plugin_folder_is_default";
 static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
+static const auto *CONFIG_SKIPPED_VERSION = "skipped_version";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -42,6 +43,7 @@ class config_imp : public config{
     bool plugin_folder_is_default{true};
     std::filesystem::path custom_plugin_folder;
     uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
+    std::string skipped_version{"0.0"};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -127,6 +129,7 @@ public:
         reflect_string(data, CONFIG_CUSTOM_PLUGIN_FOLDER, path);
         custom_plugin_folder = path;
         reflect_number(data, CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries);
+        reflect_string(data, CONFIG_SKIPPED_VERSION, skipped_version);
     }
 
     void save() override{
@@ -145,6 +148,7 @@ public:
                 {CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default},
                 {CONFIG_CUSTOM_PLUGIN_FOLDER, custom_plugin_folder.string()},
                 {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
+                {CONFIG_SKIPPED_VERSION, skipped_version},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -216,6 +220,12 @@ public:
     }
     void set_lua_standard_libraries(uint64_t value){
         update_value(lua_standard_libraries, value);
+    }
+    const char* get_skipped_version(){
+        return skipped_version.c_str();
+    }
+    void set_skipped_version(const char* value){
+        update_value(skipped_version, value);
     }
 };
 

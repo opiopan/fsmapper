@@ -564,6 +564,11 @@ namespace winrt::gui::Models::implementation{
     void Mapper::IsIgnoredUpdate(bool value){
         std::unique_lock lock{mutex};
         update_property(lock, is_ignored_update, value, L"NewRelease");
+        if (value){
+            tools::utf16_to_utf8_translator utf8str;
+            utf8str = latest_release.c_str();
+            fsmapper::app_config.set_skipped_version(utf8str);
+        }
     }
 
 
@@ -763,15 +768,22 @@ namespace winrt::gui::Models::implementation{
                     current_version = latest_version;
                     co_await ui_thread;
                     std::unique_lock lock{mutex};
-                    latest_release_uri = latest_version_uri;
-                    is_available_new_release = true;
-                    latest_release = latest_version_string;
-                    is_ignored_update = false;
-                    lock.unlock();
-                    update_property(L"NewRelease");
+                    tools::utf8_to_utf16_translator utf16str;
+                    utf16str = fsmapper::app_config.get_skipped_version();
+                    utils::parsed_version skipped_version{utf16str};
+                    if (current_version > skipped_version){
+                        latest_release_uri = latest_version_uri;
+                        is_available_new_release = true;
+                        latest_release = latest_version_string;
+                        is_ignored_update = false;
+                        lock.unlock();
+                        update_property(L"NewRelease");
+                    }else{
+                        current_version = skipped_version;
+                        lock.unlock();
+                    }
                     co_await winrt::resume_background();
                 }
-
             }
             catch (winrt::hresult_error const &){}
 
