@@ -18,6 +18,10 @@ using App = winrt::gui::implementation::App;
 
 namespace winrt::gui::ViewModels::implementation
 {
+    SettingsPageViewModel::SettingsPageViewModel(){
+        mapper = App::Mapper();
+    }
+
     winrt::Windows::Foundation::IAsyncAction SettingsPageViewModel::save_config(bool updated){
         if (updated){
             update_count++;
@@ -55,4 +59,9 @@ namespace winrt::gui::ViewModels::implementation
         save_config();
         notify_plugin_folder_changed();
     }
+
+    void SettingsPageViewModel::ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable, winrt::Microsoft::UI::Xaml::RoutedEventArgs){
+        mapper.DownloadLatestRelease();
+    }
+
 }

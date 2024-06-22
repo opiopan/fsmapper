@@ -103,7 +103,7 @@
                                     <ImageIcon Source="{ThemeResource GithubLogo}"/>
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="Install pacakge repository" Click="{x:Bind ViewModel.ReleaseMenu_Click}">
+                            <MenuFlyoutItem Text="Installation package repository" Click="{x:Bind ViewModel.ReleaseMenu_Click}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7b8;"/>
                                 </MenuFlyoutItem.Icon>
@@ -164,7 +164,9 @@
                         </Grid>
                         <TextBlock Style="{StaticResource NewReleaseTextStyle}">
                             <Run>New version </Run>
-                            <Run Text="{x:Bind ViewModel.LatestVersion, Mode=OneWay}"/>
+                            <Hyperlink NavigateUri="https://github.com/opiopan/fsmapper/releases/latest">
+                                <Run Text="{x:Bind ViewModel.LatestVersion, Mode=OneWay}"/>
+                            </Hyperlink>
                             <Run> available</Run>
                         </TextBlock>
                     </StackPanel>

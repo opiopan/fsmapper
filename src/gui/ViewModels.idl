@@ -94,7 +94,10 @@ namespace gui.ViewModels{
         String Copyright{get;};
         String Commit{get;};
         String CommitUrl{get;};
+        Boolean NewReleaseAvailable{get;};
+        String NewRelease{get;};
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ClickDownloadNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 }

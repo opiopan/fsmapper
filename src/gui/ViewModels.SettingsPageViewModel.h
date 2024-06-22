@@ -5,9 +5,11 @@
 
 #pragma once
 #include "ViewModels.SettingsPageViewModel.g.h"
+#include "Models.h"
 #include "config.hpp"
 #include "encoding.hpp"
 #include "tools.hpp"
+#include "version_parser.hpp"
 #include "../.version.h"
 #include <chrono>
 
@@ -15,7 +17,7 @@ namespace winrt::gui::ViewModels::implementation
 {
     struct SettingsPageViewModel : SettingsPageViewModelT<SettingsPageViewModel>
     {
-        SettingsPageViewModel() = default;
+        SettingsPageViewModel();
 
         bool RunScriptOnStartup(){
             return fsmapper::app_config.get_is_starting_script_at_start_up();
@@ -185,8 +187,16 @@ namespace winrt::gui::ViewModels::implementation
         hstring CommitUrl(){
             return L"https://github.com/opiopan/fsmapper/tree/" COMMIT_STR "/src";
         }
+        bool NewReleaseAvailable(){
+            utils::parsed_version current{mapper.LatestRelease().c_str()};
+            return current > utils::this_version;
+        }
+        hstring NewRelease(){
+            return mapper.LatestRelease();
+        }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
+        void ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
             return property_changed.add(handler);
@@ -196,6 +206,7 @@ namespace winrt::gui::ViewModels::implementation
         }
 
     protected:
+        winrt::gui::Models::Mapper mapper{nullptr};
         using clock = std::chrono::steady_clock;
         tools::utf16_to_utf8_translator pre_run_script;
         bool is_saving_config{false};

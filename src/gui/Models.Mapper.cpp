@@ -768,13 +768,13 @@ namespace winrt::gui::Models::implementation{
                     current_version = latest_version;
                     co_await ui_thread;
                     std::unique_lock lock{mutex};
+                    latest_release_uri = latest_version_uri;
+                    latest_release = latest_version_string;
                     tools::utf8_to_utf16_translator utf16str;
                     utf16str = fsmapper::app_config.get_skipped_version();
                     utils::parsed_version skipped_version{utf16str};
                     if (current_version > skipped_version){
-                        latest_release_uri = latest_version_uri;
                         is_available_new_release = true;
-                        latest_release = latest_version_string;
                         is_ignored_update = false;
                         lock.unlock();
                         update_property(L"NewRelease");
