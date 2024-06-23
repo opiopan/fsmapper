@@ -55,6 +55,7 @@ Below is a list of functions or methods that provide native-action
 - [`Keystroke:synthesize()`](/libs/mapper/Keystroke/Keystroke-synthesizer)
 - [filter library functions](/libs/filter)
 - [`fs2020.event_sender()`](/libs/fs2020/fs2020_event_sender)
+- [`fs2020.input_event_executer()`](/libs/fs2020/fs2020_input_event_executer)
 - [`fs2020.mfwasm.rpn_executer()`](/libs/fs2020/fs2020_mfwasm_rpn_executer)
 
 ## Event-Action mapping definition
