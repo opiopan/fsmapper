@@ -15,7 +15,8 @@
   --ifm-color-primary-lightest: #2786ff;
 
   --ifm-font-family-base: 
-    "Helvetica Neue",
+    -apple-system,
+    BlinkMacSystemFont,
     Arial,
     sans-serif,
     "Apple Color Emoji",
