@@ -163,7 +163,8 @@
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
-copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
+copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)
+</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
     <PreBuildEvent>
@@ -198,7 +199,8 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     </Link>
     <CustomBuildStep>
       <Command>copy "C:\MSFS SDK\SimConnect SDK\lib\SimConnect.dll" $(TargetDir)
-copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)</Command>
+copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDir)
+</Command>
       <Outputs>$(TargetDir)SimConnect.dll;%(Outputs)</Outputs>
     </CustomBuildStep>
     <PreBuildEvent>
@@ -274,6 +276,11 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="dcs-exporter\fsmapper.lua">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)dcs-exporter</DestinationFolders>
+    </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
