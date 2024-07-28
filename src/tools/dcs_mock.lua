@@ -15,6 +15,10 @@ function LoGetSelfData()
     }
 end
 
+function LoGetModelTime()
+    return 100
+end
+
 local socket = require('socket')
 
 fsmapper = {}

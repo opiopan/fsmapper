@@ -12,15 +12,17 @@ if is_fsmapper_exporter_initialized ~= true then
 
     log.write('FSMAPPER.LUA',log.INFO,'Starting ['..fsmapper.scriptpath..']')
 
+    dofile(fsmapper.scriptdir .. 'config.lua')
+    fsmapper.protocol = require('fsmapper/protocol')
+
     --===========================================================================================
     -- Hook called before mission start
     --===========================================================================================
     local prev_export_start = LuaExportStart
     LuaExportStart = function()
-        local self_data = LoGetSelfData()
-        fsmapper.aircraft = self_data.Name and self_data.Name or ''
-
-        log.write('FSMAPPER.LUA', log.INFO, 'Start a mission with '..fsmapper.aircraft)
+        log.write('FSMAPPER.LUA', log.INFO, 'Start a mission')
+        fsmapper.server = fsmapper.protocol.server.new(fsmapper.config)
+        fsmapper.server:start()
 
         if prev_export_start then
             prev_export_start()
@@ -28,11 +30,12 @@ if is_fsmapper_exporter_initialized ~= true then
     end
 
     --===========================================================================================
-    -- Hook called after mission start
+    -- Hook called after mission stop
     --===========================================================================================
     local prev_export_stop = LuaExportStop
     LuaExportStop = function()
         log.write('FSMAPPER.LUA',log.INFO,'Stop a mission')
+        fsmapper.server:stop()
 
         if prev_export_stop then
             prev_export_stop()
@@ -50,10 +53,13 @@ if is_fsmapper_exporter_initialized ~= true then
     end
 
     --===========================================================================================
-    -- Hook called before every frame
+    -- Hook called after every frame
     --===========================================================================================
     local prev_export_after_frame = LuaExportAfterNextFrame
     LuaExportBeforeNextFrame = function()
+        local now = LoGetModelTime()
+        fsmapper.server:schedule(now)
+
         if prev_export_after_frame then
             prev_export_after_frame()
         end
