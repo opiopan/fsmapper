@@ -193,7 +193,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             simconnect = nullptr;
             representativeWindow = 0;
             lock.unlock();
-            this->reportConnectivity(false, nullptr);
+            this->reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
             lock.lock();
             ::ResetEvent(event_interrupt);
@@ -215,7 +215,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
             if (status == Status::connected){
                 status = Status::start;
                 lock.unlock();
-                this->reportConnectivity(true, nullptr);
+                this->reportConnectivity(true, MAPPER_SIM_FS2020, "fs2020", nullptr);
                 lock.lock();
             }
             if (is_waiting_enum_input_event){
@@ -237,7 +237,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 updateRepresentativeWindow();
                 lock.unlock();
                 mfwasm_start(*this, simconnect);
-                this->reportConnectivity(true, aircraftName.c_str());
+                this->reportConnectivity(true, MAPPER_SIM_FS2020, "fs2020", aircraftName.c_str());
                 lock.lock();
                 for (auto i = 0; i < simvar_groups.size(); i++){
                     subscribeSimVarGroup(i);

@@ -31,7 +31,7 @@ public:
         virtual void changeActivity(bool isActive) = 0;
         virtual HWND getRepresentativeWindow() = 0;
     protected:
-        void reportConnectivity(bool connectivity, const char* aircraftname);
+        void reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname);
         SimHostManager& getManager(){return manager;};
     };
 
@@ -44,15 +44,20 @@ protected:
     std::vector<std::unique_ptr<Simulator>> simulators;
     struct Connectivity{
         bool isConnected;
+        MAPPER_SIM_CONNECTION simKind;
+        std::string simName;
         std::string aircraftName;
 
         Connectivity() : isConnected(false){};
-        Connectivity(bool isConnected, std::string&& aircraftName): isConnected(isConnected), aircraftName(std::move(aircraftName)){};
+        Connectivity(bool isConnected, MAPPER_SIM_CONNECTION simKind, std::string&& simName, std::string&& aircraftName):
+            isConnected(isConnected), simKind(simKind), simName(std::move(simName)), aircraftName(std::move(aircraftName)){};
         Connectivity(const Connectivity&) = default;
         Connectivity(Connectivity&&) = default;
         ~Connectivity() = default;
         Connectivity& operator=(Connectivity&& src){
             isConnected = src.isConnected;
+            simKind = src.simKind;
+            simName = std::move(src.simName);
             aircraftName = std::move(src.aircraftName);
             return *this;
         };
@@ -85,5 +90,5 @@ public:
 
     // fuctions for each Simulator instance
     MapperEngine& getEngine(){return engine;};
-    void changeConnectivity(int simid, bool isActive, const char* aircraftName);
+    void changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName);
 };

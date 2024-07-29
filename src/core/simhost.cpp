@@ -9,15 +9,14 @@
 #include "simhost.h"
 #include "fs2020.h"
 
-static const MAPPER_SIM_CONNECTION simkind_dict[] = {MAPPER_SIM_FS2020, MAPPER_SIM_DCS};
-static const char* simname_dict[] = {"fs2020", "dcs"};
+static const char *simtype_dict[] = {"msfs", "dcs"};
 
 //============================================================================================
 // SimHostManager::Simulator
 //    base class of object to represent each flight simulator connection
 //============================================================================================
-void SimHostManager::Simulator::reportConnectivity(bool connectivity, const char* aircraftname){
-    manager.changeConnectivity(id, connectivity, aircraftname);
+void SimHostManager::Simulator::reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname){
+    manager.changeConnectivity(id, connectivity, simkind, simname, aircraftname);
 }
 
 
@@ -83,17 +82,19 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     os << "connection with flight simulator has been lost";
                 }else{
                     Event event(this->event_changeAircraft, std::move(Event::AssosiativeArray{
-                        {"host", std::move(EventValue(simname_dict[activeSim]))},
+                        {"sim_type", std::move(EventValue(simtype_dict[activeSim]))},
+                        {"sim_detail", std::move(EventValue(newConnectivity.simName.c_str()))},
+                        {"host", std::move(EventValue(newConnectivity.simName.c_str()))},
                         {"aircraft", std::move(EventValue(newConnectivity.aircraftName.c_str()))},
                     }));
                     this->engine.sendEvent(std::move(event));
-                    this->engine.sendHostEvent(MEV_CHANGE_SIMCONNECTION, simkind_dict[activeSim]);
+                    this->engine.sendHostEvent(MEV_CHANGE_SIMCONNECTION, newConnectivity.simKind);
                     this->engine.sendHostEvent(MEV_CHANGE_AIRCRAFT, reinterpret_cast<int64_t>(newConnectivity.aircraftName.c_str()));
                     if (newConnectivity.aircraftName.length()){
-                        os << "changed aircraft: [sim] " << simname_dict[activeSim];
-                        os << ",  [aircraft] " << newConnectivity.aircraftName.c_str();
+                        os << "changed aircraft: [sim] " << newConnectivity.simName;
+                        os << ",  [aircraft] " << newConnectivity.aircraftName;
                     }else{
-                        os << "connection with sim has been established: [sim] " << simname_dict[activeSim];
+                        os << "connection with sim has been established: [sim] " << newConnectivity.simName;
                     }
                 }
                 this->engine.putLog(MCONSOLE_INFO, os.str());
@@ -114,7 +115,7 @@ SimHostManager::~SimHostManager(){
 
 MAPPER_SIM_CONNECTION SimHostManager::getConnection(){
     std::lock_guard lock(mutex);
-    return activeSim < 0 ? MAPPER_SIM_NONE : simkind_dict[activeSim];
+    return activeSim < 0 ? MAPPER_SIM_NONE : connectivities[activeSim].simKind;
 }
 
 std::string SimHostManager::getAircraftName(){
@@ -128,12 +129,12 @@ HWND SimHostManager::getRepresentativeWindow(){
 }
 
 
-void SimHostManager::changeConnectivity(int simid, bool isActive, const char* aircraftName){
+void SimHostManager::changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName){
     aircraftName = aircraftName ? aircraftName : "";
     std::lock_guard lock(mutex);
     queue.push(std::move(Message(
         simid,
-        Connectivity(isActive, std::move(std::string(aircraftName)))
+        Connectivity(isActive, simkind, simname ? simname : "", std::move(std::string(aircraftName ? aircraftName : "")))
     )));
     cv.notify_all();
 }
