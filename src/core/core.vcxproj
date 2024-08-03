@@ -215,6 +215,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="builtinDevices\simhidparser.h" />
     <ClInclude Include="builtinDevices\winserial.h" />
     <ClInclude Include="capturedwindow.h" />
+    <ClInclude Include="dcs.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="devicemodifier.h" />
     <ClInclude Include="engine.h" />
@@ -247,6 +248,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="builtinDevices\simhidparser.c" />
     <ClCompile Include="builtinDevices\winserial.cpp" />
     <ClCompile Include="capturedwindow.cpp" />
+    <ClCompile Include="dcs.cpp" />
     <ClCompile Include="device.cpp" />
     <ClCompile Include="devicemodifier.cpp" />
     <ClCompile Include="dllmain.cpp" />
@@ -281,11 +283,6 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)dcs-exporter</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\config.lua">
-      <FileType>Document</FileType>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter</DestinationFolders>
-      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)dcs-exporter</DestinationFolders>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="dcs-exporter\fsmapper\common.lua">
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter\fsmapper</DestinationFolders>
@@ -295,6 +292,11 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <FileType>Document</FileType>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter\fsmapper</DestinationFolders>
       <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)dcs-exporter\fsmapper</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="dcs-exporter\fsmapper_config.lua">
+      <FileType>Document</FileType>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)dcs-exporter</DestinationFolders>
+      <DestinationFolders Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)dcs-exporter</DestinationFolders>
     </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>

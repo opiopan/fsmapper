@@ -12,7 +12,7 @@ if is_fsmapper_exporter_initialized ~= true then
 
     log.write('FSMAPPER.LUA',log.INFO,'Starting ['..fsmapper.scriptpath..']')
 
-    dofile(fsmapper.scriptdir .. 'config.lua')
+    dofile(fsmapper.scriptdir .. 'fsmapper_config.lua')
     fsmapper.protocol = require('fsmapper/protocol')
 
     --===========================================================================================

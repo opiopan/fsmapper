@@ -108,6 +108,9 @@
     <ClInclude Include="plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dcs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -197,6 +200,9 @@
     <ClCompile Include="plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dcs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -210,13 +216,13 @@
     <CopyFileToFolders Include="dcs-exporter\fsmapper.lua">
       <Filter>DCS Exporter</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\config.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="dcs-exporter\fsmapper\common.lua">
       <Filter>DCS Exporter</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="dcs-exporter\fsmapper\protocol.lua">
+      <Filter>DCS Exporter</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="dcs-exporter\fsmapper_config.lua">
       <Filter>DCS Exporter</Filter>
     </CopyFileToFolders>
   </ItemGroup>

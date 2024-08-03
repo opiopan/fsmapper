@@ -8,6 +8,7 @@
 #include "engine.h"
 #include "simhost.h"
 #include "fs2020.h"
+#include "dcs.h"
 
 static const char *simtype_dict[] = {"msfs", "dcs"};
 
@@ -30,6 +31,7 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
     // initialize Simulator instance correspond to each flight simulator
     //-------------------------------------------------------------------------------
     simulators.push_back(std::make_unique<FS2020>(*this, simulators.size()));
+    simulators.push_back(std::make_unique<DCSWorld>(*this, simulators.size()));
     for (auto& sim: simulators){
         sim->initLuaEnv(lua);
         connectivities.push_back(std::move(Connectivity()));
@@ -94,7 +96,11 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                         os << "changed aircraft: [sim] " << newConnectivity.simName;
                         os << ",  [aircraft] " << newConnectivity.aircraftName;
                     }else{
-                        os << "connection with sim has been established: [sim] " << newConnectivity.simName;
+                        if (newConnectivity.simName.length() > 0){
+                            os << "connection with sim has been established: [sim] " << newConnectivity.simName;
+                        }else{
+                            os << "connection with sim has been lost";
+                        }
                     }
                 }
                 this->engine.putLog(MCONSOLE_INFO, os.str());

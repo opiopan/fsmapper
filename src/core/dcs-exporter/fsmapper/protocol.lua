@@ -21,7 +21,7 @@ protocol.connection = {
     end,
 
     send = function (self, data)
-        tbuf = tbuf .. data
+        self.tbuf = self.tbuf .. data
     end,
 
     receive_and_dispatch = function (self)
@@ -49,9 +49,9 @@ protocol.connection = {
     end,
 
     flush = function (self)
-        local sent, err = sock:send(self.tbuf)
+        local sent, err = self.sock:send(self.tbuf)
         if sent and sent > 0 then
-            self.tbuf = self.tbuf(sent + 1)
+            self.tbuf = self.tbuf:sub(sent + 1)
         elseif err == 'closed' then
             self.is_enabled = false
             return false
@@ -121,9 +121,9 @@ protocol.server = {
 
         local new_endpoint = self.listener:accept()
         if new_endpoint then
-            endpoint:settimeout(0)
+            new_endpoint:settimeout(0)
             local new_client = protocol.fsmapper_client.new(new_endpoint)
-            client:change_aircraft(self.aircraft_name)
+            new_client:change_aircraft(self.aircraft_name)
             self.clients[#self.clients + 1] = new_client
             log.write('FSMAPPER.LUA', log.INFO, 'A connection with fsmapper has been established')
         end
