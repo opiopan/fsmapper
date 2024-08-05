@@ -150,6 +150,7 @@
     </ClInclude>
     <ClInclude Include="Utilities\appfs.hpp" />
     <ClInclude Include="Utilities\config.hpp" />
+    <ClInclude Include="Utilities\dcs_installer.hpp" />
     <ClInclude Include="Utilities\tools.hpp" />
     <ClInclude Include="Utilities\version_parser.hpp" />
     <ClInclude Include="Utilities\winicon.hpp" />
@@ -200,6 +201,7 @@
     </ClCompile>
     <ClCompile Include="Utilities\appfs.cpp" />
     <ClCompile Include="Utilities\config.cpp" />
+    <ClCompile Include="Utilities\dcs_installer.cpp" />
     <ClCompile Include="Utilities\version_parser.cpp" />
     <ClCompile Include="Utilities\winicon.cpp" />
     <ClCompile Include="ViewModels.ConsolePageViewModel.cpp" />

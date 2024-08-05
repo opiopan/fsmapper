@@ -87,6 +87,9 @@
     <ClCompile Include="Utilities\version_parser.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Utilities\dcs_installer.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -122,6 +125,9 @@
       <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Utilities\version_parser.hpp">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\dcs_installer.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>

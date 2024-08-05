@@ -125,7 +125,7 @@ namespace winrt::gui::ViewModels::implementation{
         }else if (sim == Simulators::fs2020){
             update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2020"), L"SimString");
         }else if (sim == Simulators::dcs){
-            update_property(sim_name, std::wstring(L"Eagle Dinamics DCS World"), L"SimString");
+            update_property(sim_name, std::wstring(L"Eagle Dynamics DCS World"), L"SimString");
         }
     }
 

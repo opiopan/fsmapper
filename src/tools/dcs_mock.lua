@@ -11,7 +11,7 @@ end
 
 function LoGetSelfData()
     return {
-        Name = 'F-16'
+        Name = 'F-16C-50'
     }
 end
 

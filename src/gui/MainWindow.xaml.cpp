@@ -21,6 +21,7 @@
 #include "App.xaml.h"
 #include "resource.h"
 #include "../.version.h"
+#include "dcs_installer.hpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -91,6 +92,10 @@ namespace winrt::gui::implementation
         activate_event_token = this_instance.Activated([this](const auto&, const AppActivationArguments&){
             activate_window();
         });
+
+        dcs::installer installer;
+        if (installer.check()){
+        }
     }
 
     void MainWindow::set_region_for_title_bar(){
