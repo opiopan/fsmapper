@@ -188,6 +188,71 @@ namespace dcs {
     }
 
     bool installer::install(){
-        return false;
+        if (status == exporter_status::unknown){
+            check();
+        }
+        if (status == exporter_status::unknown || status == exporter_status::no_dcs){
+            return false;
+        }
+        auto parent_dir = export_lua_path.parent_path();
+        if (!std::filesystem::exists(parent_dir)){
+            try{
+                std::filesystem::create_directories(parent_dir);
+            }catch (std::filesystem::filesystem_error&){
+                return false;
+            }
+        }
+
+        auto new_export_lua_path = parent_dir / "export.lua.new";
+        std::ofstream ofs(new_export_lua_path);
+        if (!ofs){
+            return false;
+        }
+        if (std::filesystem::exists(export_lua_path)){
+            std::ifstream ifs(export_lua_path);
+            if (!ifs){
+                return false;
+            }
+            std::string line;
+            while (std::getline(ifs, line)){
+                parse_context context(line);
+                parse_front_section(context);
+                if (context.matched_tokens < 5){
+                    ofs << line << std::endl;
+                }
+            }
+        }
+
+        static std::unordered_map<char, const char*> escape_dict{
+            {'\'', "\\\'"},
+            {'"', "\\\""},
+            {'\\', "\\\\"},
+            {'\a', "\\a"},
+            {'\b', "\\b"},
+            {'\f', "\\f"},
+            {'\n', "\\n"},
+            {'\r', "\\r"},
+            {'\t', "\\t"},
+            {'\v', "\\v"},
+        };
+        std::string escaped_base_dir;
+        for (auto c : base_path.string()){
+            if (escape_dict.count(c) > 0){
+                auto ec = escape_dict[c];
+                escaped_base_dir.append(ec);
+            }else{
+                escaped_base_dir.push_back(c);
+            }
+        }
+        ofs << "fsmapper={};fsmapper.basedir='" << escaped_base_dir << "';dofile(fsmapper.basedir..'dcs-exporter/fsmapper.lua')" << std::endl;
+        ofs.close();
+
+        try{
+            std::filesystem::rename(new_export_lua_path, export_lua_path);
+        }catch (std::filesystem::filesystem_error&){
+            return false;
+        }
+
+        return true;
     }
 }

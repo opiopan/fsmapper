@@ -95,6 +95,7 @@ namespace winrt::gui::implementation
 
         dcs::installer installer;
         if (installer.check()){
+            installer.install();
         }
     }
 
