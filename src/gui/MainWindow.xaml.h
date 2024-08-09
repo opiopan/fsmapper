@@ -35,6 +35,8 @@ namespace winrt::gui::implementation
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
     private:
+        winrt::Windows::Foundation::IAsyncAction CheckAndInstallDCSExporter();
+
         static winrt::gui::ViewModels::MainWindowViewModel view_model;
         using page_data = std::pair<std::wstring, Windows::UI::Xaml::Interop::TypeName>;
         std::vector<page_data> pages;
@@ -50,7 +52,7 @@ namespace winrt::gui::implementation
             return hwnd;
         }
 
-        winrt::AppWindow MainWindow::GetAppWindowForCurrentWindow();
+        winrt::AppWindow GetAppWindowForCurrentWindow();
         void save_window_position();
         void restore_window_position();
 

@@ -12,6 +12,7 @@
 #include <winrt/Microsoft.Windows.AppLifecycle.h>
 
 #include <cmath>
+#include <chrono>
 
 #include "config.hpp"
 #include "DashboardPage.xaml.h"
@@ -26,6 +27,7 @@
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::Windows::AppLifecycle;
+using namespace std::literals::chrono_literals;
 
 using App = winrt::gui::implementation::App;
 
@@ -93,10 +95,7 @@ namespace winrt::gui::implementation
             activate_window();
         });
 
-        dcs::installer installer;
-        if (installer.check()){
-            installer.install();
-        }
+        CheckAndInstallDCSExporter();
     }
 
     void MainWindow::set_region_for_title_bar(){
@@ -211,4 +210,29 @@ namespace winrt::gui::implementation
             AttachThreadInput(this_tid, current_tid, false);
         }
     }
+
+    winrt::Windows::Foundation::IAsyncAction MainWindow::CheckAndInstallDCSExporter(){
+        winrt::apartment_context ui_thread;
+        co_await winrt::resume_after(500ms);
+
+        auto mode = fsmapper::app_config.get_dcs_exporter_mode();
+        if (mode != fsmapper::config::dcs_exporter_mode::off){
+            dcs::installer installer;
+            installer.check();
+            co_await ui_thread;
+            auto result = co_await dcs::confirm_change_export_lua(fsmapper::config::dcs_exporter_mode::unknown, installer);
+            if (result == dcs::confirmation_yes){
+                if (!installer.install()){
+                    installer.show_install_error();
+                    co_return;
+                }
+            }
+            auto next = result == dcs::confirmation_unknown ? fsmapper::config::dcs_exporter_mode::unknown :
+                        result == dcs::confirmation_yes ?     fsmapper::config::dcs_exporter_mode::on :
+                        result == dcs::no_changes_needed ?    fsmapper::config::dcs_exporter_mode::on :
+                                                              fsmapper::config::dcs_exporter_mode::off;
+            fsmapper::app_config.set_dcs_exporter_mode(next);
+        }
+    }
+
 }

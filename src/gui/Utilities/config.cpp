@@ -22,7 +22,8 @@ static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
 static const auto* CONFIG_PLUGIN_FOLDER_IS_DEFAULT = "plugin_folder_is_default";
 static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
-static const auto *CONFIG_SKIPPED_VERSION = "skipped_version";
+static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
+static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -44,6 +45,7 @@ class config_imp : public config{
     std::filesystem::path custom_plugin_folder;
     uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
     std::string skipped_version{"0.0"};
+    dcs_exporter_mode dcs_exporter_mode_data{dcs_exporter_mode::unknown};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -130,6 +132,9 @@ public:
         custom_plugin_folder = path;
         reflect_number(data, CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries);
         reflect_string(data, CONFIG_SKIPPED_VERSION, skipped_version);
+        int dcs_exporter_mode_num{static_cast<int>(dcs_exporter_mode::unknown)};
+        reflect_number(data, CONFIG_DCS_EXPORTER_MODE, dcs_exporter_mode_num);
+        dcs_exporter_mode_data = static_cast<dcs_exporter_mode>(dcs_exporter_mode_num);
     }
 
     void save() override{
@@ -149,6 +154,7 @@ public:
                 {CONFIG_CUSTOM_PLUGIN_FOLDER, custom_plugin_folder.string()},
                 {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
                 {CONFIG_SKIPPED_VERSION, skipped_version},
+                {CONFIG_DCS_EXPORTER_MODE, static_cast<int>(dcs_exporter_mode_data)},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -227,6 +233,13 @@ public:
     void set_skipped_version(const char* value){
         update_value(skipped_version, value);
     }
+    dcs_exporter_mode get_dcs_exporter_mode(){
+        return dcs_exporter_mode_data;
+    }
+    void set_dcs_exporter_mode(dcs_exporter_mode value){
+        update_value(dcs_exporter_mode_data, value);
+    }
+
 };
 
 static config_imp the_config;

@@ -17,6 +17,8 @@ namespace fsmapper{
 
         rect() = default;
         rect(const rect&) = default;
+        rect(int32_t left, int32_t top, int32_t width, int32_t height) : 
+            left(left), top(top), width(width), height(height){};
 
         bool operator == (const rect& rval){
             return left == rval.left && top == rval.top && 
@@ -55,6 +57,10 @@ namespace fsmapper{
         virtual void set_lua_standard_libraries(uint64_t value) = 0;
         virtual const char* get_skipped_version() = 0;
         virtual void set_skipped_version(const char* value) = 0;
+
+        enum class dcs_exporter_mode: int {unknown = 0, on = 1, off = 2};
+        virtual dcs_exporter_mode get_dcs_exporter_mode() = 0;
+        virtual void set_dcs_exporter_mode(dcs_exporter_mode value) = 0;
     };
 
     void init_app_config();

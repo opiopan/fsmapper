@@ -38,7 +38,7 @@ struct ExporterConfig{
     void parse(){
         sol::state lua;
         lua.script("fsmapper={}");
-        auto result = lua.safe_script_file(config_path.generic_u8string(), sol::script_pass_on_error);
+        auto result = lua.safe_script_file(config_path.generic_string(), sol::script_pass_on_error);
         if (!result.valid()){
             sol::error err = result;
             throw MapperException(err.what());
@@ -159,7 +159,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
             os2 << "dcs: an error occurred while recgnizing the exporter configuration file:\n" << e.what();
             mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, os2.str());
             std::ostringstream os;
-            os << "dcs: failed to recognize the exporter configuration file, the DCS connectiviy will be limited: " << config.config_path.generic_u8string();
+            os << "dcs: failed to recognize the exporter configuration file, the DCS connectiviy will be limited: " << config.config_path.generic_string();
             mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
             return;
         }

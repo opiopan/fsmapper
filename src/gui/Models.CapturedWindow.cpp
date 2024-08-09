@@ -51,14 +51,14 @@ template <typename Function>
 static IAsyncAction icon_to_image(HICON icon, Function completion) {
     if (icon == nullptr) {
         completion(nullptr);
-        return;
+        co_return;
     }
 
     // Get icon info
     ICONINFO icon_info;
     if (!GetIconInfo(icon, &icon_info)) {
         completion(nullptr);
-        return;
+        co_return;
     }
     tools::gdi_object<HBITMAP> color_bitmap{icon_info.hbmColor};
     tools::gdi_object<HBITMAP> mask_bitmap{icon_info.hbmMask};
@@ -67,7 +67,7 @@ static IAsyncAction icon_to_image(HICON icon, Function completion) {
     BITMAP bm;
     if (!GetObject(icon_info.hbmColor, sizeof(bm), &bm)) {
         completion(nullptr);
-        return;
+        co_return;
     }
 
     int width = bm.bmWidth;
@@ -88,7 +88,7 @@ static IAsyncAction icon_to_image(HICON icon, Function completion) {
         tools::win_dc hdc{nullptr};
         if (!GetDIBits(hdc, icon_info.hbmColor, 0, height, pixels.get(), &bmi, DIB_RGB_COLORS)) {
             completion(nullptr);
-            return;
+            co_return;
         }
     }
 
