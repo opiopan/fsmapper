@@ -84,6 +84,10 @@ DLLEXPORT bool mapper_set_option_integer(MapperHandle handle, MAPPER_OPTION opti
     return handle->engine->setOption(option, value);
 }
 
+DLLEXPORT bool mapper_set_option_boolean(MapperHandle handle, MAPPER_OPTION option, bool value){
+    return handle->engine->setOption(option, value);
+}
+
 DLLEXPORT bool mapper_set_option_string(MapperHandle handle, MAPPER_OPTION option, const char* value){
     return handle->engine->setOption(option, value);
 }

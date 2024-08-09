@@ -120,6 +120,10 @@ public:
         std::lock_guard lock(mutex);
         return options.set_value(type, value);
     }
+    bool setOption(MAPPER_OPTION type, bool value){
+        std::lock_guard lock(mutex);
+        return options.set_value(type, value);
+    }
 
     void inhibitCallback(){
         std::lock_guard lock(mutex);

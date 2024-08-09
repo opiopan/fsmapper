@@ -31,7 +31,9 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
     // initialize Simulator instance correspond to each flight simulator
     //-------------------------------------------------------------------------------
     simulators.push_back(std::make_unique<FS2020>(*this, simulators.size()));
-    simulators.push_back(std::make_unique<DCSWorld>(*this, simulators.size()));
+    if (engine.getOptions().is_dcs_exporter_enabled){
+        simulators.push_back(std::make_unique<DCSWorld>(*this, simulators.size()));
+    }
     for (auto& sim: simulators){
         sim->initLuaEnv(lua);
         connectivities.push_back(std::move(Connectivity()));

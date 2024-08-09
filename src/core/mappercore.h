@@ -84,6 +84,7 @@ typedef enum{
     MOPT_RENDERING_METHOD,  // integer
     MOPT_PLUGIN_FOLDER,     // string
     MOPT_STDLIB,            // integer
+    MOPT_DCS_EXPORTER,      // integer (as boolean: 0 is false, other than 0 is true)
 }MAPPER_OPTION;
 
 typedef enum{
@@ -117,6 +118,7 @@ typedef bool (*MAPPER_ENUM_VIEWPORT_FUNC)(MapperHandle mapper, void* context, VI
 DLLEXPORT MapperHandle mapper_init(MAPPER_CALLBACK_FUNC callback, MAPPER_CONSOLE_HANDLER logger, void *hostContext);
 DLLEXPORT bool mapper_terminate(MapperHandle handle);
 
+DLLEXPORT bool mapper_set_option_boolean(MapperHandle handle, MAPPER_OPTION option, bool value);
 DLLEXPORT bool mapper_set_option_integer(MapperHandle handle, MAPPER_OPTION option, int64_t value);
 DLLEXPORT bool mapper_set_option_string(MapperHandle handle, MAPPER_OPTION option, const char* value);
 
