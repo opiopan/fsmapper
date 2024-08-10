@@ -18,8 +18,9 @@ using App = winrt::gui::implementation::App;
 // DCS Export.lua parser
 //============================================================================================
 static std::vector<std::string> tokens{
-    "fsmapper", "=", "{", "}", ";", "fsmapper", ".", "basedir", "=",
+    "fsmapper", "=", "{", "basedir", "=",
 };
+static constexpr auto minimum_token_num = 3;
 
 struct parse_context{
     const std::string& target;
@@ -133,8 +134,8 @@ namespace dcs {
         wchar_t* path;
         if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &path))){
             dcs_env_path = path;
-            dcs_env_path = dcs_env_path / "Saved Games/DCS";
-            export_lua_path = dcs_env_path / "Scripts/Export.lua";
+            dcs_env_path = dcs_env_path / "Saved Games" / "DCS";
+            export_lua_path = dcs_env_path / "Scripts" / "Export.lua";
             CoTaskMemFree(path);
         }
         std::vector<char> buf;
@@ -150,7 +151,7 @@ namespace dcs {
     }
 
     bool installer::check(){
-        exsisting_base_path.clear();
+        existing_base_path.clear();
         if (dcs_env_path.string().length() == 0){
             status = exporter_status::unknown;
             return false;
@@ -171,16 +172,18 @@ namespace dcs {
                         num_exporters++;
                         std::string path;
                         if (parse_base_path(line.c_str() + context.position_on_target, path)) {
-                            exsisting_base_path = path;
+                            existing_base_path = path;
+                            existing_base_path.make_preferred();
+
                         }
-                    }else if (context.matched_tokens >= 5){
+                    }else if (context.matched_tokens >= minimum_token_num){
                         num_exporters++;
                     }
                 }
                 if (num_exporters == 0){
                     status = exporter_status::no_exporter;
                 }else if (num_exporters == 1){
-                    if (base_path == exsisting_base_path){
+                    if (base_path == existing_base_path){
                         status = exporter_status::installed;
                     }else{
                         status = exporter_status::other_exporter;
@@ -227,7 +230,7 @@ namespace dcs {
             while (std::getline(ifs, line)){
                 parse_context context(line);
                 parse_front_section(context);
-                if (context.matched_tokens < 5){
+                if (context.matched_tokens < minimum_token_num){
                     ofs << line << std::endl;
                 }
             }
@@ -255,7 +258,7 @@ namespace dcs {
                     escaped_base_dir.push_back(c);
                 }
             }
-            ofs << "fsmapper={};fsmapper.basedir='" << escaped_base_dir << "';dofile(fsmapper.basedir..'dcs-exporter/fsmapper.lua')" << std::endl;
+            ofs << "fsmapper={basedir='" << escaped_base_dir << "'};dofile(fsmapper.basedir..'dcs-exporter/fsmapper.lua')" << std::endl;
         }
 
         ofs.close();
@@ -273,7 +276,7 @@ namespace dcs {
         dialog.Title(winrt::box_value(L"File Access Error"));
         std::wstring message = std::format(
             L"Failed to update the 'export.lua' file for DCS World. Please check the file below for any issues.\n"
-            "    {}", export_lua_path.generic_wstring());
+            "\t{}", export_lua_path.generic_wstring());
         dialog.Content(winrt::box_value(winrt::hstring(message)));
         dialog.PrimaryButtonText(L"OK");
         dialog.XamlRoot(App::TopWindow().Content().XamlRoot());
@@ -313,7 +316,7 @@ namespace dcs{
         auto confirm_other_install = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
                 L"Another fsmapper from the followoing directory is registered in DCS World. Do you want to re-register this fsmapper?\n\n"
-                "    {1}",
+                "\t{1}",
                 v1, v2);
         };
         auto confirm_multiple_definition = [](const wchar_t* v1, const wchar_t* v2){
@@ -321,7 +324,7 @@ namespace dcs{
                 L"It looks like there are multiple fsmapper integration module entries in the 'export.lua' file of DCS World.\n"
                 "Do you want to remove these and register the correct fsmapper integration module?\n\n"
                 "You can choose ‘No’ and check the following file yourself if you prefer.\n\n"
-                "    {0}",
+                "\t{0}",
                 v1, v2);
         };
         auto confirm_multiple_definition_on_switch_to_off = [](const wchar_t* v1, const wchar_t* v2){
@@ -330,13 +333,13 @@ namespace dcs{
                 "Do you want to remove all of these?\n\n"
                 "You can choose ‘No’ and check the following file yourself if you prefer. "
                 "In this case, the integration will only be turned off on the fsmapper side.\n\n"
-                "    {0}",
+                "\t{0}",
                 v1, v2);
         };
         auto confirm_cannot_read = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
                 L"Failed to read the 'export.lua' file of DCS World. Please ensure you can access the file below.\n\n"
-                "    {0}",
+                "\t{0}",
                 v1, v2);
         };
         static std::unordered_map<fsmapper::config::dcs_exporter_mode, std::unordered_map<exporter_status, message_def>> definition{
@@ -381,7 +384,7 @@ namespace dcs{
             winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
             dialog.Title(winrt::box_value(L"DCS World integration function"));
             std::wstring message = 
-                condition.message(status.export_lua_path.wstring().c_str(), status.exsisting_base_path.wstring().c_str());
+                condition.message(status.export_lua_path.wstring().c_str(), status.existing_base_path.wstring().c_str());
             dialog.Content(winrt::box_value(winrt::hstring(message)));
             dialog.PrimaryButtonText(condition.primary_button);
             if (condition.secondary_button){

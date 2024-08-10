@@ -1,7 +1,7 @@
 -- fsmpapper.lua : Export script for connecting DCS with fsmapper
 -- 
 --   When fsmapper starts, the following line is inserted into export.lua, so that this file is loaded when DCS World runs.
---     fsmapper={};fsmapper.basedir='BASE_DIR_OF_FSMAPPER';dofile(fsmapper.basedir..'dcs-exporter/fsmapper.lua')
+--     fsmapper={basedir='BASE_DIR_OF_FSMAPPER'};dofile(fsmapper.basedir..'dcs-exporter/fsmapper.lua')
 
 if is_fsmapper_exporter_initialized ~= true then
     is_fsmapper_exporter_initialized = true

@@ -25,7 +25,7 @@ namespace dcs {
     struct installer{
         std::filesystem::path dcs_env_path;
         std::filesystem::path export_lua_path;
-        std::filesystem::path exsisting_base_path;
+        std::filesystem::path existing_base_path;
         std::filesystem::path base_path;
         exporter_status status;
 
