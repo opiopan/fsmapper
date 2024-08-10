@@ -687,7 +687,7 @@ public:
         tools::guid guid;
         for (auto& id : device_ids){
             guid = id.guidInstance;
-            os << std::endl << "    " << guid << " : " << id.tszInstanceName;
+            os << std::endl << "    " << static_cast<const char*>(guid) << " : " << id.tszInstanceName;
         }
         return std::move(os.str());
     }
