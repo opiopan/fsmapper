@@ -96,6 +96,8 @@ namespace gui.ViewModels{
         String CommitUrl{get;};
         Boolean NewReleaseAvailable{get;};
         String NewRelease{get;};
+        Boolean DcsIsInstalled{get;};
+        Boolean DcsExporterIsEnabled;
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickDownloadNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);

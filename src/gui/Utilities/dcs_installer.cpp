@@ -247,7 +247,7 @@ namespace dcs {
                 {'\v', "\\v"},
             };
             std::string escaped_base_dir;
-            for (auto c : base_path.string()){
+            for (auto c : base_path.generic_string()){
                 if (escape_dict.count(c) > 0){
                     auto ec = escape_dict[c];
                     escaped_base_dir.append(ec);
@@ -301,7 +301,7 @@ namespace dcs{
         };
         auto confirm_on_switch_to_on = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"DCS World is detected. Do you want to register the integration with fsmapper in the 'exporter.lua' file of DCS World?",
+                L"Do you want to register the integration with fsmapper in the 'exporter.lua' file of DCS World?",
                 v1, v2);
         };
         auto confirm_on_switch_to_off = [](const wchar_t* v1, const wchar_t* v2){
@@ -381,7 +381,7 @@ namespace dcs{
             winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
             dialog.Title(winrt::box_value(L"DCS World integration function"));
             std::wstring message = 
-                condition.message(status.export_lua_path.generic_wstring().c_str(), status.exsisting_base_path.generic_wstring().c_str());
+                condition.message(status.export_lua_path.wstring().c_str(), status.exsisting_base_path.wstring().c_str());
             dialog.Content(winrt::box_value(winrt::hstring(message)));
             dialog.PrimaryButtonText(condition.primary_button);
             if (condition.secondary_button){

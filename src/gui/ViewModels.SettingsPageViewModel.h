@@ -9,6 +9,7 @@
 #include "config.hpp"
 #include "encoding.hpp"
 #include "tools.hpp"
+#include "dcs_installer.hpp"
 #include "version_parser.hpp"
 #include "../.version.h"
 #include <chrono>
@@ -194,6 +195,17 @@ namespace winrt::gui::ViewModels::implementation
         hstring NewRelease(){
             return mapper.LatestRelease();
         }
+        bool DcsIsInstalled(){
+            return dcs_installer.status != dcs::exporter_status::unknown &&
+                   dcs_installer.status != dcs::exporter_status::no_dcs;
+        }
+        bool DcsExporterIsEnabled(){
+            return fsmapper::app_config.get_dcs_exporter_mode() == fsmapper::config::dcs_exporter_mode::on;
+        }
+        void DcsExporterIsEnabled(bool value){
+            CheckAndInstallDcsExporter(value);
+        }
+
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
         void ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
@@ -212,6 +224,7 @@ namespace winrt::gui::ViewModels::implementation
         bool is_saving_config{false};
         int64_t update_count{0};
         clock::time_point last_update_time{clock::now()};
+        dcs::installer dcs_installer;
 
         winrt::Windows::Foundation::IAsyncAction save_config(bool updated = true);
 
@@ -247,6 +260,8 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Args{L"UserSpecifiedPluginPathColor"});
             property_changed(*this, Args{L"ChangePluginPathButtonIsValid"});
         }
+
+        winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation

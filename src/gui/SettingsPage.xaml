@@ -261,6 +261,19 @@
                         </angel:SettingsExpander.ExpanderContent>
                     </angel:SettingsExpander>
                 </StackPanel>
+                
+                <!-- DCS World -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}" Visibility="{x:Bind ViewModel.DcsIsInstalled}">
+                    <TextBlock Text="DCS World" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsCard Header="Integration Plugin" Description="Specify whether to enable the plugin that integrates with DCS World">
+                        <angel:SettingsCard.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71B;"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                      Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.DcsExporterIsEnabled, Mode=TwoWay}"/>
+                    </angel:SettingsCard>
+                </StackPanel>
 
                 <!-- About -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}">

@@ -20,6 +20,7 @@ namespace winrt::gui::ViewModels::implementation
 {
     SettingsPageViewModel::SettingsPageViewModel(){
         mapper = App::Mapper();
+        dcs_installer.check();
     }
 
     winrt::Windows::Foundation::IAsyncAction SettingsPageViewModel::save_config(bool updated){
@@ -62,6 +63,31 @@ namespace winrt::gui::ViewModels::implementation
 
     void SettingsPageViewModel::ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable, winrt::Microsoft::UI::Xaml::RoutedEventArgs){
         mapper.DownloadLatestRelease();
+    }
+
+    winrt::Windows::Foundation::IAsyncAction SettingsPageViewModel::CheckAndInstallDcsExporter(bool mode){
+        auto result = co_await dcs::confirm_change_export_lua(
+            mode ? fsmapper::config::dcs_exporter_mode::on : fsmapper::config::dcs_exporter_mode::off, 
+            dcs_installer);
+        if (result == dcs::confirmation_yes){
+            if (!dcs_installer.install(mode ? dcs::installer::mode::install : dcs::installer::mode::uninstall)){
+                dcs_installer.show_install_error();
+                co_return;
+            }
+        }
+        if (mode){
+            auto next = result == dcs::confirmation_yes     ? fsmapper::config::dcs_exporter_mode::on :
+                        result == dcs::no_changes_needed    ? fsmapper::config::dcs_exporter_mode::on :
+                                                              fsmapper::config::dcs_exporter_mode::off;
+            fsmapper::app_config.set_dcs_exporter_mode(next);
+        }else{
+            auto next = result == dcs::confirmation_yes     ? fsmapper::config::dcs_exporter_mode::off :
+                        result == dcs::no_changes_needed    ? fsmapper::config::dcs_exporter_mode::off :
+                                                              fsmapper::config::dcs_exporter_mode::on;
+            fsmapper::app_config.set_dcs_exporter_mode(next);
+        }
+        dcs_installer.check();
+        update_property(L"DcsExporterIsEnabled");
     }
 
 }
