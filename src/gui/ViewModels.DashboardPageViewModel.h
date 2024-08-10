@@ -25,6 +25,7 @@ namespace winrt::gui::ViewModels::implementation{
         winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage SimIconSource(){
             return logo_images[static_cast<int>(sim_type)];
         }
+        float SimIconHeight(){return sim_icon_height;}
         hstring SimString(){return hstring(sim_name);}
         bool AircraftNameIsVisible(){return aircraft_name.length() >0;}
         hstring AircraftName(){return hstring(aircraft_name);}
@@ -68,6 +69,7 @@ namespace winrt::gui::ViewModels::implementation{
         bool stop_view_is_visible{true};
         bool error_view_is_visible{false};
         bool sim_icon_is_visible;
+        float sim_icon_height{26};
         winrt::gui::Models::Simulators sim_type;
         std::wstring sim_name;
         std::wstring aircraft_name;

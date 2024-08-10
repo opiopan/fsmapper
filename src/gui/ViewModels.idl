@@ -31,6 +31,7 @@ namespace gui.ViewModels{
         Boolean StopViewIsVisible{get;};
         Boolean ErrorViewIsVisible{get;};
         Boolean SimIconIsVisible{get;};
+        Single SimIconHeight{get;};
         Microsoft.UI.Xaml.Media.Imaging.BitmapImage SimIconSource{get;};
         String SimString{get;};
         Boolean AircraftNameIsVisible{get;};

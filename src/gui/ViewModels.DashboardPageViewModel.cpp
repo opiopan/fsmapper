@@ -120,13 +120,16 @@ namespace winrt::gui::ViewModels::implementation{
         auto sim = mapper.ActiveSim();
         update_property(sim_type, sim, L"SimIconSource");
         update_property(sim_icon_is_visible, sim != Simulators::none, L"SimIconIsVisible");
+        float icon_height = 26;
         if (sim == Simulators::none) {
             update_property(sim_name, std::wstring(L"No active flight simulator found"), L"SimString");
         }else if (sim == Simulators::fs2020){
             update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2020"), L"SimString");
         }else if (sim == Simulators::dcs){
             update_property(sim_name, std::wstring(L"Eagle Dynamics DCS World"), L"SimString");
+            icon_height = 32;
         }
+        update_property(sim_icon_height, icon_height, L"SimIconHeight");
     }
 
     void DashboardPageViewModel::reflect_mapper_AircraftName(){

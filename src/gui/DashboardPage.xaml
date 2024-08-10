@@ -103,7 +103,7 @@
                 <TextBlock Style="{StaticResource CardTitleText}" VerticalAlignment="Center" Padding="0, 0, 16, 0">Simulator</TextBlock>
                 <Image Visibility="{x:Bind ViewModel.SimIconIsVisible, Mode=OneWay}"
                    Source="{x:Bind ViewModel.SimIconSource, Mode=OneWay}"
-                   Height="26" Margin="16, 0, 8, 0"/>
+                   Height="{x:Bind ViewModel.SimIconHeight, Mode=OneWay}" Margin="16, 0, 8, 0"/>
                 <StackPanel VerticalAlignment="Center" Margin="16, 0, 0, 0" Orientation="Vertical">
                     <TextBlock Style="{StaticResource CardSubTitleText}" VerticalAlignment="Center"
                                Text="{x:Bind ViewModel.SimString, Mode=OneWay}"/>
