@@ -333,7 +333,7 @@ static void execute_rpn(FS2020& fs2020, const char* rpn){
         if (connection){
             connection->execute_rpn(rpn);
         }else{
-            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "mfwasm: [execute_rpn()] FS2020 is not running");
+            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "mfwasm: [execute_rpn()] Microsoft Flight Simulator is not running");
         }
     });
 }
@@ -342,17 +342,17 @@ void mfwasm_create_lua_env(FS2020& fs2020, sol::table& fs2020_table){
     auto table = mapper_EngineInstance()->getLuaState().create_table();
 
     table["add_observed_data"] = [](sol::object obj){
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.add_observed_data", [&obj]{
+        lua_c_interface(*mapper_EngineInstance(), "msfs.mfwasm.add_observed_data", [&obj]{
             add_observed_simvars(obj);
         });
     };
     table["clear_observed_data"] = []{
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.clear_observed_data", []{
+        lua_c_interface(*mapper_EngineInstance(), "msfs.mfwasm.clear_observed_data", []{
             clear_observed_simvars();
         });
     };
     table["execute_rpn"] = [&fs2020](sol::object obj) {
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.execute_rpn", [&fs2020, &obj] {
+        lua_c_interface(*mapper_EngineInstance(), "msfs.mfwasm.execute_rpn", [&fs2020, &obj] {
             auto rpn = lua_safestring(obj);
             if (rpn.size() == 0){
                 throw MapperException("invalid argument");
@@ -361,13 +361,13 @@ void mfwasm_create_lua_env(FS2020& fs2020, sol::table& fs2020_table){
         });
     };
     table["rpn_executer"] = [&fs2020](sol::object obj) {
-        return lua_c_interface(*mapper_EngineInstance(), "fs2020.mfwasm.rpn_executer", [&fs2020, &obj] {
+        return lua_c_interface(*mapper_EngineInstance(), "msfs.mfwasm.rpn_executer", [&fs2020, &obj] {
             auto rpn = lua_safestring(obj);
             if (rpn.size() == 0) {
                 throw MapperException("invalid argument");
             }
             std::ostringstream os;
-            os << "fs2020.mfwasm.execute_rpn(\"" << rpn << "\")";
+            os << "msfs.mfwasm.execute_rpn(\"" << rpn << "\")";
             NativeAction::Function::ACTION_FUNCTION func = [rpn, &fs2020](Event&, sol::state&) {
                 execute_rpn(fs2020, rpn.c_str());
             };

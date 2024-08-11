@@ -106,7 +106,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
     event_simconnect = ::CreateEvent(nullptr, true, false, nullptr);
     event_interrupt = ::CreateEvent(nullptr, true, false, nullptr);
     if (event_simconnect == INVALID_HANDLE_VALUE || event_interrupt == INVALID_HANDLE_VALUE){
-        throw MapperException("Failed to create event objects to communicate with FS2020");
+        throw MapperException("Failed to create event objects to communicate with MSFS");
     }
     scheduler = std::thread([this](){
         const auto ix_interrupt = 0;
@@ -252,7 +252,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
             if (is_waiting_enum_input_event){
                 enum_input_event_id++;
                 ::SimConnect_EnumerateInputEvents(simconnect, enum_input_event_id);
-                mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "fs2020: Requested to enumerate InputEvents");
+                mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "msfs: Requested to enumerate InputEvents");
             }
         }
     }else if (pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE){
@@ -300,7 +300,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
         auto pObjData = reinterpret_cast<SIMCONNECT_RECV_ENUMERATE_INPUT_EVENTS*>(pData);
         if (pObjData->dwRequestID == enum_input_event_id){
             std::ostringstream os;
-            os << "fs2020: Received an data to enumerate InputEvent: num = " << pObjData->dwArraySize;
+            os << "msfs: Received an data to enumerate InputEvent: num = " << pObjData->dwArraySize;
             mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, os.str());
             is_waiting_enum_input_event = false;
             for (DWORD i = 0; i < pObjData->dwArraySize; i++){
@@ -311,7 +311,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
     }else if (pData->dwID == SIMCONNECT_RECV_ID_EXCEPTION){
         auto pObjData = reinterpret_cast<SIMCONNECT_RECV_EXCEPTION*>(pData);
         std::ostringstream os;
-        os << "fs2020: Received an exception data:\n";
+        os << "msfs: Received an exception data:\n";
         os << "    dwException: " << pObjData->dwException;
         os << "\n    dwSendID: " << pObjData->dwSendID;
         os << "\n    dwIndex: " << pObjData->dwIndex;
@@ -388,7 +388,7 @@ void FS2020::initLuaEnv(sol::state& lua){
         auto p4 = evalue(param4);
         auto p5 = evalue(param5);
         std::ostringstream os;
-        os << "fs2020.send_event(\"" << event_name << "\")";
+        os << "msfs.send_event(\"" << event_name << "\")";
         auto func_name = os.str();
         NativeAction::Function::ACTION_FUNCTION func = [event_id, p1, p2, p3, p4, p5, this](Event&, sol::state&){
             this->sendSimEventId(event_id, p1, p2, p3, p4, p5);
@@ -397,19 +397,19 @@ void FS2020::initLuaEnv(sol::state& lua){
     };
 
     fs2020["add_observed_simvars"] = [this](sol::object obj){
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.add_observed_simvars", [this, &obj]{
+        lua_c_interface(*mapper_EngineInstance(), "msfs.add_observed_simvars", [this, &obj]{
             addObservedSimVars(obj);
         });
     };
 
     fs2020["clear_observed_simvars"] = [this]{
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.clear_observed_simvars", [this]{
+        lua_c_interface(*mapper_EngineInstance(), "msfs.clear_observed_simvars", [this]{
             clearObservedSimVars();
         });
     };
 
     fs2020["execute_input_event"] = [this](const std::string& event_name, sol::object event_value){
-        lua_c_interface(*mapper_EngineInstance(), "fs2020.execute_input_event", [this, &event_name, event_value]{
+        lua_c_interface(*mapper_EngineInstance(), "msfs.execute_input_event", [this, &event_name, event_value]{
             if (event_value.get_type() == sol::type::number){
                 raiseInputEvent(event_name, event_value.as<double>());
             }else if (event_value.get_type() == sol::type::string){
@@ -421,9 +421,9 @@ void FS2020::initLuaEnv(sol::state& lua){
     };
 
     fs2020["input_event_executer"] = [this](const std::string &event_name, sol::object event_value) {
-        return lua_c_interface(*mapper_EngineInstance(), "fs2020.input_event_executer", [this, &event_name, event_value]{
+        return lua_c_interface(*mapper_EngineInstance(), "msfs.input_event_executer", [this, &event_name, event_value]{
             std::ostringstream os;
-            os << "fs2020.execute_input_event(\"" << event_name << "\")";
+            os << "msfs.execute_input_event(\"" << event_name << "\")";
             auto func_name = os.str();
             if (event_value.get_type() == sol::type::number){
                 auto value = event_value.as<double>();
@@ -446,7 +446,7 @@ void FS2020::initLuaEnv(sol::state& lua){
                         raiseInputEvent(event_name, static_cast<const char*>(event));
                     }else{
                         std::ostringstream os;
-                        os << "fs2020.input_event_executer(): The InputEvent could not be executed due to incorreect value type.";
+                        os << "msfs.input_event_executer(): The InputEvent could not be executed due to incorreect value type.";
                         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
                     }
                 };
@@ -459,6 +459,7 @@ void FS2020::initLuaEnv(sol::state& lua){
 
 
     mfwasm_create_lua_env(*this, fs2020);
+    lua["msfs"] = fs2020;
     lua["fs2020"] = fs2020;
 }
 
@@ -555,7 +556,7 @@ void FS2020::raiseInputEvent(const std::string& event_name, double value){
         }
     }else{
         std::ostringstream os;
-        os << "fs2020.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        os << "msfs.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
     }
 }
@@ -570,7 +571,7 @@ void FS2020::raiseInputEvent(const std::string& event_name, const std::string& v
         }
     }else{
         std::ostringstream os;
-        os << "fs2020.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
+        os << "msfs.execute_input_event(): The specified InputEvent name, " << event_name << ", does not exist.";
         mapper_EngineInstance()->putLog(MCONSOLE_WARNING, os.str());
     }
 }
