@@ -71,16 +71,16 @@ local observed_data = {
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.master1_up, action=fs2020.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_OPEN)")},
-    {event=events.master1_down, action=fs2020.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_CLOSE)")},
-    {event=events.master2_up, action=fs2020.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_OPEN)")},
-    {event=events.master2_down, action=fs2020.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_CLOSE)")},
-    {event=events.apumaster_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)")},
-    {event=events.apustart_push, action=fs2020.mfwasm.rpn_executer("(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 > (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) and if{ 1 (>L:A32NX_OVHD_APU_START_PB_IS_ON) }")},
-    {event=events.apubleed_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)")},
-    {event=events.bat1_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)")},
-    {event=events.bat2_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)")},
-    {event=events.extpwr_push, action=fs2020.mfwasm.rpn_executer("(A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) ! and if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } els{ (A:EXTERNAL POWER ON:1, Bool) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } }")},
+    {event=events.master1_up, action=msfs.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_OPEN)")},
+    {event=events.master1_down, action=msfs.mfwasm.rpn_executer("1 (>K:FUELSYSTEM_VALVE_CLOSE)")},
+    {event=events.master2_up, action=msfs.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_OPEN)")},
+    {event=events.master2_down, action=msfs.mfwasm.rpn_executer("2 (>K:FUELSYSTEM_VALVE_CLOSE)")},
+    {event=events.apumaster_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)")},
+    {event=events.apustart_push, action=msfs.mfwasm.rpn_executer("(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 > (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) and if{ 1 (>L:A32NX_OVHD_APU_START_PB_IS_ON) }")},
+    {event=events.apubleed_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)")},
+    {event=events.bat1_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)")},
+    {event=events.bat2_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)")},
+    {event=events.extpwr_push, action=msfs.mfwasm.rpn_executer("(A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) ! and if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } els{ (A:EXTERNAL POWER ON:1, Bool) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } }")},
 }
 
 local global_mappings = {
@@ -162,7 +162,7 @@ local function move_emode(delta)
     local new_pos = emode_knob.pos + delta
     local mode = emodes[new_pos + 1]
     if mode then
-        fs2020.mfwasm.execute_rpn(mode.rpn)
+        msfs.mfwasm.execute_rpn(mode.rpn)
     end
 end
 

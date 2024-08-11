@@ -87,18 +87,18 @@ local function start(config)
 
     local global_mappings = {}
 
-    fs2020.mfwasm.add_observed_data(observed_data)
+    msfs.mfwasm.add_observed_data(observed_data)
     local fcu_panel = require("a32nx/fcu")
-    fs2020.mfwasm.add_observed_data(fcu_panel.observed_data)
+    msfs.mfwasm.add_observed_data(fcu_panel.observed_data)
     global_mappings[#global_mappings + 1] = fcu_panel.mappings
     local ecam_panel = require("a32nx/ecam")
-    fs2020.mfwasm.add_observed_data(ecam_panel.observed_data)
+    msfs.mfwasm.add_observed_data(ecam_panel.observed_data)
     global_mappings[#global_mappings + 1] = ecam_panel.mappings
     local efis_panel = require("a32nx/efis")
-    fs2020.mfwasm.add_observed_data(efis_panel.observed_data)
+    msfs.mfwasm.add_observed_data(efis_panel.observed_data)
     global_mappings[#global_mappings + 1] = efis_panel.mappings
     local engine_panel = require("a32nx/engine")
-    fs2020.mfwasm.add_observed_data(engine_panel.observed_data)
+    msfs.mfwasm.add_observed_data(engine_panel.observed_data)
     global_mappings[#global_mappings + 1] = engine_panel.mappings
     local mcdu_panel = require("a32nx/cdu")
 
@@ -430,57 +430,57 @@ local function start(config)
         {event=g1000.SW24.down, action=function () change_view("right", "lecam", "left") end},
         {event=g1000.SW25.down, action=function () change_view("right", "mcdu", "left") end},
 
-        {event=g1000.EC1.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_INC)")},
-        {event=g1000.EC1.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_DEC)")},
-        {event=g1000.EC1P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
-        {event=g1000.EC1P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
-        {event=g1000.SW1.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
-        {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_INC)")},
-        {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_DEC)")},
-        {event=g1000.EC3P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
-        {event=g1000.EC3P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
-        {event=g1000.SW4.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
-        {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_INC)")},
-        {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_DEC)")},
-        {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
-        {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
-        {event=g1000.EC4P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
-        {event=g1000.EC4P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
-        {event=g1000.SW12.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
-        {event=g1000.EC5.increment, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_INC)")},
-        {event=g1000.EC5.decrement, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_DEC)")},
-        {event=g1000.EC5P.up, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
-        {event=g1000.EC5P.longpressed, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
-        {event=g1000.SW26.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
-        {event=g1000.SW2.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
-        {event=g1000.SW3.down, action=fs2020.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},
-        {event=g1000.SW8.down, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
+        {event=g1000.EC1.increment, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_INC)")},
+        {event=g1000.EC1.decrement, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_DEC)")},
+        {event=g1000.EC1P.up, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PUSH)")},
+        {event=g1000.EC1P.longpressed, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
+        {event=g1000.SW1.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_PULL)")},
+        {event=g1000.EC3.increment, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_INC)")},
+        {event=g1000.EC3.decrement, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_DEC)")},
+        {event=g1000.EC3P.up, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PUSH)")},
+        {event=g1000.EC3P.longpressed, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
+        {event=g1000.SW4.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_HDG_PULL)")},
+        {event=g1000.EC4X.increment, action=msfs.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_INC)")},
+        {event=g1000.EC4X.decrement, action=msfs.mfwasm.rpn_executer("100 (>K:A32NX.FCU_ALT_DEC)")},
+        {event=g1000.EC4Y.increment, action=msfs.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_INC)")},
+        {event=g1000.EC4Y.decrement, action=msfs.mfwasm.rpn_executer("1000 (>K:A32NX.FCU_ALT_DEC)")},
+        {event=g1000.EC4P.up, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PUSH)")},
+        {event=g1000.EC4P.longpressed, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
+        {event=g1000.SW12.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_ALT_PULL)")},
+        {event=g1000.EC5.increment, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_INC)")},
+        {event=g1000.EC5.decrement, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_DEC)")},
+        {event=g1000.EC5P.up, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PUSH)")},
+        {event=g1000.EC5P.longpressed, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
+        {event=g1000.SW26.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_VS_PULL)")},
+        {event=g1000.SW2.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
+        {event=g1000.SW3.down, action=msfs.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},
+        {event=g1000.SW8.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
 
-        {event=g1000.EC8.increment, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) ++ 5 min (>L:A32NX_EFIS_L_ND_RANGE)")},
-        {event=g1000.EC8.decrement, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) -- 0 max (>L:A32NX_EFIS_L_ND_RANGE)")},
-        {event=g1000.EC8L.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-        {event=g1000.EC8U.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-        {event=g1000.EC8R.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
-        {event=g1000.EC8D.down, action=fs2020.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
+        {event=g1000.EC8.increment, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) ++ 5 min (>L:A32NX_EFIS_L_ND_RANGE)")},
+        {event=g1000.EC8.decrement, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) -- 0 max (>L:A32NX_EFIS_L_ND_RANGE)")},
+        {event=g1000.EC8L.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
+        {event=g1000.EC8U.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
+        {event=g1000.EC8R.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
+        {event=g1000.EC8D.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
 
-        {event=g1000.EC6X.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE)")},
-        {event=g1000.EC6X.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE)")},
-        {event=g1000.EC6Y.increment, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE)")},
-        {event=g1000.EC6Y.decrement, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE)")},
-        {event=g1000.EC6P.down, action=fs2020.mfwasm.rpn_executer("(>H:A32NX_RMP_L_TRANSFER_BUTTON_PRESSED)")},
+        {event=g1000.EC6X.increment, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE)")},
+        {event=g1000.EC6X.decrement, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE)")},
+        {event=g1000.EC6Y.increment, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE)")},
+        {event=g1000.EC6Y.decrement, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE)")},
+        {event=g1000.EC6P.down, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_TRANSFER_BUTTON_PRESSED)")},
 
-        {event=g1000.EC7Y.increment, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_INC)")},
-        {event=g1000.EC7Y.decrement, action=fs2020.mfwasm.rpn_executer("(>K:KOHLSMAN_DEC)")},
-        {event=g1000.EC7P.down, action=fs2020.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
+        {event=g1000.EC7Y.increment, action=msfs.mfwasm.rpn_executer("(>K:KOHLSMAN_INC)")},
+        {event=g1000.EC7Y.decrement, action=msfs.mfwasm.rpn_executer("(>K:KOHLSMAN_DEC)")},
+        {event=g1000.EC7P.down, action=msfs.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
 
-        {event=g1000.EC2Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC2Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC2X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 + 100 min d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC2X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 - 0 max d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC9Y.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 + 100 min d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC9Y.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 - 0 max d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC9X.increment, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 + 100 min 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
-        {event=g1000.EC9X.decrement, action=fs2020.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 - 0 max 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2Y.increment, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2Y.decrement, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2X.increment, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 + 100 min d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC2X.decrement, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:89,percent) 5 - 0 max d d d d d 89 (>K:2:LIGHT_POTENTIOMETER_SET) 88 (>K:2:LIGHT_POTENTIOMETER_SET) 90 (>K:2:LIGHT_POTENTIOMETER_SET) 91 (>K:2:LIGHT_POTENTIOMETER_SET) 92 (>K:2:LIGHT_POTENTIOMETER_SET) 93 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9Y.increment, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 + 100 min d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9Y.decrement, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:84,percent) 5 - 0 max d d 84 (>K:2:LIGHT_POTENTIOMETER_SET) 85 (>K:2:LIGHT_POTENTIOMETER_SET) 86 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9X.increment, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 + 100 min 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
+        {event=g1000.EC9X.decrement, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:87,percent) 5 - 0 max 87 (>K:2:LIGHT_POTENTIOMETER_SET)")},
 
         {event=g1000.AUX1D.down, action=function() change_typical_view(1) end},
         {event=g1000.AUX1U.down, action=function() change_typical_view(-1) end},
@@ -513,7 +513,7 @@ local function stop()
         a320_context.device:close()
         a320_context.device = nil
     end
-    fs2020.mfwasm.clear_observed_data()
+    msfs.mfwasm.clear_observed_data()
     mapper.reset_viewports()
 end
 

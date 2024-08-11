@@ -134,12 +134,12 @@ function module.start(config, aircraft)
 
     local global_mappings = {
         {
-            {event=g1000.EC3.increment, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_INC)")},
-            {event=g1000.EC3.decrement, action=fs2020.mfwasm.rpn_executer("1 (>K:HEADING_BUG_DEC)")},
-            {event=g1000.EC4X.increment, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_INC)")},
-            {event=g1000.EC4X.decrement, action=fs2020.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_DEC)")},
-            {event=g1000.EC4Y.increment, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_INC)")},
-            {event=g1000.EC4Y.decrement, action=fs2020.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_DEC)")},
+            {event=g1000.EC3.increment, action=msfs.mfwasm.rpn_executer("1 (>K:HEADING_BUG_INC)")},
+            {event=g1000.EC3.decrement, action=msfs.mfwasm.rpn_executer("1 (>K:HEADING_BUG_DEC)")},
+            {event=g1000.EC4X.increment, action=msfs.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_INC)")},
+            {event=g1000.EC4X.decrement, action=msfs.mfwasm.rpn_executer("100 (>K:AP_ALT_VAR_DEC)")},
+            {event=g1000.EC4Y.increment, action=msfs.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_INC)")},
+            {event=g1000.EC4Y.decrement, action=msfs.mfwasm.rpn_executer("1000 (>K:AP_ALT_VAR_DEC)")},
         }
     }
     common.set_global_mappings(global_mappings, libs)

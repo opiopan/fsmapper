@@ -14,19 +14,19 @@ local segdisp = require("lib/segdisp")
 -- action definitions
 --------------------------------------------------------------------------------------
 module.actions[1] = {
-    idt = fs2020.mfwasm.rpn_executer("(>K:XPNDR_IDENT_ON)"),
-    vfr = fs2020.mfwasm.rpn_executer("(>H:TransponderVFR)"),
-    clr = fs2020.mfwasm.rpn_executer("(>H:TransponderCLR)"),
-    num0 = fs2020.mfwasm.rpn_executer("(>H:Transponder0)"),
-    num1 = fs2020.mfwasm.rpn_executer("(>H:Transponder1)"),
-    num2 = fs2020.mfwasm.rpn_executer("(>H:Transponder2)"),
-    num3 = fs2020.mfwasm.rpn_executer("(>H:Transponder3)"),
-    num4 = fs2020.mfwasm.rpn_executer("(>H:Transponder4)"),
-    num5 = fs2020.mfwasm.rpn_executer("(>H:Transponder5)"),
-    num6 = fs2020.mfwasm.rpn_executer("(>H:Transponder6)"),
-    num7 = fs2020.mfwasm.rpn_executer("(>H:Transponder7) (>H:Transponder6) (>H:Transponder5) (>H:Transponder4)"),
-    mode_inc = fs2020.mfwasm.rpn_executer("(A:TRANSPONDER STATE:1, Enum) d 4 < if{ ++ (>A:TRANSPONDER STATE:1, Enum) }"),
-    mode_dec = fs2020.mfwasm.rpn_executer("(A:TRANSPONDER STATE:1, Enum) d 0 > if{ -- (>A:TRANSPONDER STATE:1, Enum) }"),
+    idt = msfs.mfwasm.rpn_executer("(>K:XPNDR_IDENT_ON)"),
+    vfr = msfs.mfwasm.rpn_executer("(>H:TransponderVFR)"),
+    clr = msfs.mfwasm.rpn_executer("(>H:TransponderCLR)"),
+    num0 = msfs.mfwasm.rpn_executer("(>H:Transponder0)"),
+    num1 = msfs.mfwasm.rpn_executer("(>H:Transponder1)"),
+    num2 = msfs.mfwasm.rpn_executer("(>H:Transponder2)"),
+    num3 = msfs.mfwasm.rpn_executer("(>H:Transponder3)"),
+    num4 = msfs.mfwasm.rpn_executer("(>H:Transponder4)"),
+    num5 = msfs.mfwasm.rpn_executer("(>H:Transponder5)"),
+    num6 = msfs.mfwasm.rpn_executer("(>H:Transponder6)"),
+    num7 = msfs.mfwasm.rpn_executer("(>H:Transponder7) (>H:Transponder6) (>H:Transponder5) (>H:Transponder4)"),
+    mode_inc = msfs.mfwasm.rpn_executer("(A:TRANSPONDER STATE:1, Enum) d 4 < if{ ++ (>A:TRANSPONDER STATE:1, Enum) }"),
+    mode_dec = msfs.mfwasm.rpn_executer("(A:TRANSPONDER STATE:1, Enum) d 0 > if{ -- (>A:TRANSPONDER STATE:1, Enum) }"),
 }
 --------------------------------------------------------------------------------------
 -- operable area definitions
@@ -166,7 +166,7 @@ local function relay(self, value)
         if self.in_edit_mode then
             self.editing_code = ""
         else
-            fs2020.mfwasm.execute_rpn("(>H:TransponderCLR)")
+            msfs.mfwasm.execute_rpn("(>H:TransponderCLR)")
             return
         end
     elseif #self.editing_code < 4 then
@@ -176,7 +176,7 @@ local function relay(self, value)
     self:reflect()
     if #self.editing_code >= 4 then
         local freq = tonumber(self.editing_code:sub(1,1)) * 0x1000 + tonumber(self.editing_code:sub(2,2)) * 0x0100 + tonumber(self.editing_code:sub(3,3)) * 0x0010 + tonumber(self.editing_code:sub(4,4))
-        fs2020.send_event("XPNDR_SET", freq)
+        msfs.send_event("XPNDR_SET", freq)
     end
 end
 xmtr_ctx[1].relay = relay

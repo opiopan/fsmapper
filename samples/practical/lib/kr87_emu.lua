@@ -67,8 +67,8 @@ local function adf_swap(self)
     self.standby = self.active
     self.active = new_active
     self:update()
-    fs2020.send_event("ADF_ACTIVE_SET", self.active)
-    fs2020.send_event("ADF_STBY_SET", self.standby)
+    msfs.send_event("ADF_ACTIVE_SET", self.active)
+    msfs.send_event("ADF_STBY_SET", self.standby)
 end
 adf[1].swap = adf_swap
 

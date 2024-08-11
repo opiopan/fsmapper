@@ -25,10 +25,10 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    gyro_drift_inc = fs2020.event_sender("GYRO_DRIFT_INC"),
-    gyro_drift_dec = fs2020.event_sender("GYRO_DRIFT_DEC"),
-    heading_bug_inc = fs2020.event_sender("HEADING_BUG_INC"),
-    heading_bug_dec = fs2020.event_sender("HEADING_BUG_DEC"),
+    gyro_drift_inc = msfs.event_sender("GYRO_DRIFT_INC"),
+    gyro_drift_dec = msfs.event_sender("GYRO_DRIFT_DEC"),
+    heading_bug_inc = msfs.event_sender("HEADING_BUG_INC"),
+    heading_bug_dec = msfs.event_sender("HEADING_BUG_DEC"),
 }
 
 --------------------------------------------------------------------------------------

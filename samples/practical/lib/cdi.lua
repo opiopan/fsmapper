@@ -26,13 +26,13 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    obs_inc = fs2020.event_sender("VOR1_OBI_INC"),
-    obs_dec = fs2020.event_sender("VOR1_OBI_DEC"),
+    obs_inc = msfs.event_sender("VOR1_OBI_INC"),
+    obs_dec = msfs.event_sender("VOR1_OBI_DEC"),
 }
 
 module.actions[2] = {
-    obs_inc = fs2020.event_sender("VOR2_OBI_INC"),
-    obs_dec = fs2020.event_sender("VOR2_OBI_DEC"),
+    obs_inc = msfs.event_sender("VOR2_OBI_INC"),
+    obs_dec = msfs.event_sender("VOR2_OBI_DEC"),
 }
 
 --------------------------------------------------------------------------------------

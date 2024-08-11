@@ -333,7 +333,7 @@ static void execute_rpn(FS2020& fs2020, const char* rpn){
         if (connection){
             connection->execute_rpn(rpn);
         }else{
-            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "mfwasm: [execute_rpn()] Microsoft Flight Simulator is not running");
+            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "mfwasm: [execute_rpn()] MSFS is not running");
         }
     });
 }

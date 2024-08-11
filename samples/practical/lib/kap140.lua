@@ -21,21 +21,21 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    ap=fs2020.mfwasm.rpn_executer("(A:AUTOPILOT DISENGAGED, Bool) ! if{ (>K:AP_MASTER) (A:AUTOPILOT MASTER, Bool) ! if{ (>H:Generic_Autopilot_Manual_Off) } }"),
-    hdg=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_HDG)"),
-    nav=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_NAV)"),
-    apr=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_APR)"),
-    rev=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_REV)"),
-    alt=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_ALT)"),
-    up=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_UP)"),
-    dn=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_DN)"),
-    arm=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_ARM)"),
-    baro=fs2020.mfwasm.rpn_executer("(>H:KAP140_Push_BARO)"),
-    baro_long=fs2020.mfwasm.rpn_executer("(>H:KAP140_Long_Push_BARO)"),
-    knob_inner_inc=fs2020.mfwasm.rpn_executer("(>H:KAP140_Knob_Inner_inc)"),
-    knob_inner_dec=fs2020.mfwasm.rpn_executer("(>H:KAP140_Knob_Inner_dec)"),
-    knob_outer_inc=fs2020.mfwasm.rpn_executer("(>H:KAP140_Knob_Outer_inc)"),
-    knob_outer_dec=fs2020.mfwasm.rpn_executer("(>H:KAP140_Knob_Outer_dec)"),
+    ap=msfs.mfwasm.rpn_executer("(A:AUTOPILOT DISENGAGED, Bool) ! if{ (>K:AP_MASTER) (A:AUTOPILOT MASTER, Bool) ! if{ (>H:Generic_Autopilot_Manual_Off) } }"),
+    hdg=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_HDG)"),
+    nav=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_NAV)"),
+    apr=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_APR)"),
+    rev=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_REV)"),
+    alt=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_ALT)"),
+    up=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_UP)"),
+    dn=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_DN)"),
+    arm=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_ARM)"),
+    baro=msfs.mfwasm.rpn_executer("(>H:KAP140_Push_BARO)"),
+    baro_long=msfs.mfwasm.rpn_executer("(>H:KAP140_Long_Push_BARO)"),
+    knob_inner_inc=msfs.mfwasm.rpn_executer("(>H:KAP140_Knob_Inner_inc)"),
+    knob_inner_dec=msfs.mfwasm.rpn_executer("(>H:KAP140_Knob_Inner_dec)"),
+    knob_outer_inc=msfs.mfwasm.rpn_executer("(>H:KAP140_Knob_Outer_inc)"),
+    knob_outer_dec=msfs.mfwasm.rpn_executer("(>H:KAP140_Knob_Outer_dec)"),
 }
 
 --------------------------------------------------------------------------------------

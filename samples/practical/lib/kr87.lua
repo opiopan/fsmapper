@@ -21,16 +21,16 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    adf=fs2020.mfwasm.rpn_executer("(>H:adf_AntAdf)"),
-    bfo=fs2020.mfwasm.rpn_executer("(>H:adf_bfo)"),
-    frq=fs2020.mfwasm.rpn_executer("(>H:adf_frqTransfert)"),
-    flt_et=fs2020.mfwasm.rpn_executer("(>H:FltEt)"),
-    set_rst=fs2020.mfwasm.rpn_executer("(>H:SetRst)"),
-    knob_large_inc=fs2020.mfwasm.rpn_executer("(>K:ADF_100_INC)"),
-    knob_large_dec=fs2020.mfwasm.rpn_executer("(>K:ADF_100_DEC)"),
-    knob_small_inc=fs2020.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) if{ (>K:ADF_10_INC) } els{ (>K:ADF_1_INC) }"),
-    knob_small_dec=fs2020.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) if{ (>K:ADF_10_DEC) } els{ (>K:ADF_1_DEC) }"),
-    knob_push=fs2020.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) ! (>L:XMLVAR_ADF_Frequency_10_Khz)"),
+    adf=msfs.mfwasm.rpn_executer("(>H:adf_AntAdf)"),
+    bfo=msfs.mfwasm.rpn_executer("(>H:adf_bfo)"),
+    frq=msfs.mfwasm.rpn_executer("(>H:adf_frqTransfert)"),
+    flt_et=msfs.mfwasm.rpn_executer("(>H:FltEt)"),
+    set_rst=msfs.mfwasm.rpn_executer("(>H:SetRst)"),
+    knob_large_inc=msfs.mfwasm.rpn_executer("(>K:ADF_100_INC)"),
+    knob_large_dec=msfs.mfwasm.rpn_executer("(>K:ADF_100_DEC)"),
+    knob_small_inc=msfs.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) if{ (>K:ADF_10_INC) } els{ (>K:ADF_1_INC) }"),
+    knob_small_dec=msfs.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) if{ (>K:ADF_10_DEC) } els{ (>K:ADF_1_DEC) }"),
+    knob_push=msfs.mfwasm.rpn_executer("(L:XMLVAR_ADF_Frequency_10_Khz) ! (>L:XMLVAR_ADF_Frequency_10_Khz)"),
 }
 --------------------------------------------------------------------------------------
 -- operable are definitions

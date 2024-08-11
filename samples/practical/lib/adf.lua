@@ -22,8 +22,8 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    card_inc = fs2020.event_sender("ADF_CARD_INC"),
-    card_dec = fs2020.event_sender("ADF_CARD_DEC"),
+    card_inc = msfs.event_sender("ADF_CARD_INC"),
+    card_dec = msfs.event_sender("ADF_CARD_DEC"),
 }
 
 --------------------------------------------------------------------------------------

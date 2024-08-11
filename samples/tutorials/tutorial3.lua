@@ -18,11 +18,11 @@ mapper.set_primary_mappings{
     {
         event = events.button1.down,
         action = function ()
-            fs2020.mfwasm.execute_rpn('0 (A:LIGHT LANDING:0, Bool) ! (>K:2:LANDING_LIGHTS_SET)')
+            msfs.mfwasm.execute_rpn('0 (A:LIGHT LANDING:0, Bool) ! (>K:2:LANDING_LIGHTS_SET)')
         end
     },
     {
         event = events.button2.down,
-        action = fs2020.mfwasm.rpn_executer('0 (A:LIGHT STROBE:0, Bool) ! (>K:2:STROBES_SET)')
+        action = msfs.mfwasm.rpn_executer('0 (A:LIGHT STROBE:0, Bool) ! (>K:2:STROBES_SET)')
     },
 }

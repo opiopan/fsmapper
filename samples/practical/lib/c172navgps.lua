@@ -21,7 +21,7 @@ local common = require("lib/common")
 --------------------------------------------------------------------------------------
 module.actions = {}
 module.actions[1] = {
-    navgps = fs2020.event_sender("TOGGLE_GPS_DRIVES_NAV1"),
+    navgps = msfs.event_sender("TOGGLE_GPS_DRIVES_NAV1"),
 }
 
 --------------------------------------------------------------------------------------

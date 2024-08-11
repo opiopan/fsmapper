@@ -61,18 +61,18 @@ end
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.spdmach_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)")},
-    {event=events.loc_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_AUTOPILOT_LOC_MODE, bool) if{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 0 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) } els{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 1 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) }")},
-    {event=events.hdgtrk_push, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_TRK_FPA_TOGGLE_PUSH)")},
-    {event=events.ap1_push, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
-    {event=events.ap2_push, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_2_PUSH)")},
-    {event=events.athr_push, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_ATHR_PUSH)")},
-    {event=events.exped_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_FCU_EXPED_PUSH)")},
-    {event=events.metricalt_push, action=fs2020.mfwasm.rpn_executer("(L:A32NX_METRIC_ALT_TOGGLE, bool) ! (>L:A32NX_METRIC_ALT_TOGGLE)")},
-    {event=events.appr_push, action=fs2020.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
-    {event=events.fd_push, action=fs2020.mfwasm.rpn_executer("1 (>K:TOGGLE_FLIGHT_DIRECTOR)")},
-    {event=events.ls_push, action=fs2020.mfwasm.rpn_executer("(>H:A320_Neo_MFD_BTN_LS_1) (>H:A320_Neo_PFD_BTN_LS_1) and")},
-    {event=events.hghpa_push, action=fs2020.mfwasm.rpn_executer("(L:XMLVAR_BARO_SELECTOR_HPA_1) 0 == if{ 1 (>L:XMLVAR_BARO_SELECTOR_HPA_1) } els{ 0 (>L:XMLVAR_BARO_SELECTOR_HPA_1) }")},
+    {event=events.spdmach_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)")},
+    {event=events.loc_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_AUTOPILOT_LOC_MODE, bool) if{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 0 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) } els{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 1 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) }")},
+    {event=events.hdgtrk_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_TRK_FPA_TOGGLE_PUSH)")},
+    {event=events.ap1_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
+    {event=events.ap2_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_2_PUSH)")},
+    {event=events.athr_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_ATHR_PUSH)")},
+    {event=events.exped_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_FCU_EXPED_PUSH)")},
+    {event=events.metricalt_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_METRIC_ALT_TOGGLE, bool) ! (>L:A32NX_METRIC_ALT_TOGGLE)")},
+    {event=events.appr_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
+    {event=events.fd_push, action=msfs.mfwasm.rpn_executer("1 (>K:TOGGLE_FLIGHT_DIRECTOR)")},
+    {event=events.ls_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_MFD_BTN_LS_1) (>H:A320_Neo_PFD_BTN_LS_1) and")},
+    {event=events.hghpa_push, action=msfs.mfwasm.rpn_executer("(L:XMLVAR_BARO_SELECTOR_HPA_1) 0 == if{ 1 (>L:XMLVAR_BARO_SELECTOR_HPA_1) } els{ 0 (>L:XMLVAR_BARO_SELECTOR_HPA_1) }")},
 }
 
 local global_mappings = {

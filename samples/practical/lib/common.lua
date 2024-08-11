@@ -101,7 +101,7 @@ function module.init_component_modules(libs, lib_options)
             end
         end
         if lib.observed_data ~= nil then
-            fs2020.mfwasm.add_observed_data(lib.observed_data)
+            msfs.mfwasm.add_observed_data(lib.observed_data)
         end
     end
 end
@@ -234,7 +234,7 @@ function module.clear_component_instance(views)
             component.instance = nil
         end
     end
-    fs2020.mfwasm.clear_observed_data()
+    msfs.mfwasm.clear_observed_data()
 end
 
 --------------------------------------------------------------------------------------
