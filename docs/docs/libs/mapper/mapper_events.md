@@ -24,7 +24,7 @@ The event value for `change_aircraft` event is an associative array table with t
 |Key|Type|Description|
 |---|----|-----------|
 |`sim_type`|string|The type of flight simulator that fsmapper is connected to. If the connection to the flight simulator is lost, this will be set to `nil`. You can interact with the flight simulator using the same functions as long as this value remains the same.<br/>One of the following strings will be set.<br/><br/><ul><li>`msfs` : Microsoft Flight Simulator or SimConnect-compatible simulator</li><li>`dcs` : Eagle Dynamics DCS World</li></ul>
-|`sim_detail`|string|More detailed information about the connected flight simulator than `sim_type`. One of the following strings will be set.<br/><br/><ul><li>`fsx`: Microsoft Flight Simulator X</li><li>`fs2020`: Microsoft Flight Simulator 2020</li><li>`fs2024`: Microsoft Flight Simulator 2024</li><li>`SimConnect` : Other SimConnect-compatible simulators not listed above</li><li>`dcs` : Eagle Dynamics DCS World</li></ul>
+|`sim_detail`|string|More detailed information about the connected flight simulator than `sim_type`. One of the following strings will be set.<br/><br/><ul><li>`fsx`: Microsoft Flight Simulator X</li><li>`fs2020`: Microsoft Flight Simulator 2020</li><li>`fs2024`: Microsoft Flight Simulator 2024</li><li>`simconnect` : Other SimConnect-compatible simulators not listed above</li><li>`dcs` : Eagle Dynamics DCS World</li></ul>
 |`aircraft`|string|The name of the aircraft the player is piloting.
 |`host`|string|Same as `sim_detail`. This field is for compatibility with previous versions of fsmapper.
 
