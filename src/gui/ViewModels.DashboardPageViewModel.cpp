@@ -25,9 +25,15 @@ namespace winrt::gui::ViewModels::implementation{
     DashboardPageViewModel::DashboardPageViewModel(){
         using namespace winrt::gui::Models;
         logo_images[static_cast<int>(Simulators::none)] = nullptr;
-        logo_images[static_cast<int>(Simulators::fs2020)] = 
+        logo_images[static_cast<int>(Simulators::simconnect)] = 
             unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
-        logo_images[static_cast<int>(Simulators::dcs)] = 
+        logo_images[static_cast<int>(Simulators::fsx)] =
+            unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
+        logo_images[static_cast<int>(Simulators::fs2020)] =
+            unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
+        logo_images[static_cast<int>(Simulators::fs2024)] =
+            unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
+        logo_images[static_cast<int>(Simulators::dcs)] =
             unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoDCS"));
 
         mapper = App::Mapper();
@@ -123,8 +129,14 @@ namespace winrt::gui::ViewModels::implementation{
         float icon_height = 26;
         if (sim == Simulators::none) {
             update_property(sim_name, std::wstring(L"No active flight simulator found"), L"SimString");
+        }else if (sim == Simulators::fsx){
+            update_property(sim_name, std::wstring(L"Microsoft Flight Simulator X"), L"SimString");
         }else if (sim == Simulators::fs2020){
             update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2020"), L"SimString");
+        }else if (sim == Simulators::fs2024){
+            update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2024"), L"SimString");
+        }else if (sim == Simulators::simconnect){
+            update_property(sim_name, std::wstring(L"SimConnect-comaptible Simulator"), L"SimString");
         }else if (sim == Simulators::dcs){
             update_property(sim_name, std::wstring(L"Eagle Dynamics DCS World"), L"SimString");
             icon_height = 32;

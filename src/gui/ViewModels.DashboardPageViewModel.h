@@ -63,7 +63,7 @@ namespace winrt::gui::ViewModels::implementation{
         winrt::gui::Models::Mapper mapper{nullptr};
         winrt::event_token token_for_mapper;
         winrt::event_token token_for_captured_windows;
-        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[3];
+        winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage logo_images[7];
 
         bool normal_view_is_visible{false};
         bool stop_view_is_visible{true};

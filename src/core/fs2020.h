@@ -56,6 +56,8 @@ protected:
     bool needToUpdateMfwasm = false;
     Status status = Status::connecting;
     bool isActive = false;
+    MAPPER_SIM_CONNECTION simid;
+    const char* simname{nullptr};
     std::string aircraftName;
     std::thread scheduler;
     std::chrono::steady_clock::time_point watch_dog;

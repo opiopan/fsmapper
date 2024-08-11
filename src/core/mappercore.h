@@ -42,9 +42,12 @@ typedef enum mapper_event{
 }MAPPER_EVENT;
 
 typedef uint32_t MAPPER_SIM_CONNECTION;
-#define MAPPER_SIM_NONE   0x0
-#define MAPPER_SIM_FS2020 0x1
-#define MAPPER_SIM_DCS    0x2
+#define MAPPER_SIM_NONE       0
+#define MAPPER_SIM_DCS        1
+#define MAPPER_SIM_SIMCONNECT 2
+#define MAPPER_SIM_FSX        3
+#define MAPPER_SIM_FS2020     4
+#define MAPPER_SIM_FS2024     5
 
 typedef MAPPER_SIM_CONNECTION MEVDATA_CHANGE_SIMCONNECTION;
 typedef const char* MEVDATA_CHANGE_AIRCRAFT;

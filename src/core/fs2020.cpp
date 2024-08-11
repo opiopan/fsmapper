@@ -4,6 +4,8 @@
 //
 
 #include <sstream>
+#include <format>
+#include <unordered_map>
 #include "engine.h"
 #include "fs2020.h"
 #include "tools.h"
@@ -166,7 +168,7 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
                     lock.lock();
                 }
                 lock.unlock();
-                std::this_thread::sleep_for(std::chrono::microseconds(50));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 ::SimConnect_CallDispatch(simconnect, [](SIMCONNECT_RECV* pData, DWORD cbData, void *context)->void{
                     auto self = reinterpret_cast<FS2020*>(context);
                     self->processSimConnectReceivedData(pData, cbData);
@@ -206,16 +208,45 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
 
 void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData){
     std::unique_lock lock(mutex);
-    if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
-        SIMCONNECT_RECV_EVENT *evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
+    if (pData->dwID == SIMCONNECT_RECV_ID_OPEN){
+        auto data = reinterpret_cast<SIMCONNECT_RECV_OPEN*>(pData);
+        auto&& message = std::format(
+            "msfs: Connection via SimConnect has been established:\n"
+            "    Product Name       : {}\n"
+            "    Product Version    : {}.{}\n"
+            "    Product Build:     : {}.{}\n"
+            "    SimConnect Version : {}.{}\n"
+            "    SimConnect Build   : {}.{}",
+            data->szApplicationName,
+            data->dwApplicationVersionMajor, data->dwApplicationVersionMinor,
+            data->dwApplicationBuildMajor, data->dwApplicationBuildMinor,
+            data->dwSimConnectVersionMajor, data->dwSimConnectVersionMinor,
+            data->dwSimConnectBuildMajor, data->dwSimConnectBuildMinor);
+        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, message);
+        if (data->dwApplicationBuildMajor == 10){
+            simid = MAPPER_SIM_FSX;
+            simname = "fsx";
+        }else if (data->dwApplicationVersionMajor ==11){
+            simid = MAPPER_SIM_FS2020;
+            simname = "fs2020";
+        }else if (data->dwApplicationVersionMajor == 12){
+            simid = MAPPER_SIM_FS2024;
+            simname = "fs2024";
+        }else{
+            simid = MAPPER_SIM_SIMCONNECT;
+            simname = "simconnect";
+        }
+    }else if (pData->dwID == SIMCONNECT_RECV_ID_EVENT) {
+        auto evt = reinterpret_cast<SIMCONNECT_RECV_EVENT*>(pData);
         if (evt->uEventID == EVENT_SIM_START){
             ::SimConnect_RequestDataOnSimObjectType(simconnect, REQUEST_SYSTEM_DATA, DATA_DEF_SYSTEM, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
         }else if (evt->uEventID == EVENT_1SEC){
             watch_dog = std::chrono::steady_clock::now();
             if (status == Status::connected){
+                mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "msfs: Detected that the simulator is started");
                 status = Status::start;
                 lock.unlock();
-                this->reportConnectivity(true, MAPPER_SIM_FS2020, "fs2020", nullptr);
+                this->reportConnectivity(true, simid, simname, nullptr);
                 lock.lock();
             }
             if (is_waiting_enum_input_event){
@@ -237,7 +268,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 updateRepresentativeWindow();
                 lock.unlock();
                 mfwasm_start(*this, simconnect);
-                this->reportConnectivity(true, MAPPER_SIM_FS2020, "fs2020", aircraftName.c_str());
+                this->reportConnectivity(true, simid, simname, aircraftName.c_str());
                 lock.lock();
                 for (auto i = 0; i < simvar_groups.size(); i++){
                     subscribeSimVarGroup(i);

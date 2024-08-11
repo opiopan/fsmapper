@@ -1,6 +1,6 @@
 namespace gui.Models{
     enum MapperStatus {stop = 0, running, error};
-    enum Simulators {none = 0, fs2020, dcs};
+    enum Simulators {none = 0, dcs, simconnect, fsx, fs2020, fs2024};
     enum MessageType {error = 0, warning, info, message, debug, events};
 
     runtimeclass Device {
