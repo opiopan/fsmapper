@@ -7,6 +7,7 @@
 #include <WS2tcpip.h>
 #include <filesystem>
 #include <sol/sol.hpp>
+#include <format>
 #include "dcs.h"
 #include "engine.h"
 #include "tools.h"
@@ -272,10 +273,31 @@ void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, con
 
     if (*cmd == 'A'){
         // Aircraft Name event
-        aircraft_name.append(cmd +1, len - 1);
-        lock.unlock();
-        reportConnectivity(true, MAPPER_SIM_DCS, "dcs", aircraft_name.c_str());
-        lock.lock();
+        if (len > 1){
+			aircraft_name.clear();
+			aircraft_name.append(cmd + 1, len - 1);
+			mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, std::format("dcs: Aircraft name has been received: {}", aircraft_name));
+			lock.unlock();
+			reportConnectivity(true, MAPPER_SIM_DCS, "dcs", aircraft_name.c_str());
+			lock.lock();
+        }
+    }
+    else if (*cmd == 'V'){
+        // Version nortification
+        std::string name, version, *target{&name};
+        for (auto i = 1; i < len; i++){
+            if (cmd[i] == ':'){
+                target = &version;
+            }else{
+                target->push_back(cmd[i]);
+            }
+        }
+        auto&& msg = std::format(
+            "dcs: Product version information has been received:\n"
+            "    Product Name    : {}\n"
+            "    Product Version : {}",
+            name, version);
+        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, msg);
     }
 }
 

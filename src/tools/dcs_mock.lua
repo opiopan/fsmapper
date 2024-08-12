@@ -19,6 +19,13 @@ function LoGetModelTime()
     return 100
 end
 
+function LoGetVersionInfo()
+    return {
+        ProductName = 'DCS World',
+        ProductVersion = {1, 2, 3, 4},
+    }
+end
+
 local socket = require('socket')
 
 fsmapper = {}

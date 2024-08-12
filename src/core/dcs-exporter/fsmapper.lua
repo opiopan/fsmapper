@@ -8,8 +8,8 @@ if is_fsmapper_exporter_initialized ~= true then
 
     fsmapper.scriptdir = fsmapper.basedir..'dcs-exporter/'
     fsmapper.scriptpath = fsmapper.scriptdir..'fsmapper.lua'
-    package.path = package.path .. ';' .. fsmapper.scriptdir .. '?.lua;' .. ";.\\LuaSocket\\?.lua" .. ";.\\Scripts\\?.lua"
-    package.cpath = package.cpath .. ";.\\LuaSocket\\?.dll"
+    package.path = package.path .. ';' .. fsmapper.scriptdir .. '?.lua;' .. ";./LuaSocket/?.lua" .. ";./Scripts/?.lua"
+    package.cpath = package.cpath .. ";./LuaSocket/?.dll"
 
     log.write('FSMAPPER.LUA',log.INFO,'Starting ['..fsmapper.scriptpath..']')
 
@@ -48,6 +48,9 @@ if is_fsmapper_exporter_initialized ~= true then
     --===========================================================================================
     local prev_export_before_frame = LuaExportBeforeNextFrame
     LuaExportBeforeNextFrame = function()
+        local now = LoGetModelTime()
+        fsmapper.server:schedule_before_frame(now)
+
         if prev_export_before_frame then
             prev_export_before_frame()
         end
@@ -57,9 +60,9 @@ if is_fsmapper_exporter_initialized ~= true then
     -- Hook called after every frame
     --===========================================================================================
     local prev_export_after_frame = LuaExportAfterNextFrame
-    LuaExportBeforeNextFrame = function()
+    LuaExportAfterNextFrame = function()
         local now = LoGetModelTime()
-        fsmapper.server:schedule(now)
+        fsmapper.server:schedule_after_frame(now)
 
         if prev_export_after_frame then
             prev_export_after_frame()

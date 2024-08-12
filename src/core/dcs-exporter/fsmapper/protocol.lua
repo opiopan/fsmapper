@@ -70,6 +70,16 @@ protocol.fsmapper_client = {
     process_command = function (self, cmd)
     end,
 
+    inform_version = function (self, version)
+        self:send(string.format(
+            'V%s:%d.%d.%d.%d\n',
+            version.ProductName,
+            version.ProductVersion[1],
+            version.ProductVersion[2],
+            version.ProductVersion[3],
+            version.ProductVersion[4]))
+    end,
+
     change_aircraft = function (self, name)
         self:send('A' .. name .. '\n')
     end,
@@ -95,6 +105,7 @@ protocol.server = {
         socket.try(self.listener:bind('localhost', fsmapper.config.tcp_port))
         self.listener:settimeout(0)
         self.listener:listen(1)
+        self.version_info =  LoGetVersionInfo()
     end,
 
     stop = function (self)
@@ -104,8 +115,29 @@ protocol.server = {
         end
         self.clients = {}
     end,
+    
+    schedule_before_frame = function(self, now)
+        local new_endpoint = self.listener:accept()
+        if new_endpoint then
+            new_endpoint:settimeout(0)
+            local new_client = protocol.fsmapper_client.new(new_endpoint)
+            new_client:inform_version(self.version_info)
+            new_client:change_aircraft(self.aircraft_name)
+            self.clients[#self.clients + 1] = new_client
+            log.write('FSMAPPER.LUA', log.INFO, 'A connection with fsmapper has been established')
+        end
 
-    schedule = function (self, now)
+        local has_closed_clients = false
+        for _, client in ipairs(self.clients) do
+            has_closed_clients = has_closed_clients or not client:receive_and_dispatch()
+        end
+
+        if has_closed_clients then
+            self:cleanup_closed_clients()
+        end
+    end,
+
+    schedule_after_frame = function (self, now)
         if now - self.last_aircraft_checking >= self.aircraft_checking_interval then
             self.last_aircraft_checking = now
             local self_data = LoGetSelfData()
@@ -119,37 +151,28 @@ protocol.server = {
             end
         end
 
-        local new_endpoint = self.listener:accept()
-        if new_endpoint then
-            new_endpoint:settimeout(0)
-            local new_client = protocol.fsmapper_client.new(new_endpoint)
-            new_client:change_aircraft(self.aircraft_name)
-            self.clients[#self.clients + 1] = new_client
-            log.write('FSMAPPER.LUA', log.INFO, 'A connection with fsmapper has been established')
-        end
-
         local has_closed_clients = false
-        for _, client in ipairs(self.clients) do
-            has_closed_clients = has_closed_clients or not client:receive_and_dispatch()
-        end
-
         for _, client in ipairs(self.clients) do
             has_closed_clients = has_closed_clients or not client:flush()
         end
 
         if has_closed_clients then
-            local new_clients = {}
-            for _, client in ipairs(self.clients) do
-                if client.is_enabled then
-                    new_clients[#new_clients + 1] = client
-                else
-                log.write('FSMAPPER.LUA', log.INFO, 'A connection with fsmapper has been lost')
-                    client:close()
-                end
-            end
-            self.clients = new_clients
+            self:cleanup_closed_clients()
         end
-    end
-}
+    end,
+
+    cleanup_closed_clients = function(self)
+        local new_clients = {}
+        for _, client in ipairs(self.clients) do
+            if client.is_enabled then
+                new_clients[#new_clients + 1] = client
+            else
+            log.write('FSMAPPER.LUA', log.INFO, 'A connection with fsmapper has been lost')
+                client:close()
+            end
+        end
+        self.clients = new_clients
+    end,
+}    
 
 return protocol
