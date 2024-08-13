@@ -11,7 +11,7 @@ end
 
 function LoGetSelfData()
     return {
-        Name = 'F-16C-50'
+        Name = 'F-16C_50'
     }
 end
 
@@ -21,7 +21,7 @@ end
 
 function LoGetVersionInfo()
     return {
-        ProductName = 'DCS World',
+        ProductName = 'DCS',
         ProductVersion = {1, 2, 3, 4},
     }
 end
