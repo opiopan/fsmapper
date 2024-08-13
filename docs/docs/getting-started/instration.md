@@ -51,13 +51,13 @@ Throughout this documentation, starting from the [Tutorial](tutorial), numerous 
     Through the use of the vJoy device, fsmapper provides highly flexible configurability for human interface devices.
 
 - **MobiFlight WASM Module ([GitHub](https://github.com/MobiFlight/MobiFlight-WASM-Module))**<br/>
-    This WASM module, functioning as an add-on for FS2020, 
+    This WASM module, functioning as an add-on for Microsoft Flight Simulator 2020, 
     enables an external-process utility to execute arbitrary [**RPN script**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) and monitor changes in the aircraft's internal state stored in local variables like LVARs.
-    fsmapper gains unrestricted access to retrieve and modify aircraft states by communicating with the MobiFlight WASM Module operating within the FS2020 process.<br/>
+    fsmapper gains unrestricted access to retrieve and modify aircraft states by communicating with the MobiFlight WASM Module operating within the MSFS process.<br/>
     The easiest way to install the MobiFlight WASM Module is by downloading and installing the **MobiFlight Connector** from [here](https://www.mobiflight.com/en/download.html).
 
 :::info
-The vanilla fsmapper communicates with FS2020 through the SimConnect API, which allows an external process to access only
+The vanilla fsmapper communicates with Microsoft Flight Simurator 2020 through the SimConnect API, which allows an external process to access only
 [**SimVars**](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) and
 [**Event IDs**](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm). 
 However, this access isn't sufficient to control all operable objects in a cockpit or retrieve all gauge statuses to display on another DIY gauge or virtual instrument panel.<br/>

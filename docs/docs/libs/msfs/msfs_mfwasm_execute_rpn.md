@@ -2,9 +2,9 @@
 sidebar_position: 5
 ---
 
-# fs2020.mfwasm.execute_rpn()
+# msfs.mfwasm.execute_rpn()
 ```lua
-fs2020.mfwasm.execute_rpn(rpn)
+msfs.mfwasm.execute_rpn(rpn)
 ```
 This function executes an [RPN](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) script within MSFS.
 
@@ -23,5 +23,5 @@ This function doesn't return any value.
 
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
-- [Changing FS2020's Internal State](/guide/msfs#changing-fs2020s-internal-state)
-- [`fs2020.mfwasm.rpn_executer()`](/libs/fs2020/fs2020_mfwasm_rpn_executer)
+- [Changing MSFS's Internal State](/guide/msfs#changing-msfss-internal-state)
+- [`msfs.mfwasm.rpn_executer()`](/libs/msfs/msfs_mfwasm_rpn_executer)

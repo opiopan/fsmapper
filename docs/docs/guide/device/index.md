@@ -131,7 +131,7 @@ local events = device:get_events()
 mapper:set_primary_mappings{
     {
         event = events.SW1.down,
-        action = fs2020.mfwasm.rpn_executer('(>K:AP_MASTER)')
+        action = msfs.mfwasm.rpn_executer('(>K:AP_MASTER)')
     }
 }
 ```

@@ -10,5 +10,5 @@ This chapter explains the specifications of the libraries provided by fsmapper f
 |----|------------|
 |[mapper](/libs/mapper)|fsmapper basic library|
 |[filter](/libs/filter)|Native-actions capable of cascading with other actions|
-|[fs2020](/libs/fs2020)|Interactivity features with Microsoft Flight Simulator|
+|[msfs](/libs/msfs)|Interactivity features with Microsoft Flight Simulator|
 |[graphics](/libs/graphics)|Graphics library|

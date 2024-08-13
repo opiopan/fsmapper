@@ -4,7 +4,7 @@ id: sample_index
 
 # Sample Scripts
 The fsmapper package contains several configuration script samples for practical use of [SimHID G1000](https://github.com/opiopan/simhid-g1000). These scripts can be found at ```samples/practical``` folder under the installation folder of fsmapper.<br/>
-To use these scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognaized as **COM3** and the display for SimHID G1000 is secondary monitor (**monitor No. is 2**).<br/>
+To use these scripts, [vJoy driver](https://sourceforge.net/projects/vjoystick) and [MobiFlight WASM module](https://github.com/MobiFlight/MobiFlight-WASM-Module) must be installed. In addition, it's assumed that the virtual serial Port for SimHID G1000 is recognized as **COM3** and the display for SimHID G1000 is secondary monitor (**monitor No. is 2**).<br/>
 If your environment is not same, change ```config``` table defined at the top of each script as below according to your environment.
 
 ``` Lua

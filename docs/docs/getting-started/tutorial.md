@@ -144,7 +144,7 @@ This distinction between the two events eliminates the need to explicitly handle
 It allows for concise definitions within the Event-Action mapping, reducing CPU load. 
 Additionally, the ```button``` event modifier option enables the generation of events for actions like double clicks or long presses.
 
-## Interact with FS2020
+## Interact with Microsoft Flight Simurator
 
 This section marks the end of the tutorial. Let's finally control an aircraft in Microsoft Flight Simulator.
 The goal is to register the following two Event-Action mappings.
@@ -169,12 +169,12 @@ mapper.set_primary_mappings{
     {
         event = events.button1.down,
         action = function ()
-            fs2020.mfwasm.execute_rpn('0 (A:LIGHT LANDING:0, Bool) ! (>K:2:LANDING_LIGHTS_SET)')
+            msfs.mfwasm.execute_rpn('0 (A:LIGHT LANDING:0, Bool) ! (>K:2:LANDING_LIGHTS_SET)')
         end
     },
     {
         event = events.button2.down,
-        action = fs2020.mfwasm.rpn_executer('0 (A:LIGHT STROBE:0, Bool) ! (>K:2:STROBES_SET)')
+        action = msfs.mfwasm.rpn_executer('0 (A:LIGHT STROBE:0, Bool) ! (>K:2:STROBES_SET)')
     },
 }
 ```
@@ -187,9 +187,9 @@ The added initial line retrieves a table containing event IDs according to each 
 
 In the two Event-Action mappings, cockpit devices are manipulated by executing [**RPN script**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm). In MSFS, [**RPN script**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) serve as one of the most versatile means of interaction.
 
-You might notice a slight difference in the descriptions of the two actions. The action for ```button1``` registers a Lua function as an action, similar to ```tutorial1.lua```. Within that function, it calls [```fs2020.execute_rpn()```](/libs/fs2020/fs2020_mfwasm_execute_rpn) to execute the RPN script.
+You might notice a slight difference in the descriptions of the two actions. The action for ```button1``` registers a Lua function as an action, similar to ```tutorial1.lua```. Within that function, it calls [```msfs.execute_rpn()```](/libs/msfs/msfs_mfwasm_execute_rpn) to execute the RPN script.
 
-The action for ```button2``` doesn't register a Lua function but instead registers an object returned by [```fs2020.rpn_executer()```](/libs/fs2020/fs2020_mfwasm_rpn_executer). This function returns a specific type of fsmapper object called a [**Native-action**](/guide/event-action-mapping#action). Native-action objects are implemented in precompiled native code by fsmapper, can be registered as actions, and can be executed with lower overhead compared to Lua functions.
+The action for ```button2``` doesn't register a Lua function but instead registers an object returned by [```msfs.rpn_executer()```](/libs/msfs/msfs_mfwasm_rpn_executer). This function returns a specific type of fsmapper object called a [**Native-action**](/guide/event-action-mapping#action). Native-action objects are implemented in precompiled native code by fsmapper, can be registered as actions, and can be executed with lower overhead compared to Lua functions.
 
 Apart from RPN execution, fsmapper offers several [**Native-actions**](/guide/event-action-mapping#action).
 

@@ -2,9 +2,9 @@
 sidebar_position: 7
 ---
 
-# fs2020.mfwasm.add_observed_data()
+# msfs.mfwasm.add_observed_data()
 ```lua
-fs2020.mfwasm.add_observed_data(def_array)
+msfs.mfwasm.add_observed_data(def_array)
 ```
 This function registers MSFS internal data as expressed in [RPN](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) for observing.
 It triggers the specified [events](/guide/event-action-mapping#event) in response to changes in the values of the registered data expressed in [RPN](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm).
@@ -33,5 +33,5 @@ This function doesn't return any value.
 
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
-- [Retrieving FS2020's Internal State](/guide/msfs#retrieving-fs2020s-internal-state)
-- [`fs2020.mfwasm.clear_observed_data()`](/libs/fs2020/fs2020_mfwasm_clear_observed_data)
+- [Retrieving MSFS's Internal State](/guide/msfs#retrieving-msfss-internal-state)
+- [`msfs.mfwasm.clear_observed_data()`](/libs/msfs/msfs_mfwasm_clear_observed_data)

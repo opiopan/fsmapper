@@ -54,9 +54,9 @@ Below is a list of functions or methods that provide native-action
 - [`vJoyUnit:value_setter()`](/libs/mapper/vJoyUnit/vJoyUnit-value_setter)
 - [`Keystroke:synthesize()`](/libs/mapper/Keystroke/Keystroke-synthesizer)
 - [filter library functions](/libs/filter)
-- [`fs2020.event_sender()`](/libs/fs2020/fs2020_event_sender)
-- [`fs2020.input_event_executer()`](/libs/fs2020/fs2020_input_event_executer)
-- [`fs2020.mfwasm.rpn_executer()`](/libs/fs2020/fs2020_mfwasm_rpn_executer)
+- [`msfs.event_sender()`](/libs/msfs/msfs_event_sender)
+- [`msfs.input_event_executer()`](/libs/msfs/msfs_input_event_executer)
+- [`msfs.mfwasm.rpn_executer()`](/libs/msfs/msfs_mfwasm_rpn_executer)
 
 ## Event-Action mapping definition
 When registering the correspondence between events and actions in fsmapper, 
@@ -143,4 +143,5 @@ Below is a list of currently defined system events.
 
 |Key|Description|
 |---|-----------|
-|`change_aircraft`|An event that occurs when Flight Simulator starts or stops, or when the selected aircraft changes. The **Event Value** is a associative array table where the `host` key holds the running Flight Simulator software and the `aircraft` key contains the selected aircraft.<br/>Currently, fsmapper only supports Microsoft Flight Simurator 2020, so the `host` value is either `'fs2020'` or `nil`.
+|`change_aircraft`|The event that occurs when fsmapper connects to the flight simulator or the connection is closed, or when the selected aircraft changes.<br/>The event value for this event is a associative array table that holds the simulator type and aircraft name. For details, refer to the [**SimAircraft Table**](/libs/mapper/mapper_events#simaircraft-table).
+

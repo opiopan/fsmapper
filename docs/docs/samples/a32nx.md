@@ -15,12 +15,12 @@ This is more complex than the above two scripts. This script provides the integr
 This script includes several [sub-module scripts](https://github.com/opiopan/fsmapper/tree/main/samples/practical/a32nx), and it also uses [several bitmap images](https://github.com/opiopan/fsmapper/tree/main/samples/practical/assets) to render each operable units.
 
 
-In this scrit, you can see the following example usage of fsmapper in addition to [```g1000_x56.lua```](g1000_x56) case.
+In this script, you can see the following example usage of fsmapper in addition to [```g1000_x56.lua```](g1000_x56) case.
 - Observing the aircraft status represented by [RPN script](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm)
 - Drawing graphics on the screen
-- Handling the touch events and mouse events occured on the screen
+- Handling the touch events and mouse events occurred on the screen
 
-This script defines following 6 views. Every view consist a FS2020 poped out instrument window and self rendered operable gauges.
+This script defines following 6 views. Every view consist a MSFS popped out instrument window and self rendered operable gauges.
 
 || Poped out instruments | Self rendered operable units
 |-|-----------------|----------------------
@@ -51,14 +51,14 @@ The correspondence between SimHID G1000 operations and A32NX operations are show
 |AP button          |AP1 button on FCU
 |FD button          |FD button on EFIS
 |APR button         |APPR button on FCU
-|ALT outer knob     |Increase / Decrease altitute indicator on FCU by 1000 feet
-|ALT inner knob     |Increase / Decrease altitute indicator on FCU by 100 feet
+|ALT outer knob     |Increase / Decrease altitude indicator on FCU by 1000 feet
+|ALT inner knob     |Increase / Decrease altitude indicator on FCU by 100 feet
 |ALT knob push button|Pushing ALT knob on FCU<br/>The pull operation is emulated by a long press
 |FLC button         |Pulling ALT knob on FCU
 |COM volume knob    |V/S or FPA knob on FCU<br/>The pull operation is emulated by a long press
 |COM swap button    |Pulling V/S or FPA knob on FCU
-|COM knob           |Freequency selector knob on RMP panel
-|BARO knob rotation |Manipuration of the value displayed in the barometer reference window
+|COM knob           |Frequency selector knob on RMP panel
+|BARO knob rotation |Manipulation of the value displayed in the barometer reference window
 |BARO knob push button|Switching barometer reference mode between QNH and standard barometer reference
 |Range knob rotation|Range selector switch on EFIS
 |Range knob joystick|Changing the mode displayed on the respective ND

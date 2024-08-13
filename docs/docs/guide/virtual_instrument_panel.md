@@ -8,7 +8,7 @@ fsmapper provides the capability to flexibly construct a virtual instrument pane
 When combined with a touchscreen-enabled display, it allows for a diverse range of aircraft controls beyond what can be achieved with your physical input devices alone. 
 This functionality is particularly designed with the following aspects in mind.
 
-- Ability to seamlessly integrate FS2020 instrument windows that are popped out using **`[Right Alt]`** + **`[Mouse Click]`** as part of the virtual instrument panel with a natural appearance.
+- Ability to seamlessly integrate MSFS's instrument windows that are popped out using **`[Right Alt]`** + **`[Mouse Click]`** as part of the virtual instrument panel with a natural appearance.
 
 - Not only does it have the capability to display and interact with different virtual instrument panels for each aircraft, but it also allows for dynamically switching between multiple panels within a single aircraft.
 
@@ -16,7 +16,7 @@ These features enable the utilization of smaller screens, such as tablets, witho
 
 :::note
 The motivation and drive behind creating fsmapper was precisely to achieve this feature.<br/>
-Towards the end of 2020, when I decided to DIY [this device](https://github.com/opiopan/simhid-g1000) for FS2020, I started researching which software would be most suitable for controlling the display. 
+Towards the end of 2020, when I decided to DIY [this device](https://github.com/opiopan/simhid-g1000) for Microsoft Flight Simulator 2020, I started researching which software would be most suitable for controlling the display. 
 Unfortunately, I couldn't find any software capable of this at the time.
 
 Ultimately, this led to the decision to DIY the software as well.
@@ -33,7 +33,7 @@ The virtual instrument panel comprises a combination of three hierarchical objec
     Holds the content displayed on the **Viewport** and handles touch interactions. Multiple **View**s can belong to a **Viewport**, but only one of them is displayed or receives touch events, referred to as the **current View**.
 
 - **View Element:**<br/>
-    A sub-component of the **View**, designed to simplify the rendering process and touch interactions. The FS2020 instrument window that pops out with **`[Right Alt]`** + **`[Mouse Click]`** can also serve as a **View Element** within the configuration of the **View**.
+    A sub-component of the **View**, designed to simplify the rendering process and touch interactions. The MSFS's instrument window that pops out with **`[Right Alt]`** + **`[Mouse Click]`** can also serve as a **View Element** within the configuration of the **View**.
 
 As an example, in [this sample script](/samples/a32nx), the relationships between each object will be explained.
 
@@ -41,7 +41,7 @@ As an example, in [this sample script](/samples/a32nx), the relationships betwee
 
 This script divides the entire sub-display into three viewports.<br/>
 Viewport 3 has only one view and acts as an indicator showing which view the other two viewports are displaying.<br/>
-Viewport 1 and Viewport 2 each contain five views with FS2020's pop-out instrument windows for six displays of the A320 (FCU, PFD, ND, ECAM x 2, MCDU).
+Viewport 1 and Viewport 2 each contain five views with MSFS's pop-out instrument windows for six displays of the A320 (FCU, PFD, ND, ECAM x 2, MCDU).
 Users can freely switch between the content of these two views.<br/>
 
 In this way, combining viewports and views allows for the creation of a flexible instrument panel.
@@ -62,10 +62,10 @@ Notice that unlike when popping out a window in FS2020, the title bar and window
 This illustrates how fsmapper actively manages the state of windows from other processes, captured as CapturedWindows, enhancing their utility as components within the view.
 
 :::info
-fsmapper utilizes a [**WH_CALLWNDPROC** global hook](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-hooks#wh_callwndproc-and-wh_callwndprocret) to perform DLL injection into processes like fs2020.
+fsmapper utilizes a [**WH_CALLWNDPROC** global hook](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-hooks#wh_callwndproc-and-wh_callwndprocret) to perform DLL injection into processes like Microsoft Flight simulator.
 This hook enables the replacement of message response processing, alongside [hooking certain Win32 APIs](https://github.com/opiopan/fsmapper/blob/v0.9.1/src/hook/hookdll.cpp#L339-L340), facilitating control over portions of the view and managing visibility in coordination with view switching.
 
-It seems that FS2020's pop-out windows require this special treatment; otherwise, it's not possible to control the appearance, position, and size of the window as intended without these measures.
+It seems that pop-out windows of Microsoft Flight Simulator 2020 require this special treatment; otherwise, it's not possible to control the appearance, position, and size of the window as intended without these measures.
 :::
 
 The conceptual explanation of **Viewport**, **View**, and **View Elements** concludes here, and the explanation will now focus on how to define them in Lua scripts.
@@ -158,7 +158,7 @@ local view_id = viewport3:register_view{
         {object=canvas, x=0, y=0, width=100, height=50},
         {object=captured_window, x=0, y=50, width=100, height=50},
     },
-    mappings = {{event=tapped, action = fs2020.rpn_executer('(>K:XPNDR_IDENT_ON)')}}
+    mappings = {{event=tapped, action = msfs.rpn_executer('(>K:XPNDR_IDENT_ON)')}}
 }
 ```
 
@@ -287,8 +287,8 @@ The ordering of same types of view elements reflects the sequence specified in t
 The element positioned at the beginning of the array appears in the forefront of the view.
 
 :::warning Note
-Please note that the CapturedWindow view element appears behind the view's background image. Adjust the alpha value to a lower setting for the area corresponding to the placement of the CapturedWindow within the view's background image to ensure transparency for the underlying CapturedWindow. <br/>
-Especially for CapturedWindows targeting pop-out instrument windows in FS2020 with touch panel functionality such as Garmin G3X, an alpha value of 0 is necessary. As per Windows specifications, if a Layered Window has an alpha value other than 0 in the foreground, it won't receive touch or mouse-related messages.
+Note that the CapturedWindow view element appears behind the view's background image. Adjust the alpha value to a lower setting for the area corresponding to the placement of the CapturedWindow within the view's background image to ensure transparency for the underlying CapturedWindow. <br/>
+Especially for CapturedWindows targeting pop-out instrument windows in Microsoft Flight Simulator 2020 with touch panel functionality such as Garmin G3X, an alpha value of 0 is necessary. As per Windows specifications, if a Layered Window has an alpha value other than 0 in the foreground, it won't receive touch or mouse-related messages.
 :::
 
 ## Render on the View
@@ -326,7 +326,7 @@ The canvas above gets updated synchronously with the change in the aircraft's he
 ```lua
 -- Register an RPN to monitor the heading of the aircraft
 local hdg_change = mapper.register_event('HDG')
-fs2020.add_observed_data{
+msfs.add_observed_data{
     {
         event = hdg_change,
         rpn = '360 (A:HEADING INDICATOR, Degrees) -',
@@ -362,7 +362,7 @@ Please specify the event ID corresponding to the supported action alongside the 
 |event_rotate__counterclockwise|numeric|**CURRENTRY NOT IMPLEMENTED**
 
 ## Handling Poped out Windows {#handle-poped-out-windows}
-For integrating FS2020's popped-out instrument windows into the virtual instrument window, define a [`CapturedWindow`](/libs/mapper/CapturedWindow) view element corresponding to the area where the popped-out window should be placed.
+For integrating popped-out instrument windows of a flight simulator into the virtual instrument window, define a [`CapturedWindow`](/libs/mapper/CapturedWindow) view element corresponding to the area where the popped-out window should be placed.
 If a [**Viewport**](#viewport) containing a [**View**](#view) with [`CapturedWindow`](/libs/mapper/CapturedWindow) placements is present, calling [`mapper.start_viewports()`](/libs/mapper/mapper_start_viewports) won’t immediately display the view. Instead, a list of defined [`CapturedWindow`](/libs/mapper/CapturedWindow) elements will appear on the left side of the dashboard as shown below.
 
 ![Window Capturing](images/capturing-window.png)
@@ -392,8 +392,8 @@ Unfortunately, despite not fitting either condition, capturing also fails for th
 When the window image capture fails, as shown in the image above, the icon image associated with the window is displayed on the button.
 :::
 
-### Avoiding touch problems of FS2020
-It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation. <br/>
+### Avoiding touch problems of MSFS2020
+It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation in Microsoft Flight Simulator 2020. <br/>
 fsmapper provides a workaround solution for this problem. 
 You will be able to operate popped out windows with touch operation if those windows are managed as CapturedWindow view elements.
 
@@ -402,9 +402,9 @@ If you want to stop this workaround, specify the value as false for `avoid_touch
 :::info Note
 I don't know the true reason why touch operations are ignored by FS2020. However I assume that this problem is caused by the mechanism to recognize the mouse status change.
 
-I assume that FS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as `WM_LBUTTON_DOWN`. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br/>
+I assume that MSFS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as `WM_LBUTTON_DOWN`. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br/>
 Mouse messages generated as a result of tapping are exactly this situation.
-To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, `WM_LBUTTON_DOWN` and `WM_LBUTTON_UP` messages will occur at the almost same time when you tap a display. In this case, FS2020 cannot recognize mouse button state changes.
+To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, `WM_LBUTTON_DOWN` and `WM_LBUTTON_UP` messages will occur at the almost same time when you tap a display. In this case, MSFS2020 cannot recognize mouse button state changes.
 
 Based on this hypothesis, fsmapper removes mouse events generated as a result of a touch operation from the mouse event queue. on the other hand, fsmapper generates mouse events with appropriate intervals.
 :::

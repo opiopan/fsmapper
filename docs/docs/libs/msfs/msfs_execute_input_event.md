@@ -2,9 +2,9 @@
 sidebar_position: 4.1
 ---
 
-# fs2020.execute_input_event()
+# msfs.execute_input_event()
 ```lua
-fs2020.execute_input_event(input_event, value)
+msfs.execute_input_event(input_event, value)
 ```
 This function issues an [Input Event](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm) into the Microsoft Flight Simulator.
 
@@ -25,4 +25,4 @@ This function doesn't return any value.
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
 - [Issueing an Input Event](/guide/msfs#issueing-an-input-event)
-- [`fs2020.input_event_executer()`](/libs/fs2020/fs2020_input_event_executer)
+- [`msfs.input_event_executer()`](/libs/msfs/msfs_input_event_executer)

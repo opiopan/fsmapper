@@ -2,14 +2,14 @@
 sidebar_position: 1
 ---
 
-# fs2020.send_event()
+# msfs.send_event()
 ```lua
-fs2020.send_event(event_name[, param1[, param2[, param3[, param4[, param5]]]])
+msfs.send_event(event_name[, param1[, param2[, param3[, param4[, param5]]]])
 ```
 This function send a [Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm) to the Microsoft Flight Simulator.
 
 :::warning Note
-This function is recommended to be replaced with [`fs2020.mfwasm.execute_rpn()`](/libs/fs2020/fs2020_mfwasm_execute_rpn). It provides greater flexibility for specifying operations, and allows for operations that cannot be achieved with [Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm).
+This function is recommended to be replaced with [`msfs.mfwasm.execute_rpn()`](/libs/msfs/msfs_mfwasm_execute_rpn). It provides greater flexibility for specifying operations, and allows for operations that cannot be achieved with [Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm).
 :::
 
 ## Parameters

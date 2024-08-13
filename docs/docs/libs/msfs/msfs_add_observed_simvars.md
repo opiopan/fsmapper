@@ -2,16 +2,16 @@
 sidebar_position: 3
 ---
 
-# fs2020.add_observed_simvars()
+# msfs.add_observed_simvars()
 ```lua
-fs2020.add_observed_simvars(def_array)
+msfs.add_observed_simvars(def_array)
 ```
 This function registers [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) for observing.
 It triggers the specified [events](/guide/event-action-mapping#event) in response to changes in the values of the registered [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm).
 In this case, the [Event Value](/guide/event-action-mapping#event) corresponds to the [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm)'s value.
 
 :::warning Note
-This function is recommended to be replaced with [`fs2020.mfwasm.add_observed_data()`](/libs/fs2020/fs2020_mfwasm_add_observed_data). It becomes possible to access the internal states of MSFS that are not accessible through [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm), allowing for a more flexible data expression.
+This function is recommended to be replaced with [`msfs.mfwasm.add_observed_data()`](/libs/msfs/msfs_mfwasm_add_observed_data). It becomes possible to access the internal states of MSFS that are not accessible through [SimVars](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm), allowing for a more flexible data expression.
 :::
 
 ## Parameters

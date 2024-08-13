@@ -2,9 +2,9 @@
 sidebar_position: 6
 ---
 
-# fs2020.mfwasm.rpn_executer()
+# msfs.mfwasm.rpn_executer()
 ```lua
-fs2020.mfwasm.rpn_executer(rpn)
+msfs.mfwasm.rpn_executer(rpn)
 ```
 This function creates a native-action to execute an [RPN](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) script within MSFS.
 
@@ -23,5 +23,5 @@ This function returns a native-action.
 
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
-- [Changing FS2020's Internal State](/guide/msfs#changing-fs2020s-internal-state)
-- [`fs2020.mfwasm.execute_rpn()`](/libs/fs2020/fs2020_mfwasm_execute_rpn)
+- [Changing MSFS's Internal State](/guide/msfs#changing-msfss-internal-state)
+- [`msfs.mfwasm.execute_rpn()`](/libs/msfs/msfs_mfwasm_execute_rpn)
