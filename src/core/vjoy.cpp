@@ -13,6 +13,7 @@
 #include <vector>
 #include <functional>
 #include <cmath>
+#include <format>
 #include <sol/sol.hpp>
 #include <windows.h>
 #include <public.h>
@@ -61,6 +62,9 @@ public:
 //============================================================================================
 // Class representing vJoy device that is created when lua function "vjoy()" is called
 //============================================================================================
+class vJoyDevice;
+static std::unordered_map<UINT, std::shared_ptr<vJoyDevice>> device_cache;
+
 class vJoyDevice{
 protected:
     vJoyManager& manager;
@@ -76,7 +80,13 @@ public:
             throw std::runtime_error("vJoy device id must be specified as integer grater than 0");
         }
 
-        return std::make_shared<vJoyDevice>(manager, *device_id);
+        if (device_cache.count(*device_id) > 0){
+            return device_cache.at(*device_id);
+        }else{
+            auto device =  std::make_shared<vJoyDevice>(manager, *device_id);
+            device_cache.insert(std::pair(*device_id, device));
+            return device;
+        }
     }
 
     vJoyDevice(vJoyManager& manager, int device_id): manager(manager), device_id(device_id){
@@ -177,7 +187,7 @@ public:
         // logging
         //
         std::ostringstream os;
-        os << "vjoy: vJoy device #" << device_id << " has " << axes.size() + buttons.size() + povs.size() << " objects";
+        os << "vjoy: vJoy device #" << device_id << " (" << axes.size() + buttons.size() + povs.size() << " objects) has been opened";
         if (axes.size()){
             os << std::endl << "    " << axes.size() << " axes: ";
             for (auto& [name, axis] : axes){
@@ -195,6 +205,7 @@ public:
 
     ~vJoyDevice(){
         RelinquishVJD(device_id);
+        manager.getEngine().putLog(MCONSOLE_DEBUG, std::format("vjoy: vJoy device #{} has been closed", device_id));
     };
 
     MapperEngine& getEngine(){return manager.getEngine();}
@@ -266,9 +277,11 @@ std::shared_ptr<NativeAction::Function> vJoyDeviceUnit::valueSetter(sol::object 
 // Build lua environment for vjoy usertype
 //============================================================================================
 vJoyManager::vJoyManager(MapperEngine& engine) : engine(engine){
+    device_cache.clear();
 }
 
 vJoyManager::~vJoyManager(){
+    device_cache.clear();
 }
 
 void vJoyManager::init_scripting_env(sol::state& lua, sol::table& mapper_table){

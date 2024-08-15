@@ -142,7 +142,7 @@ void SimHIDConnection::processReceivedData_D(){
         status = Status::running;
         cv.notify_all();
         std::ostringstream msg;
-        msg << "SimHID device [" << devicePath << "] is opened:";
+        msg << "SimHID device [" << devicePath << "] has been opened:";
         for (auto& element : deviceid){
             msg << std::endl;
             msg << "    " << element.key << " " << element.value;
@@ -208,7 +208,7 @@ void SimHIDConnection::processReceivedData_S(){
 SimHIDConnection::~SimHIDConnection(){
     stop();
     std::ostringstream os;
-    os << "SimHID deivice [" << devicePath << "] was closed";
+    os << "SimHID deivice [" << devicePath << "] has been closed";
     fsmapper_putLog(mapper, FSMLOG_DEBUG, os.str().c_str());
 }
 

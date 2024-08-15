@@ -14,6 +14,7 @@
 #include <sstream>
 #include <optional>
 #include <cmath>
+#define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #include "dinputdev.h"
 #include "tools.h"
@@ -302,7 +303,7 @@ public:
 
     std::string to_string(const char* device_name){
         std::ostringstream os;
-        os << "\"" << device_name << "\" has " << unit_num_raw << " objects:";
+        os << "\"" << device_name << "\" (" << unit_num_raw << " objects) has been opened";
         if (axes.size()){
             os << std::endl << "    " << axes.size() << " axes : ";
             for (auto& axis : axes){
