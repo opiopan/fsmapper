@@ -11,6 +11,8 @@
 #include <string>
 #include "simhost.h"
 
+class DCSWorldSendBuffer;
+
 class DCSWorld : public SimHostManager::Simulator {
     enum class STATUS{connecting, retrying, connected};
 
@@ -22,7 +24,7 @@ class DCSWorld : public SimHostManager::Simulator {
     bool is_active {false};
     std::string aircraft_name;
     char rx_buf[16 * 1024];
-    char tx_buf[16 * 1024];
+    std::unique_ptr<DCSWorldSendBuffer> tx_buf;
 
 public:
     DCSWorld(SimHostManager &manager, int id);
