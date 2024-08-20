@@ -39,7 +39,7 @@ protocol.connection = {
             local cmd, rest = self.rbuf:match('^([^\n]*)\n(.*)')
             if cmd then
                 self.rbuf = rest
-                slef:process_command(cmd)
+                self:process_command(cmd)
             else
                 break
             end
@@ -68,6 +68,21 @@ protocol.fsmapper_client = {
     end,
 
     process_command = function (self, cmd)
+        local type, body = cmd:sub(1, 1), cmd:sub(2)
+        local processor = self[type]
+        if processor then
+            result, msg = pcall(processor, self, body)
+            if not result then
+                log.write('FSMAPPER.LUA', log.INFO, 'Processing a request packet has failed: ' .. msg)
+            end
+        else
+            fsmapper.log("unsuported command: " .. type)
+        end
+    end,
+
+    P = function (self, body)
+        local args = common.split(body, ':')
+        GetDevice(tonumber(args[1])):performClickableAction(tonumber(args[2]), tonumber(args[3]))
     end,
 
     inform_version = function (self, version)

@@ -10,6 +10,7 @@ if is_fsmapper_exporter_initialized ~= true then
     fsmapper.scriptpath = fsmapper.scriptdir..'fsmapper.lua'
     package.path = package.path .. ';' .. fsmapper.scriptdir .. '?.lua;' .. ";./LuaSocket/?.lua" .. ";./Scripts/?.lua"
     package.cpath = package.cpath .. ";./LuaSocket/?.dll"
+    fsmapper.log =function () end
 
     log.write('FSMAPPER.LUA',log.INFO,'Starting ['..fsmapper.scriptpath..']')
 

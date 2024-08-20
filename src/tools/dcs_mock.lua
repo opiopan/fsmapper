@@ -26,12 +26,24 @@ function LoGetVersionInfo()
     }
 end
 
+function GetDevice(device_id)
+    local device = {device_id = device_id}
+    device.performClickableAction = function (self, command, value)
+        print(string.format("device(%d):performClickableAction(%d, %f)", self.device_id, command, value))
+    end
+    return device
+end
+
 local socket = require('socket')
 
 fsmapper = {}
 fsmapper.basedir = arg[1] .. '..\\'
 
 dofile(arg[1] .. 'fsmapper.lua')
+
+fsmapper.log = function (msg)
+    print("debug: " .. msg)
+end
 
 if LuaExportStart then LuaExportStart() end
 

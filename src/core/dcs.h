@@ -10,6 +10,7 @@
 #include <mutex>
 #include <string>
 #include "simhost.h"
+#include "action.h"
 
 class DCSWorldSendBuffer;
 
@@ -43,4 +44,7 @@ public:
 protected:
     void process_received_data(std::unique_lock<std::mutex>& lock, const char* buf, int len, std::string& context);
     void dispatch_received_command(std::unique_lock<std::mutex> &lock, const char *cmd, int len);
+
+    void lua_perform_clickable_action(sol::variadic_args args);
+    std::shared_ptr<NativeAction::Function> lua_clickable_action_performer(sol::variadic_args args);
 };

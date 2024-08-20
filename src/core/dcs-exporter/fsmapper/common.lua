@@ -7,4 +7,12 @@ function common.instantiate(class, super, ...)
     return self
 end
 
+function common.split(str, delimiter)
+    local result = {}
+    for chunk in str:gmatch('([^' .. delimiter .. ']+)') do
+        result[#result + 1] = chunk
+    end
+    return result
+end
+
 return common

@@ -156,7 +156,7 @@ public:
 };
 
 //============================================================================================
-// Sned buffer
+// Transmit buffer
 //============================================================================================
 class DCSWorldSendBuffer{
     static constexpr auto block_size = 32 * 1024;
@@ -242,7 +242,7 @@ public:
         }
         written += size;
         if (written >= writing->used){
-            written = 0;
+            writing->used = 0;
             buff_blocks.push_back(writing);
             writing = nullptr;
         }
@@ -253,6 +253,7 @@ public:
         if (!is_enable){
             return false;
         }
+        auto rc = !writing && buff_blocks.begin()->operator*().used == 0;
         while (size){
             if (current->operator*().remain() == 0){
                 current++;
@@ -267,7 +268,7 @@ public:
             current_buf->used += write_size;
             size -= write_size;
         }
-        return true;
+        return rc;
     }
 };
 
@@ -298,8 +299,9 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
         client_socket client(config.tcp_port);
         std::string rx_command;
         WSAEVENT events[] {schedule_event, client.get_event()};
-        auto event_num = 1;
-        auto timeout = 0;
+        auto event_num{1};
+        auto timeout{0};
+        auto write_is_blocked{false};
         auto on_close = [&]{
             status = STATUS::connecting;
             aircraft_name.clear();
@@ -312,17 +314,33 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
         };
 
         while (true){
-            if (status == STATUS::connecting){
+            if (status == STATUS::connected){
+                if (!tx_buf->is_empty() && !write_is_blocked){
+                    auto data = tx_buf->get_writable_data();
+                    client.event_select(FD_READ | FD_CLOSE | FD_WRITE);
+                    auto written = client.send(data.buff, data.size);
+                    if (written == SOCKET_ERROR){
+                        if (WSAGetLastError() == EWOULDBLOCK){
+                            write_is_blocked = true;
+                        }else{
+                            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: An error occurred while communicating with DCS World: send()");
+                            on_close();
+                        }
+                    }else{
+                        tx_buf->trim(written);
+                        client.event_select(FD_READ | FD_CLOSE);
+                    }
+                    continue;
+                }
+                event_num = 2;
+                timeout = WSA_INFINITE;
+            }else if (status == STATUS::connecting){
                 client.connect();
                 event_num = 2;
                 timeout = WSA_INFINITE;
             }else if (status == STATUS::retrying){
                 event_num =1;
                 timeout = connecting_interval;
-            }else if (status == STATUS::connected){
-                event_num = 2;
-                timeout = WSA_INFINITE;
-                client.event_select(FD_READ | FD_CLOSE | (tx_buf->is_empty() ? 0 : FD_WRITE));
             }
             lock.unlock();
             auto index = ::WSAWaitForMultipleEvents(event_num, events, false, timeout, false);
@@ -333,30 +351,13 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
             if (index == WSA_WAIT_TIMEOUT){
                 status = STATUS::connecting;
             }else if (index >= WSA_WAIT_EVENT_0 && index < WSA_WAIT_EVENT_0 + event_num){
-                ::ResetEvent(events[index - WSA_WAIT_EVENT_0]);
                 if (index == 0){
                     // process requests
-                }else if (status == STATUS::connecting){
-                    if (client.get_socket_error() == 0){
-                        status = STATUS::connected;
-                        tx_buf->reset(true);
-                        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: connection with DCS World exporter has been established");
-                        lock.unlock();
-                        reportConnectivity(true, MAPPER_SIM_DCS, "dcs", nullptr);
-                        lock.lock();
-                    }else{
-                        status = STATUS::retrying;
-                    }
+                    ::ResetEvent(events[index - WSA_WAIT_EVENT_0]);
                 }else if (status == STATUS::connected){
                     auto nevent = client.get_network_event();
                     if (nevent & FD_WRITE){
-                        auto data = tx_buf->get_writable_data();
-                        auto written = client.send(data.buff, data.size);
-                        if (written == SOCKET_ERROR){
-                            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: An error occurred while communicating with DCS World: send()");
-                            on_close();
-                        }
-                        tx_buf->trim(written);
+                        write_is_blocked = false;
                     }
                     if (nevent & (FD_READ | FD_CLOSE)){
                         auto received = client.receive(rx_buf, sizeof(rx_buf));
@@ -369,6 +370,18 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
                             mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: An error occurred while communicating with DCS World: recv()");
                             on_close();
                         }
+                    }
+                }else if (status == STATUS::connecting){
+                    if (client.get_socket_error() == 0){
+                        status = STATUS::connected;
+                        tx_buf->reset(true);
+                        client.event_select(FD_READ | FD_CLOSE);
+                        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: connection with DCS World exporter has been established");
+                        lock.unlock();
+                        reportConnectivity(true, MAPPER_SIM_DCS, "dcs", nullptr);
+                        lock.lock();
+                    }else{
+                        status = STATUS::retrying;
                     }
                 }
             }
@@ -446,9 +459,119 @@ void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, con
     }
 }
 
+//============================================================================================
+// Utilities for Lua functions
+//============================================================================================
+struct basic_args{
+    int64_t device_id{0};
+    int64_t command{0};
+    int64_t arg_nummber{0};
+    double value{0};
+};
+enum class arg_type:int {device_id = 0, command, arg_number, value};
+
+template <typename T, T basic_args::* Member>
+bool apply_value(basic_args& result, sol::object object){
+    auto value = lua_safevalue<T>(object);
+    if (value){
+        result.*Member = *value;
+        return true;
+    }else{
+        return false;
+    }
+}
+
+void parse_basic_args(sol::variadic_args args, const std::vector<arg_type>& rule, basic_args& result){
+    struct arg_prop{
+        const char* name;
+        bool (*apply_value)(basic_args& result, sol::object);
+    };
+    static std::vector<arg_prop> arg_props {
+        {"device_id", apply_value<int64_t, &basic_args::device_id>},
+        {"command", apply_value<int64_t, &basic_args::command>},
+        {"arg_number", apply_value<int64_t, &basic_args::arg_nummber>},
+        {"value", apply_value<double, &basic_args::value>},
+    };
+
+    sol::object arg0 = args[0];
+    if (arg0.get_type() == sol::type::table){
+        sol::table arg_table = arg0;
+        for (const auto& type : rule){
+            auto& prop = arg_props[static_cast<int>(type)];
+            if (!prop.apply_value(result, arg_table[prop.name])){
+                throw std::runtime_error(std::format("parameter '{}' is not specified or value type is invalid", prop.name));
+            }
+        }
+    }else{
+        if (args.size() < rule.size()){
+            throw std::runtime_error("Not enough argument provided");
+        }
+        for (auto i = 0; i < rule.size(); i++){
+            auto& prop = arg_props[static_cast<int>(rule[i])];
+            if (!prop.apply_value(result, args[i])){
+                static const char*numeral[] = {"1st", "2nd", "3rd", "4th", "5th"};
+                throw std::runtime_error(std::format("the {} argument is invalid", numeral[i]));
+            }
+        }
+    }
+}
+
+//============================================================================================
+// Lua functions
+//============================================================================================
+void DCSWorld::lua_perform_clickable_action(sol::variadic_args args){
+    static std::vector<arg_type> rule{arg_type::device_id, arg_type::command, arg_type::value};
+    basic_args result;
+    parse_basic_args(args, rule, result);
+    auto&& command = std::format("P{}:{}:{}\n", result.device_id, result.command, result.value);
+    if (tx_buf->insert_data(command.c_str(), command.length())){
+        ::SetEvent(schedule_event);
+    }
+}
+
+std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer(sol::variadic_args args){
+    static std::vector<arg_type> rule{arg_type::device_id, arg_type::command};
+    basic_args parsed_args;
+    parse_basic_args(args, rule, parsed_args);
+    std::optional<double> value;
+    if (args[0].get_type() == sol::type::table){
+        sol::table arg_table = args[0];
+        value = lua_safevalue<double>(arg_table["value"]);
+    }else{
+        value = lua_safevalue<double>(args[2]);
+    }
+    std::string func_name;
+    if (value){
+        func_name = std::format("dcs.perform_clickable_action({}, {}, {})", parsed_args.device_id, parsed_args.command, *value);
+    }else{
+        func_name = std::format("dcs.perform_clickable_action({}, {}, EVENT_VALUE)", parsed_args.device_id, parsed_args.command);
+    }
+
+    NativeAction::Function::ACTION_FUNCTION func = [this, parsed_args, value](Event& event, sol::state&){
+        auto true_value = value ? *value : static_cast<double>(event);
+        auto&& command = std::format("P{}:{}:{}\n", parsed_args.device_id, parsed_args.command, true_value);
+        if (tx_buf->insert_data(command.c_str(), command.length())){
+            ::SetEvent(schedule_event);
+        }
+    };
+
+    return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+}
 
 //============================================================================================
 // Create Lua scripting environment
 //============================================================================================
 void DCSWorld::initLuaEnv(sol::state &lua){
+    auto dcs = lua.create_table();
+    dcs["perform_clickable_action"] = [this](sol::variadic_args args){
+        lua_c_interface(*mapper_EngineInstance(), "dcs.perform_clickable_action", [this, args](){
+            lua_perform_clickable_action(args);
+        });
+    };
+    dcs["clickable_action_performer"] = [this](sol::variadic_args args){
+        return lua_c_interface(*mapper_EngineInstance(), "dcs.perform_clickable_action", [this, args](){
+            return lua_clickable_action_performer(args);
+        });
+    };
+    lua["dcs"] = dcs;
 }
