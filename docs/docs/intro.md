@@ -69,17 +69,10 @@ In 2023, MSFS2020 was improved to pop out individual windows with a unique windo
 
 :::
 
-import ThemedImage from '@theme/ThemedImage';
-import useBaseUrl from '@docusaurus/useBaseUrl';
+import ArchImage from '/img/fsmapper-arch.svg';
 
 <p>
-  <ThemedImage
-    alt="fsmapper architecture image"
-    sources={{
-      light: useBaseUrl('/img/fsmapper-arch.svg'),
-      dark: useBaseUrl('/img/fsmapper-arch-dark.svg'),
-    }}
-  />
+  <ArchImage className="arch_image"/>
 </p>
 
 The diagram above illustrates how fsmapper works. fsmapper patiently waits for events (***<span className="annotation_green">green arrows</span>***) such as operations from various input devices, touchscreen interactions, and changes in the aircraft's status within a flight simulator. Upon detecting an event, fsmapper executes the corresponding action. These actions are Lua function objects that allow interaction (***<span className="annotation_orange">orange arrows</span>***) with various objects such as aircraft controls within a flight simulator, graphical representation on the screen, and data output to devices, facilitated through Lua functions and Lua objects provided by fsmapper.

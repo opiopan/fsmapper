@@ -63,3 +63,20 @@
 .annotation_orange {
   color: var(--fm-annotation-orange);
 }
+
+.arch_image {
+  width: 100%;
+  height: auto;
+}
+
+[data-theme='dark'] .arch_image {
+  fill: white;
+}
+
+[data-theme='dark'] .arch_image [stroke] {
+  stroke: white;
+}
+
+[data-theme='dark'] .arch_image [fill-opacity="0.162"] {
+  fill-opacity: 0.65;
+}
