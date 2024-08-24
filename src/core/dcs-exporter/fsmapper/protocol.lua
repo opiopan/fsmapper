@@ -82,7 +82,9 @@ protocol.fsmapper_client = {
 
     P = function (self, body)
         local args = common.split(body, ':')
-        GetDevice(tonumber(args[1])):performClickableAction(tonumber(args[2]), tonumber(args[3]))
+        for i = 3, #args do
+            GetDevice(tonumber(args[1])):performClickableAction(tonumber(args[2]), tonumber(args[i]))
+        end
     end,
 
     inform_version = function (self, version)

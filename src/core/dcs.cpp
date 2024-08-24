@@ -481,7 +481,8 @@ bool apply_value(basic_args& result, sol::object object){
     }
 }
 
-void parse_basic_args(sol::variadic_args args, const std::vector<arg_type>& rule, basic_args& result){
+enum class args_kind{sequential, lableled};
+args_kind parse_basic_args(sol::variadic_args args, const std::vector<arg_type>& rule, basic_args& result){
     struct arg_prop{
         const char* name;
         bool (*apply_value)(basic_args& result, sol::object);
@@ -499,9 +500,10 @@ void parse_basic_args(sol::variadic_args args, const std::vector<arg_type>& rule
         for (const auto& type : rule){
             auto& prop = arg_props[static_cast<int>(type)];
             if (!prop.apply_value(result, arg_table[prop.name])){
-                throw std::runtime_error(std::format("parameter '{}' is not specified or value type is invalid", prop.name));
+                throw std::runtime_error(std::format("the parameter '{}' is not specified or value type is invalid", prop.name));
             }
         }
+        return args_kind::lableled;
     }else{
         if (args.size() < rule.size()){
             throw std::runtime_error("Not enough argument provided");
@@ -513,49 +515,92 @@ void parse_basic_args(sol::variadic_args args, const std::vector<arg_type>& rule
                 throw std::runtime_error(std::format("the {} argument is invalid", numeral[i]));
             }
         }
+        return args_kind::sequential;
     }
+}
+
+template <typename T, typename F>
+int parse_values_arg(T args, int from, F callback){
+    int num {0};
+    if (args.get_type() != sol::type::nil){
+        for (auto i = from; i < args.size(); i++){
+            auto value = lua_safevalue<double>(args[i]);
+            if (value){
+                callback(*value);
+                num++;
+            }
+        }
+    }
+    return num;
 }
 
 //============================================================================================
 // Lua functions
 //============================================================================================
 void DCSWorld::lua_perform_clickable_action(sol::variadic_args args){
-    static std::vector<arg_type> rule{arg_type::device_id, arg_type::command, arg_type::value};
+    static std::vector<arg_type> rule{arg_type::device_id, arg_type::command};
     basic_args result;
-    parse_basic_args(args, rule, result);
-    auto&& command = std::format("P{}:{}:{}\n", result.device_id, result.command, result.value);
-    if (tx_buf->insert_data(command.c_str(), command.length())){
+    auto kind = parse_basic_args(args, rule, result);
+    std::ostringstream os;
+    os << "P" << result.device_id << ":" << result.command;
+    if (kind == args_kind::sequential){
+        if (!parse_values_arg(args, 2, [&os](auto value){os << ":" << value;})){
+            throw std::runtime_error("the 3rd argument is not specified or value type is invalid");
+        }
+    }else{
+        sol::table args_table = args[0];
+        sol::table values = args_table["values"];
+        if (!parse_values_arg(values, 2, [&os](auto value){os << ":" << value;})){
+            throw std::runtime_error("the parameter 'values' is not specified or value type is invalid");
+        }
+    }
+    os << std::endl;
+    auto&& cmd = os.str();
+    if (tx_buf->insert_data(cmd.c_str(), cmd.length())){
         ::SetEvent(schedule_event);
     }
 }
 
 std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer(sol::variadic_args args){
     static std::vector<arg_type> rule{arg_type::device_id, arg_type::command};
-    basic_args parsed_args;
-    parse_basic_args(args, rule, parsed_args);
-    std::optional<double> value;
-    if (args[0].get_type() == sol::type::table){
-        sol::table arg_table = args[0];
-        value = lua_safevalue<double>(arg_table["value"]);
+    basic_args result;
+    auto kind = parse_basic_args(args, rule, result);
+    std::ostringstream os;
+    os << "P" << result.device_id << ":" << result.command;
+    std::ostringstream os2;
+    os2 << std::format("dcs.perform_clickable_action({}, {}", result.device_id, result.command);
+    auto use_event_value{false};
+    if (kind == args_kind::sequential){
+        use_event_value = !parse_values_arg(args, 2, [&os, &os2](auto value){os << ":" << value; os2 << ", " << value;});
     }else{
-        value = lua_safevalue<double>(args[2]);
+        sol::table args_table = args[0];
+        sol::table values = args_table["values"];
+        use_event_value = !parse_values_arg(values, 2, [&os, &os2](auto value){os << ":" << value; os2 << ", " << value;});
     }
-    std::string func_name;
-    if (value){
-        func_name = std::format("dcs.perform_clickable_action({}, {}, {})", parsed_args.device_id, parsed_args.command, *value);
+    
+    NativeAction::Function::ACTION_FUNCTION func;
+    if (use_event_value){
+        os << ":";
+        os2 << ", EVENT_VALUE)";
+        auto cmd = os.str();
+        func = [this, cmd](auto& event, auto&){
+            auto c_cmd = std::format("{}{}\n", cmd, static_cast<double>(event));
+            if (tx_buf->insert_data(c_cmd.c_str(), c_cmd.length())){
+                ::SetEvent(schedule_event);
+            }
+        };
     }else{
-        func_name = std::format("dcs.perform_clickable_action({}, {}, EVENT_VALUE)", parsed_args.device_id, parsed_args.command);
+        os << std::endl;
+        os2 << ")";
+        auto cmd = os.str();
+        func = [this, cmd](auto& event, auto&){
+            if (tx_buf->insert_data(cmd.c_str(), cmd.length())){
+                ::SetEvent(schedule_event);
+            }
+        };
     }
 
-    NativeAction::Function::ACTION_FUNCTION func = [this, parsed_args, value](Event& event, sol::state&){
-        auto true_value = value ? *value : static_cast<double>(event);
-        auto&& command = std::format("P{}:{}:{}\n", parsed_args.device_id, parsed_args.command, true_value);
-        if (tx_buf->insert_data(command.c_str(), command.length())){
-            ::SetEvent(schedule_event);
-        }
-    };
-
-    return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+    return std::make_shared<NativeAction::Function>(os2.str().c_str(), func);
 }
 
 //============================================================================================
