@@ -13,6 +13,7 @@
 #include "action.h"
 
 class DCSWorldSendBuffer;
+class DCSObservedData;
 
 class DCSWorld : public SimHostManager::Simulator {
     enum class STATUS{connecting, retrying, connected};
@@ -26,6 +27,7 @@ class DCSWorld : public SimHostManager::Simulator {
     std::string aircraft_name;
     char rx_buf[16 * 1024];
     std::unique_ptr<DCSWorldSendBuffer> tx_buf;
+    std::vector<std::unique_ptr<DCSObservedData>> observed_data_defs;
 
 public:
     DCSWorld(SimHostManager &manager, int id);
@@ -34,17 +36,25 @@ public:
     virtual ~DCSWorld();
     void initLuaEnv(sol::state &lua) override;
     void changeActivity(bool is_active) override{
-        std::lock_guard lock{mutex};
+        std::unique_lock lock{mutex};
         this->is_active = is_active;
+        if (is_active){
+            sync_observed_data_definitions(lock);
+        }
     }
     HWND getRepresentativeWindow() override {
         return nullptr;
     }
 
 protected:
-    void process_received_data(std::unique_lock<std::mutex>& lock, const char* buf, int len, std::string& context);
-    void dispatch_received_command(std::unique_lock<std::mutex> &lock, const char *cmd, int len);
+    void process_received_data(std::unique_lock<std::mutex>& lock, char* buf, int len, std::string& context);
+    void dispatch_received_command(std::unique_lock<std::mutex>& lock, const char *cmd, int len);
+
+    void sync_observed_data_definitions(std::unique_lock<std::mutex>& lock);
+    void triger_observed_data_event(size_t index, int type, const char* value);
 
     void lua_perform_clickable_action(sol::variadic_args args);
     std::shared_ptr<NativeAction::Function> lua_clickable_action_performer(sol::variadic_args args);
+    void lua_add_observed_data(sol::object arg0);
+    void lua_clear_observed_data();
 };

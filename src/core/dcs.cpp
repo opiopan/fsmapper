@@ -2,6 +2,18 @@
 // dcs.cpp
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
 //
+//  Commands:
+//    fsmapper -> exorter:
+//      P: perform clickable action
+//      A: register observed argument value
+//      D: register observed data by specifing chunk
+//      C: clear observed data
+//
+//    exporter -> fsmapper
+//      V: notify DCS World version
+//      A: change aircraft event
+//      O: change observed data value event
+//
 
 #include <WinSock2.h>
 #include <WS2tcpip.h>
@@ -272,7 +284,6 @@ public:
     }
 };
 
-
 //============================================================================================
 // Communicator with DCS World exportor
 //============================================================================================
@@ -304,12 +315,13 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
         auto write_is_blocked{false};
         auto on_close = [&]{
             status = STATUS::connecting;
+            is_active = false;
             aircraft_name.clear();
             rx_command.clear();
             client.reopen();
             tx_buf->reset(false);
             lock.unlock();
-            reportConnectivity(true, MAPPER_SIM_NONE, nullptr, nullptr);
+            reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr);
             lock.lock();
         };
 
@@ -405,7 +417,7 @@ DCSWorld::~DCSWorld(){
 //============================================================================================
 // Processing received data from DCS exporter
 //============================================================================================
-void DCSWorld::process_received_data(std::unique_lock<std::mutex>& lock, const char *buf, int len, std::string& context){
+void DCSWorld::process_received_data(std::unique_lock<std::mutex>& lock, char *buf, int len, std::string& context){
     int from = 0;
     for (auto to = from; to < len; to++){
         if (buf[to] == '\n'){
@@ -414,6 +426,7 @@ void DCSWorld::process_received_data(std::unique_lock<std::mutex>& lock, const c
                 dispatch_received_command(lock, context.c_str(), context.length());
                 context.clear();
             }else{
+                buf[to] = 0;
                 dispatch_received_command(lock, buf + from, to - from);
             }
             from = to + 1;
@@ -429,7 +442,24 @@ void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, con
         return;
     }
 
-    if (*cmd == 'A'){
+    if (*cmd == 'O'){
+        // Observed value nortification
+        std::optional<size_t> index{std::nullopt};
+        for (cmd++; *cmd; cmd++){
+            if (*cmd >= '0' && *cmd <= '9'){
+                if (index){
+                    index = *index * 10 + *cmd - '0';
+                }else{
+                    index = *cmd - '0';
+                }
+            }else{
+                break;
+            }
+        }
+        if (index && *cmd && *index >= 0 && *index < observed_data_defs.size()){
+            triger_observed_data_event(*index, *cmd, cmd + 1);
+        }
+    }else if (*cmd == 'A'){
         // Aircraft Name event
         if (len > 1){
 			aircraft_name.clear();
@@ -458,6 +488,58 @@ void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, con
         mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, msg);
     }
 }
+
+//============================================================================================
+// Handling observed data
+//============================================================================================
+class DCSObservedData{
+    uint64_t event_id;
+public:
+    DCSObservedData(uint64_t event_id): event_id(event_id){}
+    virtual ~DCSObservedData(){}
+    uint64_t get_event_id() const{return event_id;}
+
+    virtual std::string get_register_cmd_text(size_t observed_data_id) = 0;
+    virtual void triger_event(int type, const char* value){
+        if (type == 'N'){
+            mapper_EngineInstance()->sendEvent(std::move(Event(event_id, atof(value))));
+        }else if (type == 'S'){
+            mapper_EngineInstance()->sendEvent(std::move(Event(event_id, std::string(value))));
+        }else{
+            auto evname = mapper_EngineInstance()->getEventName(event_id);
+            auto&& msg = std::format("dcs: unsupported type of value has been received from DCS World as the observed data for a message '{}'", evname);
+            mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, msg);
+        }
+    }
+};
+
+class ObservedArgumentValue : public DCSObservedData{
+    int64_t arg_number;
+    double epsilon;
+
+public:
+    ObservedArgumentValue(uint64_t event_id, int64_t arg_number, double epsilon=0) : DCSObservedData(event_id), arg_number(arg_number), epsilon(epsilon){}
+
+    std::string get_register_cmd_text(size_t observed_data_id) override{
+        return std::format("A{}:{}:{}\n", observed_data_id, arg_number, epsilon);
+    }
+};
+
+void DCSWorld::sync_observed_data_definitions(std::unique_lock<std::mutex>& lock){
+    bool need_to_set_event{false};
+    for (auto i = 0; i < observed_data_defs.size(); i++){
+        auto&& cmd = observed_data_defs[i]->get_register_cmd_text(i);
+        need_to_set_event = tx_buf->insert_data(cmd.c_str(), cmd.length()) || need_to_set_event;
+    }
+    if (need_to_set_event){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::triger_observed_data_event(size_t index, int type, const char* value){
+    observed_data_defs[index]->triger_event(type, value);
+}
+
 
 //============================================================================================
 // Utilities for Lua functions
@@ -603,6 +685,57 @@ std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer
     return std::make_shared<NativeAction::Function>(os2.str().c_str(), func);
 }
 
+static std::string translate_to_numeral(int i){
+    static std::vector<std::string> numeral = {"1st", "2nd", "3rd"};
+    if (i < numeral.size()){
+        return numeral[i];
+    }else{
+        return std::format("{}th", i + 1);
+    }
+}
+
+void DCSWorld::lua_add_observed_data(sol::object arg0){
+    if (arg0.get_type() != sol::type::table){
+        throw std::runtime_error("invalid argument, the 1st argument must be an array of the observed data definition");
+    }
+    sol::table array = arg0;
+    std::lock_guard lock{mutex};
+    auto need_to_set_event{false};
+    for (auto i = 1; i <= array.size(); i++){
+        if (array[i].get_type() != sol::type::table){
+            throw std::runtime_error(std::format("the {} element of the array is not a table", translate_to_numeral(i)));
+        }
+        sol::table def = array[i];
+        auto event_id = lua_safevalue<uint64_t>(def["event"]);
+        auto arg_number = lua_safevalue<int64_t>(def["arg_number"]);
+        auto epsilon = lua_safevalue<double>(def["epsilon"]);
+        if (!event_id){
+            throw std::runtime_error("the 'event' parameter must be specified");
+        }
+        if (arg_number){
+            auto observed_data_def = std::make_unique<ObservedArgumentValue>(*event_id, *arg_number, epsilon ? *epsilon : 0);
+            auto defid = observed_data_defs.size();
+            observed_data_defs.push_back(std::move(observed_data_def));
+            if (is_active){
+                auto&& cmd = observed_data_defs[defid]->get_register_cmd_text(defid);
+                need_to_set_event = tx_buf->insert_data(cmd.c_str(), cmd.size()) || need_to_set_event;
+            }
+        }
+    }
+    if (need_to_set_event){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::lua_clear_observed_data(){
+    std::lock_guard lock{mutex};
+    observed_data_defs.clear();
+    static std::string cmd{"C\n"};
+    if (tx_buf->insert_data(cmd.c_str(), cmd.size())){
+        ::SetEvent(schedule_event);
+    }
+}
+
 //============================================================================================
 // Create Lua scripting environment
 //============================================================================================
@@ -616,6 +749,16 @@ void DCSWorld::initLuaEnv(sol::state &lua){
     dcs["clickable_action_performer"] = [this](sol::variadic_args args){
         return lua_c_interface(*mapper_EngineInstance(), "dcs.perform_clickable_action", [this, args](){
             return lua_clickable_action_performer(args);
+        });
+    };
+    dcs["add_observed_data"] = [this](sol::object arg0){
+        lua_c_interface(*mapper_EngineInstance(), "dcs.add_observed_data", [this, arg0](){
+            lua_add_observed_data(arg0);
+        });
+    };
+    dcs["clear_observed_data"] = [this](){
+        lua_c_interface(*mapper_EngineInstance(), "dcs.clear_observed_data", [this](){
+            lua_clear_observed_data();
         });
     };
     lua["dcs"] = dcs;
