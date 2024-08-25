@@ -741,6 +741,7 @@ void DCSWorld::lua_clear_observed_data(){
 //============================================================================================
 void DCSWorld::initLuaEnv(sol::state &lua){
     auto dcs = lua.create_table();
+
     dcs["perform_clickable_action"] = [this](sol::variadic_args args){
         lua_c_interface(*mapper_EngineInstance(), "dcs.perform_clickable_action", [this, args](){
             lua_perform_clickable_action(args);
@@ -761,5 +762,6 @@ void DCSWorld::initLuaEnv(sol::state &lua){
             lua_clear_observed_data();
         });
     };
+    
     lua["dcs"] = dcs;
 }

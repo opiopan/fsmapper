@@ -225,5 +225,8 @@
     <CopyFileToFolders Include="dcs-exporter\fsmapper_config.lua">
       <Filter>DCS Exporter</Filter>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="dcs-exporter\fsmapper\observer.lua">
+      <Filter>DCS Exporter</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
