@@ -22,10 +22,13 @@ observer.argument_value_observer = {
         return self.is_dirty
     end,
 
+    message_fmt = fsmapper.utils.struct('c1I3c1I3f'),
     generate_notification_message = function (self)
         self.is_dirty = false
-        return "O" .. self.id .. "N" .. self.value .. "\n"
+        return self.message_fmt:pack('O', self.message_size, 'N', self.id, self.value)
     end,
 }
+observer.argument_value_observer.message_size = observer.argument_value_observer.message_fmt:packsize() - 4
+
 
 return observer

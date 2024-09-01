@@ -28,6 +28,8 @@ New-Item $dest -ItemType Directory
 Copy-Item $assets $dest -Recurse
 Copy-Item $samples $dest -Recurse
 Copy-Item "$($src)\dcs-exporter" $dest -Recurse
+Remove-Item "$($dest)\dcs-exporter\bin\*.exp"
+Remove-Item "$($dest)\dcs-exporter\bin\*.lib"
 Copy-Item "$($src)\Microsoft.UI.Xaml" $dest -Recurse
 Copy-Item "$($src)\en-us" $dest -Recurse
 Copy-Item $exe $dest

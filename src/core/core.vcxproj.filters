@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="DCS Exporter">
-      <UniqueIdentifier>{7f529e36-9280-4e71-8005-f1601fcefa0b}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="action.h">
@@ -211,22 +208,5 @@
     <ResourceCompile Include="resource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="dcs-exporter\fsmapper.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\fsmapper\common.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\fsmapper\protocol.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\fsmapper_config.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="dcs-exporter\fsmapper\observer.lua">
-      <Filter>DCS Exporter</Filter>
-    </CopyFileToFolders>
   </ItemGroup>
 </Project>

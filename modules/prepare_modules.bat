@@ -18,13 +18,17 @@ $download_cmd = "curl.exe https://www.lua.org/ftp/" + $lua_dir + ".tar.gz | tar.
 cmd /c $download_cmd
 if (Test-Path $lua_dir){
     Set-Location lua-$lua_version\src
+    cl /MT /O2 /c *.c
+    Rename-Item -Path lua.obj lua.o
+    Rename-Item -Path luac.obj luac.o
+    lib /OUT:lua5.4-static.lib *.obj
+    link /OUT:luac.exe luac.o lua5.4-static.lib
+    Remove-Item *.o
     cl /MT /O2 /c /DLUA_BUILD_AS_DLL *.c
     Rename-Item -Path lua.obj lua.o
     Rename-Item -Path luac.obj luac.o
     link /DLL /IMPLIB:lua5.4.lib /OUT:lua5.4.dll *.obj
     link /OUT:lua.exe lua.o lua5.4.lib
-    lib /OUT:lua5.4-static.lib *.obj
-    link /OUT:luac.exe luac.o lua5.4-static.lib
     Set-Location ..\..
 }
 Rename-Item $lua_dir lua-5.4
@@ -40,13 +44,8 @@ $download_cmd = "curl.exe https://www.lua.org/ftp/" + $dcs_lua_dir + ".tar.gz | 
 cmd /c $download_cmd
 if (Test-Path $dcs_lua_dir){
     Set-Location lua-$dcs_lua_version\src
-    cl /MT /O2 /c /DLUA_BUILD_AS_DLL *.c
-    Rename-Item -Path lua.obj lua.o
-    Rename-Item -Path luac.obj luac.o
-    link /DLL /IMPLIB:lua5.1.lib /OUT:lua5.1.dll *.obj
-    link /OUT:lua.exe lua.o lua5.1.lib
-    lib /OUT:lua5.1-static.lib *.obj
-    link /OUT:luac.exe luac.o lua5.1-static.lib
+    # Write-Output "#undef LUA_COMPAT_OPENLIB" | Add-Content luaconf.h -Encoding UTF8
+    lib /DEF:..\..\lua-builtin-dcs\lua.def /MACHINE:x64
     Set-Location ..\..
 }
 Rename-Item $dcs_lua_dir lua-5.1

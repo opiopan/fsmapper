@@ -14,6 +14,7 @@
 
 class DCSWorldSendBuffer;
 class DCSObservedData;
+class DCSPacket;
 
 class DCSWorld : public SimHostManager::Simulator {
     enum class STATUS{connecting, retrying, connected};
@@ -47,11 +48,14 @@ public:
     }
 
 protected:
-    void process_received_data(std::unique_lock<std::mutex>& lock, char* buf, int len, std::string& context);
-    void dispatch_received_command(std::unique_lock<std::mutex>& lock, const char *cmd, int len);
+    size_t process_received_data(std::unique_lock<std::mutex>& lock, char* buf, size_t len, DCSPacket& packet);
+    void dispatch_received_command(std::unique_lock<std::mutex>& lock, const DCSPacket& packet);
+    void V_command(std::unique_lock<std::mutex>& lock, const DCSPacket& packet);
+    void A_command(std::unique_lock<std::mutex>& lock, const DCSPacket& packet);
+    void O_command(std::unique_lock<std::mutex>& lock, const DCSPacket& packet);
 
     void sync_observed_data_definitions(std::unique_lock<std::mutex>& lock);
-    void triger_observed_data_event(size_t index, int type, const char* value);
+    void triger_observed_data_event(size_t index, int type, const char* value, size_t length);
 
     void lua_perform_clickable_action(sol::variadic_args args);
     std::shared_ptr<NativeAction::Function> lua_clickable_action_performer(sol::variadic_args args);

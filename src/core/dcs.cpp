@@ -285,6 +285,70 @@ public:
 };
 
 //============================================================================================
+// Received packet
+//============================================================================================
+class DCSPacket{
+    char holding_buf[4];
+    size_t holding_size{0};
+    char cmd{'\0'};
+    size_t data_length{0};
+    std::vector<char> data_buf;
+    size_t effective_length{0};
+public:
+    static constexpr auto command_length = 4;
+    DCSPacket(){
+        data_buf.resize(256);
+    }
+    
+    char get_command()const{return cmd;}
+    size_t get_data_length()const{return data_length;}
+    size_t get_effective_length()const{return effective_length;}
+    const char* get_data()const{return &data_buf.at(0);}
+    operator const char* ()const{return get_data();}
+    operator bool ()const{return holding_size == sizeof(holding_buf) && data_length == effective_length;}
+
+    size_t append_data(const char* in, size_t length){
+        auto skip_len{0};
+        if (holding_size < sizeof(holding_buf)){
+            skip_len = std::min(sizeof(holding_buf) - holding_size, length);
+            memcpy(holding_buf + holding_size, in, skip_len);
+            holding_size += skip_len;
+            if (holding_size < sizeof(holding_buf)){
+                return skip_len;
+            }
+            set_command();
+            length -= skip_len;
+        }
+        length = std::min(length, data_length - effective_length);
+        memcpy(&data_buf.at(0), in + skip_len, length);
+        effective_length += length;
+        return length + skip_len;
+    }
+
+    void clear(){
+        holding_size = 0;
+        cmd = '\0';
+        data_length = 0;
+        effective_length = 0;
+    }
+    
+protected:
+    void set_command(){
+        cmd = holding_buf[0];
+        union {int32_t i; char c[4];} length;
+        length.i = 0;
+        length.c[0] = holding_buf[1];
+        length.c[1] = holding_buf[2];
+        length.c[2] = holding_buf[3];
+        data_length = length.i;
+        effective_length = 0;
+        if (data_length > data_buf.size()){
+            data_buf.resize((data_length / 512 + 1) * 512);
+        }
+    }
+};
+
+//============================================================================================
 // Communicator with DCS World exportor
 //============================================================================================
 static DCSWorld* the_manager {nullptr};
@@ -308,7 +372,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
 
         std::unique_lock lock{mutex};
         client_socket client(config.tcp_port);
-        std::string rx_command;
+        DCSPacket rx_packet;
         WSAEVENT events[] {schedule_event, client.get_event()};
         auto event_num{1};
         auto timeout{0};
@@ -317,7 +381,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
             status = STATUS::connecting;
             is_active = false;
             aircraft_name.clear();
-            rx_command.clear();
+            rx_packet.clear();
             client.reopen();
             tx_buf->reset(false);
             lock.unlock();
@@ -374,7 +438,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
                     if (nevent & (FD_READ | FD_CLOSE)){
                         auto received = client.receive(rx_buf, sizeof(rx_buf));
                         if (received > 0){
-                            process_received_data(lock, rx_buf, received, rx_command);
+                            process_received_data(lock, rx_buf, received, rx_packet);
                         }else if (received == 0){
                             mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: connection with DCS World exporter has been closed");
                             on_close();
@@ -417,76 +481,70 @@ DCSWorld::~DCSWorld(){
 //============================================================================================
 // Processing received data from DCS exporter
 //============================================================================================
-void DCSWorld::process_received_data(std::unique_lock<std::mutex>& lock, char *buf, int len, std::string& context){
+size_t DCSWorld::process_received_data(std::unique_lock<std::mutex>& lock, char *buf, size_t len, DCSPacket& packet){
     int from = 0;
-    for (auto to = from; to < len; to++){
-        if (buf[to] == '\n'){
-            if (context.length()){
-                context.append(buf + from, to - from);
-                dispatch_received_command(lock, context.c_str(), context.length());
-                context.clear();
-            }else{
-                buf[to] = 0;
-                dispatch_received_command(lock, buf + from, to - from);
-            }
-            from = to + 1;
+    while (from < len){
+        from += packet.append_data(buf + from, len - from);
+        if (packet){
+            dispatch_received_command(lock, packet);
+            packet.clear();
         }
     }
-    if (from < len){
-        context.append(buf + from, len - from);
+    return from;
+}
+
+void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, const DCSPacket& packet){
+    auto cmd = packet.get_command();
+    if (cmd == 'O'){
+        O_command(lock, packet);
+    }else if (cmd == 'A'){
+        A_command(lock, packet);
+    }else if (cmd == 'V'){
+        V_command(lock, packet);
     }
 }
 
-void DCSWorld::dispatch_received_command(std::unique_lock<std::mutex> &lock, const char *cmd, int len){
-    if (len <= 0){
-        return;
-    }
+void DCSWorld::V_command(std::unique_lock<std::mutex> &lock, const DCSPacket &packet){
+        // Version nortification
+        const struct DATA{
+            uint32_t version[4];
+            uint32_t produce_name_len;
+            //char product_name[...];
+        };
+        auto data {reinterpret_cast<const DATA*>(packet.get_data())};
+        std::string name{reinterpret_cast<const char*>(data + 1), data->produce_name_len};
+        auto&& msg = std::format(
+            "dcs: Product version information has been received:\n"
+            "    Product Name    : {}\n"
+            "    Product Version : {}.{}.{}.{}",
+            name, data->version[0], data->version[1], data->version[2], data->version[3]);
+        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, msg);
+}
 
-    if (*cmd == 'O'){
-        // Observed value nortification
-        std::optional<size_t> index{std::nullopt};
-        for (cmd++; *cmd; cmd++){
-            if (*cmd >= '0' && *cmd <= '9'){
-                if (index){
-                    index = *index * 10 + *cmd - '0';
-                }else{
-                    index = *cmd - '0';
-                }
-            }else{
-                break;
-            }
-        }
-        if (index && *cmd && *index >= 0 && *index < observed_data_defs.size()){
-            triger_observed_data_event(*index, *cmd, cmd + 1);
-        }
-    }else if (*cmd == 'A'){
+void DCSWorld::A_command(std::unique_lock<std::mutex> &lock, const DCSPacket &packet){
         // Aircraft Name event
-        if (len > 1){
+        if (packet.get_data_length()){
 			aircraft_name.clear();
-			aircraft_name.append(cmd + 1, len - 1);
+			aircraft_name.append(packet, packet.get_data_length());
 			mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, std::format("dcs: Aircraft name has been received: {}", aircraft_name));
 			lock.unlock();
 			reportConnectivity(true, MAPPER_SIM_DCS, "dcs", aircraft_name.c_str());
 			lock.lock();
         }
-    }
-    else if (*cmd == 'V'){
-        // Version nortification
-        std::string name, version, *target{&name};
-        for (auto i = 1; i < len; i++){
-            if (cmd[i] == ':'){
-                target = &version;
-            }else{
-                target->push_back(cmd[i]);
-            }
+}
+
+void DCSWorld::O_command(std::unique_lock<std::mutex> &lock, const DCSPacket &packet){
+        // Observed value nortification
+        auto data = packet.get_data();
+        auto type = data[0];
+        union {uint32_t i; char c[4];} index;
+        index.i = 0;
+        index.c[0] = data[1];
+        index.c[1] = data[2];
+        index.c[2] = data[3];
+        if (index.i >= 0 && index.i < observed_data_defs.size()){
+            triger_observed_data_event(index.i, type, data + 4, packet.get_data_length() - 4);
         }
-        auto&& msg = std::format(
-            "dcs: Product version information has been received:\n"
-            "    Product Name    : {}\n"
-            "    Product Version : {}",
-            name, version);
-        mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, msg);
-    }
 }
 
 //============================================================================================
@@ -500,11 +558,13 @@ public:
     uint64_t get_event_id() const{return event_id;}
 
     virtual std::string get_register_cmd_text(size_t observed_data_id) = 0;
-    virtual void triger_event(int type, const char* value){
+    virtual void triger_event(int type, const char* value, size_t length){
         if (type == 'N'){
-            mapper_EngineInstance()->sendEvent(std::move(Event(event_id, atof(value))));
+            if (length == sizeof(float)){
+                mapper_EngineInstance()->sendEvent(std::move(Event(event_id, *reinterpret_cast<const float*>(value))));
+            }
         }else if (type == 'S'){
-            mapper_EngineInstance()->sendEvent(std::move(Event(event_id, std::string(value))));
+            mapper_EngineInstance()->sendEvent(std::move(Event(event_id, std::string(value, length))));
         }else{
             auto evname = mapper_EngineInstance()->getEventName(event_id);
             auto&& msg = std::format("dcs: unsupported type of value has been received from DCS World as the observed data for a message '{}'", evname);
@@ -536,8 +596,8 @@ void DCSWorld::sync_observed_data_definitions(std::unique_lock<std::mutex>& lock
     }
 }
 
-void DCSWorld::triger_observed_data_event(size_t index, int type, const char* value){
-    observed_data_defs[index]->triger_event(type, value);
+void DCSWorld::triger_observed_data_event(size_t index, int type, const char* value, size_t length){
+    observed_data_defs[index]->triger_event(type, value, length);
 }
 
 

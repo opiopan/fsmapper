@@ -6,7 +6,7 @@ if "%~1" == "" (
 
 set tooldir=%~dp0
 set luadir=%tooldir%..\..\modules\lua-5.4.6\src\
-set exporterdir=%tooldir%..\core\dcs-exporter\
+set exporterdir=%tooldir%..\x64\Debug\dcs-exporter\
 set dcsdir=%~1
 
 REM %luadir%lua.exe %tooldir%dcs_mock.lua %exporterdir% %~1

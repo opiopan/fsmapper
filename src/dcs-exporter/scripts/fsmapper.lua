@@ -8,8 +8,9 @@ if is_fsmapper_exporter_initialized ~= true then
 
     fsmapper.scriptdir = fsmapper.basedir..'dcs-exporter/'
     fsmapper.scriptpath = fsmapper.scriptdir..'fsmapper.lua'
-    package.path = package.path .. ';' .. fsmapper.scriptdir .. '?.lua;' .. ";./LuaSocket/?.lua" .. ";./Scripts/?.lua"
-    package.cpath = package.cpath .. ";./LuaSocket/?.dll"
+    package.path = package.path .. ';' .. fsmapper.scriptdir .. '?.lua' .. ";./LuaSocket/?.lua" .. ";./Scripts/?.lua"
+    package.cpath = package.cpath .. ";./LuaSocket/?.dll;" .. fsmapper.scriptdir .. 'bin/?.dll'
+    fsmapper.utils = require('fsmapper_utils')
     fsmapper.log =function () end
 
     log.write('FSMAPPER.LUA',log.INFO,'Starting ['..fsmapper.scriptpath..']')
