@@ -18,15 +18,11 @@ $download_cmd = "curl.exe https://www.lua.org/ftp/" + $lua_dir + ".tar.gz | tar.
 cmd /c $download_cmd
 if (Test-Path $lua_dir){
     Set-Location lua-$lua_version\src
-    cl /MT /O2 /c *.c
+    cl /MT /O2 /c /DLUA_BUILD_AS_DLL *.c
     Rename-Item -Path lua.obj lua.o
     Rename-Item -Path luac.obj luac.o
     lib /OUT:lua5.4-static.lib *.obj
     link /OUT:luac.exe luac.o lua5.4-static.lib
-    Remove-Item *.o
-    cl /MT /O2 /c /DLUA_BUILD_AS_DLL *.c
-    Rename-Item -Path lua.obj lua.o
-    Rename-Item -Path luac.obj luac.o
     link /DLL /IMPLIB:lua5.4.lib /OUT:lua5.4.dll *.obj
     link /OUT:lua.exe lua.o lua5.4.lib
     Set-Location ..\..

@@ -2,6 +2,7 @@
 
 $src = "..\src\x64\Release"
 $coresrc = "..\src\core"
+$luasrc = "..\modules\lua-5.4\src"
 $assets = $src + "\Assets"
 $exe = $src + "\fsmapper.exe"
 $dll = $src + "\*.dll"
@@ -45,6 +46,10 @@ New-Item $dest_sdkinc -ItemType Directory
 New-Item $dest_sdklib -ItemType Directory
 Copy-Item "$($coresrc)\mapperplugin.h" $dest_sdkinc
 Copy-Item "$($src)\fsmappercore.lib" $dest_sdklib
+Copy-Item "$($luasrc)\lua.h" $dest_sdkinc
+Copy-Item "$($luasrc)\luaconf.h" $dest_sdkinc
+Copy-Item "$($luasrc)\lualib.h" $dest_sdkinc
+Copy-Item "$($luasrc)\lauxlib.h" $dest_sdkinc
 Copy-Item $sdk_samples $dest_sdk -Recurse
 Rename-Item -Path "$($dest_sdk)\sdk_samples" -NewName "samples"
 
