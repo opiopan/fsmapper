@@ -61,12 +61,12 @@ inline const char* check_lua_arg_lstring(lua_State* L, int index, size_t* length
 //============================================================================================
 // Binary translator
 //============================================================================================
-class bytebuf{
+class safe_buffer{
     std::vector<char> buf;
 public:
     static constexpr auto initial_length{256};
     static constexpr auto expand_unit{512};
-    bytebuf(size_t length = initial_length){
+    safe_buffer(size_t length = initial_length){
         buf.resize(length);
     }
     void ensure_length(size_t length){
@@ -90,13 +90,14 @@ struct translation_unit{
     bool is_associated{false};
     int pack_index{0};
     bool is_pushing_value{true};
+    std::optional<int> bias;
 
     inline size_t padding(size_t pos)const{
         auto modulo = pos % alignment;
         return modulo ? alignment - modulo : 0;
     }
 
-    virtual size_t pack(lua_State* L, bytebuf& buf, size_t offset) = 0;
+    virtual size_t pack(lua_State* L, safe_buffer& buf, size_t offset) = 0;
     virtual size_t unpack(lua_State* L, const char* in, size_t in_length, size_t offset) = 0;
 };
 using unit_list = std::vector<std::unique_ptr<translation_unit>>;
@@ -173,12 +174,12 @@ struct integer_unit : public translation_unit{
         }
     }
 
-    size_t pack(lua_State *L, bytebuf &buf, size_t offset) override{
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         auto value = check_lua_arg_integer(L, pack_index);
         offset += padding(offset);
         auto goal = offset + precision;
         buf.ensure_length(goal);
-        put_data(&buf[offset], value, precision);
+        put_data(&buf[offset], value + (bias ? *bias : 0), precision);
         return goal;
     }
 
@@ -187,6 +188,7 @@ struct integer_unit : public translation_unit{
         auto goal = offset + precision;
         if (goal <= in_length){
             auto value = get_data(in + offset, precision);
+            value -= bias ? *bias : 0;
             lua_pushinteger(L, value);
         }
         return goal;
@@ -201,7 +203,7 @@ struct float_unit : public translation_unit{
         alignment = sizeof(T);
     }
 
-    size_t pack(lua_State *L, bytebuf &buf, size_t offset) override{
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         auto value = check_lua_arg_number(L, pack_index);
         offset += padding(offset);
         auto goal = offset + min_length;
@@ -231,7 +233,7 @@ struct fixed_string_unit : public translation_unit{
         min_length = length;
     }
 
-    size_t pack(lua_State *L, bytebuf &buf, size_t offset) override{
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         size_t input_len;
         auto value = check_lua_arg_lstring(L, pack_index, &input_len);
         auto goal = offset + min_length;
@@ -264,9 +266,9 @@ struct associated_string_length_unit : public integer_unit{
 
     auto get_parsed_value()const{return parsed_value;}
 
-    size_t pack(lua_State *L, bytebuf &buf, size_t offset) override{
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         size_t length;
-        auto value = check_lua_arg_lstring(L, pack_index, &length);
+        auto value = check_lua_arg_lstring(L, pack_index, &length) + (bias ? *bias : 0);
         offset += padding(offset);
         auto goal = offset + precision;
         buf.ensure_length(goal);
@@ -279,6 +281,7 @@ struct associated_string_length_unit : public integer_unit{
         auto goal = offset + precision;
         if (goal <= in_length){
             parsed_value = get_data(in + offset, precision);
+            parsed_value -= bias ? *bias : 0;
         }
         return goal;
     };
@@ -292,7 +295,7 @@ struct variable_string_unit : public translation_unit{
         is_fixed_length = false;
     }
 
-    size_t pack(lua_State *L, bytebuf &buf, size_t offset) override{
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         size_t input_len;
         auto value = check_lua_arg_lstring(L, pack_index, &input_len);
         auto goal = offset + input_len;
@@ -318,7 +321,7 @@ class bin_translator{
     std::string format;
     unit_list rules;
     size_t packsize{0};
-    bytebuf buf;
+    safe_buffer buf;
 
 public:
     bin_translator() = delete;
@@ -384,6 +387,7 @@ public:
 
         const convert_option* current_option{nullptr};
         std::optional<int> attribute{std::nullopt};
+        std::optional<int> bias{std::nullopt};
         auto add_rule = [&]{
             if (current_option){
                 if (!current_option->has_attribute && attribute){
@@ -393,26 +397,39 @@ public:
                     throw std::runtime_error(std::format("numeric attribute must be specified for the translation option [{}]", current_option->name));
                 }
                 current_option->add_rule(rules, attribute ? *attribute : current_option->default_attribute);
+                rules.back()->bias = bias;
             }
             current_option = nullptr;
             attribute = std::nullopt;
+            bias = std::nullopt;
         };
-        bool on_attribute{false};
+        enum class parse_state{option, attribute, bias} state{parse_state::option};
         for (; *format; format++){
-            if (!on_attribute){
+            if (state == parse_state::option){
                 add_rule();
-                if (options.count(*format) == 0){
+                if (*format == ' '){
+                    continue;
+                }else if (options.count(*format) == 0){
                     throw std::runtime_error(std::format("invalid translation option [{}]", *format));
                 }
                 current_option = &options[*format];
-                if (format[1] >= '0' && format[1] <= '9'){
-                    on_attribute = true;
+                if (format[1] >= '0' && format[1] <= '9') {
+                    state = parse_state::attribute;
                 }
-            }else{
+            }else if (state == parse_state::attribute){
                 if (*format >= '0' && *format <= '9'){
                     attribute = (attribute ? *attribute * 10 : 0) + (*format - '0');
+                }else if (*format == ':'){
+                    state = parse_state::bias;
                 }else{
-                    on_attribute = false;
+                    state = parse_state::option;
+                    format--;
+                }
+            }else{ // parse_state::bias
+                if (*format >= '0' && *format <= '9'){
+                    bias = (bias ? *bias * 10 : 0) + (*format - '0');
+                }else{
+                    state = parse_state::option;
                     format--;
                 }
             }

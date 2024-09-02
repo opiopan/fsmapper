@@ -103,20 +103,19 @@ protocol.fsmapper_client = {
         end
     end,
 
-    cmd_hdr_fmt = fsmapper.utils.struct('c1I3'),
-    version_cmd_fmt = fsmapper.utils.struct('i4i4i4i4s4'),
+    version_cmd_fmt = fsmapper.utils.struct('c1I3 i4i4i4i4 s4'),
     inform_version = function (self, version)
-        local msg_body = self.version_cmd_fmt:pack(
+        local msg = self.version_cmd_fmt:pack(
+            'V', self.version_cmd_fmt:packsize() + version.ProductName:len() - 4,
             version.ProductVersion[1],
             version.ProductVersion[2],
             version.ProductVersion[3],
             version.ProductVersion[4],
             version.ProductName)
-        local msg_hdr = self.cmd_hdr_fmt:pack('V', msg_body:len())
-        self:send(msg_hdr .. msg_body)
+        self:send(msg)
     end,
 
-    aircraft_cmd_fmt = fsmapper.utils.struct('c1I3S2'),
+    aircraft_cmd_fmt = fsmapper.utils.struct('c1s3'),
     change_aircraft = function (self, name)
         local msg = self.aircraft_cmd_fmt:pack('A', name)
         self:send(msg)
