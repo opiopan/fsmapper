@@ -5,8 +5,14 @@
 //  Commands:
 //    fsmapper -> exorter:
 //      P: perform clickable action
-//      A: register observed argument value
-//      D: register observed data by specifing chunk
+//      O: manipulate observer
+//         subcommand:
+//           A: create argument value observer: GetDevice():get_argument_value()
+//           I: create indication observer: list_indication()
+//           C: create chunk observer
+//           F: add simple filter
+//           G: add chunk filter
+//           E: enable observer
 //      C: clear observed data
 //
 //    exporter -> fsmapper
@@ -265,6 +271,10 @@ public:
         if (!is_enable){
             return false;
         }
+        return insert_data_without_lock(data, size);
+    }
+
+    bool insert_data_without_lock(const void* data, size_t size){
         auto rc = !writing && buff_blocks.begin()->operator*().used == 0;
         while (size){
             if (current->operator*().remain() == 0){
@@ -282,7 +292,16 @@ public:
         }
         return rc;
     }
+
+    std::unique_lock<std::mutex> get_lock(){
+        return std::unique_lock(mutex);
+    }
 };
+
+using command_header = int32_t;
+constexpr int32_t make_command_header(uint8_t command, int32_t length){
+    return length << 8 | command;
+}
 
 //============================================================================================
 // Received packet
@@ -557,7 +576,17 @@ public:
     virtual ~DCSObservedData(){}
     uint64_t get_event_id() const{return event_id;}
 
-    virtual std::string get_register_cmd_text(size_t observed_data_id) = 0;
+    virtual void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) = 0;
+    virtual void add_enable_sub_command(std::string& buffer, uint32_t observed_data_id){
+        struct OE_CMD{
+            command_header hdr;     // 'O', command length
+            command_header sub_hdr; // 'E', oberver ID
+        } cmd{
+            make_command_header('O', sizeof(OE_CMD) - 4),
+            make_command_header('E', observed_data_id),
+        };
+        buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+    }
     virtual void triger_event(int type, const char* value, size_t length){
         if (type == 'N'){
             if (length == sizeof(float)){
@@ -574,21 +603,35 @@ public:
 };
 
 class ObservedArgumentValue : public DCSObservedData{
-    int64_t arg_number;
-    double epsilon;
+    uint32_t arg_number;
+    float epsilon;
 
 public:
-    ObservedArgumentValue(uint64_t event_id, int64_t arg_number, double epsilon=0) : DCSObservedData(event_id), arg_number(arg_number), epsilon(epsilon){}
+    ObservedArgumentValue(uint64_t event_id, uint32_t arg_number, float epsilon=0) : DCSObservedData(event_id), arg_number(arg_number), epsilon(epsilon){}
 
-    std::string get_register_cmd_text(size_t observed_data_id) override{
-        return std::format("A{}:{}:{}\n", observed_data_id, arg_number, epsilon);
+    void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) override{
+        struct OA_CMD{
+            command_header hdr;      // 'O', command length
+            command_header sub_hdr;  // 'A', oberver ID
+            uint32_t arg_number;
+            float epsilon;
+        } cmd{
+            make_command_header('O', sizeof(cmd) - 4), 
+            make_command_header('A', observed_data_id), 
+            arg_number, epsilon,
+        };
+
+        buffer.clear();
+        buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        add_enable_sub_command(buffer, observed_data_id);
     }
 };
 
 void DCSWorld::sync_observed_data_definitions(std::unique_lock<std::mutex>& lock){
     bool need_to_set_event{false};
+    std::string cmd;
     for (auto i = 0; i < observed_data_defs.size(); i++){
-        auto&& cmd = observed_data_defs[i]->get_register_cmd_text(i);
+        observed_data_defs[i]->get_register_cmd_text(cmd, i);
         need_to_set_event = tx_buf->insert_data(cmd.c_str(), cmd.length()) || need_to_set_event;
     }
     if (need_to_set_event){
@@ -605,10 +648,10 @@ void DCSWorld::triger_observed_data_event(size_t index, int type, const char* va
 // Utilities for Lua functions
 //============================================================================================
 struct basic_args{
-    int64_t device_id{0};
-    int64_t command{0};
-    int64_t arg_nummber{0};
-    double value{0};
+    uint32_t device_id{0};
+    uint32_t command{0};
+    uint32_t arg_nummber{0};
+    float value{0};
 };
 enum class arg_type:int {device_id = 0, command, arg_number, value};
 
@@ -630,10 +673,10 @@ args_kind parse_basic_args(sol::variadic_args args, const std::vector<arg_type>&
         bool (*apply_value)(basic_args& result, sol::object);
     };
     static std::vector<arg_prop> arg_props {
-        {"device_id", apply_value<int64_t, &basic_args::device_id>},
-        {"command", apply_value<int64_t, &basic_args::command>},
-        {"arg_number", apply_value<int64_t, &basic_args::arg_nummber>},
-        {"value", apply_value<double, &basic_args::value>},
+        {"device_id", apply_value<uint32_t, &basic_args::device_id>},
+        {"command", apply_value<uint32_t, &basic_args::command>},
+        {"arg_number", apply_value<uint32_t, &basic_args::arg_nummber>},
+        {"value", apply_value<float, &basic_args::value>},
     };
 
     sol::object arg0 = args[0];
@@ -648,7 +691,7 @@ args_kind parse_basic_args(sol::variadic_args args, const std::vector<arg_type>&
         return args_kind::lableled;
     }else{
         if (args.size() < rule.size()){
-            throw std::runtime_error("Not enough argument provided");
+            throw std::runtime_error("not enough argument provided");
         }
         for (auto i = 0; i < rule.size(); i++){
             auto& prop = arg_props[static_cast<int>(rule[i])];
@@ -661,44 +704,40 @@ args_kind parse_basic_args(sol::variadic_args args, const std::vector<arg_type>&
     }
 }
 
-template <typename T, typename F>
-int parse_values_arg(T args, int from, F callback){
-    int num {0};
-    if (args.get_type() != sol::type::nil){
-        for (auto i = from; i < args.size(); i++){
-            auto value = lua_safevalue<double>(args[i]);
-            if (value){
-                callback(*value);
-                num++;
-            }
-        }
-    }
-    return num;
-}
-
 //============================================================================================
 // Lua functions
 //============================================================================================
+struct P_CMD{
+    command_header hdr;
+    uint32_t device_id;
+    uint32_t command;
+};
+
 void DCSWorld::lua_perform_clickable_action(sol::variadic_args args){
     static std::vector<arg_type> rule{arg_type::device_id, arg_type::command};
     basic_args result;
-    auto kind = parse_basic_args(args, rule, result);
-    std::ostringstream os;
-    os << "P" << result.device_id << ":" << result.command;
-    if (kind == args_kind::sequential){
-        if (!parse_values_arg(args, 2, [&os](auto value){os << ":" << value;})){
-            throw std::runtime_error("the 3rd argument is not specified or value type is invalid");
+    if (parse_basic_args(args, rule, result) != args_kind::sequential){
+        throw std::runtime_error("not enough argument provided");
+    }
+    auto cmd_len = sizeof(P_CMD) + sizeof(float)* (args.size() - 2) - 4;
+    P_CMD cmd {make_command_header('P', cmd_len), result.device_id, result.command};
+    auto need_to_set_event {false};
+    {
+        auto lock = std::move(tx_buf->get_lock());
+        need_to_set_event = tx_buf->insert_data_without_lock(&cmd, sizeof(cmd));
+        auto value_num = 0;
+        for (auto i = 2; i < args.size(); i++){
+            auto value = lua_safevalue<float>(args[i]);
+            if (value){
+                value_num++;
+                tx_buf->insert_data_without_lock(&*value, sizeof(*value));
+            }
         }
-    }else{
-        sol::table args_table = args[0];
-        sol::table values = args_table["values"];
-        if (!parse_values_arg(values, 2, [&os](auto value){os << ":" << value;})){
-            throw std::runtime_error("the parameter 'values' is not specified or value type is invalid");
+        if (value_num != args.size() - 2){
+            throw std::runtime_error("the specified value for the clickable action is incorrect");
         }
     }
-    os << std::endl;
-    auto&& cmd = os.str();
-    if (tx_buf->insert_data(cmd.c_str(), cmd.length())){
+    if (need_to_set_event){
         ::SetEvent(schedule_event);
     }
 }
@@ -706,43 +745,49 @@ void DCSWorld::lua_perform_clickable_action(sol::variadic_args args){
 std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer(sol::variadic_args args){
     static std::vector<arg_type> rule{arg_type::device_id, arg_type::command};
     basic_args result;
-    auto kind = parse_basic_args(args, rule, result);
-    std::ostringstream os;
-    os << "P" << result.device_id << ":" << result.command;
-    std::ostringstream os2;
-    os2 << std::format("dcs.perform_clickable_action({}, {}", result.device_id, result.command);
-    auto use_event_value{false};
-    if (kind == args_kind::sequential){
-        use_event_value = !parse_values_arg(args, 2, [&os, &os2](auto value){os << ":" << value; os2 << ", " << value;});
-    }else{
-        sol::table args_table = args[0];
-        sol::table values = args_table["values"];
-        use_event_value = !parse_values_arg(values, 2, [&os, &os2](auto value){os << ":" << value; os2 << ", " << value;});
+    if (parse_basic_args(args, rule, result) != args_kind::sequential){
+        throw std::runtime_error("not enough argument provided");
     }
-    
+    bool static_value = args.size() > 2;
+    auto cmd_len = sizeof(P_CMD) - 4 + sizeof(float)* (static_value ? args.size() - 2 : 1);
+    std::vector<char> cmd;
+    cmd.resize(cmd_len + 4);
+    *reinterpret_cast<P_CMD*>(&cmd[0]) = {make_command_header('P', cmd_len), result.device_id, result.command};
+    std::ostringstream os;
+    os << std::format("dcs.perform_clickable_action({}, {}", result.device_id, result.command);
     NativeAction::Function::ACTION_FUNCTION func;
-    if (use_event_value){
-        os << ":";
-        os2 << ", EVENT_VALUE)";
-        auto cmd = os.str();
-        func = [this, cmd](auto& event, auto&){
-            auto c_cmd = std::format("{}{}\n", cmd, static_cast<double>(event));
-            if (tx_buf->insert_data(c_cmd.c_str(), c_cmd.length())){
+    if (static_value){
+        auto values = reinterpret_cast<float*>(reinterpret_cast<P_CMD*>(&cmd.at(0)) + 1);
+        auto value_num = 0;
+        for (auto i = 2; i < args.size(); i++){
+            auto value = lua_safevalue<float>(args[i]);
+            if (value){
+                value_num++;
+                values[i - 2] = *value;
+                os << ", " << *value;
+            }
+        }
+        if (value_num != args.size() - 2){
+            throw std::runtime_error("the specified value for the clickable action is incorrect");
+        }
+        os << ")";
+        func = [this, cmd = std::move(cmd)](auto& event, auto&){
+            if (tx_buf->insert_data(&cmd[0], cmd.size())){
                 ::SetEvent(schedule_event);
             }
         };
     }else{
-        os << std::endl;
-        os2 << ")";
-        auto cmd = os.str();
-        func = [this, cmd](auto& event, auto&){
-            if (tx_buf->insert_data(cmd.c_str(), cmd.length())){
+        os << ", EVENT_VALUE)";
+        func = [this, cmd = std::move(cmd)](auto &event, auto &){
+            auto buf = const_cast<P_CMD*>(reinterpret_cast<const P_CMD*>(&cmd[0]) + 1);
+            *reinterpret_cast<float *>(buf) = static_cast<float>(static_cast<double>(event));
+            if (tx_buf->insert_data(&cmd[0], cmd.size())){
                 ::SetEvent(schedule_event);
             }
         };
     }
 
-    return std::make_shared<NativeAction::Function>(os2.str().c_str(), func);
+    return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
 }
 
 static std::string translate_to_numeral(int i){
@@ -777,7 +822,8 @@ void DCSWorld::lua_add_observed_data(sol::object arg0){
             auto defid = observed_data_defs.size();
             observed_data_defs.push_back(std::move(observed_data_def));
             if (is_active){
-                auto&& cmd = observed_data_defs[defid]->get_register_cmd_text(defid);
+                std::string cmd;
+                observed_data_defs[defid]->get_register_cmd_text(cmd, defid);
                 need_to_set_event = tx_buf->insert_data(cmd.c_str(), cmd.size()) || need_to_set_event;
             }
         }
@@ -790,8 +836,12 @@ void DCSWorld::lua_add_observed_data(sol::object arg0){
 void DCSWorld::lua_clear_observed_data(){
     std::lock_guard lock{mutex};
     observed_data_defs.clear();
-    static std::string cmd{"C\n"};
-    if (tx_buf->insert_data(cmd.c_str(), cmd.size())){
+    struct C_CMD {
+        command_header hdr;
+    } cmd {
+        make_command_header('C', sizeof(C_CMD) - 4),
+    };
+    if (tx_buf->insert_data(reinterpret_cast<char*>(&cmd), sizeof(cmd))){
         ::SetEvent(schedule_event);
     }
 }

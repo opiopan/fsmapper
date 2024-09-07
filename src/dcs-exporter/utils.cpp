@@ -453,9 +453,8 @@ public:
         return length;
     }
 
-    int unpack(lua_State* L, const char* in, size_t in_length){
+    int unpack(lua_State* L, const char* in, size_t in_length, size_t offset){
         int pushed_num{0};
-        size_t offset{0};
         for (auto& rule : rules){
             offset = rule->unpack(L, in, in_length, offset);
             if (offset > in_length){
@@ -525,8 +524,15 @@ static int l_struct_unpack(lua_State* L){
     auto udata = luaL_checkudata(L, 1, l_struct_type_name);
     size_t in_length;
     auto in = luaL_checklstring(L, 2, &in_length);
+    size_t offset{0};
+    if (lua_gettop(L) > 2){
+        offset = luaL_checkinteger(L, 3);
+        if (offset < 0 || offset > in_length){
+            return luaL_error(L, "the 3rd argument value is out of range");
+        }
+    }
     try{
-        return reinterpret_cast<bin_translator*>(udata)->unpack(L, in, in_length);
+        return reinterpret_cast<bin_translator*>(udata)->unpack(L, in, in_length, offset);
     }catch (std::runtime_error& e){
         return luaL_error(L, "%s", e.what());
     }

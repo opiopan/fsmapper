@@ -25,6 +25,7 @@ protocol.connection = {
         self.tbuf = self.tbuf .. data
     end,
 
+    rcv_fmt = fsmapper.utils.struct('c1s3'),
     receive_and_dispatch = function (self)
         local data, err, partial = self.sock:receive(4096)
         if data then
@@ -37,10 +38,10 @@ protocol.connection = {
         end
 
         while true do
-            local cmd, rest = self.rbuf:match('^([^\n]*)\n(.*)')
-            if cmd then
-                self.rbuf = rest
-                self:process_command(cmd)
+            local cmd, body = self.rcv_fmt:unpack(self.rbuf)
+            if body then
+                self.rbuf = self.rbuf:sub(body:len() + 5)
+                self:process_command(cmd, body)
             else
                 break
             end
@@ -64,43 +65,42 @@ protocol.connection = {
 protocol.fsmapper_client = {
     new = function (sock)
         local self = common.instantiate(protocol.fsmapper_client, protocol.connection, sock)
-        self.observers = {}
         return self
     end,
 
-    process_command = function (self, cmd)
-        local type, body = cmd:sub(1, 1), cmd:sub(2)
-        local processor = self[type]
+    process_command = function (self, cmd, body)
+        local processor = self[cmd]
         if processor then
             result, msg = pcall(processor, self, body)
             if not result then
                 log.write('FSMAPPER.LUA', log.ERROR, 'Processing a request packet has failed: ' .. msg)
             end
         else
-            fsmapper.log("unsuported command: " .. type)
+            fsmapper.log("unsuported command: " .. cmd)
         end
     end,
 
+    rcv_p_fmt = fsmapper.utils.struct('I4I4'),
+    float_fmt = fsmapper.utils.struct('f'),
     P = function (self, body)
-        local args = common.split(body, ':')
-        for i = 3, #args do
-            GetDevice(tonumber(args[1])):performClickableAction(tonumber(args[2]), tonumber(args[i]))
+        local device, command = self.rcv_p_fmt:unpack(body)
+        for offset = self.rcv_p_fmt:packsize(), body:len() - 1, self.float_fmt:packsize() do
+            print('offseet: '..offset)
+            local value = self.float_fmt:unpack(body, offset)
+            GetDevice(device):performClickableAction(command, value)
         end
     end,
 
-    A = function (self, body)
-        local new_observer = observer.argument_value_observer.new(body)
-        self.observers[#self.observers + 1] = new_observer
-        fsmapper.log("Register an argument value observer for: " .. new_observer.arg_number)
+    O = function (self, body)
+        observer:manipulate_observer(body)
+    end,
+
+    C = function (self, body)
+        observer:clear()
     end,
 
     refresh_observers = function (self, now)
-        for _, ob in ipairs(self.observers) do
-            if ob:update() then
-                self:send(ob:generate_notification_message())
-                fsmapper.log("Send observed data for: " .. ob.arg_number)
-            end
-        end
+        observer:refresh(now, self)
     end,
 
     version_cmd_fmt = fsmapper.utils.struct('c1I3 i4i4i4i4 s4'),
