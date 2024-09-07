@@ -65,6 +65,7 @@ protocol.connection = {
 protocol.fsmapper_client = {
     new = function (sock)
         local self = common.instantiate(protocol.fsmapper_client, protocol.connection, sock)
+        self.observers = observer.observer_list.new()
         return self
     end,
 
@@ -84,7 +85,7 @@ protocol.fsmapper_client = {
     float_fmt = fsmapper.utils.struct('f'),
     P = function (self, body)
         local device, command = self.rcv_p_fmt:unpack(body)
-        for offset = self.rcv_p_fmt:packsize(), body:len() - 1, self.float_fmt:packsize() do
+        for offset = self.rcv_p_fmt:packsize() + 1, body:len(), self.float_fmt:packsize() do
             print('offseet: '..offset)
             local value = self.float_fmt:unpack(body, offset)
             GetDevice(device):performClickableAction(command, value)
@@ -92,15 +93,15 @@ protocol.fsmapper_client = {
     end,
 
     O = function (self, body)
-        observer:manipulate_observer(body)
+        self.observers:manipulate_observer(body)
     end,
 
     C = function (self, body)
-        observer:clear()
+        self.observers:clear()
     end,
 
     refresh_observers = function (self, now)
-        observer:refresh(now, self)
+        self.observers:refresh(now, self)
     end,
 
     version_cmd_fmt = fsmapper.utils.struct('c1I3 i4i4i4i4 s4'),

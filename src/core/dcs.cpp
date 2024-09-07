@@ -8,10 +8,11 @@
 //      O: manipulate observer
 //         subcommand:
 //           A: create argument value observer: GetDevice():get_argument_value()
-//           I: create indication observer: list_indication()
+//           I: create indication text observer: list_indication()
 //           C: create chunk observer
-//           F: add simple filter
-//           G: add chunk filter
+//           F: add numeric filter
+//           G: add string filter
+//           H: add chunk filter
 //           E: enable observer
 //      C: clear observed data
 //
@@ -575,9 +576,77 @@ public:
     DCSObservedData(uint64_t event_id): event_id(event_id){}
     virtual ~DCSObservedData(){}
     uint64_t get_event_id() const{return event_id;}
+    std::vector<float> numeric_filter;
+    std::vector<std::string> string_filter;
+    std::string chunk_filter;
+
+    void set_filter(sol::object object){
+        numeric_filter.clear();
+        string_filter.clear();
+        chunk_filter.clear();
+        if (object.get_type() == sol::type::nil){
+            return;
+        }
+        if (object.get_type() == sol::type::string){
+            chunk_filter = object.as<const char*>();
+        }else if (object.get_type() == sol::type::table){
+            sol::table table = object;
+            for (auto key_value : table){
+                if (key_value.second.get_type() == sol::type::string){
+                    string_filter.emplace_back(key_value.second.as<const char*>());
+                }else if (key_value.second.get_type() == sol::type::number){
+                    numeric_filter.push_back(key_value.second.as<float>());
+                }else{
+                    throw std::runtime_error("the values contains the table specified as 'filter' parameter must be either a number or a string");
+                }
+            }
+        }else{
+            throw std::runtime_error("the 'filter' parameter must be either a table or a string");
+        }
+    }
 
     virtual void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) = 0;
-    virtual void add_enable_sub_command(std::string& buffer, uint32_t observed_data_id){
+
+    void add_filter_sub_command(std::string& buffer, uint32_t observed_data_id){
+        struct OF_CMD{
+            command_header hdr;     // 'O', command length
+            command_header sub_hdr; // 'F', oberver ID
+            float value;
+        }fcmd{
+            make_command_header('O', sizeof(OF_CMD) - 4),
+            make_command_header('F', observed_data_id),
+            0,
+        };
+        for (auto value : numeric_filter){
+            fcmd.value = value;
+            buffer.append(reinterpret_cast<const char*>(&fcmd), sizeof(fcmd));
+        }
+
+        for (const auto& value : string_filter){
+            struct OG_CMD{
+                command_header hdr;     // 'O', command length
+                command_header sub_hdr; // 'G', oberver ID
+            }gcmd{
+                make_command_header('O', sizeof(OG_CMD) - 4 + value.length() + 1),
+                make_command_header('G', observed_data_id),
+            };
+            buffer.append(reinterpret_cast<const char*>(&gcmd), sizeof(gcmd));
+            buffer.append(value.c_str(), value.length() + 1);
+        }
+
+        if (chunk_filter.length()){
+            struct OG_CMD{
+                command_header hdr;     // 'O', command length
+                command_header sub_hdr; // 'H', oberver ID
+            }gcmd{
+                make_command_header('O', sizeof(OG_CMD) - 4 + chunk_filter.length() + 1),
+                make_command_header('H', observed_data_id),
+            };
+            buffer.append(reinterpret_cast<const char*>(&gcmd), sizeof(gcmd));
+            buffer.append(chunk_filter.c_str(), chunk_filter.length() + 1);
+        }
+    }
+    void add_enable_sub_command(std::string& buffer, uint32_t observed_data_id){
         struct OE_CMD{
             command_header hdr;     // 'O', command length
             command_header sub_hdr; // 'E', oberver ID
@@ -585,8 +654,9 @@ public:
             make_command_header('O', sizeof(OE_CMD) - 4),
             make_command_header('E', observed_data_id),
         };
-        buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        buffer.append(reinterpret_cast<const char*>(&cmd), sizeof(cmd));
     }
+
     virtual void triger_event(int type, const char* value, size_t length){
         if (type == 'N'){
             if (length == sizeof(float)){
@@ -623,6 +693,7 @@ public:
 
         buffer.clear();
         buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        add_filter_sub_command(buffer, observed_data_id);
         add_enable_sub_command(buffer, observed_data_id);
     }
 };
@@ -814,11 +885,10 @@ void DCSWorld::lua_add_observed_data(sol::object arg0){
         auto event_id = lua_safevalue<uint64_t>(def["event"]);
         auto arg_number = lua_safevalue<int64_t>(def["arg_number"]);
         auto epsilon = lua_safevalue<double>(def["epsilon"]);
-        if (!event_id){
-            throw std::runtime_error("the 'event' parameter must be specified");
-        }
+
         if (arg_number){
             auto observed_data_def = std::make_unique<ObservedArgumentValue>(*event_id, *arg_number, epsilon ? *epsilon : 0);
+            observed_data_def->set_filter(def["filter"]);
             auto defid = observed_data_defs.size();
             observed_data_defs.push_back(std::move(observed_data_def));
             if (is_active){

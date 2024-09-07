@@ -19,6 +19,7 @@
 #include <algorithm>
 
 #include <stdlib.h>
+#include <string.h>
 #undef min
 #undef max
 
@@ -92,6 +93,18 @@ struct translation_unit{
     bool is_pushing_value{true};
     std::optional<int> bias;
 
+    translation_unit() = default;
+    translation_unit(const translation_unit& ref){
+        type = ref.type;
+        is_fixed_length = ref.is_fixed_length;
+        min_length = ref.min_length;
+        alignment = ref.alignment;
+        is_associated = ref.is_associated;
+        pack_index = ref.pack_index;
+        is_pushing_value = ref.is_pushing_value;
+        bias = ref.bias;
+    }
+
     inline size_t padding(size_t pos)const{
         auto modulo = pos % alignment;
         return modulo ? alignment - modulo : 0;
@@ -107,6 +120,13 @@ struct integer_unit : public translation_unit{
     bool is_signed;
     void (*put_data)(char* to, lua_Integer value, int precision);
     lua_Integer (*get_data)(const char* from, int precision);
+
+    integer_unit(const integer_unit& ref) : translation_unit(ref){
+        precision = ref.precision;
+        is_signed = ref.is_signed;
+        put_data = ref.put_data;
+        get_data = ref.get_data;
+    }
 
     integer_unit(int precision, bool is_signed) : precision(precision), is_signed(is_signed){
         type = translation_type::integer;
@@ -224,7 +244,6 @@ struct float_unit : public translation_unit{
 };
 
 struct fixed_string_unit : public translation_unit{
-
     fixed_string_unit(size_t length) {
         if (length < 1){
             throw std::runtime_error(std::format("specified fixed string length [{}] is invalid", length));
@@ -255,6 +274,30 @@ struct fixed_string_unit : public translation_unit{
     }
 };
 
+struct zero_terminated_string_unit : public translation_unit{
+    zero_terminated_string_unit(){
+        type = translation_type::string;
+        min_length = 1;
+    }
+
+    size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
+        size_t input_len;
+        auto value = check_lua_arg_lstring(L, pack_index, &input_len);
+        auto goal = offset + input_len + 1;
+        buf.ensure_length(goal);
+        strcpy_s(&buf[offset], input_len + 1, value);
+        return goal;
+    }
+
+    size_t unpack(lua_State *L, const char *in, size_t in_length, size_t offset) override{
+        auto length = strnlen(in + offset, in_length - offset);
+        if (length < in_length - offset){
+            lua_pushstring(L, in + offset);
+        }
+        return offset + length + 1;
+    }
+};
+
 struct associated_string_length_unit : public integer_unit{
     lua_Integer parsed_value{0};
 
@@ -264,15 +307,20 @@ struct associated_string_length_unit : public integer_unit{
         is_pushing_value = false;
     }
 
+    associated_string_length_unit(const integer_unit& ref) : integer_unit(ref){
+        is_associated = true;
+        is_pushing_value = false;
+    }
+
     auto get_parsed_value()const{return parsed_value;}
 
     size_t pack(lua_State *L, safe_buffer &buf, size_t offset) override{
         size_t length;
-        auto value = check_lua_arg_lstring(L, pack_index, &length) + (bias ? *bias : 0);
+        auto value = check_lua_arg_lstring(L, pack_index, &length);
         offset += padding(offset);
         auto goal = offset + precision;
         buf.ensure_length(goal);
-        put_data(&buf[offset], length, precision);
+        put_data(&buf[offset], length + (bias ? *bias : 0), precision);
         return goal;
     }
 
@@ -359,6 +407,11 @@ public:
                 rule->pack_index = next_pack_index(rules);
                 rules.emplace_back(std::move(rule));
             }}},
+            {'z', {'z', false, false, 0, [](unit_list& rules, auto attribute){
+                auto rule = std::make_unique<zero_terminated_string_unit>();
+                rule->pack_index = next_pack_index(rules);
+                rules.emplace_back(std::move(rule));
+            }}},
             {'s', {'s', true, true, 8, [](unit_list& rules, auto attribute){
                 auto rule_len = std::make_unique<associated_string_length_unit>(attribute);
                 auto rule_body = std::make_unique<variable_string_unit>(*rule_len);
@@ -376,7 +429,7 @@ public:
                 for (auto i = attribute - 1; i < rules.size(); i++){
                     rules[i]->pack_index--;
                 }
-                auto rule_len = std::make_unique<associated_string_length_unit>(static_cast<int>(rules[attribute - 1]->min_length));
+                auto rule_len = std::make_unique<associated_string_length_unit>(*reinterpret_cast<const integer_unit*>(rules[attribute - 1].get()));
                 auto rule_body = std::make_unique<variable_string_unit>(*rule_len);
                 rule_len->pack_index = next_pack_index(rules);
                 rule_body->pack_index = rule_len->pack_index;
@@ -524,15 +577,15 @@ static int l_struct_unpack(lua_State* L){
     auto udata = luaL_checkudata(L, 1, l_struct_type_name);
     size_t in_length;
     auto in = luaL_checklstring(L, 2, &in_length);
-    size_t offset{0};
+    size_t offset{1};
     if (lua_gettop(L) > 2){
         offset = luaL_checkinteger(L, 3);
-        if (offset < 0 || offset > in_length){
+        if (offset < 1 || offset > in_length + 1){
             return luaL_error(L, "the 3rd argument value is out of range");
         }
     }
     try{
-        return reinterpret_cast<bin_translator*>(udata)->unpack(L, in, in_length, offset);
+        return reinterpret_cast<bin_translator*>(udata)->unpack(L, in, in_length, offset - 1);
     }catch (std::runtime_error& e){
         return luaL_error(L, "%s", e.what());
     }
