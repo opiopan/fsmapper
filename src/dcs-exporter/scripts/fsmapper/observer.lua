@@ -42,9 +42,14 @@ observer.base_observer = {
             if filter_type == 'nil' then
                 return value
             elseif filter_type == 'table' then
-                return self.filter[value]
+                return self.filter[value] and value
             elseif filter_type == 'function' then
-                return self.filter(value)
+                local result, return_value = pcall(self.filter, value)
+                if result then
+                    return return_value
+                else
+                   log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. error)
+                end
             end
         end
     end,
@@ -57,12 +62,11 @@ observer.base_observer = {
         if value_type == 'number' then
             return self.float_msg_fmt:pack('O', self.float_msg_size, 'N', self.id, self.value)
         elseif value_type == 'string' then
-            return self.string_msg_fmt:pack('O', self.string_msg_size + self.value:len(), 'S', self.id, self.value)
+            return self.string_msg_fmt:pack('O', 'S', self.id, self.value)
         end
     end,
 }
 observer.base_observer.float_msg_size = observer.base_observer.float_msg_fmt:packsize() - 4
-observer.base_observer.string_msg_size = observer.base_observer.string_msg_fmt:packsize() - 4
 
 observer.argument_value_observer = {
     new = function (id, arg_number, epsilon)
@@ -124,6 +128,7 @@ observer.observer_list = {
                     chunk, error = loadstring(value)
                     if error then
                         log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a chunk for observer filter: ' .. error)
+                        ob.filter = {}
                     else
                         ob.filter= chunk
                         fsmapper.log("Added a chunk filter to the observer: id=" .. id)
