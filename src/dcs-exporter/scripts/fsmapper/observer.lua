@@ -80,6 +80,40 @@ observer.argument_value_observer = {
     end,
 }
 
+observer.indication_text_observer = {
+    new = function (id, indicator_id, epsilon)
+        local self = common.instantiate(observer.indication_text_observer, observer.base_observer, id, epsilon)
+        self.indicator_id = indicator_id
+        return self
+    end,
+
+    raw_value = function (self)
+        return list_indication(self.indicator_id)
+    end,
+}
+
+observer.chunk_value_observer = {
+    new = function (id, chunk_text, epsilon)
+        local self = common.instantiate(observer.chunk_value_observer, observer.base_observer, id, epsilon)
+        local chunk, error = loadstring(chunk_text)
+        if error then
+            log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a chunk to generate observation value: ' .. error)
+        else
+            self.chunk = chunk
+        end
+        return self
+    end,
+
+    raw_value = function (self)
+        local result, return_value = pcall(self.chunk)
+        if result then
+            return return_value
+        else
+            log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. error)
+        end
+    end,
+}
+
 observer.observer_list = {
     new = function ()
         local self = common.instantiate(observer.observer_list)
@@ -89,6 +123,8 @@ observer.observer_list = {
     
     O_fmt = fsmapper.utils.struct('c1I3'),
     A_sub_fmt = fsmapper.utils.struct('I4f'),
+    I_sub_fmt = fsmapper.utils.struct('I4f'),
+    C_sub_fmt = fsmapper.utils.struct('f'),
     F_sub_fmt = fsmapper.utils.struct('f'),
     G_sub_fmt = fsmapper.utils.struct('z'),
     H_sub_fmt = fsmapper.utils.struct('z'),
@@ -99,6 +135,19 @@ observer.observer_list = {
             if epsilon then
                 self.observers[id] = observer.argument_value_observer.new(id, arg_number, epsilon)
                 fsmapper.log("Registered an argument value observer for " .. arg_number .. " as id=" .. id)
+            end
+        elseif type == 'I' then
+            local indicator_id, epsilon = self.I_sub_fmt:unpack(cmd, self.O_fmt:packsize() + 1)
+            if epsilon then
+                self.observers[id] = observer.indication_text_observer.new(id, indicator_id, epsilon)
+                fsmapper.log("Registered an indication text observer for " .. indicator_id .. " as id=" .. id)
+            end
+        elseif type == 'C' then
+            local epsilon = self.C_sub_fmt:unpack(cmd, self.O_fmt:packsize() + 1)
+            local chunk = cmd:sub(self.O_fmt:packsize() + self.C_sub_fmt:packsize() + 1)
+            if chunk:len() > 0 then
+                self.observers[id] = observer.chunk_value_observer.new(id, chunk, epsilon)
+                fsmapper.log("Registered a chunk value observer as id=" .. id)
             end
         elseif type == 'F' then
             local value = self.F_sub_fmt:unpack(cmd, self.O_fmt:packsize() + 1)
@@ -125,7 +174,7 @@ observer.observer_list = {
             if value then
                 local ob = self.observers[id]
                 if ob then
-                    chunk, error = loadstring(value)
+                    local chunk, error = loadstring(value)
                     if error then
                         log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a chunk for observer filter: ' .. error)
                         ob.filter = {}
@@ -156,7 +205,7 @@ observer.observer_list = {
         for _, ob in pairs(self.observers) do
             if ob:update() then
                 connection:send(ob:generate_notification_message())
-                fsmapper.log("Send observed data for " .. ob.arg_number)
+                fsmapper.log("Send observed data: id=" .. ob.id)
             end
         end
     end,

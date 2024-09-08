@@ -572,10 +572,13 @@ void DCSWorld::O_command(std::unique_lock<std::mutex> &lock, const DCSPacket &pa
 //============================================================================================
 class DCSObservedData{
     uint64_t event_id;
+    float epsilon;
+    
 public:
-    DCSObservedData(uint64_t event_id): event_id(event_id){}
+    DCSObservedData(uint64_t event_id, float epsilon = 0): event_id(event_id), epsilon(epsilon){}
     virtual ~DCSObservedData(){}
     uint64_t get_event_id() const{return event_id;}
+    float get_epsilon() const{return epsilon;}
     std::vector<float> numeric_filter;
     std::vector<std::string> string_filter;
     std::string chunk_filter;
@@ -674,25 +677,74 @@ public:
 
 class ObservedArgumentValue : public DCSObservedData{
     uint32_t arg_number;
-    float epsilon;
 
 public:
-    ObservedArgumentValue(uint64_t event_id, uint32_t arg_number, float epsilon=0) : DCSObservedData(event_id), arg_number(arg_number), epsilon(epsilon){}
+    ObservedArgumentValue(uint64_t event_id, uint32_t arg_number, float epsilon=0) : DCSObservedData(event_id, epsilon), arg_number(arg_number){}
 
     void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) override{
-        struct OA_CMD{
+        struct{
             command_header hdr;      // 'O', command length
             command_header sub_hdr;  // 'A', oberver ID
             uint32_t arg_number;
             float epsilon;
-        } cmd{
+        }cmd{
             make_command_header('O', sizeof(cmd) - 4), 
             make_command_header('A', observed_data_id), 
-            arg_number, epsilon,
+            arg_number, get_epsilon(),
         };
 
         buffer.clear();
         buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        add_filter_sub_command(buffer, observed_data_id);
+        add_enable_sub_command(buffer, observed_data_id);
+    }
+};
+
+class ObservedIndicationText : public DCSObservedData{
+    uint32_t indicator_id;
+
+public:
+    ObservedIndicationText(uint64_t event_id, uint32_t indicator_id, float epsilon=0) : DCSObservedData(event_id, epsilon), indicator_id(indicator_id){}
+
+    void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) override{
+        struct{
+            command_header hdr;      // 'O', command length
+            command_header sub_hdr;  // 'I', oberver ID
+            uint32_t indicator_id;
+            float epsilon;
+        }cmd{
+            make_command_header('O', sizeof(cmd) - 4), 
+            make_command_header('I', observed_data_id), 
+            indicator_id, get_epsilon(),
+        };
+
+        buffer.clear();
+        buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        add_filter_sub_command(buffer, observed_data_id);
+        add_enable_sub_command(buffer, observed_data_id);
+    }
+};
+
+class ObservedChunkValue : public DCSObservedData{
+    std::string chunk;
+
+public:
+    ObservedChunkValue(uint64_t event_id, const char* chunk, float epsilon=0) : DCSObservedData(event_id, epsilon), chunk(chunk){}
+
+    void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) override{
+        struct{
+            command_header hdr;      // 'O', command length
+            command_header sub_hdr;  // 'C', oberver ID
+            float epsilon;
+        }cmd{
+            make_command_header('O', sizeof(cmd) - 4 + chunk.length()), 
+            make_command_header('C', observed_data_id), 
+            get_epsilon(),
+        };
+
+        buffer.clear();
+        buffer.append(reinterpret_cast<char*>(&cmd), sizeof(cmd));
+        buffer.append(chunk);
         add_filter_sub_command(buffer, observed_data_id);
         add_enable_sub_command(buffer, observed_data_id);
     }
@@ -883,11 +935,24 @@ void DCSWorld::lua_add_observed_data(sol::object arg0){
         }
         sol::table def = array[i];
         auto event_id = lua_safevalue<uint64_t>(def["event"]);
-        auto arg_number = lua_safevalue<int64_t>(def["arg_number"]);
+        auto arg_number = lua_safevalue<int64_t>(def["argument_number"]);
+        auto indicator_id = lua_safevalue<int64_t>(def["indicator_id"]);
+        auto chunk = lua_safestring(def["chunk"]);
         auto epsilon = lua_safevalue<double>(def["epsilon"]);
 
-        if (arg_number){
-            auto observed_data_def = std::make_unique<ObservedArgumentValue>(*event_id, *arg_number, epsilon ? *epsilon : 0);
+        if (!event_id){
+            throw std::runtime_error("the 'event_id' parameter is not specified");
+        }
+
+        if (arg_number || indicator_id || chunk.length() > 0){
+            std::unique_ptr<DCSObservedData> observed_data_def;
+            if (arg_number){
+                observed_data_def = std::make_unique<ObservedArgumentValue>(*event_id, *arg_number, epsilon ? *epsilon : 0);
+            }else if (indicator_id){
+                observed_data_def = std::make_unique<ObservedIndicationText>(*event_id, *indicator_id, epsilon ? *epsilon : 0);
+            }else{
+                observed_data_def = std::make_unique<ObservedChunkValue>(*event_id, chunk.c_str(), epsilon ? *epsilon : 0);
+            }
             observed_data_def->set_filter(def["filter"]);
             auto defid = observed_data_defs.size();
             observed_data_defs.push_back(std::move(observed_data_def));
@@ -896,6 +961,8 @@ void DCSWorld::lua_add_observed_data(sol::object arg0){
                 observed_data_defs[defid]->get_register_cmd_text(cmd, defid);
                 need_to_set_event = tx_buf->insert_data(cmd.c_str(), cmd.size()) || need_to_set_event;
             }
+        }else{
+            throw std::runtime_error("one of the following parameters must be specified: 'argument_number', 'indicator_id', or 'chunk'");
         }
     }
     if (need_to_set_event){

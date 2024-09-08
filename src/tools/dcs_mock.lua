@@ -45,6 +45,10 @@ function GetDevice(device_id)
     return device
 end
 
+function list_indication(indicator_id)
+    return "indicator: " .. indicator_id .. ":" .. math.floor(fsmapper.time / 2)
+end
+
 local socket = require('socket')
 
 
