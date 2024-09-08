@@ -154,7 +154,7 @@ observer.observer_list = {
             if value then
                 local ob = self.observers[id]
                 if ob then
-                    ob.filter = self.filter or {}
+                    ob.filter = ob.filter or {}
                     ob.filter[value] = true
                     fsmapper.log("Added a numeric filter to the observer: id=" .. id .. " value=" .. value)
                 end
@@ -162,7 +162,7 @@ observer.observer_list = {
         elseif type == 'G' then
             local value = self.G_sub_fmt:unpack(cmd, self.O_fmt:packsize() + 1)
             if value then
-                local ob = self.observers[id]
+                local ob = ob.observers[id]
                 if ob then
                     ob.filter = self.filter or {}
                     ob.filter[value] = true
