@@ -48,7 +48,7 @@ observer.base_observer = {
                 if result then
                     return return_value
                 else
-                   log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. error)
+                   log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. return_value)
                 end
             end
         end

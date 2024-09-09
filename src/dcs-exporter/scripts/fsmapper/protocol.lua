@@ -1,6 +1,7 @@
 local protocol = {}
 local common = require('fsmapper/common')
 local observer = require('fsmapper/observer')
+local executer = require('fsmapper/executer')
 local socket = require('socket')
 
 protocol.connection = {
@@ -66,6 +67,7 @@ protocol.fsmapper_client = {
     new = function (sock)
         local self = common.instantiate(protocol.fsmapper_client, protocol.connection, sock)
         self.observers = observer.observer_list.new()
+        self.executer = executer.new()
         return self
     end,
 
@@ -86,7 +88,6 @@ protocol.fsmapper_client = {
     P = function (self, body)
         local device, command = self.rcv_p_fmt:unpack(body)
         for offset = self.rcv_p_fmt:packsize() + 1, body:len(), self.float_fmt:packsize() do
-            print('offseet: '..offset)
             local value = self.float_fmt:unpack(body, offset)
             GetDevice(device):performClickableAction(command, value)
         end
@@ -98,6 +99,26 @@ protocol.fsmapper_client = {
 
     C = function (self, body)
         self.observers:clear()
+    end,
+
+    R = function (self, body)
+        self.executer:register_chunk(body)
+    end,
+
+    S = function (self, body)
+        self.executer:clear_chunk()
+    end,
+
+    T = function (self, body)
+        self.executer:execute_chunk_without_argument(body)
+    end,
+
+    U = function (self, body)
+        self.executer:execute_chunk_with_number(body)
+    end,
+
+    V = function (self, body)
+        self.executer:execute_chunk_with_string(body)
     end,
 
     refresh_observers = function (self, now)

@@ -15,6 +15,11 @@
 //           H: add chunk filter
 //           E: enable observer
 //      C: clear observed data
+//      R: register chunk
+//      S: clear chunk
+//      T: invoke chunk with no argument
+//      U: invoke chunk with a numeric argument
+//      V: invoke chunk with a string argument
 //
 //    exporter -> fsmapper
 //      V: notify DCS World version
@@ -766,6 +771,88 @@ void DCSWorld::triger_observed_data_event(size_t index, int type, const char* va
     observed_data_defs[index]->triger_event(type, value, length);
 }
 
+//============================================================================================
+// Sending Chunk related comands
+//============================================================================================
+bool DCSWorld::send_register_chunk_command_without_lock(uint32_t chunk_id){
+    const std::string& chunk = chunks[chunk_id];
+    struct CMD{
+        command_header hdr;
+        uint32_t chunk_id;
+    }cmd{
+        make_command_header('R', sizeof(CMD) + chunk.length() - 4),
+        chunk_id,
+    };
+    bool result = tx_buf->insert_data_without_lock(&cmd, sizeof(cmd));
+    tx_buf->insert_data_without_lock(chunk.c_str(), chunk.length());
+    return result;
+}
+
+void DCSWorld::sync_chunks(std::unique_lock<std::mutex>& lock){
+    bool need_to_set_event{false};
+    auto&& lock2 = tx_buf->get_lock();
+    for (auto i = 0; i < chunks.size(); i++){
+        need_to_set_event = send_register_chunk_command_without_lock(i) || need_to_set_event;
+    }
+    if (need_to_set_event){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::send_clear_chunk_command(){
+    struct CMD{
+        command_header hdr;
+    }cmd{
+        make_command_header('S', sizeof(CMD) - 4),
+    };
+    if (tx_buf->insert_data(&cmd, sizeof(cmd))){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::send_invoke_chunk(uint32_t chunk_id){
+    struct CMD{
+        command_header hdr;
+        uint32_t chunk_id;
+    }cmd{
+        make_command_header('T', sizeof(CMD) - 4),
+        chunk_id,
+    };
+    if (tx_buf->insert_data(&cmd, sizeof(cmd))){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::send_invoke_chunk(uint32_t chunk_id, float argument){
+    struct CMD{
+        command_header hdr;
+        uint32_t chunk_id;
+        float argument;
+    }cmd{
+        make_command_header('U', sizeof(CMD) - 4),
+        chunk_id,
+        argument,
+    };
+    if (tx_buf->insert_data(&cmd, sizeof(cmd))){
+        ::SetEvent(schedule_event);
+    }
+}
+
+void DCSWorld::send_invoke_chunk(uint32_t chunk_id, const char* argument, size_t length){
+    struct CMD{
+        command_header hdr;
+        uint32_t chunk_id;
+    }cmd{
+        make_command_header('V', sizeof(CMD) + length - 4),
+        chunk_id,
+    };
+    auto lock = std::move(tx_buf->get_lock());
+    bool need_to_set_event = tx_buf->insert_data_without_lock(&cmd, sizeof(cmd));
+    tx_buf->insert_data_without_lock(argument, length);
+    if (need_to_set_event){
+        ::SetEvent(schedule_event);
+    }
+}
 
 //============================================================================================
 // Utilities for Lua functions
@@ -913,6 +1000,80 @@ std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer
     return std::make_shared<NativeAction::Function>(os.str().c_str(), func);
 }
 
+uint32_t DCSWorld::lua_register_chunk(sol::object arg0){
+    auto&& chunk = lua_safestring(arg0);
+    if (chunk.length() > 0){
+        std::lock_guard lock{mutex};
+        auto chunk_id = chunks.size();
+        chunks.push_back(chunk);
+        if (is_active){
+            auto&& lock2 = tx_buf->get_lock();
+            if (send_register_chunk_command_without_lock(chunk_id)){
+                ::SetEvent(schedule_event);
+            }
+        }
+        return chunk_id;
+    }else{
+        throw std::runtime_error("no chunk string data is specified");
+    }
+}
+
+void DCSWorld::lua_clear_chunks(){
+    std::lock_guard lock(mutex);
+    chunks.clear();
+    send_clear_chunk_command();
+}
+
+void DCSWorld::lua_execute_chunk(uint32_t chunk_id, sol::object argument){
+    auto type = argument.get_type();
+    if (type == sol::type::nil){
+        send_invoke_chunk(chunk_id);
+    }else if (type == sol::type::number){
+        send_invoke_chunk(chunk_id, argument.as<float>());
+    }else if (type == sol::type::string){
+        auto&& str_arg = argument.as<std::string>();
+        send_invoke_chunk(chunk_id, str_arg.c_str(), str_arg.length());
+    }else{
+        throw std::runtime_error("type of the 2nd argument is invalid");
+    }
+}
+
+std::shared_ptr<NativeAction::Function> DCSWorld::lua_chunk_executer(uint32_t chunk_id, sol::object argument){
+    std::string func_name;
+    NativeAction::Function::ACTION_FUNCTION func;
+    auto type = argument.get_type();
+    if (type == sol::type::nil){
+        func_name = std::format("dcs.execute_chunk({}, EVENT_VALUE)", chunk_id);
+        func = [this, chunk_id](auto &event, auto &){
+            if (event.getType() == Event::Type::null){
+                send_invoke_chunk(chunk_id);
+            }else if (event.getType() == Event::Type::double_value || event.getType() == Event::Type::int_value){
+                send_invoke_chunk(chunk_id, static_cast<double>(event));
+            }else if (event.getType() == Event::Type::string_value){
+                std::string value{static_cast<const char*>(event)};
+                send_invoke_chunk(chunk_id, value.c_str(), value.length());
+            }
+        };
+        send_invoke_chunk(chunk_id);
+    }else if (type == sol::type::number){
+        auto value = argument.as<float>();
+        func_name = std::format("dcs.execute_chunk({}, {})", chunk_id, value);
+        func = [this, chunk_id, value](auto &, auto &){
+            send_invoke_chunk(chunk_id, value);
+        };
+    }else if (type == sol::type::string){
+        auto&& value = argument.as<std::string>();
+        func_name = std::format("dcs.execute_chunk({}, {})", chunk_id, value);
+        func = [this, chunk_id, value](auto &, auto &){
+            send_invoke_chunk(chunk_id, value.c_str(), value.length());
+        };
+    }else{
+        throw std::runtime_error("type of the 2nd argument is invalid");
+    }
+
+    return std::make_shared<NativeAction::Function>(func_name.c_str(), func);
+}
+
 static std::string translate_to_numeral(int i){
     static std::vector<std::string> numeral = {"1st", "2nd", "3rd"};
     if (i < numeral.size()){
@@ -1007,6 +1168,26 @@ void DCSWorld::initLuaEnv(sol::state &lua){
     dcs["clear_observed_data"] = [this](){
         lua_c_interface(*mapper_EngineInstance(), "dcs.clear_observed_data", [this](){
             lua_clear_observed_data();
+        });
+    };
+    dcs["register_chunk"] = [this](sol::object arg0){
+        return lua_c_interface(*mapper_EngineInstance(), "dcs.register_chunk", [this, arg0](){
+            return lua_register_chunk(arg0);
+        });
+    };
+    dcs["clear_chunks"] = [this](){
+        lua_c_interface(*mapper_EngineInstance(), "dcs.clear_chunks", [this](){
+            lua_clear_chunks();
+        });
+    };
+    dcs["execute_chunk"] = [this](uint32_t chunk_id, sol::object argument){
+        lua_c_interface(*mapper_EngineInstance(), "dcs.execute_chunk", [this, chunk_id, argument]{
+            lua_execute_chunk(chunk_id, argument);
+        });
+    };
+    dcs["chunk_executer"] = [this](uint32_t chunk_id, sol::object argument){
+        return lua_c_interface(*mapper_EngineInstance(), "dcs.chunk_executer", [this, chunk_id, argument]{
+            return lua_chunk_executer(chunk_id, argument);
         });
     };
     
