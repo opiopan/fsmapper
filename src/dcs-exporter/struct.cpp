@@ -1,10 +1,6 @@
 //
-// utils.cpp: Utility functions for DCS exporter Lua script
+// struct.cpp:
 //  Author: Hiroshi Murayama <opiopan@gmail.com>
-//
-//  Note: 
-//    This file contains code for a C-module that can be loaded into the DCS World Lua environment.
-//    Therefore, the Lua version targeted by this file is 5.1.
 //
 
 #include <windows.h>
@@ -23,10 +19,7 @@
 #undef min
 #undef max
 
-extern "C" {
-    #include <lua.h>
-    #include <lauxlib.h>
-}
+#include "struct.hpp"
 
 //============================================================================================
 // Utilities
@@ -592,45 +585,28 @@ static int l_struct_unpack(lua_State* L){
 }
 
 //============================================================================================
-// Lua C module entry point
+// exported functions
 //============================================================================================
-static luaL_Reg module[]{
-    {"struct", l_struct},
-    {nullptr, nullptr},
-};
-
-extern "C" __declspec(dllexport) int luaopen_fsmapper_utils(lua_State* L){
-    // register a metatable for "struct"
-    luaL_newmetatable(L, l_struct_type_name);
-    auto meta_table = lua_gettop(L);
-    lua_pushcfunction(L, l_struct_gc);
-    lua_setfield(L, meta_table, "__gc");
-    lua_newtable(L);
-    auto index_table = lua_gettop(L);
-    lua_pushcfunction(L, l_struct_packsize);
-    lua_setfield(L, index_table, "packsize");
-    lua_pushcfunction(L, l_struct_pack);
-    lua_setfield(L, index_table, "pack");
-    lua_pushcfunction(L, l_struct_unpack);
-    lua_setfield(L, index_table, "unpack");
-    lua_setfield(L, meta_table, "__index");
-    lua_pop(L, 1);
-
-    // register module
-    luaL_register(L, "fsmapper_utils", module);
-    return 1;
-}
-
-//============================================================================================
-// DLL entry point
-//============================================================================================
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved){
-    switch (ul_reason_for_call){
-    case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
+namespace lua_struct {
+    void register_meta_table(lua_State* L){
+        // register a metatable for "struct"
+        luaL_newmetatable(L, l_struct_type_name);
+        auto meta_table = lua_gettop(L);
+        lua_pushcfunction(L, l_struct_gc);
+        lua_setfield(L, meta_table, "__gc");
+        lua_newtable(L);
+        auto index_table = lua_gettop(L);
+        lua_pushcfunction(L, l_struct_packsize);
+        lua_setfield(L, index_table, "packsize");
+        lua_pushcfunction(L, l_struct_pack);
+        lua_setfield(L, index_table, "pack");
+        lua_pushcfunction(L, l_struct_unpack);
+        lua_setfield(L, index_table, "unpack");
+        lua_setfield(L, meta_table, "__index");
+        lua_pop(L, 1);
     }
-    return TRUE;
+
+    int create_struct(lua_State* L){
+        return l_struct(L);
+    }
 }
