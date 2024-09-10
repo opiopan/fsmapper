@@ -151,7 +151,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)lua51_syntax_checker;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -182,7 +182,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\MSFS SDK\SimConnect SDK\include;$(SolutionDir)lua51_syntax_checker;$(SolutionDir)hook;$(ProjectDir)..\..\modules\lua-5.4\src;$(ProjectDir)..\..\modules\sol2\include;$(ProjectDir)..\..\modules\vJoySDK\SDK\inc;$(ProjectDir)BuiltinDevices;$(ProjectDir)..\common;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4244 /wd26495 /wd26439 /wd4267 /wd4715 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -275,6 +275,9 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
   <ItemGroup>
     <ProjectReference Include="..\hook\hook.vcxproj">
       <Project>{bae570f4-ea42-43ad-81bb-613949159f81}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lua51_syntax_checker\lua51_syntax_checker.vcxproj">
+      <Project>{87189597-45b7-418b-8aa6-cbfe359b0f43}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

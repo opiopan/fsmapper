@@ -42,6 +42,10 @@ if (Test-Path $dcs_lua_dir){
     Set-Location lua-$dcs_lua_version\src
     # Write-Output "#undef LUA_COMPAT_OPENLIB" | Add-Content luaconf.h -Encoding UTF8
     lib /DEF:..\..\lua-builtin-dcs\lua.def /MACHINE:x64
+    cl /MT /O2 /c  *.c
+    Rename-Item -Path lua.obj lua.o
+    Rename-Item -Path luac.obj luac.o
+    lib /OUT:lua5.1-static.lib *.obj
     Set-Location ..\..
 }
 Rename-Item $dcs_lua_dir lua-5.1

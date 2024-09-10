@@ -37,6 +37,7 @@
 #include "dcs.h"
 #include "engine.h"
 #include "tools.h"
+#include "lua51checker.hpp"
 
 static constexpr auto connecting_interval = 1000; // in milli second
 
@@ -597,6 +598,10 @@ public:
         }
         if (object.get_type() == sol::type::string){
             chunk_filter = object.as<const char*>();
+            lua51::checker checker;
+            if (!checker.check_syntax(chunk_filter.c_str())){
+                throw std::runtime_error(std::format("an syntax error is found in the string specified as a filter: {}", checker.last_error()));
+            }
         }else if (object.get_type() == sol::type::table){
             sol::table table = object;
             for (auto key_value : table){
@@ -734,7 +739,12 @@ class ObservedChunkValue : public DCSObservedData{
     std::string chunk;
 
 public:
-    ObservedChunkValue(uint64_t event_id, const char* chunk, float epsilon=0) : DCSObservedData(event_id, epsilon), chunk(chunk){}
+    ObservedChunkValue(uint64_t event_id, const char* chunk, float epsilon=0) : DCSObservedData(event_id, epsilon), chunk(chunk){
+        lua51::checker checker;
+        if (!checker.check_syntax(chunk)){
+            throw std::runtime_error(std::format("an syntax error is found in the specified Lua chunk string: {}", checker.last_error()));
+        }
+    }
 
     void get_register_cmd_text(std::string& buffer, uint32_t observed_data_id) override{
         struct{
@@ -1003,6 +1013,10 @@ std::shared_ptr<NativeAction::Function> DCSWorld::lua_clickable_action_performer
 uint32_t DCSWorld::lua_register_chunk(sol::object arg0){
     auto&& chunk = lua_safestring(arg0);
     if (chunk.length() > 0){
+        lua51::checker checker;
+        if (!checker.check_syntax(chunk.c_str())){
+            throw std::runtime_error(std::format("an syntax error is found in the specified Lua chunk string: {}", checker.last_error()));
+        }
         std::lock_guard lock{mutex};
         auto chunk_id = chunks.size();
         chunks.push_back(chunk);
