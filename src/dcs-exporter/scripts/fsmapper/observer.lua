@@ -99,7 +99,7 @@ observer.chunk_value_observer = {
         if error then
             log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a chunk to generate observation value: ' .. error)
         else
-            self.chunk = chunk
+            self.chunk = common.configure_fenv(chunk)
         end
         return self
     end,
@@ -179,7 +179,7 @@ observer.observer_list = {
                         log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a chunk for observer filter: ' .. error)
                         ob.filter = {}
                     else
-                        ob.filter= chunk
+                        ob.filter= common.configure_fenv(chunk)
                         fsmapper.log("Added a chunk filter to the observer: id=" .. id)
                     end
                 end

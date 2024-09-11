@@ -16,7 +16,7 @@ executer = {
             if error then
                 log.write('FSMAPPER.LUA', log.ERROR, 'An error occured while parcing a registered chunk: ' .. error)
             else
-                self.chunks[id] = chunk
+                self.chunks[id] = common.configure_fenv(chunk)
                 fsmapper.log("Registered a chunk: id=" .. id)
             end
         end
