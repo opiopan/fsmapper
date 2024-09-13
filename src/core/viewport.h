@@ -194,7 +194,7 @@ public:
     class BackgroundWindow: public SimpleWindow<bg_window_class_name>{
     protected:
         using parent_class = SimpleWindow<bg_window_class_name>;
-        COLORREF bgcolor;
+        COLORREF bgcolor{RGB(255, 255, 255)};
         GdiObject<HBRUSH> bgbrush;
     public:
         BackgroundWindow(const WinDispatcher& dispatcher = WinDispatcher::sharedDispatcher()):SimpleWindow(dispatcher){};
