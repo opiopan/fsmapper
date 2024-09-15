@@ -145,8 +145,22 @@ libs = [
             ('msfs.input_event_executer()', 'Create a native-action to execute an InputEvent', 'input_event[, value]'),
             ('msfs.mfwasm.execute_rpn()', 'Execute an RPN script within MSFS', 'rpn'),
             ('msfs.mfwasm.rpn_executer()', 'Create a native-action to execute an RPN script within MSFS', 'rpn'),
-            ('msfs.mfwasm.add_observed_data()', 'Register MSFS internal data for observing', 'def_array'),
+            ('msfs.mfwasm.add_observed_data()', 'Register MSFS internal data to be observed', 'def_array'),
             ('msfs.mfwasm.clear_observed_data()', 'Clear all observed MSFS internal data'),
+        ],
+    },
+    {
+        'name': 'dcs',
+        'description': 'Interactivity features with DCS World',
+        'functions': [
+            ('dcs.perform_clickable_action()', 'Set the position of clickable control in the cockpit', 'device_id, command, value[, value, ...]'),
+            ('dcs.clickable_action_performer()', 'Create a native-action to set the position of clickable control in the cockpit', 'device_id, command[, value, ...]'),
+            ('dcs.register_chunk()', 'Register a Lua chunk to be executed within the DCS World process', 'chunk'),
+            ('dcs.clear_chunk()', 'Clear all Lua chunks registered for execution within the DCS World process'),
+            ('dcs.execute_chunk()', 'Execute a registered chunk within the DCS World process', 'chunk-id[, argument]'),
+            ('dcs.chunk_executer()', 'Create a native-action to execute a registered chunk within the DCS World process'),
+            ('dcs.add_observed_data()', 'Register cockpit data to be observed', 'def_array'),
+            ('dcs.clear_observed_data()', 'Clear all registered cockpit data to be observed'),
         ],
     },
     {
@@ -154,7 +168,7 @@ libs = [
         'description': 'Graphics library',
         'functions': [
             ('graphics.color()', 'Create a solid color brush object', 'color_name[, alpha]', 'r, g, b[, alpha]'),
-            ('graphics.rectangle()', 'Create a SimpleGeometry object as a rectangle', 'param_table', 'x, y, width, heigth'),
+            ('graphics.rectangle()', 'Create a SimpleGeometry object as a rectangle', 'param_table', 'x, y, width, height'),
             ('graphics.rounded_rectangle()', 'Create a SimpleGeometry object as a rounded rectangle', 'param_table', 'x, y, width, height, radius_x, radius_y'),
             ('graphics.ellipse()', 'Create a SimpleGeometry object as a ellipse', 'param_table', 'x, y, radius_x, radius_y'),
             ('graphics.path()', 'Create a geometry object defined as a path', '[figure_def]'),

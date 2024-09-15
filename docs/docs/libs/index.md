@@ -11,4 +11,5 @@ This chapter explains the specifications of the libraries provided by fsmapper f
 |[mapper](/libs/mapper)|fsmapper basic library|
 |[filter](/libs/filter)|Native-actions capable of cascading with other actions|
 |[msfs](/libs/msfs)|Interactivity features with Microsoft Flight Simulator|
+|[dcs](/libs/dcs)|Interactivity features with DCS World|
 |[graphics](/libs/graphics)|Graphics library|

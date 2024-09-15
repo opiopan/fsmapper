@@ -11,7 +11,7 @@ However, it does not delve into the specifics of Lua language usage, so please r
 ## Lua Version
 |Verion|
 |------|
-|5.4.6 |
+|5.4.7 |
 
 ## Available Lua Standard Libraries
 

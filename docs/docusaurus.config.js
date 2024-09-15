@@ -10,7 +10,7 @@ import {Version} from './.version.js';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'fsmapper',
-  tagline: 'A Virtual Instrument Panel and Home Cockpit Builder for Microsoft Flight Simulator',
+  tagline: 'A Virtual Instrument Panel and Home Cockpit Builder for MSFS and DCS',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here

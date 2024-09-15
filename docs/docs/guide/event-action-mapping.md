@@ -57,6 +57,8 @@ Below is a list of functions or methods that provide native-action
 - [`msfs.event_sender()`](/libs/msfs/msfs_event_sender)
 - [`msfs.input_event_executer()`](/libs/msfs/msfs_input_event_executer)
 - [`msfs.mfwasm.rpn_executer()`](/libs/msfs/msfs_mfwasm_rpn_executer)
+- [`dcs.clickable_action_performer()`](/libs/dcs/dcs_clickable_action_performer)
+- [`dcs.chunk_executer()`](/libs/dcs/dcs_chunk_executer)
 
 ## Event-Action mapping definition
 When registering the correspondence between events and actions in fsmapper, 
