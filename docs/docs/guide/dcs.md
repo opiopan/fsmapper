@@ -70,6 +70,33 @@ There are three ways to specify the observed cockpit data as below.
     When you specify a Lua chunk as a string in the `chunk` parameter of the [Observed Data Definition](/libs/dcs/dcs_add_observed_data#observed-data-definition), the return value of the chunk is observed. This method allows for complex behaviors, such as creating an [Event Value](/guide/event-action-mapping#event) that combines the states of multiple controls.
     Unless you specify a `filter` to change the type of the value, the return value of the chunk must be either a string or a number.
 
+Here is an example of registering three types of observed data for the F/A-18C.
+
+```lua
+-- Register events to notify the change of F/A-18C cockpit data
+local change_master_caution_light = mapper.register_event('Master Caution Light')
+local change_ufc = mapper.register_event('UFC')
+local change_total_fuel = mapper.register_event('Total Fuel')
+
+-- Register observed data definitions
+dcs.add_observed_data{
+    -- Observing the master caution light state
+    {event=change_master_caution_light, argument_number=13},
+
+    -- Observing the indication text of UFC
+    {event=change_ufc, indicator_id=6},
+    
+    -- Observing total amount of fuel retrieved from IFEI
+    {event=change_total_fuel, chunk=[[
+        local IFEI = list_indication(5)
+        if IFEI then
+            local fuel = IFEI:gmatch('txt_FUEL_UP\n([^\nT]*)')
+            return tonumber(fuel())
+        end
+    ]]}
+}
+```
+
 :::info Note
 To find the corresponding values for the `argument_number` or `indicator_id` parameters for cockpit instruments of each aircraft module, 
 refer to the '**X: COCKPIT ARGUMENT IN RANGE**' trigger and the '**X: COCKPIT INDICATION TEXT IS EQUAL TO**' trigger sections in the [DCS User Manual](https://www.digitalcombatsimulator.com/en/downloads/documentation/dcs-user_manual_en/).
@@ -126,7 +153,7 @@ dcs.add_observed_data{
 
 ## Lua chunk within DCS
 The Lua chunks specified in [`dcs.register_chunk()`](/libs/dcs/dcs_register_chunk) and [`dcs.add_observed_data()`](/libs/dcs/dcs_add_observed_data) each have their own unique [environment](https://www.lua.org/manual/5.1/manual.html#2.9) derived from the calling context when executed within the DCS process.
-To be more specific, a new table is created with the table representing the calling environment assigned to the metatable’s __index, and this new table is set as the environment for each chunk.
+To be more specific, a new table is created with the table representing the calling environment assigned to the `__index` field of metatable, and this new table is set as the environment for each chunk.
 This minimizes the risk of global variable access within the chunk affecting global variables in other chunks, DCS core modules, or aircraft modules.
 
 On the other hand, the global variable `fsmapper` refers to the same table across all chunks. 

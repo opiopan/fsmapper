@@ -18,8 +18,7 @@ Although fsmapper offers a multitude of functions, it can be summarized into fol
 - **Interaction between devices and Flight Simulators**<br/>
   You can reflect the operation of various devices, including custom-made ones, in the operation of various cockpit systems within the flight simulator.
   Conversely, you can also retrieve the state of instruments and the position of switches in the flight simulator and reflect them on physical devices.
-  Currently, the only simulator that can be perfectly integrated is the Microsoft Flight Simulator series, which supports [SimConnect](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_SDK.htm).
-  However, I'm also working on implementing features for integration with the [DCS World](https://www.digitalcombatsimulator.com/en/products/world/).
+  The flight simulator software currently supported by fsmapper includes the Microsoft Flight Simulator series, which supports [SimConnect](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_SDK.htm), and the [DCS World](https://www.digitalcombatsimulator.com/en/products/world/).
 
 - **Changes to Input Device Characteristics**<br/>
   You can flexibly modify the characteristics and behaviors of input devices,
