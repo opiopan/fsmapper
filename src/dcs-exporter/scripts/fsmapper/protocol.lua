@@ -38,12 +38,14 @@ protocol.connection = {
             return false
         end
 
+        local offset = 1
         while true do
-            local cmd, body = self.rcv_fmt:unpack(self.rbuf)
+            local cmd, body = self.rcv_fmt:unpack(self.rbuf, offset)
             if body then
-                self.rbuf = self.rbuf:sub(body:len() + 5)
+                offset = offset + body:len() + 4
                 self:process_command(cmd, body)
             else
+                self.rbuf = self.rbuf:sub(offset)
                 break
             end
         end
