@@ -140,10 +140,10 @@ dcs.add_observed_data{
         event = change_stores_config_switch,
         argument_number = 358, -- Observing the F-16C Stores Config switch
         filter = [[
-            args = {...}
-            if args[1] == 0 then
+            local value = ...
+            if value == 0 then
                 return 'CAT I'
-            elseif args[1] == 1 then
+            elseif value == 1 then
                 return 'CAT III'
             end
         ]]
