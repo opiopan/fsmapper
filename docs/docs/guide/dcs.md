@@ -90,7 +90,7 @@ dcs.add_observed_data{
     {event=change_total_fuel, chunk=[[
         local IFEI = list_indication(5)
         if IFEI then
-            local fuel = IFEI:gmatch('txt_FUEL_UP\n([^\nT]*)')
+            local fuel = IFEI:gmatch('\ntxt_FUEL_UP\n([^\nT]*)')
             return tonumber(fuel())
         end
     ]]}
