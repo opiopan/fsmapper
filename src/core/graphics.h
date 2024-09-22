@@ -243,8 +243,8 @@ namespace graphics{
     //============================================================================================
     class bitmap_font : public font {
     public:
-        static constexpr auto code_point_min = 1;
-        static constexpr auto code_point_max = 126;
+        static constexpr auto code_point_min = 0;
+        static constexpr auto code_point_max = 255;
     protected:
         std::shared_ptr<bitmap> glyphs[code_point_max + 1 - code_point_min];
 

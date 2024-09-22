@@ -796,22 +796,24 @@ namespace graphics{
                 throw MapperException("invalid parameters");
             }
 
-            if (code_point.size() != 1 || code_point.c_str()[0] < code_point_min || code_point.c_str()[1] > code_point_max){
+            if (code_point.size() != 1 || 
+                static_cast<uint8_t>(code_point.c_str()[0]) < code_point_min || 
+                static_cast<uint8_t>(code_point.c_str()[1]) > code_point_max){
                 throw MapperException("string that represents code point is not correct, "
-                                      "it must be one charactor and must be within the range of ASCII code");
+                                      "it must be one charactor and must be within the range of unsigned 8bit integer");
             }
             if (!may_be_bitmap.is<bitmap&>()){
                 throw MapperException("bitmap parameter is not specified or specified value is not bitmap object");
             }
             auto bitmap = may_be_bitmap.as<std::shared_ptr<graphics::bitmap>>();
-            add_glyph(code_point.c_str()[0], bitmap);
+            add_glyph(static_cast<uint8_t>(code_point.c_str()[0]), bitmap);
         });
     }
 
     FloatRect bitmap_font::draw_string(
         const render_target &target, const char *string, ID2D1Brush *brush, const FloatRect &rect, float scale, valign v_align, halign h_align){
         FloatRect orect{rect.x, rect.y, 0, 0};
-        for (const char* code = string; *code; code++){
+        for (const uint8_t* code = reinterpret_cast<const uint8_t*>(string); *code; code++){
             if (*code >= code_point_min && *code <= code_point_max){
                 const auto& glyph = glyphs[*code - code_point_min];
                 if (glyph){
