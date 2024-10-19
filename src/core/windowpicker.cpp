@@ -119,7 +119,6 @@ protected:
     bool completed{false};
     HWND app_wnd;
     tools::utf8_to_utf16_translator target_name;
-    WinDispatcher dispatcher;
     std::vector<IntRect> displays;
     std::vector<std::unique_ptr<CoverWindow>> windows;
     HWND target{nullptr};
@@ -140,7 +139,7 @@ public:
         ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR, HDC, LPRECT rect, LPARAM context)->BOOL{
             auto self = reinterpret_cast<WindowPicker*>(context);
             self->displays.emplace_back(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
-            auto window = std::make_unique<CoverWindow>(self->dispatcher, *self, *self->displays.rbegin());
+            auto window = std::make_unique<CoverWindow>(WinDispatcher::sharedDispatcher(), *self, *self->displays.rbegin());
             self->windows.emplace_back(std::move(window));
             return true;
         }, reinterpret_cast<LPARAM>(this));
