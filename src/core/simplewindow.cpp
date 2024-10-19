@@ -6,6 +6,7 @@
 #include "simplewindow.h"
 #include <stdexcept>
 #include <memory>
+#include <cassert>
 
 //============================================================================================
 // Message pumping thread abstraction
@@ -20,15 +21,15 @@ WinDispatcher& WinDispatcher::sharedDispatcher(){return *shared_dispatcher;}
 
 ATOM WinDispatcher::class_atom {0};
 
+static const char *dispatcher_class_name = "WinDispatcher";
+
 WinDispatcher::WinDispatcher(){
-    static const char* class_name = "WinDispatcher";
     invoke1_msg = ::RegisterWindowMessageA("MAPPER_CORE_INVOKE1");
     invoke2_msg = ::RegisterWindowMessageA("MAPPER_CORE_INVOKE2");
-    HMODULE hModule = nullptr;
     ::GetModuleHandleExA(
         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, 
         reinterpret_cast<LPCSTR>(WinDispatcher::windowProc),
-        &hModule);
+        &module);
     if (!class_atom){
         WNDCLASSEXA wc ={0};
         wc.cbSize = sizeof(wc);
@@ -36,52 +37,64 @@ WinDispatcher::WinDispatcher(){
         wc.lpfnWndProc = WinDispatcher::windowProc;
         wc.cbClsExtra = 0;
         wc.cbWndExtra = sizeof(*this);
-        wc.hInstance = hModule;
-        wc.lpszClassName = class_name;
+        wc.hInstance = module;
+        wc.lpszClassName = dispatcher_class_name;
         class_atom = ::RegisterClassExA(&wc);
         if (!class_atom){
             throw std::runtime_error("failed to register window class for the dispatcher");
         }
     }
-    dispatcher = std::move(std::thread([this, hModule](){
-        {
-            std::lock_guard lock(mutex);
-            controller = ::CreateWindowExA(
-                0,           // ExStyle
-                class_name,  // Class
-                nullptr,     // Name
-                WS_POPUP,    // Style
-                0, 0, 0, 0,  // Geometory
-                nullptr,     // hwndParent
-                nullptr,     // hMenu
-                hModule,     // hInstance
-                this);       // CreateParam
-            cv.notify_all();
-        }
-        MSG msg;
-        while(::GetMessageA(&msg, NULL, 0, 0) != 0){
-            ::TranslateMessage(&msg);
-            ::DispatchMessageA(&msg);
-        }
-    }));
-
-    std::unique_lock lock(mutex);
-    cv.wait(lock, [this](){return controller != 0;});
 }
 
 WinDispatcher::~WinDispatcher(){
-    stop();
-    dispatcher.join();
+    detatch_queue();
 }
 
-void WinDispatcher::stop(){
-    std::lock_guard lock(mutex);
-    if (controller){
-        invoke([this](){
-            ::DestroyWindow(controller);
-        });
-        controller = nullptr;
+void WinDispatcher::attach_queue(){
+    assert(thread_id == std::thread::id());
+    thread_id = std::this_thread::get_id();
+    controller = ::CreateWindowExA(
+        0,                     // ExStyle
+        dispatcher_class_name, // Class
+        nullptr,               // Name
+        WS_POPUP,              // Style
+        0, 0, 0, 0,            // Geometory
+        nullptr,               // hwndParent
+        nullptr,               // hMenu
+        module,               // hInstance
+        this                   // CreateParam
+    );
+}
+
+void WinDispatcher::detatch_queue(){
+    assert(thread_id == std::thread::id() || thread_id == std::this_thread::get_id());
+    if (thread_id == std::this_thread::get_id()){
+        ::DestroyWindow(controller);
+        run();
     }
+    thread_id = std::thread::id();
+    controller = nullptr;
+}
+
+void WinDispatcher::run(){
+    MSG msg;
+    while(::GetMessageA(&msg, NULL, 0, 0) != 0){
+        ::TranslateMessage(&msg);
+        ::DispatchMessageA(&msg);
+    }
+}
+
+
+bool WinDispatcher::dispatch_received_messages(){
+    MSG msg;
+    while(::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE) != 0){
+        if (msg.message == WM_QUIT){
+            return false;
+        }
+        ::TranslateMessage(&msg);
+        ::DispatchMessageA(&msg);
+    }
+    return true;
 }
 
 LRESULT CALLBACK WinDispatcher::windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){

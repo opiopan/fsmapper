@@ -20,6 +20,7 @@
 #include "option.h"
 #include "event.h"
 #include "action.h"
+#include "tools.h"
 
 class DeviceManager;
 class DeviceModifier;
@@ -91,7 +92,8 @@ protected :
     };
 
     struct {
-        std::condition_variable cv;
+        WinHandle event_as_cv;
+        std::condition_variable cv_for_client;
         uint64_t idCounter;
         std::map<uint64_t, std::string> names;
         std::queue< std::unique_ptr<Event> > queue;
@@ -165,12 +167,12 @@ public:
     void notifyUpdate(uint32_t flag){
         std::lock_guard lock(mutex);
         scripting.updated_flags |= flag;
-        event.cv.notify_all();
+        ::SetEvent(event.event_as_cv);
     }
 
     void notifyUpdateWithNoLock(uint32_t flag){
         scripting.updated_flags |= flag;
-        event.cv.notify_all();
+        ::SetEvent(event.event_as_cv);
     }
 
     void invokeViewportsUpdate(){
@@ -183,7 +185,7 @@ public:
     void notifyTouchEvent(){
         std::lock_guard lock(mutex);
         event.touch_event_occurred = true;
-        event.cv.notify_all();
+        ::SetEvent(event.event_as_cv);
     }
 
     sol::state& getLuaState(){return scripting.lua();};
@@ -208,7 +210,7 @@ public:
     
 protected:
     void initScriptingEnv();
-    std::unique_ptr<Event> receiveEvent();
+    void clearScriptingEnv();
     Action* findAction(uint64_t evid);
 
     void setMapping(const char* function_name, int level, const sol::object& mapdef);

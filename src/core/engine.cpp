@@ -21,6 +21,7 @@
 //============================================================================================
 MapperEngine::MapperEngine(Callback callback, Logger logger) : 
     status(Status::init), callback(callback), logger(logger){
+    event.event_as_cv = ::CreateEvent(nullptr, true, false, nullptr);
     event.idCounter = static_cast<uint64_t>(EventID::DINAMIC_EVENT);
     WinDispatcher::initSharedDispatcher();
     graphics::initialize_grahics();
@@ -29,19 +30,8 @@ MapperEngine::MapperEngine(Callback callback, Logger logger) :
 MapperEngine::~MapperEngine(){
     // stop event-action mapping thread
     stop();
-
-    // cleare all event-action maps befor delstory lua environment
-    // since action may be lua function
-    mapping[0] = nullptr;
-    mapping[1] = nullptr;
-    event.deferred_actions.clear();
-    if (scripting.viewportManager){
-        scripting.viewportManager->reset_viewports();
-    }
-
-    // destory lua environment
-    scripting.lua_ptr = nullptr;
-
+    clearScriptingEnv();
+    
     // clean up graphics environment
     graphics::terminate_graphics();
 }
@@ -226,10 +216,25 @@ void MapperEngine::initScriptingEnv(){
     }
 }
 
+void MapperEngine::clearScriptingEnv(){
+    // cleare all event-action maps befor delstory lua environment
+    // since action may be lua function
+    mapping[0] = nullptr;
+    mapping[1] = nullptr;
+    event.deferred_actions.clear();
+    if (scripting.viewportManager){
+        scripting.viewportManager->reset_viewports();
+    }
+
+    // destory lua environment
+    scripting.lua_ptr = nullptr;
+}
+
 //============================================================================================
 // do event loop
 //============================================================================================
 bool MapperEngine::run(std::string&& scriptPath){
+    WinDispatcher::queue_attatcher attacher{WinDispatcher::sharedDispatcher()};
     try{
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -320,13 +325,13 @@ bool MapperEngine::run(std::string&& scriptPath){
                         }
                         context->done = true;
                         context->result = true;
-                        event.cv.notify_all();
+                        event.cv_for_client.notify_all();
                     }catch (MapperException& e){
                         std::ostringstream os;
                         os << "mapper-core: " << msg << e.what();
                         context->done = true;
                         context->result = false;
-                        event.cv.notify_all();
+                        event.cv_for_client.notify_all();
                         lock.unlock();
                         putLog(MCONSOLE_WARNING, os.str());
                         lock.lock();
@@ -455,10 +460,39 @@ bool MapperEngine::run(std::string&& scriptPath){
                            event.need_update_viewports || event.touch_event_occurred;
                 };
 
-                if (deferred_num > 0){
-                    event.cv.wait_until(lock, event.deferred_actions.begin()->first, condition);
-                }else{
-                    event.cv.wait(lock, condition);
+                while (true){
+                    HANDLE ev = event.event_as_cv;
+                    DWORD wait_result;
+                    if (deferred_num > 0){
+                        auto now = CLOCK::now();
+                        auto duration = event.deferred_actions.begin()->first - now;
+                        auto millisec = std::chrono::duration_cast<MILLISEC>(duration).count();
+                        if (millisec > 0){
+                            lock.unlock();
+                            wait_result = MsgWaitForMultipleObjects(1, &ev, false, millisec, QS_ALLINPUT);
+                            lock.lock();
+                        }else{
+                            wait_result = WAIT_TIMEOUT;
+                        }
+                    }else{
+                        lock.unlock();
+                        wait_result = MsgWaitForMultipleObjects(1, &ev, false, INFINITE, QS_ALLINPUT);
+                        lock.lock();
+                    }
+                    if (wait_result == WAIT_OBJECT_0){
+                        ::ResetEvent(event.event_as_cv);
+                        if (condition()){
+                            break;
+                        }
+                    }else if (wait_result == WAIT_OBJECT_0 + 1){
+                        // Window Messages has been received
+                        lock.unlock();
+                        WinDispatcher::sharedDispatcher().dispatch_received_messages();
+                        lock.lock();
+                    }else if (WAIT_TIMEOUT){
+                        // It's time to process the deferred action
+                        break;
+                    }
                 }
 
                 if (status != Status::running){
@@ -467,8 +501,10 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
         }
         auto rc = status == Status::stop;
+        event.cv_for_client.notify_all();
         lock.unlock();
         sendHostEvent(MEV_STOP_MAPPING, 0);
+        clearScriptingEnv();
         return rc;
     }catch (MapperException& e){
         std::ostringstream os;
@@ -477,11 +513,12 @@ bool MapperEngine::run(std::string&& scriptPath){
         {
             std::lock_guard lock(mutex);
             status = Status::error;
+            event.cv_for_client.notify_all();
         }
         sendHostEvent(MEV_STOP_MAPPING, 0);
+        clearScriptingEnv();
         return false;
     }
-
 }
 
 bool MapperEngine::stop(){
@@ -492,7 +529,7 @@ bool MapperEngine::stop(){
 bool MapperEngine::abort(){
     std::lock_guard lock(mutex);
     status = Status::error;
-    event.cv.notify_all();
+    ::SetEvent(event.event_as_cv);
     return true;
 }
 
@@ -520,15 +557,7 @@ const char* MapperEngine::getEventName(uint64_t evid) const{
 void MapperEngine::sendEvent(Event &&ev){
     std::lock_guard lock(mutex);
     event.queue.push(std::make_unique<Event>(std::move(ev)));
-    event.cv.notify_all();
-}
-
-std::unique_ptr<Event> MapperEngine::receiveEvent(){
-    std::unique_lock lock(mutex);
-    event.cv.wait(lock, [this]{return this->event.queue.size() > 0;});
-    auto ev = std::move(event.queue.front());
-    event.queue.pop();
-    return std::move(ev);
+    ::SetEvent(event.event_as_cv);
 }
 
 //============================================================================================
@@ -542,7 +571,7 @@ void MapperEngine::invokeActionIn(std::shared_ptr<Action> action, const Event& e
     }
     DeferredAction da(action, ev);
     event.deferred_actions.emplace(target, std::move(da));
-    event.cv.notify_all();
+    ::SetEvent(event.event_as_cv);
 }
 
 //============================================================================================
@@ -650,7 +679,7 @@ bool MapperEngine::enable_viewports(){
         lock.unlock();
         sendEvent(std::move(ev));
         lock.lock();
-        event.cv.wait(lock, [this, &context](){return status != Status::running || context.done;});
+        event.cv_for_client.wait(lock, [this, &context](){return status != Status::running || context.done;});
         return context.result;
     }
     return true;
@@ -665,7 +694,7 @@ bool MapperEngine::disable_viewports(){
         lock.unlock();
         sendEvent(std::move(ev));
         lock.lock();
-        event.cv.wait(lock, [this, &context](){return status != Status::running || context.done;});
+        event.cv_for_client.wait(lock, [this, &context](){return status != Status::running || context.done;});
         return context.result;
     }
     return true;

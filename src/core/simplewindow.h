@@ -17,9 +17,8 @@
 class WinDispatcher{
 protected:
     static ATOM class_atom;
-    std::mutex mutex;
-    std::condition_variable cv;
-    std::thread dispatcher;
+    HMODULE module{nullptr};
+    std::thread::id thread_id;
     HWND controller {0};
     UINT invoke1_msg {0};
     UINT invoke2_msg {0};
@@ -31,28 +30,51 @@ public:
     WinDispatcher(const WinDispatcher&) = delete;
     WinDispatcher(WinDispatcher&&) = delete;
     ~WinDispatcher();
-    void stop();
+
+    void attach_queue();
+    void detatch_queue();
+    void run();
+    bool dispatch_received_messages();
 
     template <typename DISPATCHABLE>
     void invoke(DISPATCHABLE function) const{
         dispatchable1 function_obj{function};
-        ::SendMessageA(
-            controller, invoke1_msg,
-            0,
-            reinterpret_cast<LPARAM>(&function_obj));
+        if (thread_id == std::this_thread::get_id()){
+            function();
+        }else{
+            ::SendMessageA(
+                controller, invoke1_msg,
+                0,
+                reinterpret_cast<LPARAM>(&function_obj));
+        }
     }
 
     template <typename DISPATCHABLE>
     void invoke(DISPATCHABLE function, void* context) const{
         dispatchable2 function_obj{function};
-        ::SendMessageA(
-            controller, invoke2_msg,
-            reinterpret_cast<WPARAM>(context),
-            reinterpret_cast<LPARAM>(&function_obj));
+        if (thread_id == std::this_thread::get_id()){
+            function(context);
+        }else{
+            ::SendMessageA(
+                controller, invoke2_msg,
+                reinterpret_cast<WPARAM>(context),
+                reinterpret_cast<LPARAM>(&function_obj));
+        }
     }
 
     static void initSharedDispatcher();
     static WinDispatcher& sharedDispatcher();
+
+    class queue_attatcher{
+        WinDispatcher& dispatcher;
+    public:
+        queue_attatcher(WinDispatcher& dispatcher) : dispatcher(dispatcher){
+            dispatcher.attach_queue();
+        }
+        ~queue_attatcher(){
+            dispatcher.detatch_queue();
+        }
+    };
 
 protected:
     static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	
