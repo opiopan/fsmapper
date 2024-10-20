@@ -458,7 +458,6 @@ template <typename MSG_RELAY, typename UPDATE_WINDOW>
 class ViewPortWindow : public ViewPort::CoverWindow{
 protected:
     using base_class = ViewPort::CoverWindow;
-    UINT update_msg;
     MSG_RELAY relay;
     UPDATE_WINDOW on_update_window;
     COLORREF bgcolor;
@@ -472,7 +471,6 @@ protected:
 public:
     ViewPortWindow(COLORREF bgcolor, const MSG_RELAY& relay, const UPDATE_WINDOW& on_update_window):
         bgcolor(bgcolor), relay(relay), on_update_window(on_update_window){
-    	update_msg = ::RegisterWindowMessageA("MAPPER_CORE_VIEW_UPDATE");
     }
     virtual ~ViewPortWindow() = default;
 
@@ -488,7 +486,7 @@ public:
     }
 
     void update_window() override{
-        ::PostMessageA(*this, update_msg, 0, 0);
+        on_update_window();
     }
 
     void update_window_with_dc(HDC dc) override{
@@ -511,8 +509,6 @@ protected:
             }else{
                 return base_class::messageProc(msg, wparam, lparam);
             }
-        }else if (msg == update_msg){
-            on_update_window();
         }else{
             return base_class::messageProc(msg, wparam, lparam);
         }
@@ -602,7 +598,6 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         // processing mouse message and touch message
         //
         [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
-            std::lock_guard lock(touch_event_mutex);
             auto need_notify = touch_event_num == 0;
             using tevent = ViewPort::touch_event;
             using oevent = std::optional<tevent>;
@@ -743,7 +738,6 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         // this function just reflect that on layerd window
         //
         [this](){
-            std::lock_guard lock(rendering_mutex);
             if (rendering_count > rendering_reflect_count){
                 rendering_reflect_count = rendering_count;
                 (*render_target)->BeginDraw();
@@ -833,7 +827,6 @@ void ViewPort::disable(){
 
 void ViewPort::process_touch_event(){
     if (is_enable){
-        std::lock_guard lock(touch_event_mutex);
         for (auto i = 0; i < touch_event_num; i++){
             auto& slot = touch_event_buffer[i];
             views[current_view]->process_touch_event(slot.event, slot.x, slot.y);
@@ -850,7 +843,6 @@ void ViewPort::update(){
 
 void ViewPort::invaridate_rect(const FloatRect& rect){
     if (is_enable){
-        std::lock_guard lock(rendering_mutex);
         (*render_target)->BeginDraw();
         (*render_target)->PushAxisAlignedClip(entire_region_client, D2D1_ANTIALIAS_MODE_ALIASED);
         (*render_target)->PushAxisAlignedClip(region_client, D2D1_ANTIALIAS_MODE_ALIASED);

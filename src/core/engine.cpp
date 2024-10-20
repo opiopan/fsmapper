@@ -279,6 +279,9 @@ bool MapperEngine::run(std::string&& scriptPath){
 
         event.view_updated_time = CLOCK::now();
 
+        //-------------------------------------------------------------------------------
+        // Event-Action mapping loop
+        //-------------------------------------------------------------------------------
         while (true){
             //-------------------------------------------------------------------------------
             // collect garbage in Lua environment as needed
@@ -411,7 +414,7 @@ bool MapperEngine::run(std::string&& scriptPath){
             }
 
             //-------------------------------------------------------------------------------
-            // notify events if needed
+            // notify events to the host if needed
             //-------------------------------------------------------------------------------
             if (scripting.updated_flags){
                 auto flags = scripting.updated_flags;
