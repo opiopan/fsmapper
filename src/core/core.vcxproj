@@ -215,6 +215,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="builtinDevices\simhidparser.h" />
     <ClInclude Include="builtinDevices\winserial.h" />
     <ClInclude Include="capturedwindow.h" />
+    <ClInclude Include="composition.h" />
     <ClInclude Include="dcs.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="devicemodifier.h" />
@@ -248,6 +249,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="builtinDevices\simhidparser.c" />
     <ClCompile Include="builtinDevices\winserial.cpp" />
     <ClCompile Include="capturedwindow.cpp" />
+    <ClCompile Include="composition.cpp" />
     <ClCompile Include="dcs.cpp" />
     <ClCompile Include="device.cpp" />
     <ClCompile Include="devicemodifier.cpp" />
