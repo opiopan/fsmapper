@@ -31,6 +31,7 @@ namespace graphics{
     public:
         enum class rendering_method{cpu, gpu};
         static std::unique_ptr<render_target> create_render_target(int width, int height, rendering_method method);
+        static std::unique_ptr<render_target> create_render_target(ID2D1RenderTarget*);
 
         virtual operator ID2D1RenderTarget* () const = 0;
         ID2D1RenderTarget* operator ->() const {return static_cast<ID2D1RenderTarget*>(*this);}

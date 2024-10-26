@@ -124,7 +124,7 @@ namespace composition{
             ComAssertion hr;
             dxgi_device = create_dxgi_device();
             swap_chain = create_swapchain(dxgi_device, width, height);
-            hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator->()));
+            hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator&()));
             hr = dcomp_device->CreateTargetForHwnd(hwnd, true, &target);
             hr = dcomp_device->CreateVisual(&main_visual);
             hr = main_visual->SetContent(swap_chain);
@@ -134,9 +134,19 @@ namespace composition{
             bitmap_props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
             bitmap_props.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
             bitmap_props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+            configure_d2d_context();
         }
 
         virtual ~viewport_target_imp(){
+        }
+
+        ID2D1RenderTarget* get_render_target() override{
+            return d2d_context.operator->();
+        }
+
+        void present(){
+            ComAssertion hr = swap_chain->Present(1, 0);
+            configure_d2d_context();
         }
 
     protected:
@@ -146,19 +156,13 @@ namespace composition{
             hr = dcomp_device->Commit();
         }
 
-        ID2D1RenderTarget *begin_draw() override{
+        void configure_d2d_context(){
             ComAssertion hr;
             CComPtr<IDXGISurface2> surface;
-            hr = swap_chain->GetBuffer(0, __uuidof(surface), reinterpret_cast<void**>(surface.operator->()));
+            hr = swap_chain->GetBuffer(0, __uuidof(surface), reinterpret_cast<void**>(surface.operator&()));
             CComPtr<ID2D1Bitmap1> bitmap;
             hr = d2d_context->CreateBitmapFromDxgiSurface(surface, bitmap_props, &bitmap);
-            d2d_context->BeginDraw();
             d2d_context->SetTarget(bitmap);
-            return d2d_context.operator->();
-        }
-
-        void end_draw() override{
-            ComAssertion hr = d2d_context->EndDraw();
         }
     };
 

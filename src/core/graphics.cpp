@@ -16,6 +16,7 @@
 #include "engine.h"
 #include "fileops.h"
 #include "encoding.hpp"
+#include "composition.h"
 
 //============================================================================================
 // initialize / deinitialize factory objects
@@ -52,12 +53,29 @@ namespace graphics{
 //============================================================================================
 // Reder target implementation
 //============================================================================================
+class render_target_base : public graphics::render_target{
+protected:
+    std::unordered_map<uint32_t, CComPtr<ID2D1SolidColorBrush>> solid_color_brush_pool;
+
+public:
+    ID2D1Brush* get_solid_color_brush(const graphics::color& color) override{
+        auto key = color.rgba();
+        if (solid_color_brush_pool.count(key)){
+            return solid_color_brush_pool.at(key);
+        }else{
+            CComPtr<ID2D1SolidColorBrush> brush;
+            (*this)->CreateSolidColorBrush(color, &brush);
+            solid_color_brush_pool[key] = brush;
+            return brush;
+        }
+    }
+};
+
 template <typename TARGET, typename CONTENTS>
-class render_target_implementation : public graphics::render_target{
+class render_target_implementation : public render_target_base{
 protected:
     CComPtr<TARGET> target;
     CComPtr<CONTENTS> contents;
-    std::unordered_map<uint32_t, CComPtr<ID2D1SolidColorBrush>> solid_color_brush_pool;
 
 public:
     render_target_implementation() = delete;
@@ -69,17 +87,19 @@ public:
     operator ID2D1RenderTarget * () const override{
         return target;
     }
+};
 
-    ID2D1Brush* get_solid_color_brush(const graphics::color& color) override{
-        auto key = color.rgba();
-        if (solid_color_brush_pool.count(key)){
-            return solid_color_brush_pool.at(key);
-        }else{
-            CComPtr<ID2D1SolidColorBrush> brush;
-            target->CreateSolidColorBrush(color, &brush);
-            solid_color_brush_pool[key] = brush;
-            return brush;
-        }
+class light_render_target : public render_target_base{
+protected:
+    CComPtr<ID2D1RenderTarget> target;
+
+public:
+    light_render_target(ID2D1RenderTarget* target_ptr){
+        target = target_ptr;
+    }
+
+    operator ID2D1RenderTarget * () const override{
+        return target;
     }
 };
 
@@ -126,6 +146,10 @@ namespace graphics{
         }else{
             throw std::runtime_error("invalid redering method is specified");
         }
+    }
+
+    std::unique_ptr<render_target> render_target::create_render_target(ID2D1RenderTarget* target_ptr){
+        return std::make_unique<light_render_target>(target_ptr);
     }
 }
 

@@ -21,6 +21,7 @@
 #include "graphics.h"
 #include "viewobject.h"
 #include "mouseemu.h"
+#include "composition.h"
 
 class MapperEngine;
 class ViewPortManager;
@@ -176,7 +177,7 @@ public:
     void show();
     void hide();
     void process_touch_event(ViewObject::touch_event event, int x, int y);
-    void update_view();
+    void update_view(bool entire);
     bool render_view(graphics::render_target& render_target, const FloatRect& rect);
     HWND getBottomWnd();
     Action* findAction(uint64_t evid);
@@ -251,8 +252,7 @@ protected:
     std::vector<std::unique_ptr<View>> views;
     int current_view = 0;
     std::unique_ptr<graphics::render_target> render_target;
-    int rendering_count = 0;
-    int rendering_reflect_count = 0;
+    std::unique_ptr<composition::viewport_target> composition_target;
     std::unique_ptr<CoverWindow> cover_window;
     std::unique_ptr<EventActionMap> mappings;
     int mappings_num_for_views{0};
@@ -267,6 +267,7 @@ protected:
     enum class touch_device{unknown, touch, mouse};
     touch_device captured_device = touch_device::unknown;
     DWORD touch_id = 0;;
+    bool ignore_transparent_touches{false};
 
 public:
     friend ViewPortManager;
@@ -301,7 +302,10 @@ public:
     const IntPoint& get_window_position()const{return window_pos;}
     float get_scale_factor() const {return scale_factor;}
     const graphics::color& get_background_clolor() const {return bg_color;}
-    void invaridate_rect(const FloatRect& rect);
+    void invalidate_rect(const FloatRect& rect);
+
+protected:
+    void clear_render_target();
 };
 
 //============================================================================================

@@ -327,7 +327,7 @@ void View::show(){
         element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
     });
     FloatRect rect{viewport.get_output_region()};
-    viewport.invaridate_rect(rect);
+    viewport.invalidate_rect(rect);
 }
 
 void View::hide(){
@@ -370,17 +370,22 @@ void View::process_touch_event(ViewObject::touch_event event, int x, int y){
     }
 }
 
-void View::update_view(){
-    FloatRect dirty_rect;
-    std::for_each(std::rbegin(normal_elements), std::rend(normal_elements), [&](auto& element){
-        element->get_object().merge_dirty_rect(element->object_region, dirty_rect);
-    });
-    if (dirty_rect.width > 0.f && dirty_rect.height > 0.f){
-        dirty_rect.x -= 1.f;
-        dirty_rect.width += 2.f;
-        dirty_rect.y -=1.f;
-        dirty_rect.height += 2.f;
-        viewport.invaridate_rect(dirty_rect);
+void View::update_view(bool entire){
+    if (entire){
+        FloatRect rect{viewport.get_output_region()};
+        viewport.invalidate_rect(rect);
+    }else{
+        FloatRect dirty_rect{0, 0, 0, 0};
+        std::for_each(std::rbegin(normal_elements), std::rend(normal_elements), [&](auto& element){
+            element->get_object().merge_dirty_rect(element->object_region, dirty_rect);
+        });
+        if (dirty_rect.width > 0.f && dirty_rect.height > 0.f){
+            dirty_rect.x -= 1.f;
+            dirty_rect.width += 2.f;
+            dirty_rect.y -=1.f;
+            dirty_rect.height += 2.f;
+            viewport.invalidate_rect(dirty_rect);
+        }
     }
 }
 
@@ -590,6 +595,11 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         bg_color.set_alpha(1.f);
     }
 
+    auto ignore_transparent_touches_param = lua_safevalue<bool>(def["ignore_transparent_touches"]);
+    if (ignore_transparent_touches_param){
+        ignore_transparent_touches = *ignore_transparent_touches_param;
+    }
+
     auto view = std::make_unique<View>(*this, "empty view");
     views.push_back(std::move(view));
 
@@ -738,19 +748,16 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
         // this function just reflect that on layerd window
         //
         [this](){
-            if (rendering_count > rendering_reflect_count){
-                rendering_reflect_count = rendering_count;
-                (*render_target)->BeginDraw();
-                {
-                    CComPtr<ID2D1GdiInteropRenderTarget> gdi_target;
-                    (*render_target)->QueryInterface(&gdi_target);
-                    HDC dc;
-                    gdi_target->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &dc);
-                    cover_window->update_window_with_dc(dc);
-                    gdi_target->ReleaseDC(nullptr);
-                }
-                (*render_target)->EndDraw();
+            (*render_target)->BeginDraw();
+            {
+                CComPtr<ID2D1GdiInteropRenderTarget> gdi_target;
+                (*render_target)->QueryInterface(&gdi_target);
+                HDC dc;
+                gdi_target->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &dc);
+                cover_window->update_window_with_dc(dc);
+                gdi_target->ReleaseDC(nullptr);
             }
+            (*render_target)->EndDraw();
         }
     );
     cover_window = std::move(window);
@@ -797,17 +804,20 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     region_client.x = region.x - entire_region.x;
     region_client.y = region.y - entire_region.y;
     is_enable = true;
-    auto rendering_method = mapper_EngineInstance()->getOptions().rendering_method == MOPT_RENDERING_METHOD_GPU ?
-        graphics::render_target::rendering_method::gpu : graphics::render_target::rendering_method::cpu;
-    render_target = std::move(graphics::render_target::create_render_target(
-        entire_region.width, entire_region.height, rendering_method));
-    (*render_target)->BeginDraw();
-    (*render_target)->Clear(D2D1::ColorF(GetRValue(bg_color) / 255., GetGValue(bg_color) / 255., GetBValue(bg_color) / 255., 1.0f));
-    (*render_target)->EndDraw();
+    cover_window->start(entire_region, region);
+    if (ignore_transparent_touches){
+        composition_target = std::move(composition::create_viewport_target(*cover_window, entire_region.width, entire_region.height));
+        render_target = std::move(graphics::render_target::create_render_target(composition_target->get_render_target()));
+    }else{
+        auto rendering_method = mapper_EngineInstance()->getOptions().rendering_method == MOPT_RENDERING_METHOD_GPU ?
+            graphics::render_target::rendering_method::gpu : graphics::render_target::rendering_method::cpu;
+        render_target = std::move(graphics::render_target::create_render_target(
+            entire_region.width, entire_region.height, rendering_method));
+    }
+    clear_render_target();
     for (auto& view : views){
         view->prepare();
     }
-    cover_window->start(entire_region, region);
     views[current_view]->show();
 
     std::ostringstream os;
@@ -825,6 +835,12 @@ void ViewPort::disable(){
     }
 }
 
+void ViewPort::clear_render_target(){
+    (*render_target)->BeginDraw();
+    (*render_target)->Clear(D2D1::ColorF(GetRValue(bg_color) / 255., GetGValue(bg_color) / 255., GetBValue(bg_color) / 255., 1.0f));
+    (*render_target)->EndDraw();
+}
+
 void ViewPort::process_touch_event(){
     if (is_enable){
         for (auto i = 0; i < touch_event_num; i++){
@@ -837,11 +853,11 @@ void ViewPort::process_touch_event(){
 
 void ViewPort::update(){
     if (is_enable){
-        views[current_view]->update_view();
+        views[current_view]->update_view(composition_target.operator bool());
     }
 }
 
-void ViewPort::invaridate_rect(const FloatRect& rect){
+void ViewPort::invalidate_rect(const FloatRect& rect){
     if (is_enable){
         (*render_target)->BeginDraw();
         (*render_target)->PushAxisAlignedClip(entire_region_client, D2D1_ANTIALIAS_MODE_ALIASED);
@@ -850,9 +866,13 @@ void ViewPort::invaridate_rect(const FloatRect& rect){
         (*render_target)->PopAxisAlignedClip();
         (*render_target)->PopAxisAlignedClip();
         (*render_target)->EndDraw();
-        if (updated && rendering_count == rendering_reflect_count){
-            rendering_count++;
-            cover_window->update_window();
+        if (updated){
+            if (composition_target){
+                composition_target->present();
+                clear_render_target();
+            }else{
+                cover_window->update_window();
+            }
         }
     }
 }
