@@ -819,6 +819,9 @@ void ViewPort::enable(const std::vector<IntRect> displays){
         view->prepare();
     }
     views[current_view]->show();
+    if (composition_target){
+        composition_target->commit_visual_tree(current_view);
+    }
 
     std::ostringstream os;
     os << "mapper-core: Start viewport [" << name << "] [";
@@ -934,8 +937,14 @@ void ViewPort::setCurrentView(sol::optional<int> view_no){
                 auto prev = current_view;
                 current_view = *view_no;
                 if (is_enable){
+                    if (composition_target){
+                        composition_target->reset_visual_tree();
+                    }
                     views[current_view]->show();
                     views[prev]->hide();
+                    if (composition_target){
+                        composition_target->commit_visual_tree(current_view);
+                    }
                 }
             }
         }else{

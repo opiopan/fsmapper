@@ -117,6 +117,7 @@ namespace composition{
         CComPtr<ID2D1Device1> d2d_device;
         CComPtr<ID2D1DeviceContext> d2d_context;
         D2D1_BITMAP_PROPERTIES1 bitmap_props{};
+        CComPtr<IDCompositionVisual> root_visual;
         CComPtr<IDCompositionVisual> main_visual;
 
     public:
@@ -126,9 +127,11 @@ namespace composition{
             swap_chain = create_swapchain(dxgi_device, width, height);
             hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator&()));
             hr = dcomp_device->CreateTargetForHwnd(hwnd, true, &target);
+            hr = dcomp_device->CreateVisual(&root_visual);
+            hr = target->SetRoot(root_visual);
+            hr = dcomp_device->Commit();
             hr = dcomp_device->CreateVisual(&main_visual);
             hr = main_visual->SetContent(swap_chain);
-            configure_visual_tree();
             d2d_device = create_d2d_device(dxgi_device);
             hr = d2d_device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &d2d_context);
             bitmap_props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
@@ -140,8 +143,20 @@ namespace composition{
         virtual ~viewport_target_imp(){
         }
 
-        ID2D1RenderTarget* get_render_target() override{
+        ID2D1RenderTarget* get_render_target() override {
             return d2d_context.operator->();
+        }
+
+        void reset_visual_tree() override{
+            ComAssertion hr = root_visual->RemoveAllVisuals();
+        }
+
+        void commit_visual_tree(bool show_main_visual) override {
+            ComAssertion hr;
+            if (show_main_visual){
+                hr = root_visual->AddVisual(main_visual, false, nullptr);
+            }
+            hr = dcomp_device->Commit();
         }
 
         void present(){
@@ -150,12 +165,6 @@ namespace composition{
         }
 
     protected:
-        void configure_visual_tree(){
-            ComAssertion hr;
-            hr = target->SetRoot(main_visual);
-            hr = dcomp_device->Commit();
-        }
-
         void configure_d2d_context(){
             ComAssertion hr;
             CComPtr<IDXGISurface2> surface;

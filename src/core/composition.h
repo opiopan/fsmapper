@@ -18,6 +18,9 @@ namespace composition{
         virtual ID2D1RenderTarget* get_render_target() = 0;
         ID2D1RenderTarget* operator ()(){return get_render_target();}
 
+        virtual void reset_visual_tree() = 0;
+        virtual void commit_visual_tree(bool show_main_visual) = 0;
+
         virtual void present() = 0;
     };
 
