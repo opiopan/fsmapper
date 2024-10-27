@@ -17,7 +17,7 @@ CapturedWindow::CapturedWindow(MapperEngine& engine, uint32_t cwid, sol::object&
     if (name && name->size() > 0){
         this->name = std::move(*name);
     }else{
-        throw MapperException("varid name is not specified for the captured window");
+        throw MapperException("valid name is not specified for the captured window");
     }
     auto omit_system_region = lua_safevalue<bool>(def["omit_system_region"]);
     auto fix_touch_issue = lua_safevalue<bool>(def["avoid_touch_problems"]);

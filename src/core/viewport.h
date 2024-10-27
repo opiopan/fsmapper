@@ -22,6 +22,7 @@
 #include "viewobject.h"
 #include "mouseemu.h"
 #include "composition.h"
+#include "windowcapture.h"
 
 class MapperEngine;
 class ViewPortManager;
@@ -331,6 +332,7 @@ protected:
     std::vector<IntRect> displays;
     uint32_t cwid_counter = 1;
     std::unordered_map<uint32_t, std::shared_ptr<CapturedWindow>> captured_windows;
+    std::unordered_map<uint32_t, std::shared_ptr<capture::image_streamer>> image_streamers;
     std::unique_ptr<mouse_emu::emulator> mouse_emulator;
 
 public:

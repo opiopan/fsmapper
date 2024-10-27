@@ -45,7 +45,7 @@ static constexpr inline void debug_assert(const char* funcname, HRESULT result){
 //============================================================================================
 // Observed lvalue
 //============================================================================================
-static constexpr auto varid_offset = 1000;
+static constexpr auto valid_offset = 1000;
 
 struct simvar{
     std::string var_def;
@@ -194,8 +194,8 @@ public:
             // response of command via fsmapper dedicated channel
             auto data_buf = reinterpret_cast<const char*>(&data->dwData);
             auto c = data_buf[0];
-        }else if (data->dwDefineID >= varid_offset && data->dwDefineID < varid_offset + simvars.size()){
-            auto& simvar = simvars[data->dwDefineID - varid_offset];
+        }else if (data->dwDefineID >= valid_offset && data->dwDefineID < valid_offset + simvars.size()){
+            auto& simvar = simvars[data->dwDefineID - valid_offset];
             auto value = *reinterpret_cast<const float*>(&data->dwData);
             auto delta = value - simvar.value;
             if (delta > simvar.epsilon || delta < -simvar.epsilon){
@@ -213,21 +213,21 @@ public:
         if (need_to_clear){
             my_channel.send_command("MF.SimVars.Clear");
             for (auto i = 0; i << simvars.size(); i++){
-                debug_assert("SimConnect_ClearClientDataDefinition", ::SimConnect_ClearClientDataDefinition(simconnect, varid_offset + i));
+                debug_assert("SimConnect_ClearClientDataDefinition", ::SimConnect_ClearClientDataDefinition(simconnect, valid_offset + i));
             }
             simvars.clear();
             need_to_clear = false;
         }
         for (auto& var : holding_simvars){
             auto i = simvars.size();
-            auto varid = i + varid_offset;
+            auto valid = i + valid_offset;
             debug_assert(
                 "SimConnect_AddToClientDataDefinition",
-                ::SimConnect_AddToClientDataDefinition(simconnect, varid, sizeof(float) * i, sizeof(float), var.epsilon));
+                ::SimConnect_AddToClientDataDefinition(simconnect, valid, sizeof(float) * i, sizeof(float), var.epsilon));
             debug_assert(
                 "SimConnect_RequestClientData", 
                 ::SimConnect_RequestClientData(
-                    simconnect, my_channel.simvar.id, varid, varid,
+                    simconnect, my_channel.simvar.id, valid, valid,
                     SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET,
                     SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED));
             std::string cmd{"MF.SimVars.Add."};
@@ -299,7 +299,7 @@ static void add_observed_simvars(sol::object& obj){
                 auto epsilon = lua_safevalue<float>(item["epsilon"]);
                 if (var.length() == 0 || !event){
                     std::ostringstream os;
-                    os << "invarid simvar definition [#" << i;
+                    os << "invalid simvar definition [#" << i;
                     os << "]: \"rpn\" parameter and \"event\" parameter must be specified";
                     throw MapperException(os.str());
                 }

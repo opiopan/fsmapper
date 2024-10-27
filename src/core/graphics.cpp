@@ -558,7 +558,7 @@ namespace graphics{
                 }
                 CComPtr<IWICBitmapFrameDecode> frame;
                 if (decoder->GetFrame(0, &frame) != S_OK){
-                    throw MapperException("specified bitmap file does not cantain varid image data");
+                    throw MapperException("specified bitmap file does not cantain valid image data");
                 }
                 CComPtr<IWICFormatConverter> converter;
                 wic_factory->CreateFormatConverter(&converter);
@@ -1071,7 +1071,7 @@ namespace graphics{
             auto vwidth = lua_safevalue<float>(width);
             auto vheight = lua_safevalue<float>(height);
             if (!vx || !vy || !vwidth || !vheight){
-                throw MapperException("invarid argument");
+                throw MapperException("invalid argument");
             }
             if (this->brush){
                 FloatRect rect{*vx, *vy, *vwidth, *vheight};

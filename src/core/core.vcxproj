@@ -240,6 +240,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="viewobject.h" />
     <ClInclude Include="viewport.h" />
     <ClInclude Include="vjoy.h" />
+    <ClInclude Include="windowcapture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
@@ -272,6 +273,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="viewobject.cpp" />
     <ClCompile Include="viewport.cpp" />
     <ClCompile Include="vjoy.cpp" />
+    <ClCompile Include="windowcapture.cpp" />
     <ClCompile Include="windowpicker.cpp" />
   </ItemGroup>
   <ItemGroup>

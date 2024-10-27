@@ -89,7 +89,7 @@ public:
 
     touch_reaction process_touch_event(touch_event event, float rel_x, float rel_y, const FloatRect& actual_region) override{
         auto out_of_region = rel_x < 0.f || rel_x > 1.f || rel_y < 0.f || rel_y > 1.f;
-        auto invaridate = [this]{
+        auto invalidate = [this]{
             is_dirty = true;
             mapper_EngineInstance()->invokeViewportsUpdate();
         };
@@ -98,7 +98,7 @@ public:
                 status = op_status::touch_in;
                 initial_point.x = rel_x;
                 initial_point.y = rel_y;
-                invaridate();
+                invalidate();
                 return touch_reaction::capture;
             }else{
                 return touch_reaction::none;
@@ -106,7 +106,7 @@ public:
         }else if (status == op_status::touch_in){
             if (event == touch_event::up){
                 status = op_status::init;
-                invaridate();
+                invalidate();
                 if (valid_ops & op_horizontal_flic){
                     auto hdelta = rel_x - initial_point.x;
                     if (hdelta > 0.4 || (initial_point.x > 0.6 && rel_x > 0.6)){
@@ -127,11 +127,11 @@ public:
                 return touch_reaction::uncapture;
             }else if (event == touch_event::cancel){
                 status = op_status::init;
-                invaridate();
+                invalidate();
                 return touch_reaction::uncapture;
             }else if (event == touch_event::drag && out_of_region && !(valid_ops & ~op_tap)){
                 status = op_status::touch_out;
-                invaridate();
+                invalidate();
             }
             return touch_reaction::capture;
         }else if (status == op_status::touch_out){
@@ -140,7 +140,7 @@ public:
                 return touch_reaction::uncapture;
             }else if (event == touch_event::drag && !out_of_region){
                 status = op_status::touch_in;
-                invaridate();
+                invalidate();
             }
             return touch_reaction::capture;
         }
@@ -244,7 +244,7 @@ public:
         }else if (renderer.get_type() == sol::type::function){
             this->renderer = std::make_shared<lua_renderer>(renderer);
         }else{
-            throw MapperException("no renderer parameter is specified or invarid object is specifid for renderer parameter");
+            throw MapperException("no renderer parameter is specified or invalid object is specifid for renderer parameter");
         }
     }
 

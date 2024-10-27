@@ -583,7 +583,7 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
                     if (classname_dic.count(classname) > 0){
                         rule.classRule.try_emplace(classname_dic.at(classname), modifier);
                     }else{
-                        throw MapperException("The value of \"class\" parameter is invarid. "
+                        throw MapperException("The value of \"class\" parameter is invalid. "
                                               "This parameter can be \"binary\", \"absolute\", or \"relative\".");
                     }
                 }else if (name != ""){

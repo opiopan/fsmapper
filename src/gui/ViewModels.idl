@@ -82,7 +82,7 @@ namespace gui.ViewModels{
         Boolean LuaLibTableIsEnable;
         Boolean LuaLibUtf8IsEnable;
         String PreRunScript;
-        Boolean PreRunScriptIsVarid;
+        Boolean PreRunScriptIsValid;
         Int32 RenderingMethod;
         Int32 PluginFolderType;
         String PluginPath{get;};

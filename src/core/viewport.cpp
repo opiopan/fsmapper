@@ -390,7 +390,7 @@ void View::update_view(bool entire){
 }
 
 bool View::render_view(graphics::render_target& render_target, const FloatRect& rect){
-    //fill outer area of varid region as needed, then clear background
+    //fill outer area of valid region as needed, then clear background
     auto clear_background = [this, &render_target]{
         render_target->Clear(bg_color);
         if (bg_bitmap){
@@ -466,7 +466,7 @@ protected:
     MSG_RELAY relay;
     UPDATE_WINDOW on_update_window;
     COLORREF bgcolor;
-    IntRect varid_rect;
+    IntRect valid_rect;
     IntRect entire_rect;
     POINT window_pos;
     SIZE window_size;
@@ -481,7 +481,7 @@ public:
 
     void start(const IntRect& erect, const IntRect& vrect) override{
         entire_rect = erect;
-        varid_rect = vrect;
+        valid_rect = vrect;
         create();
         showWindow(SW_SHOW);
     }
@@ -1045,6 +1045,29 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     );
 
     //
+    // functions to handle window capture streamer
+    //
+    capture::init_scripting_env(mapper_table);
+    mapper_table.new_usertype<capture::image_streamer>(
+        "window_image_streamer",
+        sol::call_constructor, sol::factories([this](sol::object def_obj){
+            return lua_c_interface(engine, "mapper.window_image_streamer", [this, &def_obj](){
+                std::lock_guard lock(mutex);
+                if (status == Status::init){
+                    auto cwid = cwid_counter++;
+                    auto&& streamer = capture::create_image_streamer(*this, cwid, def_obj);
+                    image_streamers.emplace(cwid, streamer);
+                    return streamer;
+                }else{
+                    throw MapperException("Window image streamer object cannot be created since viewport definitions are fixed "
+                                        "by calling mapper.start_viewports(). "
+                                        "You need to call mapper.reset_viewports() before creating the new streamer object.");
+                }
+            });
+        })
+    );
+
+    //
     // functions to retrieve screen information
     //
     mapper_table["enumerate_display_info"] = [this](sol::this_state lua){
@@ -1131,7 +1154,7 @@ void ViewPortManager::start_viewports(){
             throw MapperException("no viewports is defined");
         }
 
-        if (captured_windows.size() > 0){
+        if (captured_windows.size() > 0 || image_streamers.size() > 0){
             change_status(Status::ready_to_start);
             lock.unlock();
             engine.notifyUpdate(MapperEngine::UPDATED_READY_TO_CAPTURE);
@@ -1196,8 +1219,12 @@ void ViewPortManager::reset_viewports(){
     for (auto& item: captured_windows){
         item.second->release_window();
     }
+    for (auto& item: image_streamers){
+        item.second->dispose();
+    }
     viewports.clear();
     captured_windows.clear();
+    image_streamers.clear();
     engine.recommend_gc();
 
     auto prev_status = status;
@@ -1218,9 +1245,9 @@ std::shared_ptr<CapturedWindow> ViewPortManager::create_captured_window(sol::obj
         captured_windows.emplace(cwid, captured_window);
         return captured_window;
     }else{
-        throw MapperException("Captured window object cannot create since viewport definitions are fixed "
+        throw MapperException("Captured window object cannot be created since viewport definitions are fixed "
                               "by calling mapper.start_viewports(). "
-                              "You need to call mapper.reset_viewports() before creating new captured window object.");
+                              "You need to call mapper.reset_viewports() before creating the new captured window object.");
     }
 }
 
@@ -1231,6 +1258,10 @@ ViewPortManager::cw_info_list ViewPortManager::get_captured_window_list(){
         CapturedWindowInfo cwinfo = {cw.first, cw.second->get_name(), cw.second->get_target_class(), cw.second->get_hwnd() != 0};
         list.push_back(std::move(cwinfo));
     }
+    for (auto& is : image_streamers){
+        CapturedWindowInfo cwinfo = {is.first, is.second->get_name(), "", true};
+        list.push_back(std::move(cwinfo));
+    }
     return std::move(list);
 }
 
@@ -1238,6 +1269,8 @@ ViewPortManager::cw_title_list ViewPortManager::get_captured_window_title_list(u
     std::lock_guard lock(mutex);
     if (captured_windows.count(cwid) > 0){
         return captured_windows.at(cwid)->get_target_titles();
+    }else if (image_streamers.count(cwid) > 0){
+        return image_streamers.at(cwid)->get_target_titles();
     }else{
         return {};
     }
@@ -1251,6 +1284,9 @@ void ViewPortManager::register_captured_window(uint32_t cwid, HWND hWnd){
             throw MapperException("specified captured window is already associate with a window");
         }
         cw->attach_window(hWnd);
+    }else if (image_streamers.count(cwid) > 0){
+        auto& is = image_streamers.at(cwid);
+        is->set_hwnd(hWnd);
     }else{
         throw MapperException("specified captured window no longer exits");
     }
@@ -1261,6 +1297,9 @@ void ViewPortManager::unregister_captured_window(uint32_t cwid){
     if (captured_windows.count(cwid) > 0){
         auto& cw = captured_windows.at(cwid);
         cw->release_window();
+    }else if (image_streamers.count(cwid) > 0){
+        auto& is = image_streamers.at(cwid);
+        is->set_hwnd(nullptr);
     }else{
         throw MapperException("specified captured window no longer exits");
     }

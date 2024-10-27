@@ -192,7 +192,7 @@ static std::shared_ptr<NativeAction::Function> lerp(sol::object& o_action, sol::
     }
     auto type = verify_map_rule(o_list);
     if (type == val_map_type::invalid){
-        throw std::runtime_error("the interpolation rule specified at 2nd argument is invarid format");
+        throw std::runtime_error("the interpolation rule specified at 2nd argument is invalid format");
     }
     std::optional<double_map_set> double_maps;
     std::optional<int_map_set> int_maps;

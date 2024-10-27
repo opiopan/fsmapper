@@ -206,7 +206,7 @@
                         </angel:SettingsExpander.HeaderIcon>
                         <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                        MinWidth="{StaticResource SettingsCardContentMinWidth}"
-                                  IsOn="{x:Bind ViewModel.PreRunScriptIsVarid, Mode=TwoWay}"/>
+                                  IsOn="{x:Bind ViewModel.PreRunScriptIsValid, Mode=TwoWay}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel Style="{StaticResource SettingsExpandedStackStyle}">
                                 <TextBox AutomationProperties.Name="multi-line TextBox"

@@ -123,10 +123,10 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_pre_run_script(pre_run_script);
             save_config();
         }
-        bool PreRunScriptIsVarid(){
+        bool PreRunScriptIsValid(){
             return fsmapper::app_config.get_pre_run_script_is_valid();
         }
-        void PreRunScriptIsVarid(bool value){
+        void PreRunScriptIsValid(bool value){
             fsmapper::app_config.set_pre_run_script_is_valid(value);
             save_config();
         }

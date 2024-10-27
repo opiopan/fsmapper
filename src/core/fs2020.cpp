@@ -506,7 +506,7 @@ void FS2020::addObservedSimVars(sol::object obj){
                 auto eventid = lua_safevalue<uint64_t>(simvar["event"]);
                 auto epsilon = lua_safevalue<double>(simvar["epsilon"]);
                 if (name.size() == 0 || !eventid){
-                    throw MapperException("invarid arguments, SimVar defenition to observe must contain "
+                    throw MapperException("invalid arguments, SimVar defenition to observe must contain "
                                           "\"name\" parameter and \"event\" parameter at least");
                 }
                 group.simvars.emplace_back(name.c_str(), unit.c_str(), *eventid, epsilon ? *epsilon : 0.);
