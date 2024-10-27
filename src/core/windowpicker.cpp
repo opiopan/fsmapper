@@ -174,12 +174,13 @@ public:
                 window != app_wnd &&
                 rect.width > 0 && rect.height > 0 &&
                 max(rect.width, rect.height) / min(rect.width, rect.height) < MAX_ENABLE_WINDOW_RATIO){
-                if (desktop_rect == rect || 
-                    (rect.width >= desktop_rect.width && rect.height >= desktop_rect.height)){
-                    break;
-                }
                 char buf[512];
                 ::GetWindowTextA(window, buf, sizeof(buf));
+                if ((desktop_rect == rect || 
+                     (rect.width >= desktop_rect.width && rect.height >= desktop_rect.height)) &&
+                    strncmp(buf, "Program Manager", sizeof(buf)) == 0){
+                    break;
+                }
                 window_defs.emplace_back(window, rect, buf);
             }
         }

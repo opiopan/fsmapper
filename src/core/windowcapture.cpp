@@ -40,7 +40,7 @@ namespace capture{
     protected:
         ViewPortManager& manager;
         uint32_t id;
-        std::string name;
+        std::string name{"DCS World"};
         std::vector<std::string> target_titles;
         HWND hwnd{nullptr};
         FloatRect capture_rect{0, 0, 0, 0};
@@ -55,8 +55,6 @@ namespace capture{
             auto name = lua_safevalue<std::string>(def["name"]);
             if (name && name->size() > 0){
                 this->name = std::move(*name);
-            }else{
-                throw MapperException("valid name is not specified for the captured window");
             }
             sol::object titles_obj = def["window_titles"];
             if (titles_obj.get_type() == sol::type::table){
@@ -75,6 +73,9 @@ namespace capture{
             auto title = lua_safestring(def["window_title"]);
             if (title.size() > 0){
                 target_titles.emplace_back(std::move(title));
+            }
+            if (target_titles.size() == 0){
+                target_titles.emplace_back("Digital Combat Simulator");
             }
 
             auto&& rect = parese_rect_def(def["capture_rect"]);
