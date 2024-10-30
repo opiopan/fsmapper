@@ -1361,12 +1361,18 @@ void ViewPortManager::enable_viewport_primitive(){
     ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
     int i = 0;
     try{
+        for (auto& item: image_streamers){
+            item.second->start_capture();
+        }
         for (i = 0; i < viewports.size(); i++){
             viewports[i]->enable(displays);
         }
     }catch(MapperException& e){
         for (int j = 0; j < i; j++){
             viewports[j]->disable();
+        }
+        for (auto& item: image_streamers){
+            item.second->stop_capture();
         }
         throw e;
     }
@@ -1376,6 +1382,9 @@ void ViewPortManager::enable_viewport_primitive(){
 void ViewPortManager::disable_viewport_primitive(){
     for (auto& viewport : viewports){
         viewport->disable();
+    }
+    for (auto& item: image_streamers){
+        item.second->stop_capture();
     }
     uninstall_mouse_hook();
 }

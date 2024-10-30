@@ -39,9 +39,8 @@ public:
     HRESULT operator()(){return hr;}
 };
 
-static CComPtr<IDXGIDevice> create_dxgi_device(){
+static CComPtr<ID3D11Device> create_d3d_device(){
     ComAssertion hr;
-
     CComPtr<ID3D11Device> d3d_device;
     hr = D3D11CreateDevice(
         nullptr, // Adapter
@@ -54,9 +53,14 @@ static CComPtr<IDXGIDevice> create_dxgi_device(){
         nullptr, // Actual feature level
         nullptr
     );
+    return d3d_device;
+}
+
+static CComPtr<IDXGIDevice> create_dxgi_device(){
+    ComAssertion hr;
+    auto d3d_device = create_d3d_device();
     CComPtr<IDXGIDevice> dxgi_device;
     hr = d3d_device.QueryInterface(&dxgi_device);
-    
     return dxgi_device;
 }
 
@@ -92,12 +96,20 @@ CComPtr<ID2D1Device1> create_d2d_device(IDXGIDevice* dxgi_device){
 }
 
 //============================================================================================
-// Building DXGI device
+// Building devices
 //============================================================================================
 namespace composition{
+    CComPtr<ID3D11Device> create_d3d_device(){
+        return ::create_d3d_device();
+    }
+
+    CComPtr<IDXGISwapChain1> create_swapchain(IDXGIDevice *device, UINT width, UINT height){
+        return ::create_swapchain(device, width, height);
+    }
+
     CComPtr<IDXGISwapChain1> create_swapchain(UINT width, UINT height){
         CComPtr<IDXGIDevice> dxgi_device = create_dxgi_device();
-        return create_swapchain(dxgi_device, width, height);
+        return ::create_swapchain(dxgi_device, width, height);
     }
 }
 
@@ -124,7 +136,7 @@ namespace composition{
         viewport_target_imp(HWND hwnd, UINT width, UINT height) : hwnd(hwnd), width(width), height(height){
             ComAssertion hr;
             dxgi_device = create_dxgi_device();
-            swap_chain = create_swapchain(dxgi_device, width, height);
+            swap_chain = ::create_swapchain(dxgi_device, width, height);
             hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator&()));
             hr = dcomp_device->CreateTargetForHwnd(hwnd, true, &target);
             hr = dcomp_device->CreateVisual(&root_visual);

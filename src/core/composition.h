@@ -9,8 +9,11 @@
 #include <atlbase.h>
 #include <dxgi1_3.h>
 #include <d2d1_2.h>
+#include <d3d11_2.h>
 
 namespace composition{
+    CComPtr<ID3D11Device> create_d3d_device();
+    CComPtr<IDXGISwapChain1> create_swapchain(IDXGIDevice* device, UINT width, UINT height);
     CComPtr<IDXGISwapChain1> create_swapchain(UINT width, UINT height);
 
     class viewport_target{
