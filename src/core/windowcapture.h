@@ -10,10 +10,23 @@
 #include <string>
 #include <sol/sol.hpp>
 #include <windows.h>
+#include <dcomp.h>
+
+#include "tools.h"
 
 class ViewPortManager;
+class ViewPort;
+namespace composition{class viewport_target;}
 
 namespace capture{
+    class captured_image{
+    public:
+        virtual void associate_viewport(ViewPort* viewport, composition::viewport_target& target) = 0;
+        virtual void set_bounds(const FloatRect& bounds) = 0;
+        virtual IDCompositionVisual* get_visual() = 0;
+        virtual void dispose() = 0;
+    };
+
     class image_streamer{
     public:
         virtual uint32_t get_id() const = 0;
@@ -25,6 +38,8 @@ namespace capture{
         virtual void start_capture() = 0;
         virtual void stop_capture() = 0;
         virtual void dispose() = 0;
+
+        virtual std::shared_ptr<captured_image> create_view_element(sol::object arg_object) = 0;
     };
 
     std::shared_ptr<image_streamer> create_image_streamer(ViewPortManager& manager, uint32_t id, sol::object arg);

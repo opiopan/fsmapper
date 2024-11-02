@@ -277,6 +277,9 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
                 if (object.is<CapturedWindow&>()){
                     auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
                     captured_window_elements.push_back(std::move(element));
+                }if (object.is<capture::captured_image&>()){
+                    auto element = std::make_unique<CIViewElement>(region_def, alignment, object.as<std::shared_ptr<capture::captured_image>>());
+                    captured_image_elements.push_back(std::move(element));
                 }else{
                     auto view_object = as_view_object(object);
                     if (view_object){
@@ -289,7 +292,7 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
             }
         }
     }
-    if (captured_window_elements.size() == 0 && normal_elements.size() == 0){
+    if (captured_window_elements.size() + captured_image_elements.size() + normal_elements.size() == 0){
         throw MapperException("there is no view element difinition, at least one view element is required");
     }
 
@@ -312,6 +315,12 @@ void View::prepare(){
         element->object_region = element->region;
         element->object_scale_factor = scale_factor;
     }
+    for (auto& element : captured_image_elements){
+        element->calculate_element_region(region, scale_factor);
+        element->object_region = element->region;
+        element->object_scale_factor = scale_factor;
+        element->get_object().associate_viewport(&viewport, *viewport.get_composition_target());
+    }
     for (auto& element : normal_elements){
         element->calculate_element_region(region, scale_factor);
         auto aratio = element->get_object().get_aspect_ratio();
@@ -325,6 +334,10 @@ void View::show(){
     std::for_each(std::rbegin(captured_window_elements), std::rend(captured_window_elements), [this](auto& element){
         element->get_object().set_owner(this);
         element->get_object().change_window_pos(IntRect{element->region}, HWND_TOP, true, viewport.get_background_clolor());
+    });
+    std::for_each(std::rbegin(captured_image_elements), std::rend(captured_image_elements), [this](auto& element){
+        element->get_object().set_bounds(element->region);
+        viewport.get_composition_target()->add_visual(element->get_object().get_visual());
     });
     FloatRect rect{viewport.get_output_region()};
     viewport.invalidate_rect(rect);
@@ -887,6 +900,7 @@ int ViewPort::registerView(sol::object def_obj){
                                   "You may need to call mapper.reset_viewports().");
         }
         auto view = std::make_unique<View>(manager.get_engine(), *this, def_obj);
+        ignore_transparent_touches = ignore_transparent_touches || view->getCapturedImageNum() != 0;
         mappings_num_for_views += view->getMappingsNum();
         views.push_back(std::move(view));
         manager.get_engine().notifyUpdate(MapperEngine::UPDATED_VIEWPORTS);
@@ -1045,7 +1059,7 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     );
 
     //
-    // functions to handle window capture streamer
+    // functions to handle window image streamer
     //
     capture::init_scripting_env(mapper_table);
     mapper_table.new_usertype<capture::image_streamer>(
@@ -1060,11 +1074,12 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
                     return streamer;
                 }else{
                     throw MapperException("Window image streamer object cannot be created since viewport definitions are fixed "
-                                        "by calling mapper.start_viewports(). "
-                                        "You need to call mapper.reset_viewports() before creating the new streamer object.");
+                                          "by calling mapper.start_viewports(). "
+                                          "You need to call mapper.reset_viewports() before creating the new streamer object.");
                 }
             });
-        })
+        }),
+        "view_element", &capture::image_streamer::create_view_element
     );
 
     //

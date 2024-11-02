@@ -5,7 +5,6 @@
 
 #include <d3d11_2.h>
 #include <d2d1_2helper.h>
-#include <dcomp.h>
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d2d1")
@@ -56,14 +55,6 @@ static CComPtr<ID3D11Device> create_d3d_device(){
     return d3d_device;
 }
 
-static CComPtr<IDXGIDevice> create_dxgi_device(){
-    ComAssertion hr;
-    auto d3d_device = create_d3d_device();
-    CComPtr<IDXGIDevice> dxgi_device;
-    hr = d3d_device.QueryInterface(&dxgi_device);
-    return dxgi_device;
-}
-
 CComPtr<IDXGISwapChain1> create_swapchain(IDXGIDevice* dxgi_device, UINT width, UINT height){
     ComAssertion hr;
 
@@ -108,7 +99,9 @@ namespace composition{
     }
 
     CComPtr<IDXGISwapChain1> create_swapchain(UINT width, UINT height){
-        CComPtr<IDXGIDevice> dxgi_device = create_dxgi_device();
+        auto d3d_device = create_d3d_device();
+        CComPtr<IDXGIDevice> dxgi_device;
+        d3d_device.QueryInterface(&dxgi_device);
         return ::create_swapchain(dxgi_device, width, height);
     }
 }
@@ -122,7 +115,10 @@ namespace composition{
         HWND hwnd;
         UINT width;
         UINT height;
+        CComPtr<ID3D11Device> d3d_device;
         CComPtr<IDXGIDevice> dxgi_device;
+        CComPtr<ID3D11Device> d3d_device2;
+        CComPtr<IDXGIDevice> dxgi_device2;
         CComPtr<IDXGISwapChain1> swap_chain;
         CComPtr<IDCompositionDevice> dcomp_device;
         CComPtr<IDCompositionTarget> target;
@@ -135,7 +131,8 @@ namespace composition{
     public:
         viewport_target_imp(HWND hwnd, UINT width, UINT height) : hwnd(hwnd), width(width), height(height){
             ComAssertion hr;
-            dxgi_device = create_dxgi_device();
+            d3d_device = create_d3d_device();
+            d3d_device.QueryInterface(&dxgi_device);
             swap_chain = ::create_swapchain(dxgi_device, width, height);
             hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator&()));
             hr = dcomp_device->CreateTargetForHwnd(hwnd, true, &target);
@@ -159,8 +156,23 @@ namespace composition{
             return d2d_context.operator->();
         }
 
+        IDCompositionDevice* get_device() override {
+            return dcomp_device;
+        }
+
+        CComPtr<IDCompositionVisual> create_visual() override {
+            ComAssertion hr;
+            CComPtr<IDCompositionVisual> visual;
+            hr = dcomp_device->CreateVisual(&visual);
+            return visual;
+        }
+
         void reset_visual_tree() override{
             ComAssertion hr = root_visual->RemoveAllVisuals();
+        }
+
+        void add_visual(IDCompositionVisual* visual) override{
+            ComAssertion hr = root_visual->AddVisual(visual, false, nullptr);
         }
 
         void commit_visual_tree(bool show_main_visual) override {

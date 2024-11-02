@@ -141,6 +141,8 @@ public:
 //============================================================================================
 // View
 //============================================================================================
+namespace capture {class captured_image;}
+
 class View{
 public:
     struct CapturedWindowAttributes{
@@ -150,6 +152,7 @@ public:
 protected:
     using CWViewElement = ViewElement<CapturedWindow>;
     using NormalViewElement = ViewElement<ViewObject>;
+    using CIViewElement = ViewElement<capture::captured_image>;
 
     ViewPort& viewport;
     std::string name;
@@ -160,6 +163,7 @@ protected:
     FloatRect region;
     float scale_factor;
     std::vector<std::unique_ptr<CWViewElement>> captured_window_elements;
+    std::vector<std::shared_ptr<CIViewElement>> captured_image_elements;
     std::vector<std::unique_ptr<NormalViewElement>> normal_elements;
     std::unique_ptr<EventActionMap> mappings;
     NormalViewElement* touch_captured_element = nullptr;
@@ -184,6 +188,7 @@ public:
     Action* findAction(uint64_t evid);
     int getMappingsNum(){return mappings.get() ? mappings->size() : 0;}
     bool findCapturedWindow(FloatPoint point, CapturedWindowAttributes& attrs);
+    size_t getCapturedImageNum(){return captured_image_elements.size();}
 };
 
 //============================================================================================
@@ -303,6 +308,7 @@ public:
     const IntPoint& get_window_position()const{return window_pos;}
     float get_scale_factor() const {return scale_factor;}
     const graphics::color& get_background_clolor() const {return bg_color;}
+    composition::viewport_target* get_composition_target(){return composition_target.get();}
     void invalidate_rect(const FloatRect& rect);
 
 protected:
