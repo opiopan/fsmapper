@@ -16,6 +16,8 @@
 #include "graphics.h"
 #include "keyseq.h"
 
+#include <shlobj_core.h>
+
 //============================================================================================
 // initialize / terminate environment
 //============================================================================================
@@ -214,6 +216,17 @@ void MapperEngine::initScriptingEnv(){
         auto package = scripting.lua()["package"];
         package["path"] = path.string();
     }
+
+    //-------------------------------------------------------------------------------
+    // set user related paths
+    //-------------------------------------------------------------------------------
+    wchar_t* path;
+    SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &path);
+    std::filesystem::path profile_path{path};
+    scripting.lua()["mapper"]["profile_dir"] = profile_path.string();
+    SHGetKnownFolderPath(FOLDERID_SavedGames, 0, nullptr, &path);
+    std::filesystem::path saved_games_path{path};
+    scripting.lua()["mapper"]["saved_games_dir"] = saved_games_path.string();
 }
 
 void MapperEngine::clearScriptingEnv(){
