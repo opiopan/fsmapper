@@ -10,6 +10,7 @@
 
 #include <optional>
 #include <cmath>
+#include <atomic>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.h>
@@ -214,7 +215,9 @@ protected:
     HWND hwnd{nullptr};
     FloatRect capture_rect{0, 0, 0, 0};
     D3D11_BOX src_rect;
+    std::atomic<bool> capture_item_is_valid{false};
     winrt::Windows::Graphics::Capture::GraphicsCaptureItem capture_item{nullptr};
+    winrt::Windows::Graphics::SizeInt32 capture_item_size;
     winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice device{nullptr};
     winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool frame_pool{nullptr};
     winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
@@ -268,8 +271,12 @@ public:
         if (hwnd){
             try{
                 capture_item = create_capture_item_for_window(hwnd);
+                capture_item_size = capture_item.Size();
+                capture_item.Closed({this, &image_streamer_imp::on_close_target});
+                capture_item_is_valid.store(true);
             }catch (...){
                 mapper_EngineInstance()->putLog(MCONSOLE_WARNING, "image_streamer: The specified window cannot be used for image capture.");
+                capture_item_is_valid.store(true);
                 capture_item = nullptr;
             }
         }else{
@@ -294,8 +301,7 @@ public:
         CreateDirect3D11DeviceFromDXGIDevice(dxgi_device, dev.put());
         device = dev.as<winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>();
 
-        if (capture_item){
-            auto size = capture_item.Size();
+        if (capture_item && capture_item_is_valid.load()){
             src_rect.left = std::floor(capture_rect.x);
             src_rect.right = std::ceil(capture_rect.x + capture_rect.width);
             src_rect.top = std::floor(capture_rect.y);
@@ -307,7 +313,7 @@ public:
                 device,
                 winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized,
                 2,
-                size);
+                capture_item_size);
             session = frame_pool.CreateCaptureSession(capture_item);
             session.IsBorderRequired(false);
             session.IsCursorCaptureEnabled(false);
@@ -372,6 +378,13 @@ protected:
 
         DXGI_PRESENT_PARAMETERS present_parameters{0};
         swap_chain->Present1(1, 0, &present_parameters);
+    }
+
+    void on_close_target(
+        winrt::Windows::Graphics::Capture::GraphicsCaptureItem const& sender,
+        winrt::Windows::Foundation::IInspectable const&){
+        capture_item_is_valid.store(false);
+        mapper_EngineInstance()->notifyUpdate(MapperEngine::UPDATED_LOST_CAPTURED_WINDOW);
     }
 };
 

@@ -277,7 +277,7 @@ View::View(MapperEngine& engine, ViewPort& viewport, sol::object& def_obj) : vie
                 if (object.is<CapturedWindow&>()){
                     auto element = std::make_unique<CWViewElement>(region_def, alignment, object.as<std::shared_ptr<CapturedWindow>>());
                     captured_window_elements.push_back(std::move(element));
-                }if (object.is<capture::captured_image&>()){
+                }else if (object.is<capture::captured_image&>()){
                     auto element = std::make_unique<CIViewElement>(region_def, alignment, object.as<std::shared_ptr<capture::captured_image>>());
                     captured_image_elements.push_back(std::move(element));
                 }else{
