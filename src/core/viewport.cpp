@@ -1064,12 +1064,12 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     capture::init_scripting_env(mapper_table);
     mapper_table.new_usertype<capture::image_streamer>(
         "window_image_streamer",
-        sol::call_constructor, sol::factories([this](sol::object def_obj){
-            return lua_c_interface(engine, "mapper.window_image_streamer", [this, &def_obj](){
+        sol::call_constructor, sol::factories([this](sol::variadic_args args){
+            return lua_c_interface(engine, "mapper.window_image_streamer", [this, &args](){
                 std::lock_guard lock(mutex);
                 if (status == Status::init){
                     auto cwid = cwid_counter++;
-                    auto&& streamer = capture::create_image_streamer(*this, cwid, def_obj);
+                    auto&& streamer = capture::create_image_streamer(*this, cwid, args);
                     image_streamers.emplace(cwid, streamer);
                     return streamer;
                 }else{

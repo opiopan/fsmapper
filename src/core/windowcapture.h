@@ -42,7 +42,7 @@ namespace capture{
         virtual std::shared_ptr<captured_image> create_view_element(sol::object arg_object) = 0;
     };
 
-    std::shared_ptr<image_streamer> create_image_streamer(ViewPortManager& manager, uint32_t id, sol::object arg);
+    std::shared_ptr<image_streamer> create_image_streamer(ViewPortManager& manager, uint32_t id, sol::variadic_args args);
 
     void init_scripting_env(sol::table& mapper_table);
 };

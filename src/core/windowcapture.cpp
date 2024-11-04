@@ -229,32 +229,35 @@ protected:
     std::vector<std::shared_ptr<captured_image_imp>> view_elements;
 
 public:
-    image_streamer_imp(ViewPortManager&manager, sol::object def_obj, uint32_t id): manager(manager), id(id){
-        if (def_obj.get_type() != sol::type::table){
-            throw MapperException("function argument is not a table");
-        }
-        auto def = def_obj.as<sol::table>();
-        auto name = lua_safevalue<std::string>(def["name"]);
-        if (name && name->size() > 0){
-            this->name = std::move(*name);
-        }
-        sol::object titles_obj = def["window_titles"];
-        if (titles_obj.get_type() == sol::type::table){
-            sol::table titles = titles_obj;
-            for (int i = 1; i <= titles.size(); i++){
-                auto title = lua_safevalue<std::string>(titles[i]);
-                if (title && title->size() > 0){
-                    target_titles.emplace_back(std::move(*title));
-                }else{
-                    throw MapperException("each element of 'window_titles' have to be specified as a string");
-                }
+    image_streamer_imp(ViewPortManager&manager, sol::variadic_args args, uint32_t id): manager(manager), id(id){
+        if (args.size() > 0){
+            auto def_obj = args[0];
+            if (def_obj.get_type() != sol::type::table){
+                throw MapperException("function argument is not a table");
             }
-        }else if (titles_obj.valid()){
-            throw MapperException("'window_titles' parameter for captured window definition must be a table");
-        }
-        auto title = lua_safestring(def["window_title"]);
-        if (title.size() > 0){
-            target_titles.emplace_back(std::move(title));
+            auto def = def_obj.as<sol::table>();
+            auto name = lua_safevalue<std::string>(def["name"]);
+            if (name && name->size() > 0){
+                this->name = std::move(*name);
+            }
+            sol::object titles_obj = def["window_titles"];
+            if (titles_obj.get_type() == sol::type::table){
+                sol::table titles = titles_obj;
+                for (int i = 1; i <= titles.size(); i++){
+                    auto title = lua_safevalue<std::string>(titles[i]);
+                    if (title && title->size() > 0){
+                        target_titles.emplace_back(std::move(*title));
+                    }else{
+                        throw MapperException("each element of 'window_titles' have to be specified as a string");
+                    }
+                }
+            }else if (titles_obj.valid()){
+                throw MapperException("'window_titles' parameter for captured window definition must be a table");
+            }
+            auto title = lua_safestring(def["window_title"]);
+            if (title.size() > 0){
+                target_titles.emplace_back(std::move(title));
+            }
         }
         if (target_titles.size() == 0){
             target_titles.emplace_back("Digital Combat Simulator");
@@ -389,8 +392,8 @@ protected:
 };
 
 namespace capture{
-    std::shared_ptr<image_streamer> create_image_streamer(ViewPortManager&manager, uint32_t id, sol::object arg){
-        return std::make_shared<image_streamer_imp>(manager, arg, id);
+    std::shared_ptr<image_streamer> create_image_streamer(ViewPortManager&manager, uint32_t id, sol::variadic_args args){
+        return std::make_shared<image_streamer_imp>(manager, args, id);
     }
 }
 
