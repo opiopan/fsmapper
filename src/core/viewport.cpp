@@ -1079,7 +1079,7 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
                 }
             });
         }),
-        "view_element", &capture::image_streamer::create_view_element
+        "create_view_element", &capture::image_streamer::create_view_element
     );
 
     //
