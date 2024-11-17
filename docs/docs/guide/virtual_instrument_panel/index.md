@@ -161,6 +161,7 @@ For details on creating a [`CapturedImage`](/libs/mapper/CapturedImage/) object,
 local view_id = viewport3:register_view{
     name = 'my_view',
     background = graphics.bitmap('assets/view3.png'),
+    logical_width=1024, logical_height=768,
     elements = {
         {object=operable_area, x=0, y=0, width=100, height=50},
         {object=canvas, x=0, y=0, width=100, height=50},
