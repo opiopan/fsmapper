@@ -142,7 +142,7 @@ const config = {
         copyright: `Copyright © ${new Date().getFullYear()} Hiroshi Murayama &lt;opiopan@gmail.com&gt;.`,
       },
       prism: {
-        theme: prismThemes.github,
+        theme: prismThemes.dracula,
         darkTheme: prismThemes.dracula,
         additionalLanguages: ['lua'],
       },
