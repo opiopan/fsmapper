@@ -134,14 +134,14 @@ namespace composition{
             d3d_device = create_d3d_device();
             d3d_device.QueryInterface(&dxgi_device);
             swap_chain = ::create_swapchain(dxgi_device, width, height);
-            hr = DCompositionCreateDevice(dxgi_device, __uuidof(dcomp_device), reinterpret_cast<void**>(dcomp_device.operator&()));
+            d2d_device = create_d2d_device(dxgi_device);
+            hr = DCompositionCreateDevice3(d2d_device, __uuidof(dcomp_device), reinterpret_cast<void **>(dcomp_device.operator&()));
             hr = dcomp_device->CreateTargetForHwnd(hwnd, true, &target);
             hr = dcomp_device->CreateVisual(&root_visual);
             hr = target->SetRoot(root_visual);
             hr = dcomp_device->Commit();
             hr = dcomp_device->CreateVisual(&main_visual);
             hr = main_visual->SetContent(swap_chain);
-            d2d_device = create_d2d_device(dxgi_device);
             hr = d2d_device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &d2d_context);
             bitmap_props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
             bitmap_props.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
