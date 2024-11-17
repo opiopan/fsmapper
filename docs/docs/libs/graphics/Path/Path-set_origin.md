@@ -11,8 +11,8 @@ This method transitions the coordinate system of a path geometry object to a new
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`x`|numeric|X-coordinate|
-|`y`|numeric|Y-Coordinate|
+|`x`|number|X-coordinate|
+|`y`|number|Y-Coordinate|
 
 
 ## Return Values

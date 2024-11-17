@@ -20,8 +20,8 @@ Keystroke object represents
 |-|-|-|
 |codes|table|Specifies an array table of [virtual-key names](/guide/input_emulation/keycodes) representing the sequence of key inputs to emulate.<br/>This parameter is required.
 |modifiers|table|Specifies the keys to be modified when generating the key input sequence specified by the `codes` parameter. This is done using an array table of [virtual-key names](/guide/input_emulation/keycodes) representing the modifier keys*.
-|duration|numeric|Specifies the time in milliseconds to hold the key down before releasing it.<br/>The default is `50`.
-|interval|numeric|Specifies the time in milliseconds to wait after releasing one key before pressing the next key in the sequence.<br/>The default is `0`.
+|duration|number|Specifies the time in milliseconds to hold the key down before releasing it.<br/>The default is `50`.
+|interval|number|Specifies the time in milliseconds to wait after releasing one key before pressing the next key in the sequence.<br/>The default is `0`.
 
 :::note *
 The virtual-keys that can be specified as modifier keys are as follows.

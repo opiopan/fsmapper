@@ -17,7 +17,7 @@ Additionally, note that the `input_event specified` should be the Input Event ID
 |Parameter|Type|Description|
 |-|-|-|
 |`input_event`|string|[Input Event ID](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/General_Template_Definitions.htm?#InputEvent)
-|`value`|numeric or string|Value to set for [Input Event](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm)<br/>If this parameter is omitted, the value of event passed to the native action will be used.
+|`value`|number or string|Value to set for [Input Event](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm)<br/>If this parameter is omitted, the value of event passed to the native action will be used.
 
 
 ## Return Values

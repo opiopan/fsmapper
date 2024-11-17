@@ -9,7 +9,7 @@ RenderingContext.stroke_width
 This property stores stroke width that can be referenced by the drawing methods.
 
 ## Type
-numeric
+number
 
 ## See Also
 - [Rendering Context](/guide/graphics#rendering-context)

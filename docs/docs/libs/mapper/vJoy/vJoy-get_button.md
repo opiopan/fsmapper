@@ -12,7 +12,7 @@ This method is used to get a [`vJoyUnit`](/libs/mapper/vJoyUnit) object correspo
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`button_id`|numeric|Specifies a button number starting from `1`.
+|`button_id`|number|Specifies a button number starting from `1`.
 
 
 ## Return Values

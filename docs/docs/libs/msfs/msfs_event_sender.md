@@ -16,11 +16,11 @@ This function is recommended to be replaced with [`msfs.mfwasm.rpn_executer()`](
 |Parameter|Type|Description|
 |-|-|-|
 |`event_name`|string|[Event ID](https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Event_IDs.htm)
-|`param1`|numeric|1st parameter of the event.
-|`param2`|numeric|2nd parameter of the event.
-|`param3`|numeric|3rd parameter of the event.
-|`param4`|numeric|4th parameter of the event.
-|`param5`|numeric|5th parameter of the event.
+|`param1`|number|1st parameter of the event.
+|`param2`|number|2nd parameter of the event.
+|`param3`|number|3rd parameter of the event.
+|`param4`|number|4th parameter of the event.
+|`param5`|number|5th parameter of the event.
 
 ## Return Values
 This function returns a native-action.

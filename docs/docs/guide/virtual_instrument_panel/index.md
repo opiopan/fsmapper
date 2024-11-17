@@ -1,5 +1,6 @@
 ---
-sidebar_position: 5
+id: vip_index
+sidebar_position: 1
 ---
 
 # Virtual Instrument Panel
@@ -33,7 +34,8 @@ The virtual instrument panel comprises a combination of three hierarchical objec
     Holds the content displayed on the **Viewport** and handles touch interactions. Multiple **View**s can belong to a **Viewport**, but only one of them is displayed or receives touch events, referred to as the **current View**.
 
 - **View Element:**<br/>
-    A sub-component of the **View**, designed to simplify the rendering process and touch interactions. The MSFS's instrument window that pops out with **`[Right Alt]`** + **`[Mouse Click]`** can also serve as a **View Element** within the configuration of the **View**.
+    A sub-component of the **View**, designed to simplify the rendering process and touch interactions. 
+    Additionally, there are **View Element** objects designed specifically to include pop-out instruments windows from MSFS or exported instruments from DCS as part of a view’s components.
 
 As an example, in [this sample script](/samples/a32nx), the relationships between each object will be explained.
 
@@ -57,7 +59,7 @@ and the [`CapturedWindow`](/libs/mapper/CapturedWindow) object, treating windows
 
 Given that operational changes often reflect visually, such as indicator lamps on buttons, [`OperableArea`](/libs/mapper/OperableArea) and [`Canvas`](/libs/mapper/Canvas) commonly overlap as illustrated above.
 
-Please focus on the upper ECAM display placed in the view as a [`CapturedWindow`](/libs/mapper/CapturedWindow). 
+Focus on the upper ECAM display placed in the view as a [`CapturedWindow`](/libs/mapper/CapturedWindow). 
 Notice that unlike when popping out a window in FS2020, the title bar and window frame are hidden, seamlessly integrating into the instrument panel.
 This illustrates how fsmapper actively manages the state of windows from other processes, captured as CapturedWindows, enhancing their utility as components within the view.
 
@@ -68,7 +70,10 @@ This hook enables the replacement of message response processing, alongside [hoo
 It seems that pop-out windows of Microsoft Flight Simulator 2020 require this special treatment; otherwise, it's not possible to control the appearance, position, and size of the window as intended without these measures.
 :::
 
-The conceptual explanation of **Viewport**, **View**, and **View Elements** concludes here, and the explanation will now focus on how to define them in Lua scripts.
+The example above illustrates a virtual instrument panel for Microsoft Flight Simulator, composed of three types of view elements, [`OperableArea`](/libs/mapper/OperableArea/), [`Canvas`](/libs/mapper/Canvas/), and [`CapturedWindow`](/libs/mapper/CapturedWindow/). However, fsmapper also provides another type of view element called [`CapturedImage`](/libs/mapper/CapturedImage/). This view element is intended for use with DCS World, where instruments cannot be popped out as separate windows. For more details, see the [**How to integrate DCS instruments**](/guide/virtual_instrument_panel/dcs).
+
+## How to Define the Components
+In the previous section, a conceptual overview of **Viewport**, **View**, and **View Element** is provided. In this section, we will focus on how to define these components within a Lua script.
 
 ### Viewport
 The definition of a **Viewport** is accomplished by creating a [`Viewport`](/libs/mapper/Viewport) object using [`mapper.viewport()`](/libs/mapper/mapper_viewport). 
@@ -138,7 +143,7 @@ local canvas = mapper.view_elements.canvas{
 
 The creation of [`CapturedWindow`](/libs/mapper/CapturedWindow) objects is done using [`mapper.view_elements.captured_window()`](/libs/mapper/mapper_view_elements_captured_window).
 The parameters involve specifying the name displayed on the dashboard and the title text of the window to capture. 
-Refer to the [**Handle Popped-out Windows**](#handle-poped-out-windows) for related information.
+Refer to the [**Handle Popped-out Windows**](#handle-popped-out-windows) for related information.
 
 ```lua
 local captured_window = mapper.view_elements.captured_window{
@@ -146,6 +151,9 @@ local captured_window = mapper.view_elements.captured_window{
     window_title="AS1000_PFD"
 }
 ```
+
+For details on creating a [`CapturedImage`](/libs/mapper/CapturedImage/) object, refer to the [**How to integrate DCS instruments**](/guide/virtual_instrument_panel/dcs).
+
 ### View
 **Views** are defined using the [`register_view()`](/libs/mapper/Viewport/Viewport-register_view) method of the [`Viewport`](/libs/mapper/Viewport) object. Parameters include the name of the view (`name`), a list of view elements comprising the view (`elements`), and associated [**Event-Action mappings**](/guide/event-action-mapping) for the view (`mappings`). Often, a background image (`background`) is specified as the base for the view.
 
@@ -194,7 +202,7 @@ In fsmapper, users can define coordinate systems for each space with a nested st
     The interpretation of parameters `x`, `y`, `width`, and `height` of each element in the array specified in [`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view) is interpreted by this coordinate system.
 
 - **Canvas Space:**<br/>
-    The coordinate system of th canvas is determined during [**Canvas**](/libs/mapper/Canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext/#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
+    The coordinate system of the canvas is determined during [**Canvas**](/libs/mapper/Canvas) object [creation](#view-element) and affects general drawing operations on the canvas. The meaning of parameters specifying the position and length in each [rendering context's methods](/libs/graphics/RenderingContext/#methods) passed as arguments to the [renderer](/libs/mapper/RENDER) is determined by this coordinate system.
 
 The specifics of how these coordinate systems are determined will be explained further in subsequent sections.
 
@@ -233,16 +241,17 @@ The method for specifying which coordinate system type to use varies significant
     Note that both specifications allow for different aspect ratios compared to the parent space. For more details, refer to the [**Alignment**](#allignment) section.
 
 ### Allignment
-As mentioned earlier, the aspect ratio of the viewport's active area, view, and canvas can be chosen to be different from the aspect ratio at the time of their placeholder definition.
+As mentioned earlier, the aspect ratio of the viewport's active area, view, and [`Canvas`](/libs/mapper/Canvas/) can be chosen to be different from the aspect ratio at the time of their placeholder definition.
+Additionally, since a [`CapturedImage`](/libs/mapper/CapturedImage/) object can define the rectangle of the image it displays independently, it may differ in aspect ratio from the placeholder.
 For instance, when defining a viewport to occupy the entire 16:9 display but intending to display a view designed with a 4:3 aspect ratio for a virtual instrument panel, situations like these emerge.
 
-Placeholder for each object and the functions it defines are shown below.
+The placeholder for each object and the functions it defines are shown below.
 
 |Object|Placefolder|Function to be defined|
 |---|---|---|
 |Viewport's active area|Viewport|[`mapper.viewport()`](/libs/mapper/mapper_viewport)
 |View|Viewport's active area|[`mapper.viewport()`](/libs/mapper/mapper_viewport)
-|Canvas|View element region|[`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
+|[`Canvas`](/libs/mapper/Canvas/)<br/>[`CapturedImage`](/libs/mapper/CapturedImage/)|View element region|[`Viewport:register_view()`](/libs/mapper/Viewport/Viewport-register_view)
 
 When specifying different aspect ratios, the positioning of the object can be defined using the following parameters at the time of each object definition.
 
@@ -276,19 +285,20 @@ viweport_r= mapper.viewport{
 ## Z-order
 The z-order of objects related to the display content of a view is presented here. It indicates the sequence in which objects are displayed when they overlap, determining which object is brought to the foreground.
 
-Objects related to the view's display consist of three types: [`Canvas`](/libs/mapper/Canvas) view elements, [`CapturedWindow`](/libs/mapper/CapturedWindow) view elements, and the [background image of the view](#view).
-These three types of objects have a defined order, and they are rendered from the foreground in the following sequence.
+Objects related to the view's display consist of four types: [`Canvas`](/libs/mapper/Canvas) view elements, [`CapturedWindow`](/libs/mapper/CapturedWindow) view elements, [`CapturedImage`](/libs/mapper/CapturedImage/) view element, and the [background image of the view](#view).
+These four types of objects have a defined order, and they are rendered from the foreground in the following sequence.
 
 1. Canvas view elements
 2. Background image of the view
-3. CapturedWindow view elements
+3. CapturedImage view elements
+4. CapturedWindow view elements
 
 The ordering of same types of view elements reflects the sequence specified in the `elements` parameter during [view definition](#view).
 The element positioned at the beginning of the array appears in the forefront of the view.
 
 :::warning Note
-Note that the CapturedWindow view element appears behind the view's background image. Adjust the alpha value to a lower setting for the area corresponding to the placement of the CapturedWindow within the view's background image to ensure transparency for the underlying CapturedWindow. <br/>
-Especially for CapturedWindows targeting pop-out instrument windows in Microsoft Flight Simulator 2020 with touch panel functionality such as Garmin G3X, an alpha value of 0 is necessary. As per Windows specifications, if a Layered Window has an alpha value other than 0 in the foreground, it won't receive touch or mouse-related messages.
+Note that the CapturedWindow view element and the CapturedImage view element appears behind the view's background image. Adjust the alpha value to a lower setting for the area corresponding to the placement of the CapturedWindow or CapturedImage within the view's background image to ensure transparency for the underlying CapturedWindow. <br/>
+Especially for CapturedWindows targeting pop-out instrument windows in Microsoft Flight Simulator with touch panel functionality such as Garmin G3X, an alpha value of 0 is necessary. As per Windows specifications, if a Layered Window has an alpha value other than 0 in the foreground, it won't receive touch or mouse-related messages.
 :::
 
 ## Render on the View
@@ -349,19 +359,19 @@ As explained in the [**View Element**](#view-element), to handle touch interacti
 For each OperableArea object, you can individually set the types of touch actions to recognize.
 This is determined by the parameters you specify in [`mapper.view_elements.operable_area()`](/libs/mapper/mapper_view_elements_operable_area).
 
-Please specify the event ID corresponding to the supported action alongside the parameter for the action you want to support when detected.
+Specify the event ID corresponding to the supported action alongside the parameter for the action you want to support when detected.
 
 |Key|Type|Description|
 |---|----|-----------|
-|event_tap|numeric|Specify the Event ID to be triggered upon detecting a tap action
-|event_flick_up|numeric|Specify the Event ID to be triggered upon detecting an upward flick action
-|event_flick_down|numeric|Specify the Event ID to be triggered upon detecting a downward flick action
-|event_flick_right|numeric|Specify the Event ID to be triggered upon detecting a rightward flick action
-|event_flick_left|numeric|Specify the Event ID to be triggered upon detecting a leftward flick action
-|event_rotate_clockwise|numeric|**CURRENTRY NOT IMPLEMENTED**
-|event_rotate__counterclockwise|numeric|**CURRENTRY NOT IMPLEMENTED**
+|event_tap|number|Specify the Event ID to be triggered upon detecting a tap action
+|event_flick_up|number|Specify the Event ID to be triggered upon detecting an upward flick action
+|event_flick_down|number|Specify the Event ID to be triggered upon detecting a downward flick action
+|event_flick_right|number|Specify the Event ID to be triggered upon detecting a rightward flick action
+|event_flick_left|number|Specify the Event ID to be triggered upon detecting a leftward flick action
+|event_rotate_clockwise|number|**CURRENTRY NOT IMPLEMENTED**
+|event_rotate__counterclockwise|number|**CURRENTRY NOT IMPLEMENTED**
 
-## Handling Poped out Windows {#handle-poped-out-windows}
+## Handling Popped out Windows {#handle-popped-out-windows}
 For integrating popped-out instrument windows of a flight simulator into the virtual instrument window, define a [`CapturedWindow`](/libs/mapper/CapturedWindow) view element corresponding to the area where the popped-out window should be placed.
 If a [**Viewport**](#viewport) containing a [**View**](#view) with [`CapturedWindow`](/libs/mapper/CapturedWindow) placements is present, calling [`mapper.start_viewports()`](/libs/mapper/mapper_start_viewports) won’t immediately display the view. Instead, a list of defined [`CapturedWindow`](/libs/mapper/CapturedWindow) elements will appear on the left side of the dashboard as shown below.
 

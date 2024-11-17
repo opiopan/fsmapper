@@ -1,0 +1,8 @@
+{
+    "label": "Virtual Instrument Panel",
+    "position": 5,
+    "link": {
+        "type": "doc",
+        "id": "vip_index"
+    }
+}

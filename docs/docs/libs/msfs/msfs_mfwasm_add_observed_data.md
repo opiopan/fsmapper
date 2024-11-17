@@ -22,10 +22,10 @@ If you use this function, you need to have [**MobiFlight WASM Module**](https://
 ### Observed Data Definition
 |Key|Type|Description|
 |---|----|-----------|
-|`event`|numeric|[Event ID](/guide/event-action-mapping#event) for the event triggered when the observed data changes
+|`event`|number|[Event ID](/guide/event-action-mapping#event) for the event triggered when the observed data changes
 |`rpn`|string|[RPN](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) expression representing the observed data
-|`initial_value`|numeric|The initial value of the observed data.<br/>fsmapper trigers an event with the initial value as the [Event Value](/guide/event-action-mapping#event).<br/>This parameter is optional. The default is `0`.
-|`epsilon`|numeric|If the change in the observed data does not exceed this value, no event will be triggered. Choosing an appropriate value helps prevent unnecessary event generation, reducing system load.<br/>This parameter is optional. The default is `0`
+|`initial_value`|number|The initial value of the observed data.<br/>fsmapper trigers an event with the initial value as the [Event Value](/guide/event-action-mapping#event).<br/>This parameter is optional. The default is `0`.
+|`epsilon`|number|If the change in the observed data does not exceed this value, no event will be triggered. Choosing an appropriate value helps prevent unnecessary event generation, reducing system load.<br/>This parameter is optional. The default is `0`
 
 
 ## Return Values

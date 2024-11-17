@@ -25,8 +25,8 @@ This function is recommended to be replaced with [`msfs.mfwasm.add_observed_data
 |-|-|-|
 |`name`|string|Name of [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) for observing.<br/>This parameter is required.
 |`unit`|string|[Unit](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variable_Units.htm) of [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) for observing.<br/>This parameter is required.
-|`event`|numeric|[Event ID](/guide/event-action-mapping#event) that occurs when the observed [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) changes.<br/>This parameter is required.
-|`epsilon`|numeric|If the change in the observed [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) does not exceed this value, no event will be triggered.<br/>Choosing an appropriate value helps prevent unnecessary event generation, reducing system load.<br/>This parameter is optional. The default is `0`.
+|`event`|number|[Event ID](/guide/event-action-mapping#event) that occurs when the observed [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) changes.<br/>This parameter is required.
+|`epsilon`|number|If the change in the observed [SimVar](https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Simulation_Variables.htm) does not exceed this value, no event will be triggered.<br/>Choosing an appropriate value helps prevent unnecessary event generation, reducing system load.<br/>This parameter is optional. The default is `0`.
 
 
 ## Return Values

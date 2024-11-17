@@ -19,7 +19,7 @@ The [`mapper.device()`](/libs/mapper/mapper_device) function takes an associativ
 |---|----|-----------|
 |`name`|string|The product name of device.<br/>Exclusive with other keys.
 |`guid`|string|The GUID of device.<br/>Exclusive with other keys.
-|`index`|numeric|The index value within the list of DirectInput game devices managed by Windows.<br/>Exclusive with other keys.<br/>***NOT RECOMMENDED AT ALL***
+|`index`|number|The index value within the list of DirectInput game devices managed by Windows.<br/>Exclusive with other keys.<br/>***NOT RECOMMENDED AT ALL***
 
 ### options Parameter
 The [`mapper.device()`](/libs/mapper/mapper_device) function takes an associative array type table with the following keys specified as the `options` parameter.
@@ -36,7 +36,7 @@ The [`mapper.device()`](/libs/mapper/mapper_device) function takes an associativ
 |`name`|string|The name assigned to this virtual [**Device Unit**](/guide/device/#device-unit)
 |`yaxis`|string|The [**Device Unit**](/guide/device/#device-unit) name serving as the source for the virtual POV's Y-axis
 |`xaxis`|string|The [**Device Unit**](/guide/device/#device-unit) name serving as the source for the virtual POV's X-axis
-|`resolution`|numeric|The resolution of the POV, indicating the number of directions it can represent.<br/>The default is 4
+|`resolution`|number|The resolution of the POV, indicating the number of directions it can represent.<br/>The default is 4
 |`disable_source`|boolean|If set to `true`, it prevents events from the `xaxis` and `yaxis` specified Device Units.<br/> The default is `false`.
 
 ## Device Units

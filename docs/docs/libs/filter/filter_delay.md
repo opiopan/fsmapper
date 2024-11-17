@@ -12,7 +12,7 @@ This function creates a native-action that delays the execution of action.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`rel_time`|numeric|Specifies the time in milliseconds to delay the execution of the action.
+|`rel_time`|number|Specifies the time in milliseconds to delay the execution of the action.
 |`action`|[Action](/guide/event-action-mapping#action)|Specifies the action to be executed with a delayed execution.
 
 

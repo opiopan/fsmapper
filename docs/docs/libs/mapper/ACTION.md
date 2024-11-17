@@ -1,5 +1,5 @@
 ---
-sidebar_position: 33
+sidebar_position: 100
 ---
 
 # ACTION()
@@ -11,7 +11,7 @@ Action function defined by the user.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`event_id`|numeric|Event ID
+|`event_id`|number|Event ID
 |`value`|Depend on the event type|Event Value
 
 

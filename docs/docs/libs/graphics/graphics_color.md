@@ -14,10 +14,10 @@ This function creates a solid color brush object.
 |Parameter|Type|Description|
 |-|-|-|
 |`color_name`|string|Web standard color specification.<br/>It can be done in the form of [color name similar to CSS](https://www.w3.org/wiki/CSS/Properties/color/keywords) such as `'Red'`, or hexadecimal expression such as `'#ff0000'`.
-|`r`|numeric|Red component specified as an integer between `0` and `255`.
-|`g`|numeric|Green component specified as an integer between `0` and `255`.
-|`b`|numeric|Blue component specified as an integer between `0` and `255`.
-|`opacity`|numeric|Opacity specified as an numeric between '0' and '1'.<br/>The default is `1`.
+|`r`|number|Red component specified as an integer between `0` and `255`.
+|`g`|number|Green component specified as an integer between `0` and `255`.
+|`b`|number|Blue component specified as an integer between `0` and `255`.
+|`opacity`|number|Opacity specified as an number between '0' and '1'.<br/>The default is `1`.
 
 
 ## Return Values

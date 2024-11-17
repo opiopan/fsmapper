@@ -11,7 +11,7 @@ sidebar_position: 3
 <img alt="a32nx.lua" src={require('./images/a32nx.jpg').default} width="400" align="right"/>
 
 This script was written for [FlyByWire A32NX](https://flybywiresim.com).<br/>
-This is more complex than the above two scripts. This script provides the integrated virtual cockpit which contains physical operable units such as buttons and knobs, touch controllable units on the monitor, and poped out window contents such as PFD.<br/>
+This is more complex than the above two scripts. This script provides the integrated virtual cockpit which contains physical operable units such as buttons and knobs, touch controllable units on the monitor, and popped out window contents such as PFD.<br/>
 This script includes several [sub-module scripts](https://github.com/opiopan/fsmapper/tree/main/samples/practical/a32nx), and it also uses [several bitmap images](https://github.com/opiopan/fsmapper/tree/main/samples/practical/assets) to render each operable units.
 
 
@@ -22,7 +22,7 @@ In this script, you can see the following example usage of fsmapper in addition 
 
 This script defines following 6 views. Every view consist a MSFS popped out instrument window and self rendered operable gauges.
 
-|| Poped out instruments | Self rendered operable units
+|| Popped out instruments | Self rendered operable units
 |-|-----------------|----------------------
 |1| PFD       | FCU display<br/>buttons on the FCU<br/>BARO indicator
 |2| ND               | buttons and toggle switches on the EFIS control unit<br/>auto brake buttons<br/>etc

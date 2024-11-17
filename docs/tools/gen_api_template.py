@@ -10,6 +10,8 @@ libs = [
         'variables': [
             ('mapper.script_path', 'Path of the configuration script'),
             ('mapper.script_dir', 'Folder path where the configuration script is located'),
+            ('mapper.profile_dir', 'User profile folder path'),
+            ('mapper.saved_games_dir', 'Saved games folder path'),
             ('mapper.events', 'System event table'),
         ],
         'functions': [
@@ -18,7 +20,7 @@ libs = [
             ('mapper.delay()', 'Deferred function execution', 'rel_time, func'),
             ('mapper.register_event()', 'Register an event', 'name'),
             ('mapper.unregister_event()', 'Unregister an event', 'event_id'),
-            ('mapper.get_event_name()', 'Get the name assinged to an event', 'evet_id'),
+            ('mapper.get_event_name()', 'Get the name assigned to an event', 'event_id'),
             ('mapper.raise_event()', 'Raise an event', 'event_id, value'),
             ('mapper.set_primary_mappings()', 'Set primary Event-Action mapping definitions', 'mapping_defs'),
             ('mapper.add_primary_mappings()', 'Add primary Event-Action mapping definitions', 'mapping_defs'),
@@ -29,11 +31,12 @@ libs = [
             ('mapper.view_elements.operable_area()', 'Create a OperableArea view element object', 'param_table'),
             ('mapper.view_elements.canvas()', 'Create a Canvas view element object', 'param_table'),
             ('mapper.view_elements.captured_window()', 'Create a CapturedWindow view element object', 'param_table'),
+            ('mapper.window_image_streamer()', 'Create a window image streamer object', 'param_table'),
             ('mapper.start_viewports()', 'Start all viewports'),
             ('mapper.stop_viewports()', 'Stop all viewports'),
             ('mapper.reset_viewports()', 'Stop all viewports then unregister all viewports'),
             ('mapper.virtual_joystick()', 'Create vJoy feeder object', 'devid'),
-            ('mapper.keystroke()', 'Create Keystroke object for keybord emulation', 'param_table'),
+            ('mapper.keystroke()', 'Create Keystroke object for keyboard emulation', 'param_table'),
             ('mapper.enumerate_display_info()', 'Enumerate information for all displays'),
         ],
         'objects': [
@@ -68,11 +71,11 @@ libs = [
             },
             {
                 'name': 'OperableArea',
-                'description': 'Object Representing a operable area on a view',
+                'description': 'Object representing a operable area on a view',
             },
             {
                 'name': 'Canvas',
-                'description': 'Object Representing a drawable area on a view',
+                'description': 'Object representing a drawable area on a view',
                 'properties': [
                     ('Canvas.value', 'The value associated with the canvas'),
                 ],
@@ -89,6 +92,17 @@ libs = [
                 'description': 'Object representing a captured window placed on a view',
             },
             {
+                'name': 'WindowImageStreamer',
+                'description': 'Object for capturing window images in real-time',
+                'methods': [
+                    ('WindowsImageStreamer:create_view_element()', 'Create a view element to show a portion of captured image', 'param_table'),
+                ],
+            },
+            {
+                'name': 'CapturedImage',
+                'description': 'Object for displaying images captured by the WindowImageStreamer on the view',
+            },
+            {
                 'name': 'vJoy',
                 'description': 'Object representing a virtual joystick',
                 'methods': [
@@ -102,25 +116,25 @@ libs = [
                 'description': 'Object representing an operable unit of the virtual joystick',
                 'methods': [
                     ('vJoyUnit:set_value()', 'Set a value for the operable unit', 'value'),
-                    ('vJoyUnit:value_setter()', 'Create a  native-actionn to set a valuev for the operable unit', '[value]'),
+                    ('vJoyUnit:value_setter()', 'Create a  native-actionn to set a value for the operable unit', '[value]'),
                 ],
             },
             {
                 'name': 'Keystroke',
-                'description': 'Object Representing a keystroke sequense to emulate keyboard',
+                'description': 'Object Representing a keystroke sequence to emulate keyboard',
                 'properties': [
                     ('Keystroke.duration', 'The duration of key press'),
                     ('Keystroke.interval', 'The interval between keystrokes'),
                 ],
                 'methods': [
-                    ('Keystroke:synthesize()', 'Synthesize keystroke sequense held by this object'),
-                    ('Keystroke:synthesizer()', 'Create a  native-action to synthesize keystroke sequense hold by this object'),
+                    ('Keystroke:synthesize()', 'Synthesize keystroke sequence held by this object'),
+                    ('Keystroke:synthesizer()', 'Create a  native-action to synthesize keystroke sequence hold by this object'),
                 ],
             },
         ],
         'callbacks': [
-            ('ACTION()', 'Imprementation of an action by user', 'event_id, value'),
-            ('RENDER()', 'Imprementation of a renderer for a Canvas view element by user', 'context, value'),
+            ('ACTION()', 'Implementation of an action by user', 'event_id, value'),
+            ('RENDER()', 'Implementation of a renderer for a Canvas view element by user', 'context, value'),
         ],
     },
     {

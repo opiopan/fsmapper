@@ -19,9 +19,9 @@ This function creates a system font object representing the fonts registered in 
 |Key|Type|Description|
 |-|-|-|
 |`family_name`|string|The name of the font family. This parameter is required.
-|`weight`|numeric|A value that indicates the font weight. A numeric value from 1 to 999 can be specified for this parameter.<br/>The default value is 400.
+|`weight`|number|A value that indicates the font weight. A numeric value from 1 to 999 can be specified for this parameter.<br/>The default value is 400.
 |`style`|string|Specifies the font style as either `normal`, `oblique`, or `italic`.<br/>The default is `normal`.
-|`height`|numeric|The logical size of the font in the logical unit of the [rendering context](/guide/graphics#rendering-context).<br/>When the [`SystemFont`](/libs/graphics/SystemFont) object returned by this function is set on a rendering context associated with a bitmap, it is interpreted in pixel units. Conversely, when set on a rendering context associated with a view, it is interpreted according to [the coordinate system of the Canvas view element](/guide/virtual_instrument_panel#coordinate-system). <br/>This parametaer is required.
+|`height`|number|The logical size of the font in the logical unit of the [rendering context](/guide/graphics#rendering-context).<br/>When the [`SystemFont`](/libs/graphics/SystemFont) object returned by this function is set on a rendering context associated with a bitmap, it is interpreted in pixel units. Conversely, when set on a rendering context associated with a view, it is interpreted according to [the coordinate system of the Canvas view element](/guide/virtual_instrument_panel#coordinate-system). <br/>This parametaer is required.
 
 
 ## Return Values

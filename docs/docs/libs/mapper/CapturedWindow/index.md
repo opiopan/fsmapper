@@ -14,4 +14,4 @@ CapturedWindow object representing a captured window placed on a view.
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)
 - [View Element](/guide/virtual_instrument_panel#view-element)
-- [Handle Poped out Windows](/guide/virtual_instrument_panel#handle-poped-out-windows)
+- [Handle Popped out Windows](/guide/virtual_instrument_panel#handle-popped-out-windows)

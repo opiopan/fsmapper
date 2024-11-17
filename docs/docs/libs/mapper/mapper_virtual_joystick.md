@@ -15,7 +15,7 @@ If you use this function, you need to have [**vJoy**](https://sourceforge.net/pr
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`devid`|numeric|Device ID of the vJoy device.
+|`devid`|number|Device ID of the vJoy device.
 
 
 ## Return Values

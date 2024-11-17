@@ -12,7 +12,7 @@ This property is not able to be update.
 By setting this View ID as the current view, you can hide the viewport.
 
 ## Type
-numeric
+number
 
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)

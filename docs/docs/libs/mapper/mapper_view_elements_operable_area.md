@@ -19,14 +19,14 @@ This function creates a [`OperableArea`](/libs/mapper/OperableArea) view element
 |Key|Type|Description|
 |-|-|-|
 |reaction_color|[`Color`](/libs/graphics/Color) |The region of this view element is filled with the specified color by this parameter while being touched.<br/>The default is the color created by `mapper.color('Cyan', 0.3)`
-|round_ratio|numeric|The ratio to the short side of the corner radius of the rectangle. This parameter is specified when the shape of the filled area, while being touched, is a rounded rectangle instead of a rectangle.<br/>When specifying 0.5 and the width and height of the view element are equal, the filled area becomes a circle.<br/>The default is `0`.
-|event_tap|numeric|Specifies the Event ID to be triggered upon detecting a tap action.
-|event_flick_up|numeric|Specifies the Event ID to be triggered upon detecting a upward flick action.
-|event_flick_down|numeric|Specifies the Event ID to be triggered upon detecting downward flick action.
-|event_flick_right|numeric|Specifies the Event ID to be triggered upon detecting rightward flick action.
-|event_flick_left|numeric|Specifies the Event ID to be triggered upon detecting leftward flick action.
-|event_rotate_clockwise|numeric|**CURRENTRY NOT IMPLEMENTED**<br/>Specifies the Event ID to be triggered upon detecting clockwise rotation.
-|event_rotate_counterclockwise|numeric|**CURRENTRY NOT IMPLEMENTED**<br/>Specifies the Event ID to be triggered upon detecting counterclockwise rotation.
+|round_ratio|number|The ratio to the short side of the corner radius of the rectangle. This parameter is specified when the shape of the filled area, while being touched, is a rounded rectangle instead of a rectangle.<br/>When specifying 0.5 and the width and height of the view element are equal, the filled area becomes a circle.<br/>The default is `0`.
+|event_tap|number|Specifies the Event ID to be triggered upon detecting a tap action.
+|event_flick_up|number|Specifies the Event ID to be triggered upon detecting a upward flick action.
+|event_flick_down|number|Specifies the Event ID to be triggered upon detecting downward flick action.
+|event_flick_right|number|Specifies the Event ID to be triggered upon detecting rightward flick action.
+|event_flick_left|number|Specifies the Event ID to be triggered upon detecting leftward flick action.
+|event_rotate_clockwise|number|**CURRENTRY NOT IMPLEMENTED**<br/>Specifies the Event ID to be triggered upon detecting clockwise rotation.
+|event_rotate_counterclockwise|number|**CURRENTRY NOT IMPLEMENTED**<br/>Specifies the Event ID to be triggered upon detecting counterclockwise rotation.
 
 
 ## Return Values

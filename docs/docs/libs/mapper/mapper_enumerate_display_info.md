@@ -15,10 +15,10 @@ The number of elements in the array corresponds to the number of displays connec
 
 |Key|Type|Description|
 |---|----|-----------|
-|x|numeric|The x-coordinate value of the top-left corner of the display in screen space
-|y|numeric|The y-coordinate value of the top-left corner of the display in screen space
-|width|numeric|The width of the display
-|height|numeric|The height of the display
+|x|number|The x-coordinate value of the top-left corner of the display in screen space
+|y|number|The y-coordinate value of the top-left corner of the display in screen space
+|width|number|The width of the display
+|height|number|The height of the display
 
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)

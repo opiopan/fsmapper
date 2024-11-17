@@ -40,7 +40,7 @@ The definition of segments is done using one of the following tables.
     |Key|Type|Description|
     |---|----|-----------|
     |`to`|VEC2D|End point of the arc. The starting point of the arc is the endpoint of the previous segment. If it's the first segment, the `from` of the figure becomes the starting point.
-    |`radius`|numeric|The radius of the arc.
+    |`radius`|number|The radius of the arc.
     |`direction`|string|A value that specifies whether the arc sweep is clockwise or counterclockwise, such as `'clockwise'` or `'counterclockwise'`.
     |`arc_type`|string|A value that specifies whether the given arc is larger than 180 degrees, such as `'large'` or `'small'`
 

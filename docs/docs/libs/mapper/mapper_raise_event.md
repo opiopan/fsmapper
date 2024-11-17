@@ -12,7 +12,7 @@ This function raises a event.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`event_id`|numeric|Specifies the event ID of the event to raise.|
+|`event_id`|number|Specifies the event ID of the event to raise.|
 |`value`|Any type|Specifies the value passed to the action.|
 
 

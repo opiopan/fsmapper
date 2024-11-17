@@ -10,7 +10,7 @@ View ID of the current view.<br/>
 By setting a View ID to this property, you can change the current view.
 
 ## Type
-numeric
+number
 
 ## See Also
 - [Virtual Instrument Panel](/guide/virtual_instrument_panel)

@@ -12,8 +12,8 @@ This method sends a value to output unit.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`unit_id`|numeric|Output device unit ID|
-|`value`|numeric|Value to be sent|
+|`unit_id`|number|Output device unit ID|
+|`value`|number|Value to be sent|
 
 
 ## Return Values

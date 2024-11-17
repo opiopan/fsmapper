@@ -12,7 +12,7 @@ This function changes the current view.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`view_id`|numeric|View ID of the view to be set as the current view.
+|`view_id`|number|View ID of the view to be set as the current view.
 
 ## Return Values
 This function doesn't return any value.

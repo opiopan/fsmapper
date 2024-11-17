@@ -10,7 +10,7 @@ The time in milliseconds to hold the key down before releasing it.
 
 
 ## Type
-numeric
+number
 
 ## See Also
 - [Keystroke emulation](/guide/input_emulation/#keystroke-emulation)

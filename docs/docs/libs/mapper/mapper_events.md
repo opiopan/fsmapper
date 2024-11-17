@@ -14,7 +14,7 @@ Associative array table with the following keys.
 
 |Key|Type|Description|
 |---|----|-----------|
-|`change_aircraft`|numeric|The event ID for the event that occurs when fsmapper connects to the flight simulator or the connection is closed, or when the selected aircraft changes.<br/>The event value for this event is a associative array table that holds the simulator type and aircraft name. For details, refer to the [**SimAircraft Table**](#simaircraft-table).
+|`change_aircraft`|number|The event ID for the event that occurs when fsmapper connects to the flight simulator or the connection is closed, or when the selected aircraft changes.<br/>The event value for this event is a associative array table that holds the simulator type and aircraft name. For details, refer to the [**SimAircraft Table**](#simaircraft-table).
 
 ## Event Value Types
 

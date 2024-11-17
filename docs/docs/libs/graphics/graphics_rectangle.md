@@ -13,19 +13,19 @@ This function creates a [`SimpleGeometry`](/libs/graphics/SimpleGeometry) object
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|
-|`x`|numeric|X-coordinate of the top-left corner of the rectangle.
-|`y`|numeric|Y-coordinate of the top-left corner of the rectangle.
-|`width`|numeric|Width of the rectangle.
-|`heigth`|numeric|Height of the rectangle.
+|`x`|number|X-coordinate of the top-left corner of the rectangle.
+|`y`|number|Y-coordinate of the top-left corner of the rectangle.
+|`width`|number|Width of the rectangle.
+|`heigth`|number|Height of the rectangle.
 
 
 ## Parameters Table
 |Key|Type|Description|
 |-|-|-|
-|`x`|numeric|X-coordinate of the top-left corner of the rectangle.
-|`y`|numeric|Y-coordinate of the top-left corner of the rectangle.
-|`width`|numeric|Width of the rectangle.
-|`heigth`|numeric|Height of the rectangle.
+|`x`|number|X-coordinate of the top-left corner of the rectangle.
+|`y`|number|Y-coordinate of the top-left corner of the rectangle.
+|`width`|number|Width of the rectangle.
+|`heigth`|number|Height of the rectangle.
 
 
 ## Return Values

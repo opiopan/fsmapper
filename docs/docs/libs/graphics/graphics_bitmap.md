@@ -14,8 +14,8 @@ There are two methods to generate a [`Bitmap`](/libs/graphics/Bitmap) object, on
 |Parameter|Type|Description|
 |-|-|-|
 |`path`|string|Path of the bitmap file.
-|`width`|numeric|Width of the bitmap
-|`height`|numeric|Width of the bitmap
+|`width`|number|Width of the bitmap
+|`height`|number|Width of the bitmap
 
 
 ## Return Values

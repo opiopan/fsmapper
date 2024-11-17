@@ -6,7 +6,7 @@ sidebar_position: 3
 ```lua
 Keystroke:synthesize()
 ```
-This method synthesizes keystroke sequense held by this object.
+This method synthesizes keystroke sequence held by this object.
 
 ## Return Values
 This method doesn't return any value.

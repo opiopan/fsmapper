@@ -20,7 +20,7 @@ You can specify one or more conditions based on the increase or decrease of the 
 |Parameter|Type|Description|
 |-|-|-|
 |`condition`|string|Specifies the condition under which the `action` is called when the Event Value exceeds the threshold specified by `value` from which direction.<br/>`'exeeded'` represents the condition where the threshold is exceeded by an increase in the Event Value, and `'falled'` represents the condition where the threshold is exceeded by a decrease in the Event Value.<br/>This parameter is required.
-|`value`|numeric|Threshold for the condition that triggers the action.
+|`value`|number|Threshold for the condition that triggers the action.
 |`action`|[Action](/guide/event-action-mapping#action)|The action to be called when the condition is met.
 
 ## Return Values

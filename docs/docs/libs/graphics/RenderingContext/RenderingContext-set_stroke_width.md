@@ -12,7 +12,7 @@ This methods sets the value specified in the [`stroke_width`](/libs/graphics/Ren
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`width`|numeric|Specifies the value to set in the [`stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width) property.
+|`width`|number|Specifies the value to set in the [`stroke_width`](/libs/graphics/RenderingContext/RenderingContext_stroke_width) property.
 
 
 ## Return Values

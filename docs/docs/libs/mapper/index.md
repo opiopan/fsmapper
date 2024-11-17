@@ -12,6 +12,8 @@ It includes defining Event-Action mappings, opening devices, constructing elemen
 |-|-|
 |[```mapper.script_path```](/libs/mapper/mapper_script_path)|Path of the configuration script|
 |[```mapper.script_dir```](/libs/mapper/mapper_script_dir)|Folder path where the configuration script is located|
+|[`mapper.profile_dir`](/libs/mapper/mapper_profile_dir)|User profile folder path
+|[`mapper.saved_games_dir`](/libs/mapper/mapper_saved_games_dir)|Saved games folder path
 |[```mapper.events```](/libs/mapper/mapper_events)|System event table|
 
 ## Functions
@@ -50,10 +52,10 @@ It includes defining Event-Action mappings, opening devices, constructing elemen
 |[```CapturedWindow```](/libs/mapper/CapturedWindow)|Object representing a captured window placed on a view|
 |[```vJoy```](/libs/mapper/vJoy)|Object representing a virtual joystick|
 |[```vJoyUnit```](/libs/mapper/vJoyUnit)|Object representing an operable unit of the virtual joystick|
-|[```Keystroke```](/libs/mapper/Keystroke)|Object Representing a keystroke sequense to emulate keyboard|
+|[```Keystroke```](/libs/mapper/Keystroke)|Object Representing a keystroke sequence to emulate keyboard|
 
 ## User Defined Functions
 |Name|Description|
 |-|-|
-|[```ACTION()```](/libs/mapper/ACTION)|Imprementation of an action by user|
-|[```RENDER()```](/libs/mapper/RENDER)|Imprementation of a renderer for a Canvas view element by user|
+|[```ACTION()```](/libs/mapper/ACTION)|Implementation of an action by user|
+|[```RENDER()```](/libs/mapper/RENDER)|Implementation of a renderer for a Canvas view element by user|

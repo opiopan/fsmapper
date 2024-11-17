@@ -10,7 +10,7 @@ Opacity of the bitmap.
 
 
 ## Type
-numeric
+number
 
 ## See Also
 - [Bitmap](/guide/graphics#bitmap)

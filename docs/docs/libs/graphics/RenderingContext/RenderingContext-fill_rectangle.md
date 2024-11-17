@@ -11,10 +11,10 @@ This method fills a rectangular region using the brush set in the rendering cont
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`x`|numeric|X-coordinate of the top-left corner of the rectangle.
-|`y`|numeric|Y-coordinate of the top-left corner of the rectangle.
-|`width`|numeric|Width of the rectangle.
-|`heigth`|numeric|Height of the rectangle.
+|`x`|number|X-coordinate of the top-left corner of the rectangle.
+|`y`|number|Y-coordinate of the top-left corner of the rectangle.
+|`width`|number|Width of the rectangle.
+|`heigth`|number|Height of the rectangle.
 
 
 ## Return Values

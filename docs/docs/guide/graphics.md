@@ -25,7 +25,7 @@ The device context holds the following properties that influence the behavior of
 |Property|Type|Description|
 |--------|----|-----------|
 |`brush`|[`Brush`](#brush)|A brush refers to the color or pattern used for filling shapes or outlining their contours.
-|`stroke_width`|numeric|This is used as the width of lines when drawing the outlines of shapes.
+|`stroke_width`|number|This is used as the width of lines when drawing the outlines of shapes.
 |`opacity_mask`|[`Bitmap`](#bitmap)|This is the mask image used when drawing shapes. The final alpha value of the rendered result is a product of the alpha value specified in the `opacity_mask` and the bitmap provided.
 |`font`|[`Font`](#font)|This is the font object used for text rendering.
 
@@ -115,12 +115,12 @@ The parameters that can be specified for [`RenderingContext:draw_bitmap()`](/lib
 |Key|Type|Description|
 |---|----|-----------|
 |`bitmap`|[`Bitmap`](/libs/graphics/Bitmap)|**REQUIRED PARAMETER**<br/>The bitmap for drawing.
-|`x`|numeric|Draw the bitmap's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
-|`y`|numeric|Draw the bitmap's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
-|`width`|numeric|Perform horizontal scaling to match the bitmap's width to the specified value in the target space.The default is the bitmap's width.
-|`height`|numeric|Perform vertical scaling to match the bitmap's height to the specified value in the target space.The default is the bitmap's height.
-|`angle`|numeric|Rotate counterclockwise by the specified angle in degrees around the bitmap's origin.The default is `0`.
-|`scale`|numeric|The scaling factor.<br/>If `width` and `height` are specified together, the final scaling factor becomes the cumulative value.
+|`x`|number|Draw the bitmap's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
+|`y`|number|Draw the bitmap's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
+|`width`|number|Perform horizontal scaling to match the bitmap's width to the specified value in the target space.The default is the bitmap's width.
+|`height`|number|Perform vertical scaling to match the bitmap's height to the specified value in the target space.The default is the bitmap's height.
+|`angle`|number|Rotate counterclockwise by the specified angle in degrees around the bitmap's origin.The default is `0`.
+|`scale`|number|The scaling factor.<br/>If `width` and `height` are specified together, the final scaling factor becomes the cumulative value.
 
 Here's an example of a [`renderer`](/libs/mapper/RENDER) that displays a bitmap rotated by the canvas's `value` degrees and positioned at (100, 100) on the canvas at half its size.
 
@@ -212,7 +212,7 @@ The definition of segments is done using one of the following tables.
     |Key|Type|Description|
     |---|----|-----------|
     |`to`|VEC2D|End point of the arc. The starting point of the arc is the endpoint of the previous segment. If it's the first segment, the `from` of the figure becomes the starting point.
-    |`radius`|numeric|The radius of the arc.
+    |`radius`|number|The radius of the arc.
     |`direction`|string|A value that specifies whether the arc sweep is clockwise or counterclockwise, such as `'clockwise'` or `'counterclockwise'`.
     |`arc_type`|string|A value that specifies whether the given arc is larger than 180 degrees, such as `'large'` or `'small'`
 
@@ -243,10 +243,10 @@ The parameters that can be specified for [`RenderingContext:fill_geometry()`](/l
 |Key|Type|Description|
 |---|----|-----------|
 |`geometry`|[`Geometry`](#geometry)|**REQUIRED PARAMETER**<br/>The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) or [`Path`](/libs/graphics/Path).
-|`x`|numeric|Draw the gemometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
-|`y`|numeric|Draw the geometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
-|`angle`|numeric|Rotate counterclockwise by the specified angle in degrees around the geometry's origin.The default is `0`.
-|`scale`|numeric|The scaling factor. The default is `1`.
+|`x`|number|Draw the gemometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
+|`y`|number|Draw the geometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
+|`angle`|number|Rotate counterclockwise by the specified angle in degrees around the geometry's origin.The default is `0`.
+|`scale`|number|The scaling factor. The default is `1`.
 
 The following is the code example for the canvas that draws the heading indicator needle with the geometry version under the [**Render on the View**](/guide/virtual_instrument_panel#render-on-the-view) heading.
 

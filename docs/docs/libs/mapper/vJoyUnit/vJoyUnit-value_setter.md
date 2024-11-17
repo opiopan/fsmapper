@@ -18,7 +18,7 @@ The values that can be configured for each unit are as follows.
 ## Parameters
 |Parameter|Type|Description|
 |-|-|-|
-|`value`|numeric|Value to be set for the unit.<br/>If this parameter is not specified, the event value is set to the unit.
+|`value`|number|Value to be set for the unit.<br/>If this parameter is not specified, the event value is set to the unit.
 
 ## Return Values
 This method returns a native-action.

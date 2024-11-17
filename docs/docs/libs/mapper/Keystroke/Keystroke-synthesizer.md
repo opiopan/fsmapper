@@ -6,7 +6,7 @@ sidebar_position: 4
 ```lua
 Keystroke:synthesizer()
 ```
-This method creates a  native-action to synthesize keystroke sequense hold by this object.
+This method creates a  native-action to synthesize keystroke sequence hold by this object.
 
 
 ## Return Values

@@ -9,7 +9,7 @@ const FeatureList = [
     imagesrc: 'img/touchscreen.webp',
     description: (
       <>
-        Seamlessly integrate Microsoft Flight Simulator’s pop-out instruments and 
+        Seamlessly integrate Microsoft Flight Simulator’s pop-out instruments or DCS World's exported instruments and 
         your own custom-drawn instruments using touchscreen devices. 
         Easily switch between multiple panels on the screen, 
         maximizing the use of small displays for a realistic and intuitive cockpit experience.
