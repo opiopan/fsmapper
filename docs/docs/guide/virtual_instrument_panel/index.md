@@ -92,7 +92,7 @@ local viewport2 = mapper.viewport{
     name = 'Viewport 2'
     diplayno = 3,
     x = 0.5, y = 0,
-    width = 0.5, y = 1,
+    width = 0.5, height = 1,
 }
 
 -- Pixel-based specification: 
@@ -102,7 +102,7 @@ local viewport3 = mapper.viewport{
     diplayno = 3,
     coordinate = 'absolute',
     x = 0, y = 0,
-    width = 100, y = 100,
+    width = 100, height = 100,
 }
 ```
 
@@ -239,9 +239,9 @@ The method for specifying which coordinate system type to use varies significant
     For choosing the absolute coordinate system, use the `logical_width` and `logical_height` parameters to specify the width and height as multiples of the unit length.
     For choosing the relative coordinate system, use the `aspect_ratio` parameter to specify the aspect ratio of the space.
 
-    Note that both specifications allow for different aspect ratios compared to the parent space. For more details, refer to the [**Alignment**](#allignment) section.
+    Note that both specifications allow for different aspect ratios compared to the parent space. For more details, refer to the [**Alignment**](#alignment) section.
 
-### Allignment
+### Alignment
 As mentioned earlier, the aspect ratio of the viewport's active area, view, and [`Canvas`](/libs/mapper/Canvas/) can be chosen to be different from the aspect ratio at the time of their placeholder definition.
 Additionally, since a [`CapturedImage`](/libs/mapper/CapturedImage/) object can define the rectangle of the image it displays independently, it may differ in aspect ratio from the placeholder.
 For instance, when defining a viewport to occupy the entire 16:9 display but intending to display a view designed with a 4:3 aspect ratio for a virtual instrument panel, situations like these emerge.
