@@ -35,6 +35,7 @@ It includes defining Event-Action mappings, opening devices, constructing elemen
 |[```mapper.view_elements.operable_area()```](/libs/mapper/mapper_view_elements_operable_area)|Create a OperableArea view element object|
 |[```mapper.view_elements.canvas()```](/libs/mapper/mapper_view_elements_canvas)|Create a Canvas view element object|
 |[```mapper.view_elements.captured_window()```](/libs/mapper/mapper_view_elements_captured_window)|Create a CapturedWindow view element object|
+|[`mapper.window_image_streamer()`](/libs/mapper/mapper_window_image_streamer)|Create a window image streamer object
 |[```mapper.start_viewports()```](/libs/mapper/mapper_start_viewports)|Start all viewports|
 |[```mapper.stop_viewports()```](/libs/mapper/mapper_stop_viewports)|Stop all viewports|
 |[```mapper.reset_viewports()```](/libs/mapper/mapper_reset_viewports)|Stop all viewports then unregister all viewports|
@@ -50,6 +51,8 @@ It includes defining Event-Action mappings, opening devices, constructing elemen
 |[```OperableArea```](/libs/mapper/OperableArea)|Object Representing a operable area on a view|
 |[```Canvas```](/libs/mapper/Canvas)|Object Representing a drawable area on a view|
 |[```CapturedWindow```](/libs/mapper/CapturedWindow)|Object representing a captured window placed on a view|
+|[`WindowImageStreamer`](/libs/mapper/WindowImageStreamer)|Object for capturing window images in real-time
+|[`CapturedImage`](/libs/mapper/CapturedImage)|Object for displaying images captured by the WindowImageStreamer on the view
 |[```vJoy```](/libs/mapper/vJoy)|Object representing a virtual joystick|
 |[```vJoyUnit```](/libs/mapper/vJoyUnit)|Object representing an operable unit of the virtual joystick|
 |[```Keystroke```](/libs/mapper/Keystroke)|Object Representing a keystroke sequence to emulate keyboard|
