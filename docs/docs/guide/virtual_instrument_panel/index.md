@@ -403,7 +403,7 @@ Unfortunately, despite not fitting either condition, capturing also fails for th
 When the window image capture fails, as shown in the image above, the icon image associated with the window is displayed on the button.
 :::
 
-### Avoiding touch problems of Microsoft Flight Simulator
+### Avoiding touch problems of MSFS
 It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation in Microsoft Flight Simulator 2020 or 2024. <br/>
 fsmapper provides a workaround solution for this problem. 
 You will be able to operate popped out windows with touch operation if those windows are managed as CapturedWindow view elements.
