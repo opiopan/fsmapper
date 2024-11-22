@@ -411,7 +411,7 @@ You will be able to operate popped out windows with touch operation if those win
 If you want to stop this workaround, specify the value as false for `avoid_touch_problems` parameter of [`mapper.view_elements.captured_window()`](/libs/mapper/mapper_view_elements_captured_window).
 
 :::info Note
-I don't know the true reason why touch operations are ignored by MSFS 2020 and 2024. However I assume that this problem is caused by the mechanism to recognize the mouse status change.
+I don't know the true reason why touch operations are ignored by MSFS 2020 or 2024. However I assume that this problem is caused by the mechanism to recognize the mouse status change.
 
 I assume that MSFS polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as `WM_LBUTTON_DOWN`. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br/>
 Mouse messages generated as a result of tapping are exactly this situation.
