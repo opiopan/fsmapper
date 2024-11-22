@@ -403,17 +403,17 @@ Unfortunately, despite not fitting either condition, capturing also fails for th
 When the window image capture fails, as shown in the image above, the icon image associated with the window is displayed on the button.
 :::
 
-### Avoiding touch problems of MSFS2020
-It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation in Microsoft Flight Simulator 2020. <br/>
+### Avoiding touch problems of Microsoft Flight Simulator
+It is well known that the popped out window of an instrument with touch operable capability, such as Garmin G3X, doesn't work well with touch operation, even though it works with mouse operation in Microsoft Flight Simulator 2020 or 2024. <br/>
 fsmapper provides a workaround solution for this problem. 
 You will be able to operate popped out windows with touch operation if those windows are managed as CapturedWindow view elements.
 
 If you want to stop this workaround, specify the value as false for `avoid_touch_problems` parameter of [`mapper.view_elements.captured_window()`](/libs/mapper/mapper_view_elements_captured_window).
 
 :::info Note
-I don't know the true reason why touch operations are ignored by FS2020. However I assume that this problem is caused by the mechanism to recognize the mouse status change.
+I don't know the true reason why touch operations are ignored by MSFS 2020 and 2024. However I assume that this problem is caused by the mechanism to recognize the mouse status change.
 
-I assume that MSFS2020 polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as `WM_LBUTTON_DOWN`. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br/>
+I assume that MSFS polls the current mouse status periodically by using DirectInput API instead of handling the windows message stream such as `WM_LBUTTON_DOWN`. This method may drop some status change events when multiple events occur in a time shorter than the polling interval.<br/>
 Mouse messages generated as a result of tapping are exactly this situation.
 To avoid noise such as palm contacts, Windows delays touch related messages when first contact is recognized. As a result, `WM_LBUTTON_DOWN` and `WM_LBUTTON_UP` messages will occur at the almost same time when you tap a display. In this case, MSFS2020 cannot recognize mouse button state changes.
 
