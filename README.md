@@ -61,7 +61,7 @@ Make sure that the following softwares are installed in advance.
         - Universal Windows Platform development
         - C++ desktop development
         - C++ game development
-    - Flight Simulator 2020 SDK 
+    - Microsoft Flight Simulator 2024 SDK 
     - [nuget.exe](https://www.nuget.org/downloads) should be placed at the folder which is indicated by PATH environment variable.
 
 2. **Running a console**<br>
