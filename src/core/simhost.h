@@ -29,8 +29,9 @@ public:
         virtual ~Simulator() = default;
         virtual void initLuaEnv(sol::state& lua) = 0;
         virtual void changeActivity(bool isActive) = 0;
+        virtual HWND getRepresentativeWindow() = 0;
     protected:
-        void reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname, HWND representative_window);
+        void reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname);
         SimHostManager& getManager(){return manager;};
     };
 
@@ -46,11 +47,10 @@ protected:
         MAPPER_SIM_CONNECTION simKind;
         std::string simName;
         std::string aircraftName;
-        HWND representativeWindow;
 
         Connectivity() : isConnected(false){};
-        Connectivity(bool isConnected, MAPPER_SIM_CONNECTION simKind, std::string&& simName, std::string&& aircraftName, HWND window):
-            isConnected(isConnected), simKind(simKind), simName(std::move(simName)), aircraftName(std::move(aircraftName)), representativeWindow(window){};
+        Connectivity(bool isConnected, MAPPER_SIM_CONNECTION simKind, std::string&& simName, std::string&& aircraftName):
+            isConnected(isConnected), simKind(simKind), simName(std::move(simName)), aircraftName(std::move(aircraftName)){};
         Connectivity(const Connectivity&) = default;
         Connectivity(Connectivity&&) = default;
         ~Connectivity() = default;
@@ -59,7 +59,6 @@ protected:
             simKind = src.simKind;
             simName = std::move(src.simName);
             aircraftName = std::move(src.aircraftName);
-            representativeWindow = src.representativeWindow;
             return *this;
         };
     };
@@ -91,5 +90,5 @@ public:
 
     // fuctions for each Simulator instance
     MapperEngine& getEngine(){return engine;};
-    void changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName, HWND representative_window);
+    void changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName);
 };

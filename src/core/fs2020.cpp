@@ -193,8 +193,9 @@ FS2020::FS2020(SimHostManager& manager, int id): SimHostManager::Simulator(manag
             mfwasm_stop();
             lock.lock();
             simconnect = nullptr;
+            representativeWindow = 0;
             lock.unlock();
-            this->reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr, 0);
+            this->reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr);
             ::WaitForSingleObject(event_interrupt, 5 * 1000);
             lock.lock();
             ::ResetEvent(event_interrupt);
@@ -245,7 +246,7 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "msfs: Detected that the simulator is started");
                 status = Status::start;
                 lock.unlock();
-                this->reportConnectivity(true, simid, simname, nullptr, 0);
+                this->reportConnectivity(true, simid, simname, nullptr);
                 lock.lock();
             }
             if (is_waiting_enum_input_event){
@@ -264,10 +265,10 @@ void FS2020::processSimConnectReceivedData(SIMCONNECT_RECV* pData, DWORD cbData)
                 aircraftName = std::move(new_name);
                 status = Status::start;
                 watch_dog = std::chrono::steady_clock::now();
-                auto hwnd = updateRepresentativeWindow();
+                updateRepresentativeWindow();
                 lock.unlock();
                 mfwasm_start(*this, simconnect);
-                this->reportConnectivity(true, simid, simname, aircraftName.c_str(), hwnd);
+                this->reportConnectivity(true, simid, simname, aircraftName.c_str());
                 lock.lock();
                 for (auto i = 0; i < simvar_groups.size(); i++){
                     subscribeSimVarGroup(i);
@@ -342,26 +343,25 @@ void FS2020::updateMfwasm(){
     SetEvent(event_interrupt);
 }
 
-HWND FS2020::updateRepresentativeWindow(){
-    HWND representativeWindow{};
+void FS2020::updateRepresentativeWindow(){
+    representativeWindow = 0;
     ::EnumWindows([](HWND hwnd, LPARAM lparam)->BOOL{
         static std::string class_name{"AceApp"};
         static const char title[] = "Microsoft Flight Simulator";
         char buf[256];
-        auto window = reinterpret_cast<HWND*>(lparam);
+        auto self = reinterpret_cast<FS2020*>(lparam);
         if (::GetClassNameA(hwnd, buf, sizeof(buf)) > 0){
             if (class_name == buf){
                 if (::GetWindowTextA(hwnd, buf, sizeof(buf)) > 0){
                     if (strncmp(title, buf, sizeof(title) - 1) == 0){
-                        *window = hwnd;
+                        self->representativeWindow = hwnd;
                         return false;
                     }
                 }
             }
         }
         return true;
-    }, reinterpret_cast<LPARAM>(&representativeWindow));
-    return representativeWindow;
+    }, reinterpret_cast<LPARAM>(this));
 }
 
 //============================================================================================

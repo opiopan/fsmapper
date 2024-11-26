@@ -17,8 +17,8 @@ static const char *simtype_dict[] = {"msfs", "dcs"};
 // SimHostManager::Simulator
 //    base class of object to represent each flight simulator connection
 //============================================================================================
-void SimHostManager::Simulator::reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname, HWND representative_window){
-    manager.changeConnectivity(id, connectivity, simkind, simname, aircraftname, representative_window);
+void SimHostManager::Simulator::reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname){
+    manager.changeConnectivity(id, connectivity, simkind, simname, aircraftname);
 }
 
 
@@ -67,7 +67,8 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     }
                 }
             }
-
+            mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_restore(activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow());
+            
             lock.unlock();
             if (activeSim != oldActiveSim){
                 if (activeSim >= 0){
@@ -133,13 +134,12 @@ std::string SimHostManager::getAircraftName(){
 }
 
 
-void SimHostManager::changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName, HWND representative_window){
-    mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_restore(representative_window);
+void SimHostManager::changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName){
     aircraftName = aircraftName ? aircraftName : "";
     std::lock_guard lock(mutex);
     queue.push(std::move(Message(
         simid,
-        Connectivity(isActive, simkind, simname ? simname : "", std::move(std::string(aircraftName ? aircraftName : "")), representative_window)
+        Connectivity(isActive, simkind, simname ? simname : "", std::move(std::string(aircraftName ? aircraftName : "")))
     )));
     cv.notify_all();
 }
