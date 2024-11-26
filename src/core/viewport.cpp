@@ -178,6 +178,13 @@ namespace view_utils{
 //============================================================================================
 static HHOOK hookHandle = 0;
 
+// static inline auto mouse_log(const char *label, int x, int y) {
+//     static auto count = 1;
+//     OutputDebugStringA(std::format("[{}] {}: x={}, y={}\n", count, label, x, y).c_str());
+//     count++;
+// }
+static inline auto mouse_log(const char *label, int x, int y){}
+
 static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
     static constexpr auto delay_down = mouse_emu::milliseconds(50);
     static constexpr auto delay_up = mouse_emu::milliseconds(50);
@@ -192,6 +199,7 @@ static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
             if ((mouse->dwExtraInfo & touch_mask) == touch_signature && captured_window.need_to_avoid_touch_probrems){
                 auto now = mouse_emu::clock::now();
                 if (wParam == WM_LBUTTONDOWN){
+                    mouse_log("down", mouse->pt.x, mouse->pt.y);
                     if (in_down_state){
                         auto target_time = last_ops_time + delay_up;
                         the_manager->get_mouse_emulator().emulate(mouse_emu::event::up, last_down_point.x, last_down_point.y, target_time);
@@ -203,10 +211,17 @@ static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
                     last_ops_time = max(last_ops_time + delay_down, now + delay_down);
                     the_manager->get_mouse_emulator().emulate(mouse_emu::event::down, mouse->pt.x, mouse->pt.y, last_ops_time);
                 }else if (wParam == WM_LBUTTONUP){
+                    mouse_log("up", mouse->pt.x, mouse->pt.y);
+                    if (!in_down_state){
+                        last_down_point = mouse->pt;
+                        last_ops_time = last_ops_time + delay_down;
+                        the_manager->get_mouse_emulator().emulate(mouse_emu::event::down, mouse->pt.x, mouse->pt.y, last_ops_time);
+                    }
                     in_down_state = false;
                     last_ops_time = max(now + delay_up, last_ops_time + delay_up);
                     the_manager->get_mouse_emulator().emulate(mouse_emu::event::up, mouse->pt.x, mouse->pt.y, last_ops_time);
                 }else if (wParam == WM_MOUSEMOVE){
+                    mouse_log("move", mouse->pt.x, mouse->pt.y);
                     last_ops_time = max(last_ops_time, now);
                     the_manager->get_mouse_emulator().emulate(mouse_emu::event::move, mouse->pt.x, mouse->pt.y, last_ops_time);
                 }

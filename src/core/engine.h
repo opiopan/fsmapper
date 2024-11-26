@@ -191,6 +191,7 @@ public:
     sol::state& getLuaState(){return scripting.lua();};
 
     SimHostManager* getSimHostManager(){return scripting.simhostManager.get();}
+    ViewPortManager* getViewportManager(){return scripting.viewportManager.get();}
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();

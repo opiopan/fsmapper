@@ -23,6 +23,7 @@ namespace mouse_emu{
 
     class emulator{
     public:
+        virtual void set_window_for_restore(HWND hwnd) = 0;
         virtual void emulate(event ev, int32_t x, int32_t y, clock::time_point at) = 0;
     };
 

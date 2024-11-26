@@ -45,9 +45,6 @@ public:
             sync_chunks(lock);
         }
     }
-    HWND getRepresentativeWindow() override {
-        return nullptr;
-    }
 
 protected:
     size_t process_received_data(std::unique_lock<std::mutex>& lock, char* buf, size_t len, DCSPacket& packet);

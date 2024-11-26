@@ -411,7 +411,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
             client.reopen();
             tx_buf->reset(false);
             lock.unlock();
-            reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr);
+            reportConnectivity(false, MAPPER_SIM_NONE, nullptr, nullptr, 0);
             lock.lock();
         };
 
@@ -480,7 +480,7 @@ DCSWorld::DCSWorld(SimHostManager &manager, int id): SimHostManager::Simulator(m
                         client.event_select(FD_READ | FD_CLOSE);
                         mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, "dcs: connection with DCS World exporter has been established");
                         lock.unlock();
-                        reportConnectivity(true, MAPPER_SIM_DCS, "dcs", nullptr);
+                        reportConnectivity(true, MAPPER_SIM_DCS, "dcs", nullptr, 0);
                         lock.lock();
                     }else{
                         status = STATUS::retrying;
@@ -554,7 +554,7 @@ void DCSWorld::A_command(std::unique_lock<std::mutex> &lock, const DCSPacket &pa
 			aircraft_name.append(packet, packet.get_data_length());
 			mapper_EngineInstance()->putLog(MCONSOLE_DEBUG, std::format("dcs: Aircraft name has been received: {}", aircraft_name));
 			lock.unlock();
-			reportConnectivity(true, MAPPER_SIM_DCS, "dcs", aircraft_name.c_str());
+			reportConnectivity(true, MAPPER_SIM_DCS, "dcs", aircraft_name.c_str(), 0);
 			lock.lock();
         }
 }

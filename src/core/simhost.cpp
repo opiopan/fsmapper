@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "engine.h"
+#include "viewport.h"
 #include "simhost.h"
 #include "fs2020.h"
 #include "dcs.h"
@@ -16,8 +17,8 @@ static const char *simtype_dict[] = {"msfs", "dcs"};
 // SimHostManager::Simulator
 //    base class of object to represent each flight simulator connection
 //============================================================================================
-void SimHostManager::Simulator::reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname){
-    manager.changeConnectivity(id, connectivity, simkind, simname, aircraftname);
+void SimHostManager::Simulator::reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname, HWND representative_window){
+    manager.changeConnectivity(id, connectivity, simkind, simname, aircraftname, representative_window);
 }
 
 
@@ -131,18 +132,14 @@ std::string SimHostManager::getAircraftName(){
     return activeSim < 0 ? std::move(std::string()) : connectivities.at(activeSim).aircraftName;
 }
 
-HWND SimHostManager::getRepresentativeWindow(){
-    std::lock_guard lock(mutex);
-    return activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow();
-}
 
-
-void SimHostManager::changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName){
+void SimHostManager::changeConnectivity(int simid, bool isActive, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftName, HWND representative_window){
+    mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_restore(representative_window);
     aircraftName = aircraftName ? aircraftName : "";
     std::lock_guard lock(mutex);
     queue.push(std::move(Message(
         simid,
-        Connectivity(isActive, simkind, simname ? simname : "", std::move(std::string(aircraftName ? aircraftName : "")))
+        Connectivity(isActive, simkind, simname ? simname : "", std::move(std::string(aircraftName ? aircraftName : "")), representative_window)
     )));
     cv.notify_all();
 }

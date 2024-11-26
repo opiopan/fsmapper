@@ -10,9 +10,6 @@
 #include <condition_variable>
 #include <sstream>
 
-#include "engine.h"
-#include "simhost.h"
-
 using namespace mouse_emu;
 
 static constexpr auto ring_buff_size = 64;
@@ -39,6 +36,7 @@ class emulator_imp : public emulator{
     bool pointer_is_on_primary_window = true;
     bool need_to_click = false;
     bool in_down_state = false;
+    HWND window_for_restore{0};
 
 public:
     emulator_imp(){
@@ -82,8 +80,10 @@ public:
                     std::this_thread::sleep_until(command.time);
                 }
 
+                // static clock::time_point base{clock::now()};
                 // std::ostringstream os;
-                // os << "issueMouseEvent(" << command_top;
+                // auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
+                // os << "issueMouseEvent(" << ref_time;
                 // os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
                 // os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
                 // os << std::endl;
@@ -122,6 +122,11 @@ public:
         event_sender.join();
     }
 
+    void set_window_for_restore(HWND hwnd) override{
+        std::unique_lock lock(mutex);
+        window_for_restore = hwnd;
+    }
+
     void emulate(event ev, int32_t x, int32_t y, clock::time_point at) override{
         std::unique_lock lock(mutex);
         if (command_next - command_top >= ring_buff_size){
@@ -138,9 +143,8 @@ public:
 
 protected:
     void recover_pointer_position(bool with_click = false){
-        auto hwnd = mapper_EngineInstance()->getSimHostManager()->getRepresentativeWindow();
         RECT rect;
-        if (::GetWindowRect(hwnd, &rect)){
+        if (::GetWindowRect(window_for_restore, &rect)){
             auto x = rect.left + (rect.right - rect.left) * 0.5;
             auto y = rect.top + (rect.bottom - rect.top) * 0.9;
 
