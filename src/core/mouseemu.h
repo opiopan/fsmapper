@@ -18,12 +18,19 @@ namespace mouse_emu{
         cancel_recovery = -2,
     };
 
+    enum class recovery_type{
+        none,
+        left,
+        right,
+        middle,
+    };
+
     using clock = std::chrono::steady_clock;
     using milliseconds = std::chrono::milliseconds;
 
     class emulator{
     public:
-        virtual void set_window_for_restore(HWND hwnd) = 0;
+        virtual void set_window_for_recovery(HWND hwnd, recovery_type type) = 0;
         virtual void emulate(event ev, int32_t x, int32_t y, clock::time_point at) = 0;
     };
 

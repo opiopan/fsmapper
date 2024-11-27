@@ -67,7 +67,9 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     }
                 }
             }
-            mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_restore(activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow());
+            mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_recovery(
+                activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow(),
+                activeSim < 0 ? mouse_emu::recovery_type::none : simulators.at(activeSim)->getRecoveryType());
             
             lock.unlock();
             if (activeSim != oldActiveSim){

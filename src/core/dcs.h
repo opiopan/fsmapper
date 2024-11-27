@@ -30,6 +30,7 @@ class DCSWorld : public SimHostManager::Simulator {
     std::unique_ptr<DCSWorldSendBuffer> tx_buf;
     std::vector<std::string> chunks;
     std::vector<std::unique_ptr<DCSObservedData>> observed_data_defs;
+    HWND representativeWindow{0};
 
 public:
     DCSWorld(SimHostManager &manager, int id);
@@ -45,9 +46,8 @@ public:
             sync_chunks(lock);
         }
     }
-    HWND getRepresentativeWindow() override {
-        return nullptr;
-    }
+    HWND getRepresentativeWindow() override {return representativeWindow;}
+    mouse_emu::recovery_type getRecoveryType() override {return mouse_emu::recovery_type::none;}
 
 protected:
     size_t process_received_data(std::unique_lock<std::mutex>& lock, char* buf, size_t len, DCSPacket& packet);

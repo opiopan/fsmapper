@@ -13,6 +13,7 @@
 #include <queue>
 #include <sol/sol.hpp>
 #include "mappercore.h"
+#include "mouseemu.h"
 
 class MapperEngine;
 
@@ -30,6 +31,7 @@ public:
         virtual void initLuaEnv(sol::state& lua) = 0;
         virtual void changeActivity(bool isActive) = 0;
         virtual HWND getRepresentativeWindow() = 0;
+        virtual mouse_emu::recovery_type getRecoveryType() = 0;
     protected:
         void reportConnectivity(bool connectivity, MAPPER_SIM_CONNECTION simkind, const char* simname, const char* aircraftname);
         SimHostManager& getManager(){return manager;};

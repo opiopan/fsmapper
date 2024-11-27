@@ -36,7 +36,10 @@ class emulator_imp : public emulator{
     bool pointer_is_on_primary_window = true;
     bool need_to_click = false;
     bool in_down_state = false;
-    HWND window_for_restore{0};
+    HWND window_for_recovery{0};
+    mouse_emu::recovery_type recovery_action{mouse_emu::recovery_type::none};
+    DWORD recovery_down{0};
+    DWORD recovery_up{0};
 
 public:
     emulator_imp(){
@@ -122,9 +125,20 @@ public:
         event_sender.join();
     }
 
-    void set_window_for_restore(HWND hwnd) override{
+    void set_window_for_recovery(HWND hwnd, recovery_type type) override{
         std::unique_lock lock(mutex);
-        window_for_restore = hwnd;
+        window_for_recovery = hwnd;
+        recovery_action = type;
+        if (recovery_action == recovery_type::left){
+            recovery_down = MOUSEEVENTF_LEFTDOWN;
+            recovery_up = MOUSEEVENTF_LEFTUP;
+        }else if (recovery_action == recovery_type::right){
+            recovery_down = MOUSEEVENTF_RIGHTDOWN;
+            recovery_up = MOUSEEVENTF_RIGHTUP;
+        }else if (recovery_action == recovery_type::middle){
+            recovery_down = MOUSEEVENTF_MIDDLEDOWN;
+            recovery_up = MOUSEEVENTF_MIDDLEUP;
+        }
     }
 
     void emulate(event ev, int32_t x, int32_t y, clock::time_point at) override{
@@ -144,7 +158,7 @@ public:
 protected:
     void recover_pointer_position(bool with_click = false){
         RECT rect;
-        if (::GetWindowRect(window_for_restore, &rect)){
+        if (::GetWindowRect(window_for_recovery, &rect)){
             auto x = rect.left + (rect.right - rect.left) * 0.5;
             auto y = rect.top + (rect.bottom - rect.top) * 0.9;
 
@@ -158,16 +172,16 @@ protected:
             input.mi.dwExtraInfo = recovery_signature;
             ::SendInput(1, &input, sizeof(INPUT));
             
-            if (!with_click){
+            if (!with_click || recovery_action == recovery_type::none){
                 return;
             }
 
             std::this_thread::sleep_for(pointer_position_recovery_message_interval);
-            input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE;
+            input.mi.dwFlags = recovery_down | MOUSEEVENTF_ABSOLUTE;
             ::SendInput(1, &input, sizeof(INPUT));
 
             std::this_thread::sleep_for(pointer_position_recovery_message_interval);
-            input.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
+            input.mi.dwFlags = recovery_up | MOUSEEVENTF_ABSOLUTE;
             ::SendInput(1, &input, sizeof(INPUT));
         }
     }

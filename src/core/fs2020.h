@@ -79,7 +79,8 @@ public:
     virtual ~FS2020();
     void initLuaEnv(sol::state& lua) override;
     void changeActivity(bool isActive) override;
-    HWND getRepresentativeWindow() override{return representativeWindow;};
+    HWND getRepresentativeWindow() override{return representativeWindow;}
+    mouse_emu::recovery_type getRecoveryType() override{return mouse_emu::recovery_type::left;}
 
     void updateMfwasm();
     template <typename FUNC>
