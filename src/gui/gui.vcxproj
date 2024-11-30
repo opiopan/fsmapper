@@ -269,6 +269,7 @@
   <ItemGroup>
     <Image Include="Assets\dcslogo.png" />
     <Image Include="Assets\fs2020logo.png" />
+    <Image Include="Assets\fs2024logo.png" />
     <Image Include="Resources\app.ico" />
   </ItemGroup>
   <ItemGroup>

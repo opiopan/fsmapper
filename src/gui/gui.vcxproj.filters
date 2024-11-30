@@ -177,6 +177,9 @@
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Resources\app.ico" />
+    <Image Include="Assets\fs2024logo.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />

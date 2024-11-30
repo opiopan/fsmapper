@@ -16,6 +16,7 @@
             <SolidColorBrush x:Key="ScriptStatusColorErrorLight" Color="Red"/>
             <SolidColorBrush x:Key="ScriptStatusColorErrorDark" Color="DarkRed"/>
             <BitmapImage x:Key="SimLogoFS2020" UriSource="/Assets/fs2020logo.png"/>
+            <BitmapImage x:Key="SimLogoFS2024" UriSource="/Assets/fs2024logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
             <SvgImageSource x:Key="AppLogo" UriSource="/Assets/appicon.svg"/>
             <x:String x:Key="CardBorderThickness">1</x:String>

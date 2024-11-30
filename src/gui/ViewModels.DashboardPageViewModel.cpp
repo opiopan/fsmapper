@@ -32,7 +32,7 @@ namespace winrt::gui::ViewModels::implementation{
         logo_images[static_cast<int>(Simulators::fs2020)] =
             unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
         logo_images[static_cast<int>(Simulators::fs2024)] =
-            unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2020"));
+            unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoFS2024"));
         logo_images[static_cast<int>(Simulators::dcs)] =
             unbox_value<Media::Imaging::BitmapImage>(tools::AppResource(L"SimLogoDCS"));
 
@@ -135,6 +135,7 @@ namespace winrt::gui::ViewModels::implementation{
             update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2020"), L"SimString");
         }else if (sim == Simulators::fs2024){
             update_property(sim_name, std::wstring(L"Microsoft Flight Simulator 2024"), L"SimString");
+            icon_height = 44;
         }else if (sim == Simulators::simconnect){
             update_property(sim_name, std::wstring(L"SimConnect-comaptible Simulator"), L"SimString");
         }else if (sim == Simulators::dcs){
