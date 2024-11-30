@@ -12,11 +12,15 @@
 #include <queue>
 #include <optional>
 #include <chrono>
+#include <algorithm>
+using std::max;
+using std::min;
 
 #define NO_SOL
 #include "tools.h"
 #include "apihook.h"
 #include "hookdll.h"
+#include "mouseemu.h"
 
 struct FatalException{
     DWORD error;
@@ -106,6 +110,7 @@ enum class ControllMessageDword : DWORD{
     start_capture,
     end_capture,
     change_attribute,
+    set_window_for_recovery,
 };
 
 static void assert(bool condition){
@@ -231,7 +236,7 @@ public:
         ::hookHandle = 0;
     };
 
-    bool addCapture(HWND hWnd, bool hide_system_region){
+    bool addCapture(HWND hWnd, DWORD option){
         LockHolder lock(mutex);
         if (captured_windows.count(hWnd) > 0){
             // already captured
@@ -252,7 +257,7 @@ public:
         captured_windows_ctx[i].status = CapturedWindowContext::Status::CAPTURED;
         update_counter.from_leader++;
         lock.unlock();
-        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), hide_system_region);
+        ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::start_capture), option);
         return true;
     };
 
@@ -290,6 +295,11 @@ public:
         ::SendMessageW(hWnd, controlMessage, static_cast<DWORD>(ControllMessageDword::change_attribute), 0);
         return true;
     };
+
+    bool setWinodForRecovery(HWND hwnd, int type){
+        LockHolder lock(mutex);
+        ::SendMessageW(hwnd, controlMessage, static_cast<DWORD>(ControllMessageDword::set_window_for_recovery), type);
+    }
 };
 
 static std::unique_ptr<LeadManager> leadManager;
@@ -314,6 +324,13 @@ protected:
         LONG_PTR saved_style;
         RECT saved_rect;
         int change_request_num;
+        bool need_to_modify_touch{false};
+        mouse_emu::milliseconds delay_down{50};
+        mouse_emu::milliseconds delay_up{50};
+        mouse_emu::milliseconds delay_drag{150};
+        int acceptable_delta = 5;
+        mouse_emu::clock::time_point last_ops_time = mouse_emu::clock::now();
+        mouse_emu::clock::time_point last_down_time = mouse_emu::clock::now();
     };
     struct ChangeRequest{
         bool change_position:1;
@@ -329,6 +346,9 @@ protected:
     std::mutex lmutex;
     int64_t local_count = 0;
     std::map<HWND, WindowContext> captured_windows;
+    std::unique_ptr<mouse_emu::emulator> mouse_emulator;
+    bool is_touch_down{false};
+    POINT last_touch_point;
 
     HookedApi<LONG_PTR WINAPI (HWND, int, LONG_PTR)> SetWindowLongPtrW;
     HookedApi<BOOL WINAPI (HWND, HWND, int, int, int, int, UINT)> SetWindowPos;
@@ -352,7 +372,7 @@ public:
         }
     };
 
-    void captureWindow(HWND hWnd, bool hide_system_region){
+    void captureWindow(HWND hWnd, DWORD option){
         LockHolder glock(mutex);
         {
             std::unique_lock llock(lmutex);
@@ -382,10 +402,17 @@ public:
                 ctx.cy = 0;
                 ctx.hWndInsertAfter = nullptr;
                 ctx.change_request_num = 0;
+                if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
+                    ctx.need_to_modify_touch = true;
+                    RegisterTouchWindow(hWnd, 0);
+                }
                 captured_windows.emplace(hWnd, ctx);
                 llock.unlock();
                 glock.unlock();
-                if (hide_system_region){
+                if (ctx.need_to_modify_touch && !mouse_emulator){
+                    mouse_emulator = std::move(mouse_emu::create_emulator());
+                }
+                if (option & CAPTURE_OPT_HIDE_SYSTEM_REGION){
                     this->SetWindowLongPtrW(
                         hWnd, GWL_STYLE, 
                         ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
@@ -407,11 +434,17 @@ public:
         captured_windows.erase(hWnd);
         local_count++;
         llock.unlock();
+        if (ctx.need_to_modify_touch){
+            UnregisterTouchWindow(hWnd);
+        }
         this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
         this->SetWindowPos(
             hWnd, HWND_TOP, 
             saved_rect.left, saved_rect.top, saved_rect.right - saved_rect.left, saved_rect.bottom - saved_rect.top, 
             SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        if (captured_windows.size() == 0){
+            mouse_emulator = nullptr;
+        }
     };
 
     void changeWindowAttribute(HWND hWnd){
@@ -474,6 +507,65 @@ public:
         }
     };
 
+    void processTouchMessage(HWND hWnd, WPARAM wparam, LPARAM lparam){
+        std::unique_lock llock(lmutex);
+        if (captured_windows.count(hWnd) == 0){
+            // specified window is not captured
+            return;
+        }
+        auto& ctx = captured_windows.at(hWnd);
+        if (!ctx.need_to_modify_touch){
+            // unnecessary to generate touch message
+            return;
+        }
+        auto now = mouse_emu::clock::now();
+        if (wparam > 1){
+            if (is_touch_down){
+                OutputDebugStringA("touch error\n");
+                is_touch_down = false;
+                ctx.last_ops_time = max(now, ctx.last_ops_time + ctx.delay_up);
+                mouse_emulator->emulate(
+                    mouse_emu::event::up, last_touch_point.x, last_touch_point.y,
+                    ctx.last_ops_time + mouse_emu::milliseconds(ctx.delay_up));
+            }
+        }else{
+            auto handle = reinterpret_cast<HTOUCHINPUT>(lparam);
+            TOUCHINPUT input;
+            ::GetTouchInputInfo(handle, 1, &input, sizeof(TOUCHINPUT));
+            DWORD event = 0;
+            POINT pt{input.x / 100, input.y / 100};
+            if (input.dwFlags & TOUCHEVENTF_DOWN){
+                POINT current_point;
+                ::GetCursorPos(&current_point);
+                auto delta_x = current_point.x - pt.x;
+                auto delta_y = current_point.y - pt.y;
+                if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
+                    delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
+                    ctx.last_ops_time = max(now, ctx.last_ops_time);
+                }
+                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+                is_touch_down = true;
+                last_touch_point = pt;
+                ctx.last_ops_time = max(now,  ctx.last_ops_time + ctx.delay_down);
+                ctx.last_down_time = ctx.last_ops_time;
+                mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
+            }else if (input.dwFlags & TOUCHEVENTF_UP && is_touch_down){
+                is_touch_down = false;
+                ctx.last_ops_time = max(ctx.last_ops_time, max(now, ctx.last_down_time + ctx.delay_up));
+                mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_ops_time);
+            }else if ((input.dwFlags & TOUCHEVENTF_MOVE) && is_touch_down){
+                last_touch_point = pt;
+                ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_drag));
+                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+            }
+        }
+        return;
+    }
+
+    void setWindowForRecovery(HWND hwnd, mouse_emu::recovery_type type){
+        mouse_emulator->set_window_for_recovery(hwnd, type);
+    }
+
 protected:
     static LONG_PTR WINAPI SetWindowLongPtrW_Hook(HWND hWnd, int nIndex, LONG_PTR dwNewLong){
         std::unique_lock llock(followingManager->lmutex);
@@ -506,14 +598,18 @@ LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
             if (pMsg->message == followingManager->getControlMessageCode()) {
                 auto type = static_cast<ControllMessageDword>(pMsg->wParam);
                 if (type == ControllMessageDword::start_capture){
-                    followingManager->captureWindow(pMsg->hwnd, pMsg->lParam);
+                    followingManager->captureWindow(pMsg->hwnd, static_cast<DWORD>(pMsg->lParam));
                 }else if (type == ControllMessageDword::end_capture){
                     followingManager->releaseWindow(pMsg->hwnd);
                 }else if (type == ControllMessageDword::change_attribute){
                     followingManager->changeWindowAttribute(pMsg->hwnd);
+                }else if (type == ControllMessageDword::set_window_for_recovery){
+                    followingManager->setWindowForRecovery(pMsg->hwnd, static_cast<mouse_emu::recovery_type>(pMsg->lParam));
                 }
             }else if (pMsg->message == WM_DESTROY){
                 followingManager->closeWindow(pMsg->hwnd);
+            }else if (pMsg->message == WM_TOUCH){
+                followingManager->processTouchMessage(pMsg->hwnd, pMsg->wParam, pMsg->lParam);
             }
         }
     }
@@ -573,9 +669,9 @@ DLLEXPORT bool hookdll_stopGlobalHook(){
     return true;
 }
 
-DLLEXPORT bool hookdll_capture(HWND hWnd, bool hide_system_region){
+DLLEXPORT bool hookdll_capture(HWND hWnd, DWORD option){
     if (leadManager){
-        return leadManager->addCapture(hWnd, hide_system_region);
+        return leadManager->addCapture(hWnd, option);
     }else{
         return false;
     }
@@ -595,4 +691,8 @@ DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, in
     }else{
         return false;
     }
+}
+
+DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type){
+
 }

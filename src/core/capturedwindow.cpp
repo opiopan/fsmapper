@@ -56,7 +56,9 @@ CapturedWindow::~CapturedWindow(){
 void CapturedWindow::attach_window(HWND hwnd){
     if (!this->hwnd){
         this->hwnd = hwnd;
-        hookdll_capture(hwnd, omit_system_region);
+        DWORD option = omit_system_region ? CAPTURE_OPT_HIDE_SYSTEM_REGION : 0;
+        option |= fix_touch_issue ? CAPTURE_OPT_MODIFY_TOUCH : 0;
+        hookdll_capture(hwnd, option);
     }
 }
 

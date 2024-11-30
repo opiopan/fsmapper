@@ -19,10 +19,10 @@ namespace mouse_emu{
     };
 
     enum class recovery_type{
-        none,
-        left,
-        right,
-        middle,
+        none = 0,
+        left = 1,
+        right = 2,
+        middle = 3,
     };
 
     using clock = std::chrono::steady_clock;

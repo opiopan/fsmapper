@@ -21,6 +21,9 @@
     <ClCompile Include="apihook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mouseemu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apihook.h">
@@ -30,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mouseemu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

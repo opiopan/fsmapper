@@ -229,7 +229,6 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="mappercore.h" />
     <ClInclude Include="mapperplugin.h" />
     <ClInclude Include="mobiflight_wasm.h" />
-    <ClInclude Include="mouseemu.h" />
     <ClInclude Include="option.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginapi.h" />
@@ -243,6 +242,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="windowcapture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\hook\mouseemu.cpp" />
     <ClCompile Include="action.cpp" />
     <ClCompile Include="builtinDevices\dinputdev.cpp" />
     <ClCompile Include="builtinDevices\simhid.cpp" />
@@ -263,7 +263,6 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="keyseq.cpp" />
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="mobiflight_wasm.cpp" />
-    <ClCompile Include="mouseemu.cpp" />
     <ClCompile Include="option.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="pluginapi.cpp" />

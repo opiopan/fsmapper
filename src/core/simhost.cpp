@@ -10,6 +10,7 @@
 #include "simhost.h"
 #include "fs2020.h"
 #include "dcs.h"
+#include "hookdll.h"
 
 static const char *simtype_dict[] = {"msfs", "dcs"};
 
@@ -67,9 +68,10 @@ SimHostManager::SimHostManager(MapperEngine& engine, uint64_t event_changeAircra
                     }
                 }
             }
-            mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_recovery(
-                activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow(),
-                activeSim < 0 ? mouse_emu::recovery_type::none : simulators.at(activeSim)->getRecoveryType());
+            auto hwnd = activeSim < 0 ? 0 : simulators.at(activeSim)->getRepresentativeWindow();
+            auto option = activeSim < 0 ? mouse_emu::recovery_type::none : simulators.at(activeSim)->getRecoveryType();
+            mapper_EngineInstance()->getViewportManager()->get_mouse_emulator().set_window_for_recovery(hwnd, option);
+            hookdll_setWindowForRecovery(hwnd, static_cast<DWORD>(option));
             
             lock.unlock();
             if (activeSim != oldActiveSim){

@@ -83,14 +83,14 @@ public:
                     std::this_thread::sleep_until(command.time);
                 }
 
-                // static clock::time_point base{clock::now()};
-                // std::ostringstream os;
-                // auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
-                // os << "issueMouseEvent(" << ref_time;
-                // os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
-                // os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
-                // os << std::endl;
-                // OutputDebugStringA(os.str().c_str());
+                static clock::time_point base{clock::now()};
+                std::ostringstream os;
+                auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
+                os << "issueMouseEvent(" << ref_time;
+                os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
+                os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
+                os << std::endl;
+                OutputDebugStringA(os.str().c_str());
 
                 INPUT input;
                 input.type = INPUT_MOUSE;
@@ -164,8 +164,8 @@ protected:
 
             INPUT input;
             input.type = INPUT_MOUSE;
-            input.mi.dx = (static_cast<int64_t>(x) * 65535) / primary_screen_x;
-            input.mi.dy = (static_cast<int64_t>(y) * 65535) / primary_screen_y;
+            input.mi.dx = static_cast<LONG>((static_cast<int64_t>(x) * 65535) / primary_screen_x);
+            input.mi.dy = static_cast<LONG>((static_cast<int64_t>(y) * 65535) / primary_screen_y);
             input.mi.mouseData = 0;
             input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
             input.mi.time = 0;
