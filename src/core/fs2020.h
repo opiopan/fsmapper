@@ -80,7 +80,7 @@ public:
     void initLuaEnv(sol::state& lua) override;
     void changeActivity(bool isActive) override;
     HWND getRepresentativeWindow() override{return representativeWindow;}
-    mouse_emu::recovery_type getRecoveryType() override{return mouse_emu::recovery_type::left;}
+    mouse_emu::recovery_type getRecoveryType() override{return mouse_emu::recovery_type::right;}
 
     void updateMfwasm();
     template <typename FUNC>
