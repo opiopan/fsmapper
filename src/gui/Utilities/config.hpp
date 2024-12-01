@@ -62,12 +62,12 @@ namespace fsmapper{
         virtual dcs_exporter_mode get_dcs_exporter_mode() = 0;
         virtual void set_dcs_exporter_mode(dcs_exporter_mode value) = 0;
 
-        virtual uint64_t get_touch_down_delay() = 0;
-        virtual void set_touch_down_delay(uint64_t) = 0;
-        virtual uint64_t get_touch_up_delay() = 0;
-        virtual void set_touch_up_delay(uint64_t) = 0;
-        virtual uint64_t get_touch_drag_start_delay() = 0;
-        virtual void set_touch_drag_start_delay(uint64_t) = 0;
+        virtual uint32_t get_touch_down_delay() = 0;
+        virtual void set_touch_down_delay(uint32_t) = 0;
+        virtual uint32_t get_touch_up_delay() = 0;
+        virtual void set_touch_up_delay(uint32_t) = 0;
+        virtual uint32_t get_touch_drag_start_delay() = 0;
+        virtual void set_touch_drag_start_delay(uint32_t) = 0;
         virtual void reset_touch_delay() = 0;
     };
 

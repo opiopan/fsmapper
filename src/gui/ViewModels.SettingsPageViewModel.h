@@ -205,9 +205,31 @@ namespace winrt::gui::ViewModels::implementation
         void DcsExporterIsEnabled(bool value){
             CheckAndInstallDcsExporter(value);
         }
+        uint32_t TouchDownDelay(){
+            return fsmapper::app_config.get_touch_down_delay();
+        }
+        void TouchDownDelay(int32_t value){
+            fsmapper::app_config.set_touch_down_delay(value);
+            save_config();
+        }
+        int32_t TouchUpDelay(){
+            return fsmapper::app_config.get_touch_up_delay();
+        }
+        void TouchUpDelay(int32_t value){
+            fsmapper::app_config.set_touch_up_delay(value);
+            save_config();
+        }
+        int32_t TouchDragStartDelay(){
+            return fsmapper::app_config.get_touch_drag_start_delay();
+        }
+        void TouchDragStartDelay(int32_t value){
+            fsmapper::app_config.set_touch_drag_start_delay(value);
+            save_config();
+        }
 
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
+        void ClickResetTouchConfig(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
         void ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler){
@@ -259,6 +281,13 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Args{L"UserSpecifiedPluginPath"});
             property_changed(*this, Args{L"UserSpecifiedPluginPathColor"});
             property_changed(*this, Args{L"ChangePluginPathButtonIsValid"});
+        }
+
+        void notify_touch_config_changed(){
+            using Args = Microsoft::UI::Xaml::Data::PropertyChangedEventArgs;
+            property_changed(*this, Args{L"TouchDownDelay"});
+            property_changed(*this, Args{L"TouchUpDelay"});
+            property_changed(*this, Args{L"TouchDragStartDelay"});
         }
 
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);

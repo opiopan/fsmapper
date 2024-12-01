@@ -61,6 +61,12 @@ namespace winrt::gui::ViewModels::implementation
         notify_plugin_folder_changed();
     }
 
+    void SettingsPageViewModel::ClickResetTouchConfig(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args){
+        fsmapper::app_config.reset_touch_delay();
+        save_config();
+        notify_touch_config_changed();
+    }
+
     void SettingsPageViewModel::ClickDownloadNewReleaseButton(winrt::Windows::Foundation::IInspectable, winrt::Microsoft::UI::Xaml::RoutedEventArgs){
         mapper.DownloadLatestRelease();
     }

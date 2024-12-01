@@ -261,7 +261,87 @@
                         </angel:SettingsExpander.ExpanderContent>
                     </angel:SettingsExpander>
                 </StackPanel>
-                
+
+                <!-- MSFS -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Microsoft Flight Simulator" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsExpander
+                        Header="Mouse emulation for touch">
+                        <angel:SettingsExpander.Description>
+                            Custom mouse emulation settings to address touch operation issues with pop-out windows.
+                            Restarting a script is required for the changes to take effect.
+                        </angel:SettingsExpander.Description>
+                        <angel:SettingsExpander.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe815;"/>
+                        </angel:SettingsExpander.HeaderIcon>
+                        <angel:SettingsExpander.ExpanderContent>
+                            <StackPanel>
+                                <angel:SettingsCard Header="Touch-to-down delay" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the delay (in milliseconds) between moving the mouse cursor to the touch point and 
+                                        simulating a left mouse button press. Cursor movement is skipped if the cursor is already near 
+                                        the touch point.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="10" LargeChange="100"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchDownDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Up delay from down" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the minimum delay (in milliseconds) between simulating a left mouse button press 
+                                        and its release. No additional delay is applied if the finger lift occurs after this duration.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="10" LargeChange="100"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchUpDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Drag start delay" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the delay (in milliseconds) after simulating a left mouse button press 
+                                        before the first cursor movement is generated during a drag operation. 
+                                        No delay is applied if the finger starts moving after this duration has passed.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="10" LargeChange="100"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchDragStartDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header=" "
+                                                    Style="{StaticResource SettingsBottomCardAltStyle}"
+                                                    Background="{ThemeResource SettingsCardBackground}">
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                        Click="{x:Bind ViewModel.ClickResetTouchConfig}">
+                                        Reset to Default
+                                    </Button>
+                                </angel:SettingsCard>
+                            </StackPanel>
+                        </angel:SettingsExpander.ExpanderContent>
+                    </angel:SettingsExpander>
+                </StackPanel>
+
                 <!-- DCS World -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}" Visibility="{x:Bind ViewModel.DcsIsInstalled}">
                     <TextBlock Text="DCS World" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
