@@ -61,6 +61,9 @@ struct UpdateCounter{
 static HHOOK hookHandle = 0;
 static UpdateCounter update_counter = {0, 0};
 static CapturedWindowContext captured_windows_ctx[MAX_CAPTURED_WINDOW] = {0};
+static uint64_t touch_down_delay = {0};
+static uint64_t touch_up_delay = {0};
+static uint64_t touch_drag_start_delay = {0};
 #pragma data_seg()
 
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -324,9 +327,9 @@ protected:
         RECT saved_rect;
         int change_request_num;
         bool need_to_modify_touch{false};
-        mouse_emu::milliseconds delay_down{50};
-        mouse_emu::milliseconds delay_up{50};
-        mouse_emu::milliseconds delay_drag{150};
+        mouse_emu::milliseconds delay_down;
+        mouse_emu::milliseconds delay_up;
+        mouse_emu::milliseconds delay_drag;
         int acceptable_delta = 5;
         mouse_emu::clock::time_point last_ops_time = mouse_emu::clock::now();
         mouse_emu::clock::time_point last_down_time = mouse_emu::clock::now();
@@ -405,6 +408,9 @@ public:
                 ctx.change_request_num = 0;
                 if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
                     ctx.need_to_modify_touch = true;
+                    ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
+                    ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
+                    ctx.delay_drag = mouse_emu::milliseconds{touch_drag_start_delay};
                     RegisterTouchWindow(hWnd, 0);
                 }
                 if (ctx.need_to_modify_touch && !mouse_emulator){
@@ -703,4 +709,10 @@ DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type){
     if (leadManager){
         leadManager->setWinodForRecovery(hwnd, type);
     }
+}
+
+DLLEXPORT void hookdll_setTouchParameters(uint64_t down_delay, uint64_t up_delay, uint64_t drag_start_delay){
+    touch_down_delay = down_delay;
+    touch_up_delay = up_delay;
+    touch_drag_start_delay = drag_start_delay;
 }

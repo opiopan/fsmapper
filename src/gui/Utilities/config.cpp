@@ -24,6 +24,13 @@ static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
 static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
 static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
+static const auto* CONFIG_TOUCH_DOWN_DELAY = "touch_down_delay";
+static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
+static const auto *CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
+
+static constexpr uint64_t default_touch_down_delay = 50;
+static constexpr uint64_t default_touch_up_delay = 50;
+static constexpr uint64_t default_touch_drag_start_delay = 150;
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -46,6 +53,9 @@ class config_imp : public config{
     uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
     std::string skipped_version{"0.0"};
     dcs_exporter_mode dcs_exporter_mode_data{dcs_exporter_mode::unknown};
+    uint64_t touch_down_delay{default_touch_down_delay};
+    uint64_t touch_up_delay{default_touch_up_delay};
+    uint64_t touch_drag_start_delay{default_touch_drag_start_delay};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -135,6 +145,9 @@ public:
         int dcs_exporter_mode_num{static_cast<int>(dcs_exporter_mode::unknown)};
         reflect_number(data, CONFIG_DCS_EXPORTER_MODE, dcs_exporter_mode_num);
         dcs_exporter_mode_data = static_cast<dcs_exporter_mode>(dcs_exporter_mode_num);
+        reflect_number(data, CONFIG_TOUCH_DOWN_DELAY, touch_down_delay);
+        reflect_number(data, CONFIG_TOUCH_UP_DELAY, touch_up_delay);
+        reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
     }
 
     void save() override{
@@ -155,6 +168,9 @@ public:
                 {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
                 {CONFIG_SKIPPED_VERSION, skipped_version},
                 {CONFIG_DCS_EXPORTER_MODE, static_cast<int>(dcs_exporter_mode_data)},
+                {CONFIG_TOUCH_DOWN_DELAY, touch_down_delay},
+                {CONFIG_TOUCH_UP_DELAY, touch_up_delay},
+                {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -239,7 +255,29 @@ public:
     void set_dcs_exporter_mode(dcs_exporter_mode value){
         update_value(dcs_exporter_mode_data, value);
     }
-
+    uint64_t get_touch_down_delay(){
+        return touch_down_delay;
+    }
+    void set_touch_down_delay(uint64_t value){
+        update_value(touch_down_delay, value);
+    }
+    uint64_t get_touch_up_delay(){
+        return touch_up_delay;
+    }
+    void set_touch_up_delay(uint64_t value){
+        update_value(touch_up_delay, value);
+    }
+    uint64_t get_touch_drag_start_delay(){
+        return touch_drag_start_delay;
+    }
+    void set_touch_drag_start_delay(uint64_t value){
+        update_value(touch_drag_start_delay, value);
+    }
+    void reset_touch_delay(){
+        update_value(touch_down_delay, default_touch_down_delay);
+        update_value(touch_up_delay, default_touch_up_delay);
+        update_value(touch_drag_start_delay, default_touch_drag_start_delay);
+    }
 };
 
 static config_imp the_config;

@@ -83,14 +83,16 @@ public:
                     std::this_thread::sleep_until(command.time);
                 }
 
-                static clock::time_point base{clock::now()};
-                std::ostringstream os;
-                auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
-                os << "issueMouseEvent(" << ref_time;
-                os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
-                os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
-                os << std::endl;
-                OutputDebugStringA(os.str().c_str());
+                #ifdef _DEBUG
+                    static clock::time_point base{clock::now()};
+                    std::ostringstream os;
+                    auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
+                    os << "issueMouseEvent(" << ref_time;
+                    os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
+                    os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
+                    os << std::endl;
+                    OutputDebugStringA(os.str().c_str());
+                #endif
 
                 INPUT input;
                 input.type = INPUT_MOUSE;

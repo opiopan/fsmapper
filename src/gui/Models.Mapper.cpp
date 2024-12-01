@@ -129,6 +129,11 @@ namespace winrt::gui::Models::implementation{
                 }
                 mapper_set_option_integer(mapper, MOPT_STDLIB, fsmapper::app_config.get_lua_standard_libraries());
                 mapper_set_option_boolean(mapper, MOPT_DCS_EXPORTER, fsmapper::app_config.get_dcs_exporter_mode() == fsmapper::config::dcs_exporter_mode::on);
+                mapper_tools_SetTouchParameters(
+                    fsmapper::app_config.get_touch_down_delay(),
+                    fsmapper::app_config.get_touch_up_delay(),
+                    fsmapper::app_config.get_touch_drag_start_delay()
+                );
                 lock.unlock();
                 auto result = mapper_run(mapper, path);
                 lock.lock();

@@ -28,6 +28,7 @@ DLLEXPORT bool hookdll_uncapture(HWND hWnd);
 DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, bool show);
 
 DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type);
+DLLEXPORT void hookdll_setTouchParameters(uint64_t down_delay, uint64_t up_delay, uint64_t drag_start_delay);
 
 #ifdef __cplusplus
 }
