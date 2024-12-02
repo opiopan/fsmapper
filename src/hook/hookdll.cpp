@@ -333,6 +333,7 @@ protected:
         int acceptable_delta = 5;
         mouse_emu::clock::time_point last_ops_time = mouse_emu::clock::now();
         mouse_emu::clock::time_point last_down_time = mouse_emu::clock::now();
+        mouse_emu::clock::time_point last_up_time = mouse_emu::clock::now();
         bool is_touch_down{false};
         POINT last_touch_point;
     };
@@ -411,7 +412,7 @@ public:
                     ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
                     ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
                     ctx.delay_drag = mouse_emu::milliseconds{touch_drag_start_delay};
-                    RegisterTouchWindow(hWnd, 0);
+                    RegisterTouchWindow(hWnd, TWF_WANTPALM | TWF_FINETOUCH);
                 }
                 if (ctx.need_to_modify_touch && !mouse_emulator){
                     mouse_emulator = std::move(mouse_emu::create_emulator());
@@ -550,16 +551,18 @@ public:
                 if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
                     delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
                     ctx.last_ops_time = max(now, ctx.last_ops_time);
+                    mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+                    ctx.last_ops_time = ctx.last_ops_time + ctx.delay_down;
                 }
-                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
                 ctx.is_touch_down = true;
                 ctx.last_touch_point = pt;
-                ctx.last_ops_time = max(now,  ctx.last_ops_time + ctx.delay_down);
+                ctx.last_ops_time = max(now,  max(ctx.last_ops_time, ctx.last_up_time + ctx.delay_down));
                 ctx.last_down_time = ctx.last_ops_time;
                 mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
             }else if (input.dwFlags & TOUCHEVENTF_UP && ctx.is_touch_down){
                 ctx.is_touch_down = false;
-                ctx.last_ops_time = max(ctx.last_ops_time, max(now, ctx.last_down_time + ctx.delay_up));
+                ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_up));
+                ctx.last_up_time = ctx.last_ops_time;
                 mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_ops_time);
             }else if ((input.dwFlags & TOUCHEVENTF_MOVE) && ctx.is_touch_down){
                 ctx.last_touch_point = pt;

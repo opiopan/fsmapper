@@ -30,7 +30,7 @@ static const auto *CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
 
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
-static constexpr uint32_t default_touch_drag_start_delay = 150;
+static constexpr uint32_t default_touch_drag_start_delay = 100;
 
 using namespace fsmapper;
 using namespace nlohmann;
