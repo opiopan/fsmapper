@@ -408,7 +408,26 @@ It is well known that the popped out window of an instrument with touch operable
 fsmapper provides a workaround solution for this problem. 
 You will be able to operate popped out windows with touch operation if those windows are managed as CapturedWindow view elements.
 
+As explained in the following note, fsmapper emulates mouse actions at a timing that MSFS can recognize. 
+The appropriate timing depends on the specifications of the touch panel display and the FPS of MSFS. 
+You can fine-tune this timing parameter on the Settings page.
+If touch interactions do not work as expected, try adjusting the settings.
+
 If you want to stop this workaround, specify the value as false for `avoid_touch_problems` parameter of [`mapper.view_elements.captured_window()`](/libs/mapper/mapper_view_elements_captured_window).
+
+:::warning For Duet Display user
+[Duet Display](https://www.duetdisplay.com) is an excellent app for using an iPad as a Windows secondary display, with low latency, lightweight performance, and adequate FPS.
+However, compared to other competing solutions like [Luna Display](https://astropad.com/product/lunadisplay/), it generates touch message ([`WM_TOUCH`](https://learn.microsoft.com/en-us/windows/win32/wintouch/wm-touchdown)) with some peculiarities.
+This becomes a significant issue when combined with MSFS, as the general methods for resolving touch issues on other touchscreens are insufficient, particularly for drag operations.
+fsmapper provides special parameters to enable proper operation with MSFS even when using [Duet Display](https://www.duetdisplay.com).
+
+If you’re using [Duet Display](https://www.duetdisplay.com), configure the following parameter under *Settings* > *Microsoft Flight Simulator* > *Mouse Emulation for Touch*.
+
+- **Insert dummy click on drag**: On
+- **Drag dead zone**: 5
+
+This setting may also improve the stability of drag operations on other touchscreen devices or solutions.
+:::
 
 :::info Note
 I don't know the true reason why touch operations are ignored by MSFS 2020 or 2024. However I assume that this problem is caused by the mechanism to recognize the mouse status change.

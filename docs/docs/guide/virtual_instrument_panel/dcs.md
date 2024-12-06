@@ -103,8 +103,8 @@ viewport:register_view{
     name = 'view 1',
     background = graphics.bitmap('assets/two_mfcd.png'),
     elements = {
-        {object=left_mfcd, x=0, y=0, width=0.5, height=1},
-        {object=right_mfcd, x=0.5, y=0, width=0.5, height=1},
+        {object=left_mfcd, x=0.05, y=0, width=0.4, height=1},
+        {object=right_mfcd, x=0.55, y=0, width=0.4, height=1},
     },
 }
 
@@ -113,8 +113,8 @@ viewport:register_view{
     name = 'view 2',
     background = graphics.bitmap('assets/two_mfcd.png'),
     elements = {
-        {object=left_mfcd, x=0, y=0, width=0.5, height=1},
-        {object=center_mfcd, x=0.5, y=0, width=0.5, height=1},
+        {object=left_mfcd, x=0.05, y=0, width=0.4, height=1},
+        {object=center_mfcd, x=0.55, y=0, width=0.4, height=1},
     },
 }
 ```
@@ -140,8 +140,8 @@ By retrieving the coordinates and sizes of the exported instruments from the DCS
 
 ```lua
 -- Parse the monitor configuration for DCS
-local dcs_config = mapper.saved_games_dir .. [[\DCS\Config\MonitorSetup\myconfig.lua]]
-local instruments = exported_instruments(dcs_config, 'FA-18C_hornet')
+local monitor_config = mapper.saved_games_dir .. [[\DCS\Config\MonitorSetup\myconfig.lua]]
+local instruments = exported_instruments(monitor_config, 'FA-18C_hornet')
 
 -- Create view elements for each exported instruments
 local left_mfcd = dcs_streamer:create_view_element(instruments.LEFT_MFCD)
