@@ -17,6 +17,8 @@
 #   define DLLEXPORT
 #endif
 
+#include "hookdll.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -149,7 +151,7 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle);
 // Stateless tool functions
 //
 DLLEXPORT HWND mapper_tools_PickWindow(HWND app_wnd, const char* name);
-DLLEXPORT void mapper_tools_SetTouchParameters(uint64_t down_delay, uint64_t up_delay, uint64_t drag_start_delay);
+DLLEXPORT void mapper_tools_SetTouchParameters(const TOUCH_CONFIG* config);
 
 //
 // functions provided as workaround of WindowsApp SDK 1.2 issues

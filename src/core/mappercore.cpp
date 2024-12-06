@@ -223,8 +223,8 @@ DLLEXPORT bool mapper_stopViewPort(MapperHandle handle){
 //
 // Stateless tool functions
 //
-DLLEXPORT void mapper_tools_SetTouchParameters(uint64_t down_delay, uint64_t up_delay, uint64_t drag_start_delay){
-    hookdll_setTouchParameters(down_delay, up_delay, drag_start_delay);
+DLLEXPORT void mapper_tools_SetTouchParameters(const TOUCH_CONFIG* config){
+    hookdll_setTouchParameters(config);
 }
 
 //

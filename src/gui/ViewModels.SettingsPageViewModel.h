@@ -226,7 +226,20 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_touch_drag_start_delay(value);
             save_config();
         }
-
+        bool TouchDoubleTapOnDrag(){
+            return fsmapper::app_config.get_touch_double_tap_on_drag();
+        }
+        void TouchDoubleTapOnDrag(bool value){
+            fsmapper::app_config.set_touch_double_tap_on_drag(value);
+            save_config();
+        }
+        int32_t TouchDeadzoneForDrag(){
+            return fsmapper::app_config.get_touch_deadzone_for_drag();
+        }
+        void TouchDeadzoneForDrag(int32_t value){
+            fsmapper::app_config.set_touch_deadzone_for_drag(value);
+            save_config();
+        }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
         void ClickResetTouchConfig(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
@@ -288,6 +301,8 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Args{L"TouchDownDelay"});
             property_changed(*this, Args{L"TouchUpDelay"});
             property_changed(*this, Args{L"TouchDragStartDelay"});
+            property_changed(*this, Args{L"TouchDoubleTapOnDrag"});
+            property_changed(*this, Args{L"TouchDeadzoneForDrag"});
         }
 
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);

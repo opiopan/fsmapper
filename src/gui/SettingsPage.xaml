@@ -276,7 +276,7 @@
                         </angel:SettingsExpander.HeaderIcon>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel>
-                                <angel:SettingsCard Header="Touch-to-down delay" Background="{ThemeResource SettingsCardBackground}"
+                                <angel:SettingsCard Header="Touch to click delay" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>
                                         Specifies the delay (in milliseconds) between moving the mouse cursor to the touch point and 
@@ -293,7 +293,7 @@
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchDownDelay, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
-                                <angel:SettingsCard Header="Up delay from down" Background="{ThemeResource SettingsCardBackground}"
+                                <angel:SettingsCard Header="Touch release delay" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>
                                         Specifies the minimum delay (in milliseconds) between simulating a left mouse button press 
@@ -310,7 +310,7 @@
                                                Value="{x:Bind ViewModel.TouchUpDelay, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
                                 <angel:SettingsCard Header="Drag start delay" Background="{ThemeResource SettingsCardBackground}"
-                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}" Visibility="Collapsed">
                                     <angel:SettingsCard.Description>
                                         Specifies the delay (in milliseconds) after simulating a left mouse button press 
                                         before the first cursor movement is generated during a drag operation. 
@@ -325,6 +325,37 @@
                                                SmallChange="10" LargeChange="100"
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchDragStartDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Insert dummy click on drag" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Enable or disable the insertion of a dummy click when starting a drag operation.
+                                        When enabled, it mimics a double-tap action to initiate dragging,
+                                        which improves drag behavior in MSFS instruments.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                   Margin="0 0 26 0"
+                                                   MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                                   IsOn="{x:Bind ViewModel.TouchDoubleTapOnDrag, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Drag dead zone" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        The threshold (in pixels) for detecting drag initiation.
+                                        A drag is only recognized after the finger moves beyond this distance.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="1" LargeChange="10"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchDeadzoneForDrag, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
                                 <angel:SettingsCard Header=" "
                                                     Style="{StaticResource SettingsBottomCardAltStyle}"

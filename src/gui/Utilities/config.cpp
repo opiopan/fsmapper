@@ -26,11 +26,15 @@ static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
 static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
 static const auto* CONFIG_TOUCH_DOWN_DELAY = "touch_down_delay";
 static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
-static const auto *CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
+static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
+static const auto* CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG = "touch_double_tap_on_drag";
+static const auto* CONFIG_TOUCH_DEADZONE_FOR_DRAG = "touch_deadzone_for_drag";
 
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
-static constexpr uint32_t default_touch_drag_start_delay = 100;
+static constexpr uint32_t default_touch_drag_start_delay = 0;
+static constexpr bool default_touch_double_tap_on_drag = false;
+static constexpr uint32_t default_touch_deadzone_for_drag = 0;
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -56,6 +60,8 @@ class config_imp : public config{
     uint32_t touch_down_delay{default_touch_down_delay};
     uint32_t touch_up_delay{default_touch_up_delay};
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
+    bool touch_double_tap_on_drag{default_touch_double_tap_on_drag};
+    uint32_t touch_deadzone_for_drag{default_touch_deadzone_for_drag};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -148,6 +154,8 @@ public:
         reflect_number(data, CONFIG_TOUCH_DOWN_DELAY, touch_down_delay);
         reflect_number(data, CONFIG_TOUCH_UP_DELAY, touch_up_delay);
         reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
+        reflect_bool(data, CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG, touch_double_tap_on_drag);
+        reflect_number(data, CONFIG_TOUCH_DEADZONE_FOR_DRAG, touch_deadzone_for_drag);
     }
 
     void save() override{
@@ -171,6 +179,8 @@ public:
                 {CONFIG_TOUCH_DOWN_DELAY, touch_down_delay},
                 {CONFIG_TOUCH_UP_DELAY, touch_up_delay},
                 {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
+                {CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG, touch_double_tap_on_drag},
+                {CONFIG_TOUCH_DEADZONE_FOR_DRAG, touch_deadzone_for_drag},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -273,10 +283,24 @@ public:
     void set_touch_drag_start_delay(uint32_t value){
         update_value(touch_drag_start_delay, value);
     }
+    bool get_touch_double_tap_on_drag(){
+        return touch_double_tap_on_drag;
+    }
+    void set_touch_double_tap_on_drag(bool value){
+        update_value(touch_double_tap_on_drag, value);
+    }
+    uint32_t get_touch_deadzone_for_drag(){
+        return touch_deadzone_for_drag;
+    }
+    void set_touch_deadzone_for_drag(uint32_t value){
+        update_value(touch_deadzone_for_drag, value);
+    }
     void reset_touch_delay(){
         update_value(touch_down_delay, default_touch_down_delay);
         update_value(touch_up_delay, default_touch_up_delay);
         update_value(touch_drag_start_delay, default_touch_drag_start_delay);
+        update_value(touch_double_tap_on_drag, default_touch_double_tap_on_drag);
+        update_value(touch_deadzone_for_drag, default_touch_deadzone_for_drag);
     }
 };
 
