@@ -21,6 +21,11 @@ function HomepageHeader() {
           {siteConfig.title}
         </Heading>
         <p className={clsx('hero__subtitle', styles.heroTitleText)}>{siteConfig.tagline}</p>
+        <div className={styles.enabledProducts}>
+          <p>✅ Microsoft Flight Simulator 2024</p>
+          <p>✅ Microsoft Flight Simulator 2020</p>
+          <p>✅ DCS World</p>
+        </div>
         <div className={clsx(styles.buttons)}>
           <Link
             className={clsx('button button--primary button--lg', styles.button, styles.buttonPrime)}

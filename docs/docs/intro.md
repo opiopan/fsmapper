@@ -17,7 +17,10 @@ Although fsmapper offers a multitude of functions, it can be summarized into fol
 - **Interaction between Devices and Flight Simulators**<br/>
   You can reflect the operation of various devices, including custom-made ones, in the operation of various cockpit systems within the flight simulator.
   Conversely, you can also retrieve the state of instruments and the position of switches in the flight simulator and reflect them on physical devices.
-  The flight simulator software currently supported by fsmapper includes the Microsoft Flight Simulator series, which supports [SimConnect](https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_SDK.htm), and the [DCS World](https://www.digitalcombatsimulator.com/en/products/world/).
+  fsmapper supports the following flight simulators.
+  * [Microsoft Flight Simulator 2024](https://www.flightsimulator.com)
+  * [Microsoft Flight Simulator 2020](https://www.xbox.com//games/microsoft-flight-simulator)
+  * [DCS World](https://www.digitalcombatsimulator.com/en/products/world/)
   
 - **Changes to Input Device Characteristics**<br/>
   You can flexibly modify the characteristics and behaviors of input devices,
@@ -29,7 +32,7 @@ Although fsmapper offers a multitude of functions, it can be summarized into fol
   Particularly when using a touchscreen monitor, intuitive actions like tapping or flicking can be used to manipulate switches and knobs displayed on the screen.
   By configuring popped-out windows, such as the PFD, as elements of the virtual instrument panel, you can effectively build a glass cockpit.<br/>
   fsmapper excels in handling pop-out windows, allowing you to hide title bars and window frames to seamlessly integrate them as part of the instrument panel.
-  It also provides a workaround for the well-known issue where pop-out windows in MSFS2020 cannot be touch-operated.
+  It also provides a workaround for the well-known issue where pop-out windows in MSFS2020 or MSFS2024 cannot be touch-operated.
 
 If you watch the following video, you'll get a better understanding of what can be achieved with fsmapper as described above.
 
