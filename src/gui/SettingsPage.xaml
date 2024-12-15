@@ -276,6 +276,21 @@
                         </angel:SettingsExpander.HeaderIcon>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel>
+                                <angel:SettingsCard Header="Cursor move delay" Background="{ThemeResource SettingsCardBackground}"
+                                                    Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the delay (in milliseconds) before moving the mouse cursor to the touch point after a touch interaction. 
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="10" LargeChange="100"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchDragStartDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
                                 <angel:SettingsCard Header="Touch to click delay" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>

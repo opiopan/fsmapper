@@ -197,6 +197,9 @@ static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
         View::CapturedWindowAttributes captured_window;
         if (the_manager->findCapturedWindow({IntPoint{mouse->pt.x, mouse->pt.y}}, captured_window)){
             if ((mouse->dwExtraInfo & touch_mask) == touch_signature && captured_window.need_to_avoid_touch_probrems){
+#ifdef _DEBUG
+                OutputDebugStringA(std::format("ignore mouse: {}, {}\n", mouse->pt.x, mouse->pt.y).c_str());
+#endif
                 return 1;
             }
         }

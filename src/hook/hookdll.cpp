@@ -31,6 +31,8 @@ struct FatalException{
     ~FatalException() = default;
 };
 
+static HINSTANCE hInstance;
+
 //============================================================================================
 // data shared between all processses
 //============================================================================================
@@ -312,14 +314,18 @@ static std::unique_ptr<LeadManager> leadManager;
 // Managing captured windows of all processes except fsmapper
 //    This class behaves as singleton pateern
 //============================================================================================
+LRESULT hookWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 class FollowingManager;
-static std::unique_ptr<FollowingManager> followingManager;
+static std::unique_ptr<FollowingManager> sharedFollowingManager;
+static thread_local std::unique_ptr<FollowingManager> followingManager;
 
 class FollowingManager : public Manager{
 protected:
     struct WindowContext{
         int index;
         HWND hWndInsertAfter;
+        WNDPROC original_proc{nullptr};
         int x;
         int y;
         int cx;
@@ -329,6 +335,7 @@ protected:
         RECT saved_rect;
         int change_request_num;
         bool need_to_modify_touch{false};
+        mouse_emu::milliseconds delay_start;
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
         mouse_emu::milliseconds delay_drag;
@@ -353,7 +360,6 @@ protected:
         int cy;
         bool show;
     };
-    std::mutex lmutex;
     int64_t local_count = 0;
     std::map<HWND, WindowContext> captured_windows;
     std::unique_ptr<mouse_emu::emulator> mouse_emulator;
@@ -367,15 +373,12 @@ public:
     FollowingManager() = delete;
     FollowingManager(HMODULE hModule) : Manager(false, hModule){};
     ~FollowingManager(){
-        std::unique_lock lock(lmutex);
         auto itr = captured_windows.begin();
         while (itr != captured_windows.end()){
             auto last_count = local_count;
             auto hWnd = itr->first;
             itr++;
-            lock.unlock();
             releaseWindow(hWnd);
-            lock.lock();
             if (last_count + 1 != local_count){
                 itr = captured_windows.begin();
             }
@@ -384,77 +387,76 @@ public:
 
     void captureWindow(HWND hWnd, DWORD option){
         LockHolder glock(mutex);
-        {
-            std::unique_lock llock(lmutex);
-            if (captured_windows.count(hWnd) > 0){
-                // already captured
-                return;
+        if (captured_windows.count(hWnd) > 0){
+            // already captured
+            return;
+        }
+        auto i = 0;
+        for (; i < MAX_CAPTURED_WINDOW; i++){
+            if (captured_windows_ctx[i].hWnd == hWnd && 
+                captured_windows_ctx[i].status == CapturedWindowContext::Status::CAPTURED){
+                break;
             }
-            auto i = 0;
-            for (; i < MAX_CAPTURED_WINDOW; i++){
-                if (captured_windows_ctx[i].hWnd == hWnd && 
-                    captured_windows_ctx[i].status == CapturedWindowContext::Status::CAPTURED){
-                    break;
-                }
+        }
+        if (i < MAX_CAPTURED_WINDOW){
+            sharedFollowingManager->SetWindowLongPtrW.setHook("User32.dll", "NtUserSetWindowLongPtr", SetWindowLongPtrW_Hook);
+            sharedFollowingManager->SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
+            local_count++;
+            WindowContext ctx;
+            ctx.index = i;
+            ctx.original_proc = reinterpret_cast<WNDPROC>(::GetWindowLongPtrW(hWnd, GWLP_WNDPROC));
+            sharedFollowingManager->SetWindowLongPtrW(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(hookWndProc));
+            ctx.saved_style  = ::GetWindowLongPtrW(hWnd, GWL_STYLE);
+            ::GetWindowRect(hWnd, &ctx.saved_rect);
+            ctx.show = false;
+            ctx.x = 0;
+            ctx.y = 0;
+            ctx.cx = 0;
+            ctx.cy = 0;
+            ctx.hWndInsertAfter = nullptr;
+            ctx.change_request_num = 0;
+            if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
+                ctx.need_to_modify_touch = true;
+                ctx.delay_start = mouse_emu::milliseconds{touch_drag_start_delay};
+                ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
+                ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
+                ctx.delay_drag = mouse_emu::milliseconds{0};
+                ctx.double_tap_on_drag = touch_double_tap_on_drag;
+                ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
+                RegisterTouchWindow(hWnd, 0);
             }
-            if (i < MAX_CAPTURED_WINDOW){
-                SetWindowLongPtrW.setHook("User32.dll", "NtUserSetWindowLongPtr", SetWindowLongPtrW_Hook);
-                SetWindowPos.setHook("User32.dll", "NtUserSetWindowPos", SetWindowPos_Hook);
-                local_count++;
-                WindowContext ctx;
-                ctx.index = i;
-                ctx.saved_style  = ::GetWindowLongPtrW(hWnd, GWL_STYLE);
-                ::GetWindowRect(hWnd, &ctx.saved_rect);
-                ctx.show = false;
-                ctx.x = 0;
-                ctx.y = 0;
-                ctx.cx = 0;
-                ctx.cy = 0;
-                ctx.hWndInsertAfter = nullptr;
-                ctx.change_request_num = 0;
-                if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
-                    ctx.need_to_modify_touch = true;
-                    ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
-                    ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
-                    ctx.delay_drag = mouse_emu::milliseconds{touch_drag_start_delay};
-                    ctx.double_tap_on_drag = touch_double_tap_on_drag;
-                    ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
-                    RegisterTouchWindow(hWnd, 0);
-                }
-                if (ctx.need_to_modify_touch && !mouse_emulator){
-                    mouse_emulator = std::move(mouse_emu::create_emulator());
-                    mouse_emulator->set_window_for_recovery(window_for_recovery, recovery_type);
-                }
-                captured_windows.emplace(hWnd, ctx);
-                llock.unlock();
-                glock.unlock();
-                if (option & CAPTURE_OPT_HIDE_SYSTEM_REGION){
-                    this->SetWindowLongPtrW(
-                        hWnd, GWL_STYLE, 
-                        ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
-                }
-                this->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
+            if (ctx.need_to_modify_touch && !mouse_emulator){
+                mouse_emulator = std::move(mouse_emu::create_emulator());
+                mouse_emulator->set_window_for_recovery(window_for_recovery, recovery_type);
             }
+            captured_windows.emplace(hWnd, ctx);
+            glock.unlock();
+            if (option & CAPTURE_OPT_HIDE_SYSTEM_REGION){
+                sharedFollowingManager->SetWindowLongPtrW(
+                    hWnd, GWL_STYLE, 
+                    ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
+            }
+            sharedFollowingManager->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
         }
     };
 
     void releaseWindow(HWND hWnd){
-        std::unique_lock llock(lmutex);
         if (captured_windows.count(hWnd) == 0){
             //specified window is not captured
             return;
         }
         auto& ctx = captured_windows.at(hWnd);
+        auto original_proc = ctx.original_proc;
         auto saved_style = ctx.saved_style;
         auto saved_rect = ctx.saved_rect;
         captured_windows.erase(hWnd);
         local_count++;
-        llock.unlock();
         if (ctx.need_to_modify_touch){
             UnregisterTouchWindow(hWnd);
         }
-        this->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
-        this->SetWindowPos(
+        sharedFollowingManager->SetWindowLongPtrW(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(original_proc));
+        sharedFollowingManager->SetWindowLongPtrW(hWnd, GWL_STYLE, saved_style);
+        sharedFollowingManager->SetWindowPos(
             hWnd, HWND_TOP, 
             saved_rect.left, saved_rect.top, saved_rect.right - saved_rect.left, saved_rect.bottom - saved_rect.top, 
             SWP_FRAMECHANGED | SWP_SHOWWINDOW);
@@ -465,66 +467,67 @@ public:
 
     void changeWindowAttribute(HWND hWnd){
         LockHolder glock(mutex);
-        {
-            std::unique_lock llock(lmutex);
-            if (captured_windows.count(hWnd) == 0){
-                // specified window is not captured
-                return;
-            }
-            auto& ctx = captured_windows.at(hWnd);
-            auto& req = captured_windows_ctx[ctx.index];
-            if (req.hWnd != hWnd || req.status != CapturedWindowContext::Status::CAPTURED){
-                return;
-            }
-            ChangeRequest cr = {0};
-            cr.hWnd = hWnd;
-            if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy){
-                cr.change_position = true;
-                ctx.x = cr.x = req.x;
-                ctx.y = cr.y = req.y;
-                ctx.cx = cr.cx = req.cx;
-                ctx.cy = cr.cy = req.cy;
-                ctx.hWndInsertAfter = cr.hWndInsertAfter = req.hWndInsertAfter;
-            }
-            if (req.show != ctx.show){
-                cr.change_visibility = true;
-                ctx.show = cr.show = req.show;
-            }
-            if (!cr.change_position && !cr.change_visibility){
-                return;
-            }
-
-            // change window attributes
-            llock.unlock();
-            UINT flag = cr.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE;
-            if (cr.change_visibility){
-                flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
-            }
-            this->SetWindowPos(cr.hWnd, cr.hWndInsertAfter, cr.x, cr.y, cr.cx, cr.cy, flag);
+        if (captured_windows.count(hWnd) == 0){
+            // specified window is not captured
+            return;
         }
+        auto& ctx = captured_windows.at(hWnd);
+        auto& req = captured_windows_ctx[ctx.index];
+        if (req.hWnd != hWnd || req.status != CapturedWindowContext::Status::CAPTURED){
+            return;
+        }
+        ChangeRequest cr = {0};
+        cr.hWnd = hWnd;
+        if (req.x != ctx.x || req.y != ctx.y || req.cx != ctx.cx || req.cy != ctx.cy){
+            cr.change_position = true;
+            ctx.x = cr.x = req.x;
+            ctx.y = cr.y = req.y;
+            ctx.cx = cr.cx = req.cx;
+            ctx.cy = cr.cy = req.cy;
+            ctx.hWndInsertAfter = cr.hWndInsertAfter = req.hWndInsertAfter;
+        }
+        if (req.show != ctx.show){
+            cr.change_visibility = true;
+            ctx.show = cr.show = req.show;
+        }
+        if (!cr.change_position && !cr.change_visibility){
+            return;
+        }
+
+        // change window attributes
+        UINT flag = cr.change_position ? 0 : SWP_NOMOVE | SWP_NOSIZE;
+        if (cr.change_visibility){
+            flag |= req.show ? SWP_SHOWWINDOW : SWP_HIDEWINDOW;
+        }
+        sharedFollowingManager->SetWindowPos(cr.hWnd, cr.hWndInsertAfter, cr.x, cr.y, cr.cx, cr.cy, flag);
     };
 
     void closeWindow(HWND hWnd){
         LockHolder glock(mutex);
-        {
-            std::unique_lock llock(lmutex);
-            if (captured_windows.count(hWnd) == 0){
-                // specified window is not captured
-                return;
-            }
-            auto& ctx = captured_windows.at(hWnd);
-            auto& gctx = captured_windows_ctx[ctx.index];
-            if (gctx.status == CapturedWindowContext::Status::CAPTURED){
-                gctx.status = CapturedWindowContext::Status::CLOSED;
-                update_counter.from_follower++;
-                ::SetEvent(event);
-            }
-            captured_windows.erase(hWnd);
+        if (captured_windows.count(hWnd) == 0){
+            // specified window is not captured
+            return;
         }
+        auto& ctx = captured_windows.at(hWnd);
+        auto& gctx = captured_windows_ctx[ctx.index];
+        if (gctx.status == CapturedWindowContext::Status::CAPTURED){
+            gctx.status = CapturedWindowContext::Status::CLOSED;
+            update_counter.from_follower++;
+            ::SetEvent(event);
+        }
+        captured_windows.erase(hWnd);
     };
 
+    LRESULT callOriginalWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
+        if (captured_windows.count(hwnd)){
+            auto& ctx = captured_windows.at(hwnd);
+            return ctx.original_proc(hwnd, msg, wparam, lparam);
+        }else{
+            return 0;
+        }
+    }
+
     void processTouchMessage(HWND hWnd, WPARAM wparam, LPARAM lparam){
-        std::unique_lock llock(lmutex);
         if (captured_windows.count(hWnd) == 0){
             // specified window is not captured
             return;
@@ -558,7 +561,7 @@ public:
                 auto delta_y = current_point.y - pt.y;
                 if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
                     delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
-                    ctx.last_ops_time = max(now, ctx.last_ops_time);
+                    ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time);
                     mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
                     ctx.last_ops_time = ctx.last_ops_time + ctx.delay_down;
                 }
@@ -609,22 +612,18 @@ public:
 
 protected:
     static LONG_PTR WINAPI SetWindowLongPtrW_Hook(HWND hWnd, int nIndex, LONG_PTR dwNewLong){
-        std::unique_lock llock(followingManager->lmutex);
-        if (nIndex == GWL_STYLE && followingManager->captured_windows.count(hWnd) > 0){
+        if (nIndex == GWL_STYLE && followingManager && followingManager->captured_windows.count(hWnd) > 0){
             return followingManager->captured_windows.at(hWnd).saved_style;
         }else{
-            llock.unlock();
-            return followingManager->SetWindowLongPtrW(hWnd, nIndex, dwNewLong);
+            return sharedFollowingManager->SetWindowLongPtrW(hWnd, nIndex, dwNewLong);
         }
     };
 
     static BOOL WINAPI SetWindowPos_Hook(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags){
-        std::unique_lock llock(followingManager->lmutex);
-        if (followingManager->captured_windows.count(hWnd) > 0){
+        if (followingManager && followingManager->captured_windows.count(hWnd) > 0){
             return true;
         }else{
-            llock.unlock();
-            return followingManager->SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+            return sharedFollowingManager->SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
         }
     };
 };
@@ -635,8 +634,11 @@ protected:
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
     if (nCode >= HC_ACTION) {
         auto* pMsg = reinterpret_cast<CWPSTRUCT*>(lParam);
-        if (followingManager){
-            if (pMsg->message == followingManager->getControlMessageCode()) {
+        if (sharedFollowingManager){
+            if (pMsg->message == sharedFollowingManager->getControlMessageCode()) {
+                if (!followingManager){
+                    followingManager = std::make_unique<FollowingManager>(hInstance);
+                }
                 auto type = static_cast<ControllMessageDword>(pMsg->wParam);
                 if (type == ControllMessageDword::start_capture){
                     followingManager->captureWindow(pMsg->hwnd, static_cast<DWORD>(pMsg->lParam));
@@ -647,22 +649,26 @@ LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam){
                 }else if (type == ControllMessageDword::set_window_for_recovery){
                     followingManager->setWindowForRecovery(pMsg->hwnd, static_cast<mouse_emu::recovery_type>(pMsg->lParam));
                 }
-            }else if (pMsg->message == WM_DESTROY){
-                followingManager->closeWindow(pMsg->hwnd);
-            }else if (pMsg->message == WM_TOUCH){
-                followingManager->processTouchMessage(pMsg->hwnd, pMsg->wParam, pMsg->lParam);
             }
         }
     }
     return CallNextHookEx(hookHandle, nCode, wParam, lParam);
 }
 
+LRESULT hookWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
+    if (msg == WM_TOUCH){
+        followingManager->processTouchMessage(hwnd, wparam, lparam);
+        return 0;
+    }else if (msg == WM_DESTROY){
+        followingManager->closeWindow(hwnd);
+    }
+    
+    return followingManager->callOriginalWindowProc(hwnd, msg, wparam, lparam);
+}
 
 //============================================================================================
 // DLL entry point
 //============================================================================================
-static HINSTANCE hInstance;
-
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved){
@@ -671,7 +677,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         hInstance = hModule;
         try{
             if (hookHandle != 0){
-                followingManager = std::make_unique<FollowingManager>(hModule);
+                sharedFollowingManager = std::make_unique<FollowingManager>(hModule);
             }
         }catch (FatalException &e){
             DWORD error = e.error;
@@ -680,7 +686,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         break;
     case DLL_PROCESS_DETACH:
         leadManager = nullptr;
-        followingManager = nullptr;
+        sharedFollowingManager = nullptr;
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
