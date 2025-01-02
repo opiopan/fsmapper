@@ -2,9 +2,9 @@
 sidebar_position: 4
 ---
 
-# dcs.clear_chunk()
+# dcs.clear_chunks()
 ```lua
-dcs.clear_chunk()
+dcs.clear_chunks()
 ```
 This function clear all Lua chunks registered for execution within the DCS World process using [`dcs.register_chunk()`](/libs/dcs/dcs_register_chunk).
 

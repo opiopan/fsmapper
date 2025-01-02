@@ -37,7 +37,7 @@ You can also instruct fsmapper to execute any Lua chunk within the DCS World pro
 - [`dcs.register_chunk()`](/libs/dcs/dcs_register_chunk) for registering Lua chunks
 - [`dcs.execute_chunk()`](/libs/dcs/dcs_execute_chunk) for executing registered Lua chunks
 - [`dcs.chunk_executer()`](/libs/dcs/dcs_chunk_executer), the native-action version for executing the chunks
-- [`dcs.clear_chunk()`](/libs/dcs/dcs_clear_chunk) for clearing the all registered Lua chunks
+- [`dcs.clear_chunks()`](/libs/dcs/dcs_clear_chunks) for clearing the all registered Lua chunks
 
 In the following example, A Lua chunk that toggles the Stores Config Switch on the F-16C is registered and executed.
 

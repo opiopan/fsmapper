@@ -26,6 +26,6 @@ This function returns an ID that uniquely identifies the registered chunk.
 ## See Also
 - [Interaction with DCS](/guide/dcs)
 - [Executing a Lua chunk](/guide/dcs#executing-a-lua-chunk)
-- [`dcs.clear_chunk()`](/libs/dcs/dcs_clear_chunk)
+- [`dcs.clear_chunks()`](/libs/dcs/dcs_clear_chunks)
 - [`dcs.execute_chunk()`](/libs/dcs/dcs_execute_chunk)
 - [`dcs.chunk_executer()`](/libs/dcs/dcs_chunk_executer)
