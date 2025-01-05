@@ -205,6 +205,13 @@ namespace winrt::gui::ViewModels::implementation
         void DcsExporterIsEnabled(bool value){
             CheckAndInstallDcsExporter(value);
         }
+        bool TouchMouseEmulationIsEnable(){
+            return fsmapper::app_config.get_touch_mouse_emulation_is_enable();
+        }
+        void TouchMouseEmulationIsEnable(bool value){
+            fsmapper::app_config.set_touch_mouse_emulation_is_enable(value);
+            save_config();
+        }
         uint32_t TouchDownDelay(){
             return fsmapper::app_config.get_touch_down_delay();
         }

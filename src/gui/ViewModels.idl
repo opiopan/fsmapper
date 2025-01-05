@@ -99,6 +99,7 @@ namespace gui.ViewModels{
         String NewRelease{get;};
         Boolean DcsIsInstalled{get;};
         Boolean DcsExporterIsEnabled;
+        Boolean TouchMouseEmulationIsEnable;
         Int32 TouchDownDelay;
         Int32 TouchUpDelay;
         Int32 TouchDragStartDelay;

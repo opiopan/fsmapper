@@ -274,6 +274,9 @@
                         <angel:SettingsExpander.HeaderIcon>
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe815;"/>
                         </angel:SettingsExpander.HeaderIcon>
+                        <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                       MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                  IsOn="{x:Bind ViewModel.TouchMouseEmulationIsEnable, Mode=TwoWay}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel>
                                 <angel:SettingsCard Header="Cursor move delay" Background="{ThemeResource SettingsCardBackground}"

@@ -24,6 +24,7 @@ static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
 static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
 static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
+static const auto* CONFIG_TOUCH_MOUSE_EMULATION = "touch_mouse_emulation";
 static const auto* CONFIG_TOUCH_DOWN_DELAY = "touch_down_delay";
 static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
 static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
@@ -57,6 +58,7 @@ class config_imp : public config{
     uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
     std::string skipped_version{"0.0"};
     dcs_exporter_mode dcs_exporter_mode_data{dcs_exporter_mode::unknown};
+    bool touch_mouse_emulation{true};
     uint32_t touch_down_delay{default_touch_down_delay};
     uint32_t touch_up_delay{default_touch_up_delay};
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
@@ -151,6 +153,7 @@ public:
         int dcs_exporter_mode_num{static_cast<int>(dcs_exporter_mode::unknown)};
         reflect_number(data, CONFIG_DCS_EXPORTER_MODE, dcs_exporter_mode_num);
         dcs_exporter_mode_data = static_cast<dcs_exporter_mode>(dcs_exporter_mode_num);
+        reflect_bool(data, CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation);
         reflect_number(data, CONFIG_TOUCH_DOWN_DELAY, touch_down_delay);
         reflect_number(data, CONFIG_TOUCH_UP_DELAY, touch_up_delay);
         reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
@@ -176,6 +179,7 @@ public:
                 {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
                 {CONFIG_SKIPPED_VERSION, skipped_version},
                 {CONFIG_DCS_EXPORTER_MODE, static_cast<int>(dcs_exporter_mode_data)},
+                {CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation},
                 {CONFIG_TOUCH_DOWN_DELAY, touch_down_delay},
                 {CONFIG_TOUCH_UP_DELAY, touch_up_delay},
                 {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
@@ -264,6 +268,12 @@ public:
     }
     void set_dcs_exporter_mode(dcs_exporter_mode value){
         update_value(dcs_exporter_mode_data, value);
+    }
+    bool get_touch_mouse_emulation_is_enable(){
+        return touch_mouse_emulation;
+    }
+    void set_touch_mouse_emulation_is_enable(bool value){
+        update_value(touch_mouse_emulation, value);
     }
     uint32_t get_touch_down_delay(){
         return touch_down_delay;
