@@ -994,6 +994,28 @@ ViewPortManager::~ViewPortManager(){
     hookdll_stopGlobalHook();
 }
 
+void ViewPortManager::log_displays(){
+    struct CONTEXT{
+        int count{0};
+        std::ostringstream os;
+    } context;
+    context.os << "mapper-core: Connected monitors are:";
+    ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmontor, HDC hdc, LPRECT rect, LPARAM context_param) -> BOOL {
+        auto& context = *reinterpret_cast<CONTEXT*>(context_param);
+        context.count++;
+        context.os << std::endl << std::format(
+            "    #{}: x={}, y={}, width={}, height={}",
+            context.count,
+            rect->left,
+            rect->top,
+            rect->right - rect->left,
+            rect->bottom - rect->top
+        );
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&context));
+    engine.putLog(MCONSOLE_DEBUG, context.os.str());
+}
+
 void ViewPortManager::init_scripting_env(sol::table& mapper_table){
     //
     // functions to handle viewport

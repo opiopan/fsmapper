@@ -278,6 +278,13 @@ bool MapperEngine::run(std::string&& scriptPath){
         }
 
         //-------------------------------------------------------------------------------
+        // put debug log to show information of connected monitors
+        //-------------------------------------------------------------------------------
+        lock.unlock();
+        scripting.viewportManager->log_displays();
+        lock.lock();
+
+        //-------------------------------------------------------------------------------
         // run the script
         //-------------------------------------------------------------------------------
         status = Status::running;

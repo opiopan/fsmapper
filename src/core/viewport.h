@@ -370,6 +370,7 @@ public:
     void stop_viewports();
     void reset_viewports();
     std::shared_ptr<CapturedWindow> create_captured_window(sol::object def_obj);
+    void log_displays();
 
     // functions called from host program via mappercore API
     using cw_info_list = std::vector<CapturedWindowInfo>;
