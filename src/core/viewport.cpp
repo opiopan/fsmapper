@@ -999,20 +999,27 @@ void ViewPortManager::log_displays(){
         int count{0};
         std::ostringstream os;
     } context;
-    context.os << "mapper-core: Connected monitors are:";
-    ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmontor, HDC hdc, LPRECT rect, LPARAM context_param) -> BOOL {
-        auto& context = *reinterpret_cast<CONTEXT*>(context_param);
-        context.count++;
-        context.os << std::endl << std::format(
-            "    #{}: x={}, y={}, width={}, height={}",
-            context.count,
-            rect->left,
-            rect->top,
-            rect->right - rect->left,
-            rect->bottom - rect->top
-        );
-        return TRUE;
-    }, reinterpret_cast<LPARAM>(&context));
+    context.os << "mapper-core: Connected monitors:";
+    DISPLAY_DEVICEA dd;
+    dd.cb = sizeof(dd);
+    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
+        if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
+            DEVMODEA dm;
+            dm.dmSize = sizeof(dm);
+            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
+                context.count++;
+                context.os << std::endl << std::format(
+                    "#{} {}: x={}, y={}, width={}, height={}",
+                    context.count,
+                    dd.DeviceString,
+                    dm.dmPosition.x,
+                    dm.dmPosition.y,
+                    dm.dmPelsWidth,
+                    dm.dmPelsHeight
+                );
+            }
+        }
+    }
     engine.putLog(MCONSOLE_DEBUG, context.os.str());
 }
 
@@ -1105,16 +1112,22 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
                 sol::state_view lua_state;
                 sol::table displays;
             } context {lua_state, displays};
-            ::EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hmontor, HDC hdc, LPRECT rect, LPARAM context_param) -> BOOL {
-                auto context = reinterpret_cast<CONTEXT*>(context_param);
-                sol::table display = context->lua_state.create_table();
-                display["x"] = rect->left;
-                display["y"] = rect->top;
-                display["width"] = rect->right - rect->left;
-                display["height"] = rect->bottom - rect->top;
-                context->displays.add(display);
-                return TRUE;
-            }, reinterpret_cast<LPARAM>(&context));
+            DISPLAY_DEVICEA dd;
+            dd.cb = sizeof(dd);
+            for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
+                if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
+                    DEVMODEA dm;
+                    dm.dmSize = sizeof(dm);
+                    if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
+                        sol::table display = context.lua_state.create_table();
+                        display["x"] = dm.dmPosition.x;
+                        display["y"] = dm.dmPosition.y;
+                        display["width"] = dm.dmPelsWidth;
+                        display["height"] = dm.dmPelsHeight;
+                        context.displays.add(display);
+                    }
+                }
+            }
             return displays;
         });
     };
@@ -1385,7 +1398,22 @@ void ViewPortManager::disable_viewports(){
 
 void ViewPortManager::enable_viewport_primitive(){	
     displays.clear();
-    ::EnumDisplayMonitors(nullptr, nullptr, ViewPortManager::monitor_enum_proc, reinterpret_cast<LPARAM>(this));
+    DISPLAY_DEVICEA dd;
+    dd.cb = sizeof(dd);
+    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
+        if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
+            DEVMODEA dm;
+            dm.dmSize = sizeof(dm);
+            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
+                displays.emplace_back(
+                    dm.dmPosition.x,
+                    dm.dmPosition.y,
+                    dm.dmPelsWidth,
+                    dm.dmPelsHeight
+                );
+            }
+        }
+    }
     int i = 0;
     try{
         for (auto& item: image_streamers){
@@ -1414,12 +1442,6 @@ void ViewPortManager::disable_viewport_primitive(){
         item.second->stop_capture();
     }
     uninstall_mouse_hook();
-}
-
-BOOL ViewPortManager::monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context){
-    auto self = reinterpret_cast<ViewPortManager*>(context);
-    self->displays.emplace_back(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
-    return true;
 }
 
 void ViewPortManager::notify_close_proc(HWND hWnd, void* context){

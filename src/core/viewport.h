@@ -397,7 +397,6 @@ protected:
     };
     void enable_viewport_primitive();
     void disable_viewport_primitive();
-    static BOOL monitor_enum_proc(HMONITOR hmon, HDC hdc, LPRECT rect, LPARAM context);
     static void notify_close_proc(HWND hWnd, void* context);
     void process_close_event(HWND hWnd);
 };
