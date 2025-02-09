@@ -15,6 +15,7 @@
 #include "viewobject.h"
 #include "graphics.h"
 #include "tools.h"
+#include "encoding.hpp"
 #include "hookdll.h"
 
 #include <windowsx.h>
@@ -22,6 +23,10 @@
 using std::min;
 using std::max;
 #include <gdiplus.h>
+#include <setupapi.h>
+#include <devguid.h>
+
+#pragma comment(lib, "setupapi.lib")
 
 static constexpr auto touch_mask = 0xFFFFFF00;
 static constexpr auto touch_signature = 0xFF515700;
@@ -165,6 +170,151 @@ namespace view_utils{
         }else{
             return base_factor;
         }
+    }
+
+    std::string normalize_device_path(const char* path){
+        char buf[128]{"DISPLAY"}; // from the definition of DISPLAYCONFIG_TARGET_DEVICE_NAME
+        size_t i{0}, j{7}, numofnum{0};
+        for (; path[i] || j >= sizeof(buf); i++){
+            if (path[i] == '#'){
+                numofnum++;
+                if (numofnum == 3){
+                    buf[j] = 0;
+                    break;
+                }
+            }
+            if (numofnum > 0){
+                if (path[i] == '#'){
+                    buf[j] = '\\';
+                }else{
+                    buf[j] = std::toupper(path[i]);
+                }
+                j++;
+            }
+        }
+        if (numofnum == 3){
+            return buf;
+        }else{
+            return "";
+        }
+    }
+
+    struct display_config{
+        std::string source_name;
+        std::string device_name;
+        DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY technology;
+
+        display_config &operator=(const display_config&) = delete;
+        display_config(const display_config&) = delete;
+
+        display_config(const char* s, const char* d, DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY t) : 
+            source_name(s), device_name(d), technology(t){}
+        display_config(display_config&& src){
+            *this = std::move(src);
+        }
+        display_config& operator = (display_config&& src){
+            source_name = std::move(src.source_name);
+            device_name = std::move(src.device_name);
+            technology = src.technology;
+            return *this;
+        }
+    };
+
+    std::unordered_map<std::string, display_config> get_display_configs(){
+        UINT32 num_path{0};
+        UINT32 num_mode{0};
+        while (true){
+            ::GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &num_path, &num_mode);
+            std::vector<DISPLAYCONFIG_PATH_INFO> paths(num_path);
+            std::vector<DISPLAYCONFIG_MODE_INFO> modes(num_mode);
+            auto hr = ::QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &num_path, &paths[0], &num_mode, &modes[0], nullptr);
+            if (hr == ERROR_SUCCESS){
+                std::unordered_map<std::string, display_config> configs;
+                tools::utf16_to_utf8_translator path_name;
+                tools::utf16_to_utf8_translator source_name;
+                tools::utf16_to_utf8_translator device_name;
+                for (auto& path : paths){
+                    DISPLAYCONFIG_SOURCE_DEVICE_NAME sn;
+                    sn.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+                    sn.header.adapterId = path.sourceInfo.adapterId;
+                    sn.header.id = path.sourceInfo.id;
+                    sn.header.size = sizeof(sn);
+                    ::DisplayConfigGetDeviceInfo(&sn.header);
+                    DISPLAYCONFIG_TARGET_DEVICE_NAME tn;
+                    tn.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+                    tn.header.adapterId = path.targetInfo.adapterId;
+                    tn.header.id = path.targetInfo.id;
+                    tn.header.size = sizeof(tn);
+                    ::DisplayConfigGetDeviceInfo(&tn.header);
+
+                    path_name = tn.monitorDevicePath;
+                    source_name = sn.viewGdiDeviceName;
+                    device_name = tn.monitorFriendlyDeviceName;
+                    configs.emplace(
+                        normalize_device_path(path_name),
+                        std::move(display_config{source_name, device_name, tn.outputTechnology})
+                    );
+                }
+                return configs;
+            }
+        }
+    }
+
+    struct display_info{
+        int id;
+        const char* path;
+        const char* name;
+        const char* description;
+        const char* adapter;
+        DWORD x;
+        DWORD y;
+        DWORD width;
+        DWORD height;
+    };
+
+    template <typename FUNC>
+    void enum_display(FUNC callback){
+        DWORD display_num{0};
+        auto&& configs{get_display_configs()};
+        HDEVINFO dev_info = ::SetupDiGetClassDevsA(&GUID_DEVCLASS_MONITOR, nullptr, nullptr, DIGCF_PRESENT);
+        SP_DEVINFO_DATA dev_info_data;
+        dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
+        for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
+            char instance_id[512]{0};
+            if (::SetupDiGetDeviceInstanceIdA(dev_info, &dev_info_data, instance_id, sizeof(instance_id), nullptr)) {
+                display_num++;
+                auto notified{false};
+                if (auto it = configs.find(instance_id); it != configs.end()){
+                    DISPLAY_DEVICEA dd;
+                    dd.cb = sizeof(dd);
+                    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
+                        if (it->second.source_name == dd.DeviceName){
+                            DEVMODEA dm;
+                            dm.dmSize = sizeof(dm);
+                            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
+                                display_info info;
+                                info.id = display_num;
+                                info.path = it->first.c_str();
+                                info.name = it->second.source_name.c_str();
+                                info.description = it->second.device_name.c_str();
+                                info.adapter = dd.DeviceString;
+                                info.x = dm.dmPosition.x;
+                                info.y = dm.dmPosition.y;
+                                info.width = dm.dmPelsWidth;
+                                info.height = dm.dmPelsHeight;
+                                callback(&info);
+                                notified = true;
+							}
+                            break;
+                        }
+                    }
+                }
+                if (!notified){
+                    callback(nullptr);
+                }
+            }
+        }
+        ::SetupDiDestroyDeviceInfoList(dev_info);
     }
 }
 
@@ -782,7 +932,7 @@ void ViewPort::enable(const std::vector<IntRect> displays){
     if (!def_display_no){
         entire_region = view_utils::calculate_actual_rect({0.f, 0.f, 0.f, 0.f}, def_region).to_IntRect();
     }else{
-        if (displays.size() < *def_display_no){
+        if (displays.size() < *def_display_no || displays[*def_display_no - 1].width <= 0){
             std::ostringstream os;
             os << "Display number that is specified as viewport difinition is invalid. [viewport: " << name ;
             os << "] [display: " << *def_display_no << "]";
@@ -995,32 +1145,22 @@ ViewPortManager::~ViewPortManager(){
 }
 
 void ViewPortManager::log_displays(){
-    struct CONTEXT{
-        int count{0};
-        std::ostringstream os;
-    } context;
-    context.os << "mapper-core: Connected monitors:";
-    DISPLAY_DEVICEA dd;
-    dd.cb = sizeof(dd);
-    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
-        if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
-            DEVMODEA dm;
-            dm.dmSize = sizeof(dm);
-            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
-                context.count++;
-                context.os << std::endl << std::format(
-                    "#{} {}: x={}, y={}, width={}, height={}",
-                    context.count,
-                    dd.DeviceString,
-                    dm.dmPosition.x,
-                    dm.dmPosition.y,
-                    dm.dmPelsWidth,
-                    dm.dmPelsHeight
-                );
-            }
+    std::ostringstream os;
+    os << "mapper-core: Connected monitors:";
+    view_utils::enum_display([&os](const view_utils::display_info* info){
+        if (info){
+            os << std::endl << std::format(
+                "    #{} {}: x={}, y={}, width={}, height={}",
+                info->id,
+                *info->description ? info->description : info->adapter,
+                info->x,
+                info->y,
+                info->width,
+                info->height
+            );
         }
-    }
-    engine.putLog(MCONSOLE_DEBUG, context.os.str());
+    });
+    engine.putLog(MCONSOLE_DEBUG, os.str());
 }
 
 void ViewPortManager::init_scripting_env(sol::table& mapper_table){
@@ -1112,22 +1252,19 @@ void ViewPortManager::init_scripting_env(sol::table& mapper_table){
                 sol::state_view lua_state;
                 sol::table displays;
             } context {lua_state, displays};
-            DISPLAY_DEVICEA dd;
-            dd.cb = sizeof(dd);
-            for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
-                if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
-                    DEVMODEA dm;
-                    dm.dmSize = sizeof(dm);
-                    if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
-                        sol::table display = context.lua_state.create_table();
-                        display["x"] = dm.dmPosition.x;
-                        display["y"] = dm.dmPosition.y;
-                        display["width"] = dm.dmPelsWidth;
-                        display["height"] = dm.dmPelsHeight;
-                        context.displays.add(display);
-                    }
+            view_utils::enum_display([&context](const view_utils::display_info* info){
+                if (info){
+                    sol::table display = context.lua_state.create_table();
+                    display["id"] = info->id;
+                    display["x"] = info->x;
+                    display["y"] = info->y;
+                    display["width"] =  info->width;
+                    display["height"] = info->height;
+                    display["name"] = info->description;
+                    display["adapter"] = info->adapter;
+                    context.displays[info->id] = display;
                 }
-            }
+            });
             return displays;
         });
     };
@@ -1398,22 +1535,18 @@ void ViewPortManager::disable_viewports(){
 
 void ViewPortManager::enable_viewport_primitive(){	
     displays.clear();
-    DISPLAY_DEVICEA dd;
-    dd.cb = sizeof(dd);
-    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
-        if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE){
-            DEVMODEA dm;
-            dm.dmSize = sizeof(dm);
-            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
-                displays.emplace_back(
-                    dm.dmPosition.x,
-                    dm.dmPosition.y,
-                    dm.dmPelsWidth,
-                    dm.dmPelsHeight
-                );
-            }
+    view_utils::enum_display([this](const view_utils::display_info* info){
+        if (info){
+            displays.emplace_back(
+                info->x,
+                info->y,
+                info->width,
+                info->height
+            );
+        }else{
+            displays.emplace_back(0, 0, 0, 0);
         }
-    }
+    });
     int i = 0;
     try{
         for (auto& item: image_streamers){
