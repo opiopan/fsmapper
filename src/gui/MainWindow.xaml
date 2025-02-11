@@ -98,12 +98,17 @@
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                             <MenuFlyoutSeparator/>
+                            <MenuFlyoutItem Text="Official site" Click="{x:Bind ViewModel.SiteMenu_Click}">
+                                <MenuFlyoutItem.Icon>
+                                    <ImageIcon Source="{ThemeResource SimpleAppLogo}"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
                             <MenuFlyoutItem Text="GitHub" Click="{x:Bind ViewModel.GithubMenu_Click}">
                                 <MenuFlyoutItem.Icon>
                                     <ImageIcon Source="{ThemeResource GithubLogo}"/>
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="Installation package repository" Click="{x:Bind ViewModel.ReleaseMenu_Click}">
+                            <MenuFlyoutItem Text="All released packages" Click="{x:Bind ViewModel.ReleaseMenu_Click}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7b8;"/>
                                 </MenuFlyoutItem.Icon>

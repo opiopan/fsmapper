@@ -168,6 +168,9 @@
     <None Include="Assets\github-mark-white.svg">
       <Filter>Assets</Filter>
     </None>
+    <None Include="Assets\simple_icon.svg">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\fs2020logo.png">

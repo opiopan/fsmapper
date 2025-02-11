@@ -19,6 +19,7 @@
             <BitmapImage x:Key="SimLogoFS2024" UriSource="/Assets/fs2024logo.png"/>
             <BitmapImage x:Key="SimLogoDCS" UriSource="/Assets/dcslogo.png"/>
             <SvgImageSource x:Key="AppLogo" UriSource="/Assets/appicon.svg"/>
+            <SvgImageSource x:Key="SimpleAppLogo" UriSource="/Assets/simple_icon.svg"/>
             <x:String x:Key="CardBorderThickness">1</x:String>
             <Style x:Key="CardStackPanelStyle" TargetType="StackPanel">
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundBrush}"/>

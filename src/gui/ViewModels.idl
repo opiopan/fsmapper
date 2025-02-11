@@ -17,6 +17,7 @@ namespace gui.ViewModels{
         Windows.Foundation.IAsyncAction ClickOpenButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickStartStopButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void GuideMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void SiteMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void GithubMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ReleaseMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickCloseNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);

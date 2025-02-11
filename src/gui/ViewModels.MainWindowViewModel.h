@@ -31,6 +31,8 @@ namespace winrt::gui::ViewModels::implementation
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
         void GuideMenu_Click(
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        void SiteMenu_Click(
+            winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
         void GithubMenu_Click(
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
         void ReleaseMenu_Click(
