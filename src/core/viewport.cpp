@@ -266,8 +266,8 @@ namespace view_utils{
         const char* name;
         const char* description;
         const char* adapter;
-        DWORD x;
-        DWORD y;
+        int x;
+        int y;
         DWORD width;
         DWORD height;
     };
