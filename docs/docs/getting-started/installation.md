@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Instration
+# Installation
 
 This section covers the steps for installing fsmapper.
 
