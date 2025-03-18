@@ -151,6 +151,7 @@
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="Utilities\appfs.hpp" />
+    <ClInclude Include="Utilities\cli_params.hpp" />
     <ClInclude Include="Utilities\config.hpp" />
     <ClInclude Include="Utilities\dcs_installer.hpp" />
     <ClInclude Include="Utilities\tools.hpp" />
@@ -202,6 +203,7 @@
       <DependentUpon>UtilitiesPage.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="Utilities\appfs.cpp" />
+    <ClCompile Include="Utilities\cli_params.cpp" />
     <ClCompile Include="Utilities\config.cpp" />
     <ClCompile Include="Utilities\dcs_installer.cpp" />
     <ClCompile Include="Utilities\version_parser.cpp" />

@@ -188,6 +188,15 @@ namespace winrt::gui::implementation
     }
 
     void MainWindow::activate_window(){
+        fsmapper::app_config.load_cli_params();
+        auto& cli_script_path = fsmapper::app_config.get_cli_script_path();
+        if (cli_script_path){
+            view_model.RestartScript(cli_script_path->operator std::wstring());
+        }
+        if (fsmapper::app_config.get_cli_launch_minimized()){
+            return;
+        }
+
         auto hwnd{get_hwnd()};
         if (!hwnd){
             return;

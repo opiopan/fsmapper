@@ -22,6 +22,7 @@ namespace gui.ViewModels{
         void ReleaseMenu_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickCloseNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickDownloadNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        Windows.Foundation.IAsyncAction RestartScript(String path);
     }
 
     runtimeclass DashboardPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {

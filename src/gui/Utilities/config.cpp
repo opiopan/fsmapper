@@ -30,6 +30,8 @@ static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
 static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
 static const auto* CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG = "touch_double_tap_on_drag";
 static const auto* CONFIG_TOUCH_DEADZONE_FOR_DRAG = "touch_deadzone_for_drag";
+static const auto* CONFIG_CLI_LAUNCH_MINIMIZED = "cli_launch_minimized";
+static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
@@ -45,6 +47,7 @@ class config_imp : public config{
 
     utils::appfs fs{L"fsmapper"};
     std::filesystem::path config_path;
+    std::filesystem::path cli_params_path;
 
     rect window_rect = {0, 0, -1, -1};
     std::filesystem::path script_path;
@@ -64,6 +67,9 @@ class config_imp : public config{
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
     bool touch_double_tap_on_drag{default_touch_double_tap_on_drag};
     uint32_t touch_deadzone_for_drag{default_touch_deadzone_for_drag};
+
+    bool cli_launch_minimized{false};
+    std::optional<std::filesystem::path> cli_script_path{std::nullopt};
 
     template <typename KEY, typename VALUE>
     void reflect_number(json& jobj, const KEY& key, VALUE& var){
@@ -122,6 +128,7 @@ class config_imp : public config{
 public:
     config_imp(){
         config_path = std::move(fs.get_appdata_path() / L"config.json");
+        cli_params_path = std::move(fs.get_appdata_path() / L"cli_params.json");
     };
 
     void load(){
@@ -205,112 +212,151 @@ public:
     void set_script_path(std::filesystem::path&& path) override{
         update_value(script_path, std::move(path));
     }
-    bool get_is_starting_script_at_start_up(){
+    bool get_is_starting_script_at_start_up() override{
         return is_starting_script_at_start_up;
     };
-    void set_is_starting_script_at_start_up(bool value){
+    void set_is_starting_script_at_start_up(bool value) override{
         update_value(is_starting_script_at_start_up, value);
     };
-    uint32_t get_message_buffer_size(){
+    uint32_t get_message_buffer_size() override{
         return message_buffer_size;
     }
-    void set_message_buffer_size(uint32_t value){
+    void set_message_buffer_size(uint32_t value) override{
         update_value(message_buffer_size, value);
     }
-    const char* get_pre_run_script(){
+    const char* get_pre_run_script() override{
         return pre_run_script.c_str();
     }
-    void set_pre_run_script(const char* value){
+    void set_pre_run_script(const char* value) override{
         update_value(pre_run_script, value);
     }
-    bool get_pre_run_script_is_valid(){
+    bool get_pre_run_script_is_valid() override{
         return pre_run_script_is_valid;
     }
-    void set_pre_run_script_is_valid(bool value){
+    void set_pre_run_script_is_valid(bool value) override{
         update_value(pre_run_script_is_valid, value);
     }
-    MAPPER_OPTION_RENDERING_METHOD get_rendering_method(){
+    MAPPER_OPTION_RENDERING_METHOD get_rendering_method() override{
         return rendering_method;
     }
-    void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value){
+    void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value) override{
         update_value(rendering_method, value);
     }
-    bool get_plugin_folder_is_default(){
+    bool get_plugin_folder_is_default() override{
         return plugin_folder_is_default;
     }
-    void set_plugin_folder_is_default(bool value){
+    void set_plugin_folder_is_default(bool value) override{
         update_value(plugin_folder_is_default, value);
     }
-    const std::filesystem::path &get_default_plugin_folder(){
+    const std::filesystem::path &get_default_plugin_folder() override{
         return fs.get_default_plugin_path();
     }
-    const std::filesystem::path &get_custom_plugin_folder()
-    {
+    const std::filesystem::path &get_custom_plugin_folder() override{
         return custom_plugin_folder;
     }
-    void set_custom_plugin_folder(std::filesystem::path &&path){
+    void set_custom_plugin_folder(std::filesystem::path &&path) override{
         update_value(custom_plugin_folder, std::move(path));
     }
-    uint64_t get_lua_standard_libraries(){
+    uint64_t get_lua_standard_libraries() override{
         return lua_standard_libraries;
     }
-    void set_lua_standard_libraries(uint64_t value){
+    void set_lua_standard_libraries(uint64_t value) override{
         update_value(lua_standard_libraries, value);
     }
-    const char* get_skipped_version(){
+    const char* get_skipped_version() override{
         return skipped_version.c_str();
     }
-    void set_skipped_version(const char* value){
+    void set_skipped_version(const char* value) override{
         update_value(skipped_version, value);
     }
-    dcs_exporter_mode get_dcs_exporter_mode(){
+    dcs_exporter_mode get_dcs_exporter_mode() override{
         return dcs_exporter_mode_data;
     }
-    void set_dcs_exporter_mode(dcs_exporter_mode value){
+    void set_dcs_exporter_mode(dcs_exporter_mode value) override{
         update_value(dcs_exporter_mode_data, value);
     }
-    bool get_touch_mouse_emulation_is_enable(){
+    bool get_touch_mouse_emulation_is_enable() override{
         return touch_mouse_emulation;
     }
-    void set_touch_mouse_emulation_is_enable(bool value){
+    void set_touch_mouse_emulation_is_enable(bool value) override{
         update_value(touch_mouse_emulation, value);
     }
-    uint32_t get_touch_down_delay(){
+    uint32_t get_touch_down_delay() override{
         return touch_down_delay;
     }
-    void set_touch_down_delay(uint32_t value){
+    void set_touch_down_delay(uint32_t value) override{
         update_value(touch_down_delay, value);
     }
-    uint32_t get_touch_up_delay(){
+    uint32_t get_touch_up_delay() override{
         return touch_up_delay;
     }
-    void set_touch_up_delay(uint32_t value){
+    void set_touch_up_delay(uint32_t value) override{
         update_value(touch_up_delay, value);
     }
-    uint32_t get_touch_drag_start_delay(){
+    uint32_t get_touch_drag_start_delay() override{
         return touch_drag_start_delay;
     }
-    void set_touch_drag_start_delay(uint32_t value){
+    void set_touch_drag_start_delay(uint32_t value) override{
         update_value(touch_drag_start_delay, value);
     }
-    bool get_touch_double_tap_on_drag(){
+    bool get_touch_double_tap_on_drag() override{
         return touch_double_tap_on_drag;
     }
-    void set_touch_double_tap_on_drag(bool value){
+    void set_touch_double_tap_on_drag(bool value) override{
         update_value(touch_double_tap_on_drag, value);
     }
-    uint32_t get_touch_deadzone_for_drag(){
+    uint32_t get_touch_deadzone_for_drag() override{
         return touch_deadzone_for_drag;
     }
-    void set_touch_deadzone_for_drag(uint32_t value){
+    void set_touch_deadzone_for_drag(uint32_t value) override{
         update_value(touch_deadzone_for_drag, value);
     }
-    void reset_touch_delay(){
+    void reset_touch_delay() override{
         update_value(touch_down_delay, default_touch_down_delay);
         update_value(touch_up_delay, default_touch_up_delay);
         update_value(touch_drag_start_delay, default_touch_drag_start_delay);
         update_value(touch_double_tap_on_drag, default_touch_double_tap_on_drag);
         update_value(touch_deadzone_for_drag, default_touch_deadzone_for_drag);
+    }
+
+    void load_cli_params() override{
+        std::ifstream ifs(cli_params_path.string());
+        json data;
+        ifs >> data;
+        reflect_bool(data, CONFIG_CLI_LAUNCH_MINIMIZED, cli_launch_minimized);
+        std::string path;
+        reflect_string(data, CONFIG_CLI_SCRIPT_PATH, path);
+        if (path.size() > 0){
+            cli_script_path = std::move(std::filesystem::path(path));
+        }else{
+            cli_script_path = std::nullopt;
+        }
+    }
+    void save_cli_params() override{
+        json data{
+            {CONFIG_CLI_LAUNCH_MINIMIZED, cli_launch_minimized},
+            {CONFIG_CLI_SCRIPT_PATH, cli_script_path ? cli_script_path->string() : ""},
+        };
+        std::ofstream os(cli_params_path.string());
+        os << data;
+        os.close();
+    }
+
+    bool get_cli_launch_minimized() override{
+        return cli_launch_minimized;
+    }
+    void set_cli_launch_minimized(bool value) override{
+        cli_launch_minimized = value;
+    }
+    const std::optional<std::filesystem::path>& get_cli_script_path() override{
+        return cli_script_path;
+    }
+    void set_cli_script_path(const wchar_t* path) override{
+        if (path){
+            cli_script_path = std::move(std::filesystem::path(path));
+        }else{
+            cli_script_path = std::nullopt;
+        }
     }
 };
 

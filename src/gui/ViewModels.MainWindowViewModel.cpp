@@ -152,6 +152,14 @@ namespace winrt::gui::ViewModels::implementation{
         mapper.IsIgnoredUpdate(true);
     }
 
+    winrt::Windows::Foundation::IAsyncAction MainWindowViewModel::RestartScript(hstring path){
+        co_await winrt::resume_background();
+        mapper.StopScriptSync();
+        co_await ui_thread;
+        mapper.ScriptPath(path);
+        mapper.RunScript();
+    }
+
     //============================================================================================
     // Event notification
     //============================================================================================

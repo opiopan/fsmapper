@@ -41,11 +41,13 @@ namespace winrt::gui::ViewModels::implementation
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
         void ClickDownloadNewReleaseButton(
             winrt::Windows::Foundation::IInspectable const &sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const &args);
+        winrt::Windows::Foundation::IAsyncAction RestartScript(hstring path);
 
         winrt::event_token PropertyChanged(winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
         void PropertyChanged(winrt::event_token const& token) noexcept;
 
     protected:
+        winrt::apartment_context ui_thread;
         winrt::gui::Models::Mapper mapper{nullptr};
         winrt::event_token token_for_mapper;
         winrt::Microsoft::UI::Xaml::Media::SolidColorBrush status_brushes[4];

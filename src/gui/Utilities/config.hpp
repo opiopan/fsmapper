@@ -6,6 +6,7 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 #include "mappercore.h"
 
 namespace fsmapper{
@@ -75,6 +76,14 @@ namespace fsmapper{
         virtual uint32_t get_touch_deadzone_for_drag() = 0;
         virtual void set_touch_deadzone_for_drag(uint32_t value) = 0;
         virtual void reset_touch_delay() = 0;
+
+        // For exchanging CLI parameters between processes
+        virtual void save_cli_params() = 0;
+        virtual void load_cli_params() = 0;
+        virtual bool get_cli_launch_minimized() = 0;
+        virtual void set_cli_launch_minimized(bool value) = 0;
+        virtual const std::optional<std::filesystem::path>& get_cli_script_path() = 0;
+        virtual void set_cli_script_path(const wchar_t* value) = 0;
     };
 
     void init_app_config();
