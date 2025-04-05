@@ -274,47 +274,63 @@ namespace view_utils{
 
     template <typename FUNC>
     void enum_display(FUNC callback){
-        DWORD display_num{0};
+        DWORD display_num{1};
         auto&& configs{get_display_configs()};
-        HDEVINFO dev_info = ::SetupDiGetClassDevsA(&GUID_DEVCLASS_MONITOR, nullptr, nullptr, DIGCF_PRESENT);
-        SP_DEVINFO_DATA dev_info_data;
-        dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
-        for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
-            char instance_id[512]{0};
-            if (::SetupDiGetDeviceInstanceIdA(dev_info, &dev_info_data, instance_id, sizeof(instance_id), nullptr)) {
-                display_num++;
-                auto notified{false};
-                if (auto it = configs.find(instance_id); it != configs.end()){
-                    DISPLAY_DEVICEA dd;
-                    dd.cb = sizeof(dd);
-                    for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
-                        if (it->second.source_name == dd.DeviceName){
-                            DEVMODEA dm;
-                            dm.dmSize = sizeof(dm);
-                            if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
-                                display_info info;
-                                info.id = display_num;
-                                info.path = it->first.c_str();
-                                info.name = it->second.source_name.c_str();
-                                info.description = it->second.device_name.c_str();
-                                info.adapter = dd.DeviceString;
-                                info.x = dm.dmPosition.x;
-                                info.y = dm.dmPosition.y;
-                                info.width = dm.dmPelsWidth;
-                                info.height = dm.dmPelsHeight;
-                                callback(&info);
-                                notified = true;
-							}
-                            break;
+        char primary_id[512]{0};
+        auto enumerate = [callback, &display_num, &configs, &primary_id](){
+            HDEVINFO dev_info = ::SetupDiGetClassDevsA(&GUID_DEVCLASS_MONITOR, nullptr, nullptr, DIGCF_PRESENT);
+            SP_DEVINFO_DATA dev_info_data;
+            dev_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
+            for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, i, &dev_info_data); i++) {
+                char instance_id[512]{0};
+                if (::SetupDiGetDeviceInstanceIdA(dev_info, &dev_info_data, instance_id, sizeof(instance_id), nullptr)) {
+                    auto notified{false};
+                    if (strcmp(instance_id, primary_id) == 0){
+                        continue;
+                    }
+                    if (auto it = configs.find(instance_id); it != configs.end()){
+                        DISPLAY_DEVICEA dd;
+                        dd.cb = sizeof(dd);
+                        for (DWORD i = 0; ::EnumDisplayDevicesA(nullptr, i, &dd, 0); i++){
+                            if (it->second.source_name == dd.DeviceName){
+                                DEVMODEA dm;
+                                dm.dmSize = sizeof(dm);
+                                if (EnumDisplaySettingsA(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm)){
+                                    display_info info;
+                                    info.id = display_num;
+                                    info.path = it->first.c_str();
+                                    info.name = it->second.source_name.c_str();
+                                    info.description = it->second.device_name.c_str();
+                                    info.adapter = dd.DeviceString;
+                                    info.x = dm.dmPosition.x;
+                                    info.y = dm.dmPosition.y;
+                                    info.width = dm.dmPelsWidth;
+                                    info.height = dm.dmPelsHeight;
+                                    notified = true;
+                                    if (!*primary_id && (info.x != 0 || info.y != 0)){
+                                        break;
+                                    }
+                                    callback(&info);
+                                    display_num++;
+                                    if (!*primary_id){
+                                        strcpy_s(primary_id, instance_id);
+                                        return;
+                                    }
+                                }
+                                break;
+                            }
                         }
                     }
-                }
-                if (!notified){
-                    callback(nullptr);
+                    if (!notified && *primary_id){
+                        callback(nullptr);
+                        display_num++;
+                    }
                 }
             }
-        }
-        ::SetupDiDestroyDeviceInfoList(dev_info);
+            ::SetupDiDestroyDeviceInfoList(dev_info);
+        };
+        enumerate(); // enumerate primary display
+        enumerate(); // enumerate other displays
     }
 }
 
