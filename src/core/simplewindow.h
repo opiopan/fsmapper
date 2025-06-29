@@ -34,6 +34,7 @@ public:
     void attach_queue();
     void detatch_queue();
     void run();
+    void stop();
     bool dispatch_received_messages();
 
     template <typename DISPATCHABLE>

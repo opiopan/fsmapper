@@ -85,11 +85,12 @@ typedef struct{
 }VIEWPORT_DEF;
 
 typedef enum{
-    MOPT_PRE_RUN_SCRIPT,    // string
-    MOPT_RENDERING_METHOD,  // integer
-    MOPT_PLUGIN_FOLDER,     // string
-    MOPT_STDLIB,            // integer
-    MOPT_DCS_EXPORTER,      // integer (as boolean: 0 is false, other than 0 is true)
+    MOPT_PRE_RUN_SCRIPT,        // string
+    MOPT_ASYNC_MESSAGE_PUMPING, // interger (as boolean: 0 is false, other than 0 is true)
+    MOPT_RENDERING_METHOD,      // integer
+    MOPT_PLUGIN_FOLDER,         // string
+    MOPT_STDLIB,                // integer
+    MOPT_DCS_EXPORTER,          // integer (as boolean: 0 is false, other than 0 is true)
 }MAPPER_OPTION;
 
 typedef enum{

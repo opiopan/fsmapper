@@ -10,6 +10,7 @@
 
 struct MapperOption{
     std::string pre_run_script;
+    bool async_message_pumping {false};
     int64_t rendering_method {MOPT_RENDERING_METHOD_CPU};
     std::string plugin_folder;
     int64_t stdlib{0};

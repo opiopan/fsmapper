@@ -18,6 +18,7 @@ static std::unordered_map<MAPPER_OPTION, int64_t MapperOption::*> integer_option
 };
 
 static std::unordered_map<MAPPER_OPTION, bool MapperOption::*> boolean_options{
+    {MOPT_ASYNC_MESSAGE_PUMPING, &MapperOption::async_message_pumping},
     {MOPT_DCS_EXPORTER, &MapperOption::is_dcs_exporter_enabled},
 };
 

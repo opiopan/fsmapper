@@ -47,7 +47,7 @@ WinDispatcher::WinDispatcher(){
 }
 
 WinDispatcher::~WinDispatcher(){
-    detatch_queue();
+    assert(thread_id != std::thread::id() && controller);
 }
 
 void WinDispatcher::attach_queue(){
@@ -69,11 +69,10 @@ void WinDispatcher::attach_queue(){
 void WinDispatcher::detatch_queue(){
     assert(thread_id == std::thread::id() || thread_id == std::this_thread::get_id());
     if (thread_id == std::this_thread::get_id()){
-        ::DestroyWindow(controller);
+        stop();
         run();
     }
     thread_id = std::thread::id();
-    controller = nullptr;
 }
 
 void WinDispatcher::run(){
@@ -84,6 +83,15 @@ void WinDispatcher::run(){
     }
 }
 
+void WinDispatcher::stop(){
+    if (controller){
+        invoke([this](){
+            if (controller){
+                ::DestroyWindow(controller);
+            }
+        });
+    }
+}
 
 bool WinDispatcher::dispatch_received_messages(){
     MSG msg;
@@ -110,6 +118,7 @@ LRESULT CALLBACK WinDispatcher::windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
         }else{
             if (uMsg == WM_DESTROY){
                 ::PostQuitMessage(0);
+                self->controller = nullptr;
                 return 0;
             }else if (uMsg == self->invoke1_msg){
                 auto function = reinterpret_cast<dispatchable1*>(lParam);
