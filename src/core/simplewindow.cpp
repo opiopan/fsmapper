@@ -47,7 +47,7 @@ WinDispatcher::WinDispatcher(){
 }
 
 WinDispatcher::~WinDispatcher(){
-    assert(thread_id != std::thread::id() && controller);
+    assert(thread_id == std::thread::id() && !controller);
 }
 
 void WinDispatcher::attach_queue(){

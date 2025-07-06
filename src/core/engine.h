@@ -167,12 +167,12 @@ public:
     void notifyUpdate(uint32_t flag){
         std::lock_guard lock(mutex);
         scripting.updated_flags |= flag;
-        ::SetEvent(event.event_as_cv);
+        notify_server();
     }
 
     void notifyUpdateWithNoLock(uint32_t flag){
         scripting.updated_flags |= flag;
-        ::SetEvent(event.event_as_cv);
+        notify_server();
     }
 
     void invokeViewportsUpdate(){
@@ -185,13 +185,17 @@ public:
     void notifyTouchEvent(){
         std::lock_guard lock(mutex);
         event.touch_event_occurred = true;
-        ::SetEvent(event.event_as_cv);
+        notify_server();
     }
 
     sol::state& getLuaState(){return scripting.lua();};
 
     SimHostManager* getSimHostManager(){return scripting.simhostManager.get();}
     ViewPortManager* getViewportManager(){return scripting.viewportManager.get();}
+
+    bool useSeparatedUIThread()const{
+        return options.async_message_pumping;
+    }
 
     // interfaces for host program
     std::vector<CapturedWindowInfo> get_captured_window_list();
@@ -216,6 +220,14 @@ protected:
 
     void setMapping(const char* function_name, int level, const sol::object& mapdef);
     void addMapping(const char* function_name, int level, const sol::object& mapdef);
+
+    inline void notify_server(){
+        if (options.async_message_pumping){
+            event.cv_for_client.notify_all();
+        }else{
+            ::SetEvent(event.event_as_cv);
+        }
+    }
 };
 
 template <typename T>

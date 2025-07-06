@@ -552,7 +552,7 @@ bool MapperEngine::stop(){
 bool MapperEngine::abort(){
     std::lock_guard lock(mutex);
     status = Status::error;
-    ::SetEvent(event.event_as_cv);
+    notify_server();
     return true;
 }
 
@@ -580,7 +580,7 @@ const char* MapperEngine::getEventName(uint64_t evid) const{
 void MapperEngine::sendEvent(Event &&ev){
     std::lock_guard lock(mutex);
     event.queue.push(std::make_unique<Event>(std::move(ev)));
-    ::SetEvent(event.event_as_cv);
+    notify_server();
 }
 
 //============================================================================================
@@ -594,7 +594,7 @@ void MapperEngine::invokeActionIn(std::shared_ptr<Action> action, const Event& e
     }
     DeferredAction da(action, ev);
     event.deferred_actions.emplace(target, std::move(da));
-    ::SetEvent(event.event_as_cv);
+    notify_server();
 }
 
 //============================================================================================
