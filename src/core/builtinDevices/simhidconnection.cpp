@@ -48,11 +48,11 @@ void SimHIDConnection::start(){
     communicator = std::move(std::thread([this] {
         try{
             // send a D command to retrieve device definitions at first
-            serial->write("I\r\nD\r\n"); 
+            serial->write("\r\nI\r\nI B\r\nD\r\n");
 
             char buf[256];
             int readlen;
-            while((readlen = serial->read(buf, sizeof(buf))) > 0){
+            while((readlen = serial->read(buf, sizeof(buf))) >= 0){
                 for (int i = 0; i < readlen; i++){
                     if (simhid_parser_parse(&parser, buf[i])){
                         auto cmd = parser.command;
@@ -124,6 +124,11 @@ void SimHIDConnection::processReceivedData_I(){
             sep = " ";
         }
         DeviceId&& id = {key.str(), value.str()};
+        for (auto& stored_id : deviceid){
+            if (stored_id.key == id.key){
+                return;
+            }
+        }
         deviceid.push_back(std::move(id));
     }
 }
