@@ -247,7 +247,30 @@ void MapperEngine::clearScriptingEnv(){
 // do event loop
 //============================================================================================
 bool MapperEngine::run(std::string&& scriptPath){
-    WinDispatcher::queue_attatcher attacher{WinDispatcher::sharedDispatcher()};
+    class queue_thread{
+        std::thread thread;
+    public:
+        queue_thread(){
+            thread = std::thread([](){
+                auto& dispatcher = WinDispatcher::sharedDispatcher();
+                dispatcher.attach_queue();
+                dispatcher.run();
+                dispatcher.detatch_queue();
+            });
+        }
+        ~queue_thread(){
+            WinDispatcher::sharedDispatcher().stop();
+        }
+    };
+    std::optional<WinDispatcher::queue_attatcher> attacher;
+    std::optional<queue_thread> queue_thread_instance;
+    if (options.async_message_pumping){
+        queue_thread_instance.emplace();
+    }else{
+        // attach WinDispatcher to the current thread
+        // so that it can receive messages from Windows
+        attacher.emplace(WinDispatcher::sharedDispatcher());
+    }
     try{
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -483,38 +506,46 @@ bool MapperEngine::run(std::string&& scriptPath){
                            event.need_update_viewports || event.touch_event_occurred;
                 };
 
-                while (true){
-                    HANDLE ev = event.event_as_cv;
-                    DWORD wait_result;
+                if (options.async_message_pumping){
                     if (deferred_num > 0){
-                        auto now = CLOCK::now();
-                        auto duration = event.deferred_actions.begin()->first - now;
-                        auto millisec = std::chrono::duration_cast<MILLISEC>(duration).count();
-                        if (millisec > 0){
-                            lock.unlock();
-                            wait_result = MsgWaitForMultipleObjects(1, &ev, false, millisec, QS_ALLINPUT);
-                            lock.lock();
-                        }else{
-                            wait_result = WAIT_TIMEOUT;
-                        }
+                        event.cv_for_client.wait_until(lock, event.deferred_actions.begin()->first, condition);
                     }else{
-                        lock.unlock();
-                        wait_result = MsgWaitForMultipleObjects(1, &ev, false, INFINITE, QS_ALLINPUT);
-                        lock.lock();
+                        event.cv_for_client.wait(lock, condition);
                     }
-                    if (wait_result == WAIT_OBJECT_0){
-                        ::ResetEvent(event.event_as_cv);
-                        if (condition()){
+                }else{
+                    while (true){
+                        HANDLE ev = event.event_as_cv;
+                        DWORD wait_result;
+                        if (deferred_num > 0){
+                            auto now = CLOCK::now();
+                            auto duration = event.deferred_actions.begin()->first - now;
+                            auto millisec = std::chrono::duration_cast<MILLISEC>(duration).count();
+                            if (millisec > 0){
+                                lock.unlock();
+                                wait_result = MsgWaitForMultipleObjects(1, &ev, false, millisec, QS_ALLINPUT);
+                                lock.lock();
+                            }else{
+                                wait_result = WAIT_TIMEOUT;
+                            }
+                        }else{
+                            lock.unlock();
+                            wait_result = MsgWaitForMultipleObjects(1, &ev, false, INFINITE, QS_ALLINPUT);
+                            lock.lock();
+                        }
+                        if (wait_result == WAIT_OBJECT_0){
+                            ::ResetEvent(event.event_as_cv);
+                            if (condition()){
+                                break;
+                            }
+                        }else if (wait_result == WAIT_OBJECT_0 + 1){
+                            // Window Messages has been received
+                            lock.unlock();
+                            WinDispatcher::sharedDispatcher().dispatch_received_messages();
+                            lock.lock();
+                        }else if (WAIT_TIMEOUT){
+                            // It's time to process the deferred action
                             break;
                         }
-                    }else if (wait_result == WAIT_OBJECT_0 + 1){
-                        // Window Messages has been received
-                        lock.unlock();
-                        WinDispatcher::sharedDispatcher().dispatch_received_messages();
-                        lock.lock();
-                    }else if (WAIT_TIMEOUT){
-                        // It's time to process the deferred action
-                        break;
                     }
                 }
 
