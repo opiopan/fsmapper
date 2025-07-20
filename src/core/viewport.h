@@ -257,11 +257,13 @@ protected:
     float scale_factor;
     std::vector<std::unique_ptr<View>> views;
     int current_view = 0;
+    std::mutex rendering_mutex;
     std::unique_ptr<graphics::render_target> render_target;
     std::unique_ptr<composition::viewport_target> composition_target;
     std::unique_ptr<CoverWindow> cover_window;
     std::unique_ptr<EventActionMap> mappings;
     int mappings_num_for_views{0};
+    std::mutex touch_event_mutex;
     static constexpr auto touch_event_buffer_size = 4;
     struct {
         touch_event event;
