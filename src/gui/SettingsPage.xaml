@@ -77,6 +77,15 @@
                         </ComboBox>
                     </angel:SettingsCard>
 
+                    <angel:SettingsCard Header="Separate UI thread" Description="Run the UI in a separate thread to prevent UI freezing during script execution">
+                        <angel:SettingsCard.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xeb91;"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                      Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.UseSeparatedUIThread, Mode=TwoWay}"/>
+                    </angel:SettingsCard>
+
                     <angel:SettingsCard Header="Message log size" Description="Specify how many lines of messages to retain in the message console">
                         <angel:SettingsCard.HeaderIcon>
                             <SymbolIcon Symbol="Memo"/>

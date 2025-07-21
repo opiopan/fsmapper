@@ -260,6 +260,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         }
         ~queue_thread(){
             WinDispatcher::sharedDispatcher().stop();
+            thread.join();
         }
     };
     std::optional<WinDispatcher::queue_attatcher> attacher;

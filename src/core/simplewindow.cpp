@@ -68,7 +68,7 @@ void WinDispatcher::attach_queue(){
 
 void WinDispatcher::detatch_queue(){
     assert(thread_id == std::thread::id() || thread_id == std::this_thread::get_id());
-    if (thread_id == std::this_thread::get_id()){
+    if (thread_id == std::this_thread::get_id() && controller){
         stop();
         run();
     }

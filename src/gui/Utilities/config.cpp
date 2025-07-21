@@ -19,6 +19,7 @@ static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
 static const auto* CONFIG_PRE_RUN_SCRIPT = "pre_run_script";
 static const auto* CONFIG_PRE_RUN_SCRIPT_IS_VALID = "pre_run_script_is_valid";
 static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
+static const auto* CONFIG_USE_SEPARATED_UI_THREAD = "use_separated_ui_thread";
 static const auto* CONFIG_PLUGIN_FOLDER_IS_DEFAULT = "plugin_folder_is_default";
 static const auto* CONFIG_CUSTOM_PLUGIN_FOLDER = "custom_plugin_folder";
 static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
@@ -56,6 +57,7 @@ class config_imp : public config{
     std::string pre_run_script;
     bool pre_run_script_is_valid{true};
     MAPPER_OPTION_RENDERING_METHOD rendering_method{MOPT_RENDERING_METHOD_CPU};
+    bool use_separated_ui_thread{true};
     bool plugin_folder_is_default{true};
     std::filesystem::path custom_plugin_folder;
     uint64_t lua_standard_libraries{MOPT_STDLIB_BASE | MOPT_STDLIB_PACKAGE | MOPT_STDLIB_MATH | MOPT_STDLIB_TABLE | MOPT_STDLIB_STRING};
@@ -151,6 +153,7 @@ public:
         reflect_string(data, CONFIG_PRE_RUN_SCRIPT, pre_run_script);
         reflect_bool(data, CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid);
         reflect_number(data, CONFIG_RENDERING_METHOD, rendering_method);
+        reflect_bool(data, CONFIG_USE_SEPARATED_UI_THREAD, use_separated_ui_thread);
         reflect_bool(data, CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default);
         path.clear();
         reflect_string(data, CONFIG_CUSTOM_PLUGIN_FOLDER, path);
@@ -181,6 +184,7 @@ public:
                 {CONFIG_PRE_RUN_SCRIPT, pre_run_script},
                 {CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid},
                 {CONFIG_RENDERING_METHOD, rendering_method},
+                {CONFIG_USE_SEPARATED_UI_THREAD, use_separated_ui_thread},
                 {CONFIG_PLUGIN_FOLDER_IS_DEFAULT, plugin_folder_is_default},
                 {CONFIG_CUSTOM_PLUGIN_FOLDER, custom_plugin_folder.string()},
                 {CONFIG_LUA_STANDARD_LIBRARIES, lua_standard_libraries},
@@ -241,6 +245,12 @@ public:
     }
     void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value) override{
         update_value(rendering_method, value);
+    }
+    bool get_use_separated_ui_thread() override{
+        return use_separated_ui_thread;
+    }
+    void set_use_separated_ui_thread(bool value) override{
+        update_value(use_separated_ui_thread, value);
     }
     bool get_plugin_folder_is_default() override{
         return plugin_folder_is_default;

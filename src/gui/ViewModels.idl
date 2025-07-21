@@ -86,6 +86,7 @@ namespace gui.ViewModels{
         String PreRunScript;
         Boolean PreRunScriptIsValid;
         Int32 RenderingMethod;
+        Boolean UseSeparatedUIThread;
         Int32 PluginFolderType;
         String PluginPath{get;};
         String DefaultPluginPath{get;};

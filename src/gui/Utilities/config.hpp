@@ -49,6 +49,8 @@ namespace fsmapper{
         virtual void set_pre_run_script_is_valid(bool value) = 0;
         virtual MAPPER_OPTION_RENDERING_METHOD get_rendering_method() = 0;
         virtual void set_rendering_method(MAPPER_OPTION_RENDERING_METHOD value) = 0;
+        virtual bool get_use_separated_ui_thread() = 0;
+        virtual void set_use_separated_ui_thread(bool value)  = 0;
         virtual bool get_plugin_folder_is_default() = 0;
         virtual void set_plugin_folder_is_default(bool value) = 0;
         virtual const std::filesystem::path &get_default_plugin_folder() = 0;

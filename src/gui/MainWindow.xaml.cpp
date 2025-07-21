@@ -53,7 +53,7 @@ namespace winrt::gui::implementation
             title_bar.PreferredHeightOption(TitleBarHeightOption::Tall);
             AppTitleBar().Loaded([this](auto, auto){set_region_for_title_bar();});
             AppTitleBar().SizeChanged([this](auto, auto){set_region_for_title_bar();});
-            Activated([this](auto sender, WindowActivatedEventArgs args){
+            Activated([this](auto, WindowActivatedEventArgs args){
                 if (args.WindowActivationState() == WindowActivationState::Deactivated) {
                     auto brush = unbox_value<Media::SolidColorBrush>(tools::AppResource(L"WindowCaptionForegroundDisabled"));
                     AppTitle().Foreground(brush);

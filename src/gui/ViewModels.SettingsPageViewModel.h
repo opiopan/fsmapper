@@ -139,6 +139,13 @@ namespace winrt::gui::ViewModels::implementation
                 save_config();
             }
         }
+        bool UseSeparatedUIThread(){
+            return fsmapper::app_config.get_use_separated_ui_thread();
+        }
+        void UseSeparatedUIThread(bool value){
+            fsmapper::app_config.set_use_separated_ui_thread(value);
+            save_config();
+        }
         int32_t PluginFolderType(){
             return fsmapper::app_config.get_plugin_folder_is_default() ? 0 : 1;
         }
