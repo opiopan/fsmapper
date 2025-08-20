@@ -75,3 +75,61 @@ This modifier is intended for application to [**Device Unit**](/guide/device/#de
 |`pulse_interval`|number|When in pulse mode, specify the minimum time in milliseconds between the simulated release and the next simulated press.<br/>The default is `30`.
 |`max_hold_num`|number|Specifies the maximum number of pulse generations to hold. Setting this value too high might lead to continued event generation long after the [**Device Unit**](/guide/device/#device-unit)'s change has stopped. Adjust this value based on the desired real-time responsiveness.<br/>The default is `4`.
 
+------
+## thumbstick Modifier
+This modifier is intended for self-centering [**Device Unit**](/guide/device/#device-unit)s that operate on absolute values.  The modifier generates either `positive` or `negative` events when the thumbstick is pushed in either direction.  The events can repeat while the thumbstick is held.
+
+This modifier was written for Logitech Gamepad F710, to use its left & right thumbsticks to control FMS Knobs on PFD and MFD respectively.  The x/rx (horizontal) axis can be mapped to the inner knob, the y/ry (vertical) axis can be mapped to the outer knob, and the thumbstick buttons can push the inner knob.  The controller can be used in VR mode, in addition to yoke, pedals, keyboard and mouse, primarily for creating flight plans on the MFD.  The controller's remaining buttons are mapped in-game for AP, TO/GA, A/T and similar AFCS buttons.
+
+Features can be added to generate an event when returned to center, and to provide negative activate/release thresholds independent of their positive counterparts.  
+
+### Name (modtype)
+`thumbstick`
+
+### Default Events
+|Event|Description|
+|-----|-----------|
+|`positive`|This event is triggered when the thumbstick is pushed right (x,rx) or down (y,ry) of neutral.
+|`negative`|This event is triggered when the thumbstick is pushed left (x,rx) or up (y,ry) of neutral.
+
+### Options (modparam)
+|Key|Type|Default|Description|
+|---|----|-------|-----------|
+|`repeat_mode`|boolean|`true`|When enabled, the events are repeated while the thumbstick is held beyond the `activate_threshold`, until it crosses again below the `release_threshold`.
+|`repeat_interval`|number|`500`|Specify the time delay, in milliseconds, before sending the event a second time.
+|`repeat_delay`|number|`500`|Specify the time delay, in milliseconds, between all subsequent repeating events.
+|`activate_threshold`|number|`30000`|Thumbstick absolute value that must be exceeded before the thumbstick is considered held.
+|`release_threshold`|number|`20000`|Thumbstick absolute value that must be reverted before the thumbstick is considered centered and no longer held.
+
+#### Sample script for thumbsticks as PFD/MFD FMS Knobs:
+```
+F710_device = mapper.device{
+    name = 'F710',
+    type = 'dinput',
+    identifier = {name = 'Controller (Wireless Gamepad F710)'},
+    modifiers = {
+        {name = 'button9',  modtype = 'button'},
+        {name = 'button10', modtype = 'button'},
+        {name = 'x',        modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
+        {name = 'y',        modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
+        {name = 'rx',       modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
+        {name = 'ry',       modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
+    }
+}
+
+local F710 = F710_device.events
+
+mapper.set_primary_mappings {
+    { event = F710.x.positive,    action = msfs.mfwasm.rpn_executer("(>H:AS1000_PFD_FMS_Upper_INC)")  },
+    { event = F710.x.negative,    action = msfs.mfwasm.rpn_executer("(>H:AS1000_PFD_FMS_Upper_DEC)")  },
+    { event = F710.y.positive,    action = msfs.mfwasm.rpn_executer("(>H:AS1000_PFD_FMS_Lower_INC)")  },
+    { event = F710.y.negative,    action = msfs.mfwasm.rpn_executer("(>H:AS1000_PFD_FMS_Lower_DEC)")  },
+    { event = F710.button9.down,  action = msfs.mfwasm.rpn_executer("(>H:AS1000_PFD_FMS_Upper_PUSH)") },
+    { event = F710.rx.positive,   action = msfs.mfwasm.rpn_executer("(>H:AS1000_MFD_FMS_Upper_INC)")  },
+    { event = F710.rx.negative,   action = msfs.mfwasm.rpn_executer("(>H:AS1000_MFD_FMS_Upper_DEC)")  },
+    { event = F710.ry.positive,   action = msfs.mfwasm.rpn_executer("(>H:AS1000_MFD_FMS_Lower_INC)")  },
+    { event = F710.ry.negative,   action = msfs.mfwasm.rpn_executer("(>H:AS1000_MFD_FMS_Lower_DEC)")  },
+    { event = F710.button10.down, action = msfs.mfwasm.rpn_executer("(>H:AS1000_MFD_FMS_Upper_PUSH)") },
+}
+```
+------
