@@ -617,6 +617,7 @@ public:
     virtual ~ThumbstickModifier() {
         if (repeat_timer) {
             manager.cancelTimer(*this, *repeat_timer);
+            repeat_timer = std::nullopt;
         }
         manager.getEngine().unregisterEvent(this->evid_positive);
         manager.getEngine().unregisterEvent(this->evid_negative);
@@ -692,6 +693,7 @@ public:
                 status = Status::center;
                 if (repeat_timer.has_value()) {
                     manager.cancelTimer(*this, repeat_timer.value());
+                    repeat_timer = std::nullopt;
                 }
             }
             break;
@@ -700,6 +702,7 @@ public:
                 status = Status::center;
                 if (repeat_timer.has_value()) {
                     manager.cancelTimer(*this, repeat_timer.value());
+                    repeat_timer = std::nullopt;
                 }
             }
             break;
