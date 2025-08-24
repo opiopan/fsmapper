@@ -550,9 +550,9 @@ public:
 };
 
 //============================================================================================
-// Thumbstick modifier implementation
+// QuantizedStickModifier modifier implementation
 //============================================================================================
-class ThumbstickModifier : public DeviceModifier {
+class QuantizedStickModifier : public DeviceModifier {
 protected:
     enum class Status {
         center,
@@ -575,8 +575,8 @@ protected:
     size_t evid_negative;
 
 public:
-    ThumbstickModifier(const ThumbstickModifier&) = default;
-    ThumbstickModifier(DeviceModifierManager& manager, sol::object& param) : DeviceModifier(manager) {
+    QuantizedStickModifier(const QuantizedStickModifier&) = default;
+    QuantizedStickModifier(DeviceModifierManager& manager, sol::object& param) : DeviceModifier(manager) {
         if (param.get_type() == sol::type::table) {
             // Find out if the signal should repeat
             auto table = param.as<sol::table>();
@@ -585,19 +585,19 @@ public:
                 this->repeat_mode = repeat_mode.as<bool>();
             }
             else if (repeat_mode.get_type() != sol::type::lua_nil) {
-                throw MapperException("value of \"repeat_mode\" parameter for thumbstick modifier must be boolean");
+                throw MapperException("value of \"repeat_mode\" parameter for quantized_stick modifier must be boolean");
             }
             // Get the details of the repeat delay and interval
             auto repeat_delay = lua_safevalue<double>(table["repeat_delay"]);
             this->repeat_delay = repeat_delay ? round(*repeat_delay) : this->repeat_delay;
             auto repeat_interval = lua_safevalue<double>(table["repeat_interval"]);
             this->repeat_interval = repeat_interval ? round(*repeat_interval) : this->repeat_interval;
-            // Get the thresholds of when the thumbstick axis is pressed or released
+            // Get the thresholds of when the stick axis is pressed or released
             auto activate_threshold = lua_safevalue<double>(table["activate_threshold"]);
             if (activate_threshold) {
                 int activate = round(*activate_threshold);
                 if (activate < 0 || activate > 50000) {
-                    throw MapperException("value of \"activate_threshold\" for thubmstick modifier must be between 0 and 50000");
+                    throw MapperException("value of \"activate_threshold\" for quantized_stick modifier must be between 0 and 50000");
                 }
                 this->threshold_center_to_positive = activate;
                 this->threshold_center_to_negative = activate * -1;
@@ -614,7 +614,7 @@ public:
         }
     }
 
-    virtual ~ThumbstickModifier() {
+    virtual ~QuantizedStickModifier() {
         if (repeat_timer) {
             manager.cancelTimer(*this, *repeat_timer);
             repeat_timer = std::nullopt;
@@ -624,12 +624,12 @@ public:
     }
 
     virtual std::shared_ptr<DeviceModifier> makeInstanceFitsToUnit(const char* devname, const FSMDEVUNITDEF& unit) const {
-        auto instance = std::make_shared<ThumbstickModifier>(*this);
+        auto instance = std::make_shared<QuantizedStickModifier>(*this);
         auto new_event_id = [this, devname, &unit](const char* evname) {
             std::ostringstream os;
             os << devname << ":" << unit.name << ":" << evname;
             return this->manager.getEngine().registerEvent(os.str());
-            };
+        };
         instance->evid_positive = new_event_id("positive");
         instance->evid_negative = new_event_id("negative");
         return instance;
@@ -650,79 +650,79 @@ public:
         if (repeat_mode) { manager.delegateEventProcessing(*this, value); }
         else {
             switch (status) {
-            case Status::center:
-                if (value >= threshold_center_to_positive) {
-                    status = Status::positive;
-                    manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
-                }
-                else if (value <= threshold_center_to_negative) {
-                    status = Status::negative;
-                    manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
-                }
-                break;
-            case Status::negative:
-                if (value > threshold_negative_to_center) {
-                    status = Status::center;
-                }
-                break;
-            case Status::positive:
-                if (value < threshold_positive_to_center) {
-                    status = Status::center;
-                }
-                break;
+                case Status::center:
+                    if (value >= threshold_center_to_positive) {
+                        status = Status::positive;
+                        manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
+                    }
+                    else if (value <= threshold_center_to_negative) {
+                        status = Status::negative;
+                        manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
+                    }
+                    break;
+                case Status::negative:
+                    if (value > threshold_negative_to_center) {
+                        status = Status::center;
+                    }
+                    break;
+                case Status::positive:
+                    if (value < threshold_positive_to_center) {
+                        status = Status::center;
+                    }
+                    break;
             }
         }
     }
 
     virtual void processUnitValueChangeEvent(int value, DEVICEMOD_TIME now) {
         switch (status) {
-        case Status::center:
-            if (value >= threshold_center_to_positive) {
-                status = Status::positive;
-                manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
-                repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repeat_delay));
-            }
-            else if (value <= threshold_center_to_negative) {
-                status = Status::negative;
-                manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
-                repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repeat_delay));
-            }
-            break;
-        case Status::negative:
-            if (value > threshold_negative_to_center) {
-                status = Status::center;
-                if (repeat_timer.has_value()) {
-                    manager.cancelTimer(*this, repeat_timer.value());
-                    repeat_timer = std::nullopt;
+            case Status::center:
+                if (value >= threshold_center_to_positive) {
+                    status = Status::positive;
+                    manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
+                    repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repeat_delay));
                 }
-            }
-            break;
-        case Status::positive:
-            if (value < threshold_positive_to_center) {
-                status = Status::center;
-                if (repeat_timer.has_value()) {
-                    manager.cancelTimer(*this, repeat_timer.value());
-                    repeat_timer = std::nullopt;
+                else if (value <= threshold_center_to_negative) {
+                    status = Status::negative;
+                    manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
+                    repeat_timer = manager.addTimer(*this, now + DEVICEMOD_MILLISEC(repeat_delay));
                 }
-            }
-            break;
+                break;
+            case Status::negative:
+                if (value > threshold_negative_to_center) {
+                    status = Status::center;
+                    if (repeat_timer.has_value()) {
+                        manager.cancelTimer(*this, repeat_timer.value());
+                        repeat_timer = std::nullopt;
+                    }
+                }
+                break;
+            case Status::positive:
+                if (value < threshold_positive_to_center) {
+                    status = Status::center;
+                    if (repeat_timer.has_value()) {
+                        manager.cancelTimer(*this, repeat_timer.value());
+                        repeat_timer = std::nullopt;
+                    }
+                }
+                break;
         }
     }
 
     virtual void processTimerEvent(DEVICEMOD_TIME timer_time) {
         if (repeat_timer.has_value() && timer_time == repeat_timer.value()) {
             switch (status) {
-            case Status::center:
-                repeat_timer = std::nullopt;
-                break;
-            case Status::positive:
-                manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
-                repeat_timer = manager.addTimer(*this, timer_time + DEVICEMOD_MILLISEC(repeat_interval));
-                break;
-            case Status::negative:
-                manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
-                repeat_timer = manager.addTimer(*this, timer_time + DEVICEMOD_MILLISEC(repeat_interval));
-                break;
+                case Status::center:
+                    repeat_timer = std::nullopt;
+                    break;
+                case Status::positive:
+                    manager.getEngine().sendEvent(std::move(::Event(evid_positive)));
+                    repeat_timer = manager.addTimer(*this, timer_time + DEVICEMOD_MILLISEC(repeat_interval));
+                    break;
+                case Status::negative:
+                    manager.getEngine().sendEvent(std::move(::Event(evid_negative)));
+                    repeat_timer = manager.addTimer(*this, timer_time + DEVICEMOD_MILLISEC(repeat_interval));
+                    break;
             }
         }
     }
@@ -748,8 +748,8 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
                     modifier = std::make_shared<ButtonModifier>(*this, modparam);
                 }else if (modtype == "incdec"){
                     modifier = std::make_shared<IncDecModifier>(*this, modparam);
-                }else if (modtype == "thumbstick"){
-                    modifier = std::make_shared<ThumbstickModifier>(*this, modparam);
+                }else if (modtype == "quantized_stick"){
+                    modifier = std::make_shared<QuantizedStickModifier>(*this, modparam);
                 }else{
                     throw MapperException("\"modtype\" parameter is invalid or that parameter is not specified");
                 }

@@ -76,32 +76,32 @@ This modifier is intended for application to [**Device Unit**](/guide/device/#de
 |`max_hold_num`|number|Specifies the maximum number of pulse generations to hold. Setting this value too high might lead to continued event generation long after the [**Device Unit**](/guide/device/#device-unit)'s change has stopped. Adjust this value based on the desired real-time responsiveness.<br/>The default is `4`.
 
 ------
-## thumbstick Modifier
-This modifier is intended for self-centering [**Device Unit**](/guide/device/#device-unit)s that operate on absolute values.  The modifier generates either `positive` or `negative` events when the thumbstick is pushed in either direction.  The events can repeat while the thumbstick is held.
+## quantized_stick Modifier
+This modifier is intended for application to [**Device Unit**](/guide/device/#device-unit)s that are self-centering and operate on relative values (e.g. joysticks and thumbsticks).  The modifier normalizes the stick's position into one of three values: negative, center or positive; it is 'quantized'.  The modifier will generate `positive` or `negative` events when the stick is pushed in either direction.  The events can repeat while the stick is held.
 
-This modifier was written for Logitech Gamepad F710, to use its left & right thumbsticks to control FMS Knobs on PFD and MFD respectively.  The x/rx (horizontal) axis can be mapped to the inner knob, the y/ry (vertical) axis can be mapped to the outer knob, and the thumbstick buttons can push the inner knob.  The controller can be used in VR mode, in addition to yoke, pedals, keyboard and mouse, primarily for creating flight plans on the MFD.  The controller's remaining buttons are mapped in-game for AP, TO/GA, A/T and similar AFCS buttons.
+This modifier was written for Logitech Gamepad F710, to use its left & right thumbsticks to control FMS Knobs on PFD and MFD respectively.  The x/rx (horizontal) axis can be mapped to the inner knob, the y/ry (vertical) axis can be mapped to the outer knob, and clicking the thumbstick can push the inner knob.  The controller can be used in VR mode, in addition to yoke, pedals, keyboard and mouse, primarily for creating flight plans on the MFD.  The controller's remaining buttons are mapped in-game for AP, TO/GA, A/T and similar AFCS buttons.
 
 Features can be added to generate an event when returned to center, and to provide negative activate/release thresholds independent of their positive counterparts.  
 
 ### Name (modtype)
-`thumbstick`
+`quantized_stick`
 
 ### Default Events
 |Event|Description|
 |-----|-----------|
-|`positive`|This event is triggered when the thumbstick is pushed right (x,rx) or down (y,ry) of neutral.
-|`negative`|This event is triggered when the thumbstick is pushed left (x,rx) or up (y,ry) of neutral.
+|`positive`|This event is triggered when the stick is pushed right (x,rx) or down (y,ry) of neutral.
+|`negative`|This event is triggered when the stick is pushed left (x,rx) or up (y,ry) of neutral.
 
 ### Options (modparam)
 |Key|Type|Default|Description|
 |---|----|-------|-----------|
-|`repeat_mode`|boolean|`true`|When enabled, the events are repeated while the thumbstick is held beyond the `activate_threshold`, until it crosses again below the `release_threshold`.
+|`repeat_mode`|boolean|`true`|When enabled, the events are repeated while the stick is held beyond the `activate_threshold`, until it crosses again below the `release_threshold`.
 |`repeat_interval`|number|`500`|Specify the time delay, in milliseconds, before sending the event a second time.
 |`repeat_delay`|number|`500`|Specify the time delay, in milliseconds, between all subsequent repeating events.
-|`activate_threshold`|number|`30000`|Thumbstick absolute value that must be exceeded before the thumbstick is considered held.
-|`release_threshold`|number|`20000`|Thumbstick absolute value that must be reverted before the thumbstick is considered centered and no longer held.
+|`activate_threshold`|number|`30000`|The absolute value that must be exceeded before the stick is considered held.
+|`release_threshold`|number|`20000`|The absolute value that must be reverted before the stick is considered centered and no longer held.
 
-#### Sample script for thumbsticks as PFD/MFD FMS Knobs:
+#### Sample script for two `quantized_stick`s as PFD/MFD FMS Knobs:
 ```lua
 F710_device = mapper.device{
     name = 'F710',
@@ -110,10 +110,10 @@ F710_device = mapper.device{
     modifiers = {
         {name = 'button9',  modtype = 'button'},
         {name = 'button10', modtype = 'button'},
-        {name = 'x',        modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
-        {name = 'y',        modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
-        {name = 'rx',       modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
-        {name = 'ry',       modtype = 'thumbstick', modparam = { repeat_interval = 100 } },
+        {name = 'x',        modtype = 'quantized_stick', modparam = { repeat_interval = 100 } },
+        {name = 'y',        modtype = 'quantized_stick', modparam = { repeat_interval = 100 } },
+        {name = 'rx',       modtype = 'quantized_stick', modparam = { repeat_interval = 100 } },
+        {name = 'ry',       modtype = 'quantized_stick', modparam = { repeat_interval = 100 } },
     }
 }
 
