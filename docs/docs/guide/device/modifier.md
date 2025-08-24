@@ -102,7 +102,7 @@ Features can be added to generate an event when returned to center, and to provi
 |`release_threshold`|number|`20000`|Thumbstick absolute value that must be reverted before the thumbstick is considered centered and no longer held.
 
 #### Sample script for thumbsticks as PFD/MFD FMS Knobs:
-```
+```lua
 F710_device = mapper.device{
     name = 'F710',
     type = 'dinput',
