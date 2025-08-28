@@ -580,7 +580,7 @@ public:
         if (param.get_type() == sol::type::table) {
             // Find out if the signal should repeat
             auto table = param.as<sol::table>();
-            sol::object repeat_mode = table["repeat"];
+            sol::object repeat_mode = table["repeat_mode"];
             if (repeat_mode.get_type() == sol::type::boolean) {
                 this->repeat_mode = repeat_mode.as<bool>();
             }
