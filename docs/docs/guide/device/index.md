@@ -82,7 +82,7 @@ For ***Input*** type **Device Unit**s, observing the events generated while mani
 
 ## Event Modifier
 **Event Modifier** is a mechanism that determines how the state changes of a [**Device Unit**](/guide/device/#device-unit) are translated into specific events. 
-There are three types of **Event Modifiers**: `raw`, `button`, and `incdec`. 
+There are three types of **Event Modifiers**: `raw`, `button`, `incdec`, and `quantized_stick`. 
 You can specify which modifier to use in the `modifiers` parameter of [`mapper.device()`](/libs/mapper/mapper_device).
 
 - **`raw`**<br/>
@@ -114,7 +114,7 @@ Here are explanations for each key-value pair within the table representing the 
 |---|----|-----------|
 |`name`|string|Specifies the name of the [**Device Unit**](/guide/device/#device-unit) targeted by the modifier.<br/>If an [**Event Modifier**](/guide/device/#event-modifier) is simultaneously defined for the class associated with the [**Device Unit**](/guide/device/#device-unit) specified by this parameter, the [**Event Modifier**](/guide/device/#event-modifier) specified by the `name` takes precedence.
 |`class`|string|Specifies when applying the same modifier to multiple [**Device Unit**](/guide/device/#device-unit)s with similar characteristics.<br/>It specifies one of the following: `binary` for units with binary value ranges, `absolute` for units with absolute value ranges, or `relative` for units with relative value ranges.
-|`modtype`|string|Modifier type.<br/>It specifies eather of `raw`, `button`, or `incdec`
+|`modtype`|string|Modifier type.<br/>It specifies eather of `raw`, `button`, `incdec`, or `quantized_stick`.
 |`modparam`|table|Options specific to the modifier.<br/>For detailed information, refer to the [**Event Modifier Specification**](modifier).
 
 ## Event IDs Table
