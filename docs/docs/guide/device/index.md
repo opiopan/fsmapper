@@ -103,6 +103,10 @@ You can specify which modifier to use in the `modifiers` parameter of [`mapper.d
     It generates an `increment` event when the change is positive and a `decrement` event when it is negative.
     The [**Event Value**](/guide/event-action-mapping#event) represents the absolute value of the [**Device Unit**](/guide/device/#device-unit).
 
+- **`quantized_stick`**<br/>
+    This modifier is intended for application to [**Device Unit**](/guide/device/#device-unit)s that are self-centering and operate on relative values (e.g. joysticks and thumbsticks).  The modifier normalizes the stick's position into one of three values: negative, center or positive; it is 'quantized'.  The modifier will generate `positive` or `negative` events when the stick is pushed in either direction.  The events can repeat while the stick is held.
+
+
 The `modifiers` parameter of [`mapper.device()`](/libs/mapper/mapper_device) specifies the definition of modifiers to apply to each **Event Modifier** using an array, similar to [this code snippet](https://github.com/opiopan/fsmapper/blob/v0.9.1/samples/practical/g1000.lua#L10-L19) in the [sample script](/samples/g1000).<br/>
 Here are explanations for each key-value pair within the table representing the definition of a modifier.
 
