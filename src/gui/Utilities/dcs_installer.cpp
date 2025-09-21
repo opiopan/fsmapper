@@ -275,7 +275,7 @@ namespace dcs {
         winrt::Microsoft::UI::Xaml::Controls::ContentDialog dialog;
         dialog.Title(winrt::box_value(L"File Access Error"));
         std::wstring message = std::format(
-            L"Failed to update the 'export.lua' file for DCS World. Please check the file below for any issues.\n"
+            L"Failed to update the 'Export.lua' file for DCS World. Please check the file below for any issues.\n"
             "\t{}", export_lua_path.generic_wstring());
         dialog.Content(winrt::box_value(winrt::hstring(message)));
         dialog.PrimaryButtonText(L"OK");
@@ -298,18 +298,18 @@ namespace dcs{
         };
         auto confirm_on_start_up = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"DCS World is detected. Do you want to register the integration with fsmapper in the 'exporter.lua' file of DCS World?\n\n"
+                L"DCS World is detected. Do you want to register the integration with fsmapper in the 'Export.lua' file of DCS World?\n\n"
                 "You can also register later from the Settings page even if you select ‘No’.",
                 v1, v2);
         };
         auto confirm_on_switch_to_on = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"Do you want to register the integration with fsmapper in the 'exporter.lua' file of DCS World?",
+                L"Do you want to register the integration with fsmapper in the 'Export.lua' file of DCS World?",
                 v1, v2);
         };
         auto confirm_on_switch_to_off = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"Do you want to remove the fsmapper integration from 'export.lua' file of DCS World?\n\n"
+                L"Do you want to remove the fsmapper integration from 'Export.lua' file of DCS World?\n\n"
                 "If you select ‘No’, the integration will only be turned off on the fsmapper side.",
                 v1, v2);
         };
@@ -321,7 +321,7 @@ namespace dcs{
         };
         auto confirm_multiple_definition = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(                
-                L"It looks like there are multiple fsmapper integration module entries in the 'export.lua' file of DCS World.\n"
+                L"It looks like there are multiple fsmapper integration module entries in the 'Export.lua' file of DCS World.\n"
                 "Do you want to remove these and register the correct fsmapper integration module?\n\n"
                 "You can choose ‘No’ and check the following file yourself if you prefer.\n\n"
                 "\t{0}",
@@ -329,7 +329,7 @@ namespace dcs{
         };
         auto confirm_multiple_definition_on_switch_to_off = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"It looks like there are multiple fsmapper integration module entries in the 'export.lua' file of DCS World.¥n"
+                L"It looks like there are multiple fsmapper integration module entries in the 'Export.lua' file of DCS World.¥n"
                 "Do you want to remove all of these?\n\n"
                 "You can choose ‘No’ and check the following file yourself if you prefer. "
                 "In this case, the integration will only be turned off on the fsmapper side.\n\n"
@@ -338,7 +338,7 @@ namespace dcs{
         };
         auto confirm_cannot_read = [](const wchar_t* v1, const wchar_t* v2){
             return std::format(
-                L"Failed to read the 'export.lua' file of DCS World. Please ensure you can access the file below.\n\n"
+                L"Failed to read the 'Export.lua' file of DCS World. Please ensure you can access the file below.\n\n"
                 "\t{0}",
                 v1, v2);
         };
