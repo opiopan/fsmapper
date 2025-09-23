@@ -36,7 +36,7 @@ Copy-Item "$($src)\en-us" $dest -Recurse
 Copy-Item $exe $dest
 Copy-Item $dll $dest
 Copy-Item $xbf $dest
-Copy-Item "$($src)\resources.pri" $dest
+Copy-Item "$($src)\*.pri" $dest
 Copy-Item "$($redist)\msvcp140.dll" $dest
 Copy-Item "$($redist)\vcruntime140.dll" $dest
 Copy-Item "$($redist)\vcruntime140_1.dll" $dest
