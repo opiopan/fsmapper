@@ -16,7 +16,7 @@ This function draws the outline of the specified geometry using following proper
 |Parameter|Type|Description|
 |-|-|-|
 |`param_table`|table|This parameter is in associative array table format, meaning it's specified by keys rather than parameter positions. See the [Parameters Table](#parameters-table) section.|
-|`geometry`|[`Geometry`](/guide/graphics#geometry)|The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) of [`Path`](/libs/graphics/Path).
+|`geometry`|[`Geometry`](/guide/graphics#geometry)|The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) or [`Path`](/libs/graphics/Path).
 |`x`|number|Draw the gemometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`y`|number|Draw the geometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`angle`|number|Rotate counterclockwise by the specified angle in degrees around the geometry's origin.The default is `0`.
@@ -26,7 +26,7 @@ This function draws the outline of the specified geometry using following proper
 ## Parameters Table
 |Key|Type|Description|
 |-|-|-|
-|`geometry`|[`Geometry`](/guide/graphics#geometry)|The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) of [`Path`](/libs/graphics/Path).
+|`geometry`|[`Geometry`](/guide/graphics#geometry)|The geometry object for drawing. It specifies [`SimpleGeometry`](/libs/graphics/SimpleGeometry) or [`Path`](/libs/graphics/Path).
 |`x`|number|Draw the gemometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`y`|number|Draw the geometry's origin to coincide with this parameter's position in the target space.<br/>The default is `0`.
 |`angle`|number|Rotate counterclockwise by the specified angle in degrees around the geometry's origin.The default is `0`.

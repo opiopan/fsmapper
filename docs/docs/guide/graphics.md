@@ -64,10 +64,10 @@ Creating a rendering context with this object as the output destination allows d
 
 ```lua
 -- Generate empty bitmap
-local circle = graphics.bitmap(100, 100)
+local circle_bitmap = graphics.bitmap(100, 100)
 
 -- Fill a circle with blue on the bitmap
-local rctx = graphics.rendering_context(circle)
+local rctx = graphics.rendering_context(circle_bitmap)
 rctx.brush = graphics.color('blue')
 local circle = graphics.ellipse{x=50, y=50, radius_x=50, radius_y=50}
 rctx:draw_fill_geometry(circle)
