@@ -195,7 +195,7 @@ Apart from RPN execution, fsmapper offers several [**Native-actions**](/guide/ev
 
 :::tip
 How can one find the RPN that corresponds to the operation of each object in the cockpit?
-Some considerate developers document like [**this information**](https://docs.flybywiresim.com/fbw-a32nx/a32nx-api/a32nx-flightdeck-api/), making it a good reference point.
+Some considerate developers document like [**this information**](https://docs.flybywiresim.com/aircraft/a32nx/a32nx-api/a32nx-flightdeck-api/), making it a good reference point.
 
 Unfortunately, many addon aircraft lack such documentation, including default aircraft. However, Microsoft provides useful tools for developers, making it relatively easy to gather hints for writing RPN scripts.<br/>
 Enabling Developer Mode and displaying the [**Behavior Debug**](https://docs.flightsimulator.com/html/Developer_Mode/Menus/Tools/Behaviors_Debug.htm) window allows you to explore the [```<Behaviors>``` definitions of an aircraft's interior model XML file](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Model_Behaviors.htm) more easily.
