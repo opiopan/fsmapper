@@ -61,8 +61,8 @@ local observed_data = {
     {rpn="(L:A32NX_OVHD_ELEC_BAT_1_PB_HAS_FAULT)", event=events.bat1u_change},
     {rpn="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) ! (L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED) and", event=events.bat2l_change},
     {rpn="(L:A32NX_OVHD_ELEC_BAT_2_PB_HAS_FAULT)", event=events.bat2u_change},
-    {rpn="(A:EXTERNAL POWER ON, Bool)", event=events.extpwrl_change},
-    {rpn="(A:EXTERNAL POWER AVAILABLE, Bool) (A:EXTERNAL POWER ON, Bool) ! and", event=events.extpwru_change},
+    {rpn="(L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON)", event=events.extpwrl_change},
+    {rpn="(A:EXTERNAL POWER AVAILABLE, Bool) (L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) ! and", event=events.extpwru_change},
     {rpn="(L:A32NX_ELEC_BAT_1_POTENTIAL)", event=events.bat1v_change, epsilon=0.05},
     {rpn="(L:A32NX_ELEC_BAT_2_POTENTIAL)", event=events.bat2v_change, epsilon=0.05},
 }
@@ -80,7 +80,7 @@ local view_mappings = {
     {event=events.apubleed_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)")},
     {event=events.bat1_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)")},
     {event=events.bat2_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) ! (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)")},
-    {event=events.extpwr_push, action=msfs.mfwasm.rpn_executer("(A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) ! and if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } els{ (A:EXTERNAL POWER ON:1, Bool) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) } }")},
+    {event=events.extpwr_push, action=msfs.mfwasm.rpn_executer("(A:EXTERNAL POWER AVAILABLE:1, Bool) if{ 1 (L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) ! (>L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) }")},
 }
 
 local global_mappings = {

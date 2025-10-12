@@ -144,20 +144,34 @@ end
 --------------------------------------------------------------------------------------
 -- event-action mappings
 --------------------------------------------------------------------------------------
+local function change_ecam_page(pgid)
+    local rpn = nil
+    if current_page ~= pgid then
+        rpn = pgid .. " (>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (>H:A32NX_SD_PAGE_CHANGED)"
+    else
+        rpn = "-1 (>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (>H:A32NX_SD_PAGE_CHANGED)"
+    end
+    mapper.print(rpn)                
+    msfs.mfwasm.execute_rpn(rpn)
+end
+
 local view_mappings = {
-    {event=events.toconfig_push, action=msfs.mfwasm.rpn_executer("1 (>L:A32NX_BTN_TOCONFIG)")},
-    {event=events.eng_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ENG)")},
-    {event=events.bleed_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_BLEED)")},
-    {event=events.press_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_PRESS)")},
-    {event=events.elec_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ELEC)")},
-    {event=events.hyd_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_HYD)")},
-    {event=events.fuel_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FUEL)")},
-    {event=events.apu_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_APU)")},
-    {event=events.cond_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_COND)")},
-    {event=events.door_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_DOOR)")},
-    {event=events.wheel_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_WHEEL)")},
-    {event=events.fctl_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_FTCL)")},
-    {event=events.sts_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_STS)")},
+    {event=events.toconfig_push, action=filter.duplicator(
+        msfs.mfwasm.rpn_executer("1 (>L:A32NX_BTN_TOCONFIG)"),
+        filter.delay(200, msfs.mfwasm.rpn_executer("0 (>L:A32NX_BTN_TOCONFIG)"))
+    )},
+    {event=events.eng_push, action=function () change_ecam_page(0) end},
+    {event=events.bleed_push, action=function () change_ecam_page(1) end},
+    {event=events.press_push, action=function () change_ecam_page(2) end},
+    {event=events.elec_push, action=function () change_ecam_page(3) end},
+    {event=events.hyd_push, action=function () change_ecam_page(4) end},
+    {event=events.fuel_push, action=function () change_ecam_page(5) end},
+    {event=events.apu_push, action=function () change_ecam_page(6) end},
+    {event=events.cond_push, action=function () change_ecam_page(7) end},
+    {event=events.door_push, action=function () change_ecam_page(8) end},
+    {event=events.wheel_push, action=function () change_ecam_page(9) end},
+    {event=events.fctl_push, action=function () change_ecam_page(10) end},
+    {event=events.sts_push, action=function () change_ecam_page(11) end},
 
     -- need to consider which mapping method is reasonable regarding following events
     -- {event=events.all_push, action=},

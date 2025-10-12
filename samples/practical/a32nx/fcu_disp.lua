@@ -29,9 +29,8 @@ local parts = {
 local disp_context = {
     power = 1, -- 0:off, 1:on, 2:test
     nav_mode = 0, -- 0:hdg/vs, 1:trk/fpa
-    vs_mode = 0, -- 0:dash, 1:0, others:selected value
-    vs = 0,
-    fpa = 0,
+    vs_mode = 0, -- 1:dash, others:selected value
+    vs_fpa = 0,
 }
 
 --------------------------------------------------------------------------------------
@@ -162,20 +161,16 @@ local canvas_defs = {
             rctx.font = segfont
             if disp_context.power == 1 then
                 if disp_context.nav_mode == 0 then
-                    if disp_context.vs_mode == 0 then
+                    if disp_context.vs_mode == 1 then
                         rctx:draw_string('-----')
-                    elseif disp_context.vs_mode == 1 then
-                        rctx:draw_string(' 00oo')
                     else
-                        rctx:draw_string(string.format('%+03.0foo', disp_context.vs))
+                        rctx:draw_string(string.format('%+03.0foo', disp_context.vs_fpa / 100))
                     end
                 else
-                    if disp_context.vs_mode == 0 then
-                        rctx:draw_string('-----')
-                    elseif disp_context.vs_mode == 1 then
-                        rctx:draw_string('+0.0')
+                    if disp_context.vs_mode == 1 then
+                        rctx:draw_string('--.-')
                     else
-                        rctx:draw_string(string.format('%+2.1f', disp_context.fpa))
+                        rctx:draw_string(string.format('%+2.1f', disp_context.vs_fpa))
                     end
                 end
             elseif disp_context.power == 2 then
@@ -240,7 +235,7 @@ end
 --------------------------------------------------------------------------------------
 local mapping_defs = {
     power = {
-        rpn = '(A:ELECTRICAL MAIN BUS VOLTAGE:1, Volts) 28 < if{ 0 } els{ (L:A32NX_OVHD_INTLT_ANN) if{ 1 } els{ 2 } }',
+        rpn = '(A:ELECTRICAL MAIN BUS VOLTAGE:1, Volts) 28 < (L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON) ! and if{ 0 } els{ (L:A32NX_OVHD_INTLT_ANN) if{ 1 } els{ 2 } }',
         action = function (evid, value)
             disp_context.power = value
             for name, canvas in pairs(canvases) do
@@ -260,31 +255,23 @@ local mapping_defs = {
     },
 
     vs_mode = {
-        rpn = '(L:A320_NE0_FCU_STATE)',
+        rpn = '(L:A32NX_FCU_AFS_DISPLAY_VS_FPA_DASHES)',
         action = function (evid, value)
             disp_context.vs_mode = value
             canvases.vs:refresh()
         end
     },
 
-    vs = {
-        rpn = '(L:A32NX_AUTOPILOT_VS_SELECTED) 100 /',
+    vs_fpa = {
+        rpn = '(L:A32NX_FCU_AFS_DISPLAY_VS_FPA_VALUE)',
         action = function (evid, value)
-            disp_context.vs = value
-            canvases.vs:refresh()
-        end
-    },
-
-    fpa = {
-        rpn = '(L:A32NX_AUTOPILOT_FPA_SELECTED)',
-        action = function (evid, value)
-            disp_context.fpa = value
+            disp_context.vs_fpa = value
             canvases.vs:refresh()
         end
     },
 
     spd_mode = {
-        rpn = '(A:AUTOPILOT MANAGED SPEED IN MACH:1, Bool)',
+        rpn = '(L:A32NX_FCU_AFS_DISPLAY_MACH_MODE)',
         action = canvases.spd_mode:value_setter()
     },
 

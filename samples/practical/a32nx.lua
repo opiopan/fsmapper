@@ -15,8 +15,6 @@ local vratio_menu = height_menu / height_total
 local vratio_display = height_display / height_total    
 local vratio_panel = height_panel / height_total
 
-local common = require("lib/common")
-
 local a320_context = {}
 
 local events = {
@@ -81,7 +79,7 @@ local function start(config)
         nd = mapper.view_elements.captured_window{name="A320 ND", window_title="WASMINSTRUMENT"},
         uecam = mapper.view_elements.captured_window{name="A320 Upper ECAM", window_title="A32NX_EWD_1"},
         lecam = mapper.view_elements.captured_window{name="A320 Lower ECAM", window_title="SD"},
-        mcdu = mapper.view_elements.captured_window{name = "A320 MCDU", window_title="A320_NEO_CDU"},
+        mcdu = mapper.view_elements.captured_window{name = "A320 MCDU", window_title="A32NX_MCDU"},
         efb = mapper.view_elements.captured_window{name = "A320 EFB", window_title="EFB"},
     }
 
@@ -456,12 +454,12 @@ local function start(config)
         {event=g1000.SW3.down, action=msfs.mfwasm.rpn_executer("(>K:TOGGLE_FLIGHT_DIRECTOR)")},
         {event=g1000.SW8.down, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
 
-        {event=g1000.EC8.increment, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) ++ 5 min (>L:A32NX_EFIS_L_ND_RANGE)")},
-        {event=g1000.EC8.decrement, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_RANGE) -- 0 max (>L:A32NX_EFIS_L_ND_RANGE)")},
-        {event=g1000.EC8L.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-        {event=g1000.EC8U.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) -- 0 max (>L:A32NX_EFIS_L_ND_MODE)")},
-        {event=g1000.EC8R.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
-        {event=g1000.EC8D.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_ND_MODE) ++ 4 min (>L:A32NX_EFIS_L_ND_MODE) ")},
+        {event=g1000.EC8.increment, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_RANGE) ++ 5 min (>L:A32NX_FCU_EFIS_L_EFIS_RANGE)")},
+        {event=g1000.EC8.decrement, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_RANGE) -- 0 max (>L:A32NX_FCU_EFIS_L_EFIS_RANGE)")},
+        {event=g1000.EC8L.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_MODE) -- 0 max (>L:A32NX_FCU_EFIS_L_EFIS_MODE)")},
+        {event=g1000.EC8U.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_MODE) -- 0 max (>L:A32NX_FCU_EFIS_L_EFIS_MODE)")},
+        {event=g1000.EC8R.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_MODE) ++ 4 min (>L:A32NX_FCU_EFIS_L_EFIS_MODE) ")},
+        {event=g1000.EC8D.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_EFIS_MODE) ++ 4 min (>L:A32NX_FCU_EFIS_L_EFIS_MODE) ")},
 
         {event=g1000.EC6X.increment, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE)")},
         {event=g1000.EC6X.decrement, action=msfs.mfwasm.rpn_executer("(>H:A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE)")},
@@ -471,7 +469,7 @@ local function start(config)
 
         {event=g1000.EC7Y.increment, action=msfs.mfwasm.rpn_executer("(>K:KOHLSMAN_INC)")},
         {event=g1000.EC7Y.decrement, action=msfs.mfwasm.rpn_executer("(>K:KOHLSMAN_DEC)")},
-        {event=g1000.EC7P.down, action=msfs.mfwasm.rpn_executer("(L:XMLVAR_Baro1_Mode) 2 == if{ 1 (>L:XMLVAR_Baro1_Mode) } els{ 2 (>L:XMLVAR_Baro1_Mode) }")},
+        {event=g1000.EC7P.down, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE) 0 == if{ (>K:A32NX.FCU_EFIS_L_BARO_PUSH) } els{ (>K:A32NX.FCU_EFIS_L_BARO_PULL) }")},
 
         {event=g1000.EC2Y.increment, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 + 100 min 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},
         {event=g1000.EC2Y.decrement, action=msfs.mfwasm.rpn_executer("(A:LIGHT POTENTIOMETER:94,percent) 5 - 0 max 94 (>K:2:LIGHT_POTENTIOMETER_SET)")},

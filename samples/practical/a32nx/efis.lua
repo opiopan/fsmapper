@@ -12,7 +12,11 @@ local events = {
     vord_push = mapper.register_event("EFIS:VORD:push"),
     ndb_push = mapper.register_event("EFIS:NDB:push"),
     aprt_push = mapper.register_event("EFIS:APRT:push"),
-    ndfilter_change = mapper.register_event("EFIS:ND filter:change"),
+    cstr_change = mapper.register_event("EFIS:CSTR:change"),
+    wpt_change = mapper.register_event("EFIS:WPT:change"),
+    vord_change = mapper.register_event("EFIS:VORD:change"),
+    ndb_change = mapper.register_event("EFIS:NDB:change"),
+    aprt_change = mapper.register_event("EFIS:APRT:change"),
     ndmode_change = mapper.register_event("EFIS:ND mode:change"),
     ndrange_change = mapper.register_event("EFIS:ND range:change"),
     adfvor1_left = mapper.register_event("EFIS:ADFVOR1:flick left"),
@@ -35,9 +39,13 @@ local events = {
 -- observed data definitions
 --------------------------------------------------------------------------------------
 local observed_data = {
-    {rpn="(L:A32NX_EFIS_L_OPTION)", event=events.ndfilter_change},
-    {rpn="(L:A32NX_EFIS_L_ND_MODE)", event=events.ndmode_change},
-    {rpn="(L:A32NX_EFIS_L_ND_RANGE)", event=events.ndrange_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_CSTR_LIGHT_ON)", event=events.cstr_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_WPT_LIGHT_ON)", event=events.wpt_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_VORD_LIGHT_ON)", event=events.vord_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_NDB_LIGHT_ON)", event=events.ndb_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_ARPT_LIGHT_ON)", event=events.aprt_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_EFIS_MODE)", event=events.ndmode_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_EFIS_RANGE)", event=events.ndrange_change},
     {rpn="(L:A32NX_EFIS_L_NAVAID_1_MODE)", event=events.adfvor1_change},
     {rpn="(L:A32NX_EFIS_L_NAVAID_2_MODE)", event=events.adfvor2_change},
     {rpn="(L:A32NX_AUTOBRAKES_ARMED_MODE)", event=events.brkmode_change},
@@ -49,11 +57,11 @@ local observed_data = {
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.cstr_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 1 == if{ 0 } els{ 1 } (>L:A32NX_EFIS_L_OPTION, enum)")},
-    {event=events.wpt_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 3 == if{ 0 } els{ 3 } (>L:A32NX_EFIS_L_OPTION, enum)")},
-    {event=events.vord_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 2 == if{ 0 } els{ 2 } (>L:A32NX_EFIS_L_OPTION, enum)")},
-    {event=events.ndb_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 4 == if{ 0 } els{ 4 } (>L:A32NX_EFIS_L_OPTION, enum)")},
-    {event=events.aprt_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_EFIS_L_OPTION, enum) 5 == if{ 0 } els{ 5 } (>L:A32NX_EFIS_L_OPTION, enum)")},
+    {event=events.cstr_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_CSTR_PUSH)")},
+    {event=events.wpt_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_WPT_PUSH)")},
+    {event=events.vord_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_VORD_PUSH)")},
+    {event=events.ndb_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_NDB_PUSH)")},
+    {event=events.aprt_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_ARPT_PUSH)")},
     {event=events.brklo_push, action=filter.duplicator(
         msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool)"),
         filter.delay(200, msfs.mfwasm.rpn_executer("(L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool) ! (>L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED, bool)"))
@@ -92,26 +100,6 @@ local buttons = {
 local img_off = assets.buttons:create_partial_bitmap(0, 0, button_size.width, button_size.height / 2)
 local img_on = assets.buttons:create_partial_bitmap(0, button_size.height / 2, button_size.width, button_size.height / 2)
 
-local nd_filter_value = 0
-local nd_filter_buttons = {}
-
-local function change_nd_filter(event, value)
-    local button = nd_filter_buttons[nd_filter_value]
-    if button then
-        button:set_value(0)
-    end
-    nd_filter_value = value
-    button = nd_filter_buttons[nd_filter_value]
-    if button then
-        button:set_value(1)
-    end
-end
-
-global_mappings[#global_mappings + 1] = {
-    event = events.ndfilter_change,
-    action = change_nd_filter
-}
-
 local function render_button(ctx, value)
     if value > 0.8 then
         ctx:draw_bitmap(img_on, 0, 0)
@@ -141,7 +129,7 @@ for key, button in pairs(buttons) do
             x = button.x, y = button.y,
             width = button.size.width, height = button.size.height,
         }
-        nd_filter_buttons[button.ix] = canvas
+        global_mappings[#global_mappings + 1] = {event=events[key .. "_change"], action=canvas:value_setter()}
     end
 end
 
@@ -235,15 +223,15 @@ end
 local function move_switch(ctx, operation)
     if operation == "left" then
         if ctx.value == 0 then
-            msfs.mfwasm.execute_rpn("1 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
+            msfs.mfwasm.execute_rpn("1 (>L:A32NX_FCU_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         elseif ctx.value == 2 then
-            msfs.mfwasm.execute_rpn("0 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
+            msfs.mfwasm.execute_rpn("0 (>L:A32NX_FCU_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         end
     else
         if ctx.value == 0 then
-            msfs.mfwasm.execute_rpn("2 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
+            msfs.mfwasm.execute_rpn("2 (>L:A32NX_FCU_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         elseif ctx.value == 1 then
-            msfs.mfwasm.execute_rpn("0 (>L:A32NX_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
+            msfs.mfwasm.execute_rpn("0 (>L:A32NX_FCU_EFIS_L_NAVAID_" .. ctx.ix .. "_MODE)")
         end
     end
 end

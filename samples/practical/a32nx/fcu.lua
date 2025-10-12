@@ -40,16 +40,16 @@ local events = {
 -- observed data definitions
 --------------------------------------------------------------------------------------
 local observed_data = {
-    {rpn="(L:A32NX_FCU_LOC_MODE_ACTIVE)", event=events.loc_change},
+    {rpn="(L:A32NX_FCU_LOC_LIGHT_ON)", event=events.loc_change},
     {rpn="(L:A32NX_AUTOPILOT_1_ACTIVE)", event=events.ap1_change},
     {rpn="(L:A32NX_AUTOPILOT_2_ACTIVE)", event=events.ap2_change},
     {rpn="(L:A32NX_AUTOTHRUST_STATUS)", event=events.athr_change},
-    {rpn="(L:A32NX_FMA_EXPEDITE_MODE)", event=events.exped_change},
-    {rpn="(L:A32NX_FCU_APPR_MODE_ACTIVE)", event=events.appr_change},
+    {rpn="(L:A32NX_FCU_EXPED_LIGHT_ON)", event=events.exped_change},
+    {rpn="(L:A32NX_FCU_APPR_LIGHT_ON)", event=events.appr_change},
     {rpn="(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1,Bool) (L:A32NX_ELEC_DC_1_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or and", event=events.fd_change},
-    {rpn="(L:BTN_LS_1_FILTER_ACTIVE)", event=events.ls_change},
-    {rpn="(L:A32NX_ELEC_DC_1_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or not -5 * (L:XMLVAR_Baro1_Mode) +", event=events.baro_mode_change},
-    {rpn="(L:XMLVAR_BARO_SELECTOR_HPA_1)", event=events.baro_unit_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_LS_LIGHT_ON)", event=events.ls_change},
+    {rpn="(L:A32NX_ELEC_DC_1_BUS_IS_POWERED) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) or not -5 * (L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE) -1 * 2 + +", event=events.baro_mode_change},
+    {rpn="(L:A32NX_FCU_EFIS_L_BARO_IS_INHG)", event=events.baro_unit_change},
     {rpn="(A:KOHLSMAN SETTING HG:1,Inches of Mercury)", event=events.baro_inhg_change},
     {rpn="(A:KOHLSMAN SETTING MB:1,Millibars)", event=events.baro_hpa_change},
 }
@@ -61,18 +61,18 @@ end
 -- event-action mappings
 --------------------------------------------------------------------------------------
 local view_mappings = {
-    {event=events.spdmach_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)")},
+    {event=events.spdmach_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_SPD_MACH_TOGGLE_PUSH)")},
     {event=events.loc_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_AUTOPILOT_LOC_MODE, bool) if{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 0 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) } els{ 0 (>L:A32NX_AUTOPILOT_APPR_MODE) 1 (>L:A32NX_AUTOPILOT_LOC_MODE) (>K:AP_LOC_HOLD) }")},
     {event=events.hdgtrk_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_TRK_FPA_TOGGLE_PUSH)")},
     {event=events.ap1_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_1_PUSH)")},
     {event=events.ap2_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_AP_2_PUSH)")},
     {event=events.athr_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_ATHR_PUSH)")},
-    {event=events.exped_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_FCU_EXPED_PUSH)")},
-    {event=events.metricalt_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_METRIC_ALT_TOGGLE, bool) ! (>L:A32NX_METRIC_ALT_TOGGLE)")},
+    {event=events.exped_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EXPED_PUSH)")},
+    {event=events.metricalt_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_METRIC_ALT_TOGGLE_PUSH)")},
     {event=events.appr_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_APPR_PUSH)")},
     {event=events.fd_push, action=msfs.mfwasm.rpn_executer("1 (>K:TOGGLE_FLIGHT_DIRECTOR)")},
-    {event=events.ls_push, action=msfs.mfwasm.rpn_executer("(>H:A320_Neo_MFD_BTN_LS_1) (>H:A320_Neo_PFD_BTN_LS_1) and")},
-    {event=events.hghpa_push, action=msfs.mfwasm.rpn_executer("(L:XMLVAR_BARO_SELECTOR_HPA_1) 0 == if{ 1 (>L:XMLVAR_BARO_SELECTOR_HPA_1) } els{ 0 (>L:XMLVAR_BARO_SELECTOR_HPA_1) }")},
+    {event=events.ls_push, action=msfs.mfwasm.rpn_executer("(>K:A32NX.FCU_EFIS_L_LS_PUSH)")},
+    {event=events.hghpa_push, action=msfs.mfwasm.rpn_executer("(L:A32NX_FCU_EFIS_L_BARO_IS_INHG) ! (>L:A32NX_FCU_EFIS_L_BARO_IS_INHG)")},
 }
 
 local global_mappings = {
@@ -172,7 +172,7 @@ local canvas_digits = mapper.view_elements.canvas{
         if baro_context.mode == 2 then
             ctx:draw_string("5td")
         elseif baro_context.mode >= 0 then
-            if baro_context.unit == 0 then
+            if baro_context.unit == 1 then
                 ctx:draw_number{
                     value = baro_context.inhg,
                     precision = 4,
