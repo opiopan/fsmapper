@@ -48,7 +48,7 @@ void SimHIDConnection::start(){
     communicator = std::move(std::thread([this] {
         try{
             // send a D command to retrieve device definitions at first
-            serial->write("\r\nI\r\nI B\r\nD\r\n");
+            serial->write("\r\nI\r\nD\r\n");
 
             char buf[256];
             int readlen;
