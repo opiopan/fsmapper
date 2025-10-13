@@ -151,7 +151,6 @@ local function change_ecam_page(pgid)
     else
         rpn = "-1 (>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX) (>H:A32NX_SD_PAGE_CHANGED)"
     end
-    mapper.print(rpn)                
     msfs.mfwasm.execute_rpn(rpn)
 end
 
