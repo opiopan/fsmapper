@@ -40,6 +40,34 @@ fsmapper_x.x.x
 Copy the ```fsmapper``` folder directly from the package to the location where you want to install fsmapper. 
 fsmapper can be launched from any folder it's placed in.
 
+:::warning[Updating fsmapper may fail]
+
+When you try to overwrite an existing fsmapper installation with a newer version, the copy process may fail because **`fsmapperhook.dll`** is still loaded by other processes.
+
+This DLL is a *global message hook module*, and Windows keeps it injected into multiple processes while fsmapper is running. Although fsmapper uninstalls the hook on exit, the DLL might remain loaded until those processes finish processing Windows messages.
+
+If you encounter an error such as *“Access denied”* or *“file in use”* during update, try one of the following:
+
+- **Restart Windows**<br/>
+    This is the simplest and most reliable solution.  
+- **Manually unload the DLL**<br/>
+    Run the following commands in a Command Prompt (Administrator):
+
+   ```cmd
+   tasklist /m fsmapperhook.dll
+   ```
+
+   This shows which processes have loaded the DLL. You can then terminate them (if safe) using:
+
+   ```cmd
+   taskkill /PID <pid> /F
+   ```
+
+   Usually, the remaining processes are system daemons such as svchost.exe, and killing them is harmless, Windows will automatically restart them.
+
+This behavior is caused by how Windows manages global message hooks and is not specific to fsmapper.
+:::
+
 ## Additional Softwares
 While not mandatory for running fsmapper, it's highly recommended to additionally install the following two pieces of software. 
 fsmapper provides users with more convenient features by integrating with these softwares.
