@@ -54,7 +54,7 @@ If you encounter an error such as *“Access denied”* or *“file in use”* d
     Run the following commands in a Command Prompt (Administrator):
 
    ```cmd
-   tasklist /M fsmapperhook.dll
+   tasklist /m fsmapperhook.dll
    ```
 
    This shows which processes have loaded the DLL. You can then terminate them (if safe) using:
