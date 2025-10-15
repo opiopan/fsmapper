@@ -60,7 +60,7 @@ If you encounter an error such as *“Access denied”* or *“file in use”* d
    This shows which processes have loaded the DLL. You can then terminate them (if safe) using:
 
    ```cmd
-   taskkill /PID <pid> /F
+   taskkill /pid <PID> /f
    ```
 
    Usually, the remaining processes are system daemons such as svchost.exe, and killing them is harmless, Windows will automatically restart them.
