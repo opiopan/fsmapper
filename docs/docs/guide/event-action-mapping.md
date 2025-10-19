@@ -118,7 +118,7 @@ This setup is designed to accommodate softwares where the afterburner On/Off is 
 -- throttle.x.change: Event ID of physical throttle
 -- v_throttle:        vJoyUnit object for the throttle axis of vJoy device
 -- v_ab:              vJoyUnit object for the afterburner button of vJoy device
-set_primary_mappings{
+mapper.set_primary_mappings{
     {
         event = throttle.x.change,
         action = filter.duplicator{
