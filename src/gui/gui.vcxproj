@@ -293,7 +293,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets')" />
     <Import Project="..\packages\Mntone.AngelUmbrella.1.1.3\build\native\Mntone.AngelUmbrella.targets" Condition="Exists('..\packages\Mntone.AngelUmbrella.1.1.3\build\native\Mntone.AngelUmbrella.targets')" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets" Condition="Exists('..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets')" />
@@ -311,12 +310,12 @@
     <Import Project="..\packages\Microsoft.WindowsAppSDK.ML.1.8.2095\build\native\Microsoft.WindowsAppSDK.ML.targets" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.ML.1.8.2095\build\native\Microsoft.WindowsAppSDK.ML.targets')" />
     <Import Project="..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.251003001\build\native\Microsoft.WindowsAppSDK.Runtime.targets" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.251003001\build\native\Microsoft.WindowsAppSDK.Runtime.targets')" />
     <Import Project="..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.targets')" />
+    <Import Project="..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.11.2\build\native\nlohmann.json.targets'))" />
     <Error Condition="!Exists('..\packages\Mntone.AngelUmbrella.1.1.3\build\native\Mntone.AngelUmbrella.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Mntone.AngelUmbrella.1.1.3\build\native\Mntone.AngelUmbrella.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets'))" />
@@ -347,5 +346,6 @@
     <Error Condition="!Exists('..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.251003001\build\native\Microsoft.WindowsAppSDK.Runtime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.251003001\build\native\Microsoft.WindowsAppSDK.Runtime.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.WindowsAppSDK.1.8.251003001\build\native\Microsoft.WindowsAppSDK.targets'))" />
+    <Error Condition="!Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets'))" />
   </Target>
 </Project>
