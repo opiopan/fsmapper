@@ -676,19 +676,8 @@ public:
 
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override{
-        if (msg == WM_TOUCH){
-            auto rc = relay(msg, wparam, lparam);
-            ::CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(lparam));
-            return rc;
-        }else if (msg == WM_MOUSEMOVE || 
-            msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN){
-            auto now = std::chrono::steady_clock::now();
-            auto extra = ::GetMessageExtraInfo() & touch_mask;
-            if (extra != touch_signature && extra != mouse_emu::signature && extra != mouse_emu::recovery_signature){
-                return relay(msg, wparam, lparam);
-            }else{
-                return base_class::messageProc(msg, wparam, lparam);
-            }
+        if (msg == WM_POINTERDOWN || msg == WM_POINTERUP || msg == WM_POINTERUPDATE){
+            return relay(msg, wparam, lparam);
         }else if (msg == update_msg){
             on_update_window();
         }else{
@@ -725,7 +714,6 @@ protected:
         lw_info.dwFlags = ULW_ALPHA;
 
         ::RegisterTouchWindow(hWnd, 0);
-        
         return true;
     }
 };
@@ -781,10 +769,10 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
     views.push_back(std::move(view));
 
     auto window = make_viewport_window(bg_color,
-        //
-        // processing mouse message and touch message
-        //
         [this](UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT{
+            //
+            // processing WM_POINTER* messages
+            //
             std::lock_guard lock(touch_event_mutex);
             auto need_notify = touch_event_num == 0;
             using tevent = ViewPort::touch_event;
@@ -796,65 +784,25 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             std::function<void()> start_capture = []{};
             std::function<void()> end_capture = []{};
 
-            if (msg == WM_TOUCH){
-                if (is_touch_captured && captured_device == touch_device::mouse){
-                    event = tevent::cancel;
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                        ::ReleaseCapture();
-                    };
-                }else{
-                    auto handle = reinterpret_cast<HTOUCHINPUT>(lparam);
-                    if (LOWORD(wparam) > 1){
-                        event = tevent::cancel;
-                    }else{
-                        TOUCHINPUT  input;
-                        ::GetTouchInputInfo(handle, 1, &input, sizeof(TOUCHINPUT));
-                        msg_touch_id = input.dwID;
-                        event = input.dwFlags & TOUCHEVENTF_DOWN ? oevent{tevent::down} :
-                                input.dwFlags & TOUCHEVENTF_UP ?   oevent{tevent::up} :
-                                input.dwFlags & TOUCHEVENTF_MOVE ? oevent{tevent::drag} :
-                                                                   oevent{std::nullopt};
-                        POINT pt{ input.x / 100, input.y / 100 };
-                        ::ScreenToClient(*cover_window, &pt);
-                        x = pt.x;
-                        y = pt.y;
-                    }
-                    start_capture = [this, msg_touch_id]{
+            auto msg_point_id = GET_POINTERID_WPARAM(wparam);
+            if ((msg == WM_POINTERDOWN && !is_touch_captured) || 
+                ((msg == WM_POINTERUP || msg == WM_POINTERUPDATE) && is_touch_captured && touch_id == msg_point_id)){
+                POINTER_TOUCH_INFO touch_info;
+                if (::GetPointerTouchInfo(msg_point_id, &touch_info)){
+                    event = msg == WM_POINTERDOWN ? oevent{tevent::down} :
+                            msg == WM_POINTERUP   ? oevent{tevent::up} :
+                                                    oevent{tevent::drag};
+                    POINT pt{ touch_info.pointerInfo.ptPixelLocation.x, touch_info.pointerInfo.ptPixelLocation.y };
+                    ::ScreenToClient(*cover_window, &pt);
+                    x = pt.x;
+                    y = pt.y;
+                    start_capture = [this, msg_point_id]{
                         is_touch_captured = true;
-                        captured_device = touch_device::touch;
-                        touch_id = msg_touch_id;
+                        touch_id = msg_point_id;
                         ::SetCapture(*cover_window);
                     };
                     end_capture = [this]{
                         is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                        ::ReleaseCapture();
-                    };
-                }
-            }else{
-                if (is_touch_captured && captured_device == touch_device::touch){
-                    event = tevent::cancel;
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                    };
-                }else{
-                    event = msg == WM_LBUTTONDOWN ? oevent{tevent::down}  :
-                            msg == WM_LBUTTONUP ?   oevent{tevent::up} :
-                            msg == WM_MOUSEMOVE ?   oevent{tevent::drag} :
-                                                    oevent{std::nullopt};
-                    x = GET_X_LPARAM(lparam);
-                    y = GET_Y_LPARAM(lparam);
-                    start_capture = [this]{
-                        is_touch_captured = true;
-                        captured_device = touch_device::mouse;
-                        ::SetCapture(*cover_window);
-                    };
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
                         ::ReleaseCapture();
                     };
                 }
@@ -920,12 +868,12 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             return 0;
         },
 
-        //
-        // updating viewport window contents displayed
-        // note thta contents to display is build as bitmap in scripting thread
-        // this function just reflect that on layerd window
-        //
         [this](){
+            //
+            // updating viewport window contents displayed
+            // note thta contents to display is build as bitmap in scripting thread
+            // this function just reflect that on layerd window
+            //
             std::lock_guard lock(rendering_mutex);
             (*render_target)->BeginDraw();
             {
