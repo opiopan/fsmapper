@@ -51,7 +51,7 @@ You can register the monitored RPN expressions by specifying an array of tables 
 |---|----|-----------|
 |`event`|number|[**Event ID**](/guide/event-action-mapping#event) for the event triggered when the monitored data changes
 |`rpn`|string|[**RPN**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) expression representing the monitored data
-|`initial_value`|number|The initial value of the monitored data.<br/>fsmapper trigers an event with the initial value as the [**Event Value**](/guide/event-action-mapping#event).<br/>This parameter is optional. The default is `0`.
+|`initial_value`|number|The initial value of the monitored data.<br/>fsmapper triggers an event with the initial value as the [**Event Value**](/guide/event-action-mapping#event).<br/>This parameter is optional. The default is `0`.
 |`epsilon`|number|If the change in the monitored data does not exceed this value, no event will be triggered. Choosing an appropriate value helps prevent unnecessary event generation, reducing system load.<br/>This parameter is optional. The default is `0`
 
 The following code snippet enables notification of changes in the aircraft's heading as the HEADING event, and the corresponding action can display the heading in the message console.
@@ -76,7 +76,7 @@ mapper.add_primary_mappings{
 }
 ```
 
-## Issueing an Input Event
+## Issuing an Input Event
 [**Input Events**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm) is a system in MSFS used to define the behavior of cockpit interactable objects when accessed with a mouse. 
 While it is possible to implement cockpit behavior without defining Input Events, in most cases, Input Events are defined for each type of interaction with objects such as switches and knobs.
 
