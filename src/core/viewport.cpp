@@ -817,7 +817,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
                                                 oevent{tevent::drag};
                 POINTER_INFO pointer_info;
                 ::GetPointerInfo(msg_point_id, &pointer_info);
-                POINT pt{pointer_info.ptPixelLocation.x, pointer_info.ptPixelLocation.y};
+                auto& pt {pointer_info.ptPixelLocation};
                 ::ScreenToClient(*cover_window, &pt);
                 x = pt.x;
                 y = pt.y;
