@@ -676,19 +676,10 @@ public:
 
 protected:
     LRESULT messageProc(UINT msg, WPARAM wparam, LPARAM lparam) override{
-        if (msg == WM_TOUCH){
-            auto rc = relay(msg, wparam, lparam);
-            ::CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(lparam));
-            return rc;
-        }else if (msg == WM_MOUSEMOVE || 
-            msg == WM_LBUTTONUP || msg == WM_LBUTTONDOWN){
-            auto now = std::chrono::steady_clock::now();
-            auto extra = ::GetMessageExtraInfo() & touch_mask;
-            if (extra != touch_signature && extra != mouse_emu::signature && extra != mouse_emu::recovery_signature){
-                return relay(msg, wparam, lparam);
-            }else{
-                return base_class::messageProc(msg, wparam, lparam);
-            }
+        if (msg == WM_POINTERDOWN || msg == WM_POINTERUP || msg == WM_POINTERUPDATE) {
+            return relay(msg, wparam, lparam);
+        }else if (msg == WM_MOUSEACTIVATE){
+            return MA_NOACTIVATE;
         }else if (msg == update_msg){
             on_update_window();
         }else{
@@ -796,69 +787,51 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             std::function<void()> start_capture = []{};
             std::function<void()> end_capture = []{};
 
-            if (msg == WM_TOUCH){
-                if (is_touch_captured && captured_device == touch_device::mouse){
-                    event = tevent::cancel;
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                        ::ReleaseCapture();
-                    };
-                }else{
-                    auto handle = reinterpret_cast<HTOUCHINPUT>(lparam);
-                    if (LOWORD(wparam) > 1){
-                        event = tevent::cancel;
-                    }else{
-                        TOUCHINPUT  input;
-                        ::GetTouchInputInfo(handle, 1, &input, sizeof(TOUCHINPUT));
-                        msg_touch_id = input.dwID;
-                        event = input.dwFlags & TOUCHEVENTF_DOWN ? oevent{tevent::down} :
-                                input.dwFlags & TOUCHEVENTF_UP ?   oevent{tevent::up} :
-                                input.dwFlags & TOUCHEVENTF_MOVE ? oevent{tevent::drag} :
-                                                                   oevent{std::nullopt};
-                        POINT pt{ input.x / 100, input.y / 100 };
-                        ::ScreenToClient(*cover_window, &pt);
-                        x = pt.x;
-                        y = pt.y;
-                    }
-                    start_capture = [this, msg_touch_id]{
-                        is_touch_captured = true;
-                        captured_device = touch_device::touch;
-                        touch_id = msg_touch_id;
-                        ::SetCapture(*cover_window);
-                    };
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                        ::ReleaseCapture();
-                    };
-                }
-            }else{
-                if (is_touch_captured && captured_device == touch_device::touch){
-                    event = tevent::cancel;
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                    };
-                }else{
-                    event = msg == WM_LBUTTONDOWN ? oevent{tevent::down}  :
-                            msg == WM_LBUTTONUP ?   oevent{tevent::up} :
-                            msg == WM_MOUSEMOVE ?   oevent{tevent::drag} :
-                                                    oevent{std::nullopt};
-                    x = GET_X_LPARAM(lparam);
-                    y = GET_Y_LPARAM(lparam);
-                    start_capture = [this]{
-                        is_touch_captured = true;
-                        captured_device = touch_device::mouse;
-                        ::SetCapture(*cover_window);
-                    };
-                    end_capture = [this]{
-                        is_touch_captured = false;
-                        captured_device = touch_device::unknown;
-                        ::ReleaseCapture();
-                    };
-                }
+            auto msg_point_id = GET_POINTERID_WPARAM(wparam);
+            POINTER_INPUT_TYPE pointer_type;
+            ::GetPointerType(msg_point_id, &pointer_type);
+#ifdef _DEBUG
+            auto msgstr = msg == WM_POINTERDOWN ? "DOWN" :
+                          msg == WM_POINTERUP   ? "UP"   :
+                                                "UPDATE";
+            auto typestr = pointer_type == PT_TOUCH ? "TOUCH" :
+                           pointer_type == PT_PEN   ? "PEN"   :
+                           pointer_type == PT_MOUSE ? "MOUSE" :
+                                                      "RAW";
+            OutputDebugStringA(std::format("POINTER_RAW: {}:{}/{}\n", msg_point_id, msgstr, typestr).c_str());
+#endif
+            if (pointer_type != PT_MOUSE && msg == WM_POINTERUPDATE && !is_touch_captured && msg_point_id != touch_id){
+                // For Luna Display: treat POINTERUPDATE before capture as POINTERDOWN
+                msg = WM_POINTERDOWN;
             }
+            if ((msg == WM_POINTERDOWN && !is_touch_captured) || 
+                ((msg == WM_POINTERUP || msg == WM_POINTERUPDATE) && is_touch_captured && touch_id == msg_point_id)){
+#ifdef _DEBUG
+                auto msgstr = msg == WM_POINTERDOWN ? "DOWN" :
+                              msg == WM_POINTERUP   ? "UP"   :
+                                                    "UPDATE";
+                OutputDebugStringA(std::format("POINTER: {}:{}\n", msg_point_id, msgstr).c_str());
+#endif
+                event = msg == WM_POINTERDOWN ? oevent{tevent::down} :
+                        msg == WM_POINTERUP   ? oevent{tevent::up} :
+                                                oevent{tevent::drag};
+                POINTER_INFO pointer_info;
+                ::GetPointerInfo(msg_point_id, &pointer_info);
+                POINT pt{pointer_info.ptPixelLocation.x, pointer_info.ptPixelLocation.y};
+                ::ScreenToClient(*cover_window, &pt);
+                x = pt.x;
+                y = pt.y;
+                start_capture = [this, msg_point_id]{
+                    is_touch_captured = true;
+                    touch_id = msg_point_id;
+                    ::SetCapture(*cover_window);
+                };
+                end_capture = [this]{
+                    is_touch_captured = false;
+                    ::ReleaseCapture();
+                };
+            }
+
             if (event){
                 if (*event == tevent::down){
                     this->manager.get_mouse_emulator().emulate(mouse_emu::event::cancel_recovery, 0, 0, mouse_emu::clock::now());

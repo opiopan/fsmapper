@@ -272,8 +272,6 @@ protected:
     } touch_event_buffer[touch_event_buffer_size];
     int touch_event_num = 0;
     bool is_touch_captured = false;
-    enum class touch_device{unknown, touch, mouse};
-    touch_device captured_device = touch_device::unknown;
     DWORD touch_id = 0;;
     bool ignore_transparent_touches{false};
 
