@@ -793,7 +793,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
 #ifdef _DEBUG
             auto msgstr = msg == WM_POINTERDOWN ? "DOWN" :
                           msg == WM_POINTERUP   ? "UP"   :
-                                                "UPDATE";
+                                                  "UPDATE";
             auto typestr = pointer_type == PT_TOUCH ? "TOUCH" :
                            pointer_type == PT_PEN   ? "PEN"   :
                            pointer_type == PT_MOUSE ? "MOUSE" :
@@ -809,7 +809,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
 #ifdef _DEBUG
                 auto msgstr = msg == WM_POINTERDOWN ? "DOWN" :
                               msg == WM_POINTERUP   ? "UP"   :
-                                                    "UPDATE";
+                                                      "UPDATE";
                 OutputDebugStringA(std::format("POINTER: {}:{}\n", msg_point_id, msgstr).c_str());
 #endif
                 event = msg == WM_POINTERDOWN ? oevent{tevent::down} :
@@ -835,7 +835,7 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
             if (event){
                 if (*event == tevent::down){
                     this->manager.get_mouse_emulator().emulate(mouse_emu::event::cancel_recovery, 0, 0, mouse_emu::clock::now());
-                }else if (msg == WM_TOUCH && (*event == tevent::up || *event == tevent::cancel)){
+                }else if (pointer_type != PT_MOUSE && (*event == tevent::up || *event == tevent::cancel)){
                     this->manager.get_mouse_emulator().emulate(mouse_emu::event::recover, 0, 0, mouse_emu::clock::now());
                 }
 
