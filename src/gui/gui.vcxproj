@@ -134,6 +134,9 @@
     <PreBuildEvent>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">call $(SolutionDir)tools\update_version_info.bat $(SolutionDir)</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy $(TargetDir)..\Debug\fsmapperhook.* $(TargetDir)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
