@@ -25,5 +25,5 @@ This function returns a native-action.
 
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
-- [Issueing an Input Event](/guide/msfs#issueing-an-input-event)
+- [Issueing an Input Event](/guide/msfs#issuing-an-input-event)
 - [`msfs.execute_input_event()`](/libs/msfs/msfs_execute_input_event)

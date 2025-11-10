@@ -35,7 +35,7 @@ Here, I'll focus on explaining the [**Device Unit**](/guide/device/#device-unit)
 |Precision|32-bit integer
 |Value Range|1 for ON, 0 for OFF
 
-### Rorary Encoders
+### Rotary Encoders
 |Attribute|Description|
 |--------|-----------|
 |Name|The SimHID devices use predefined names directly, meaning they are device-dependent.

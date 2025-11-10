@@ -40,7 +40,7 @@ mapper.mfwasm.execute_rpn('(>K:VOR1_OBI_FAST_INC)')
 Although [**RPN**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm) itself is very powerful in terms of expressive capability, 
 due to the limitations of [`execute_calculator_code()`](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/execute_calculator_code.htm) in the [**Gauge API**](https://docs.flightsimulator.com/html/Programming_Tools/WASM/Gauge_API/Gauge_API.htm), 
 it cannot access [**B variables**](https://docs.flightsimulator.com/html/Additional_Information/Reverse_Polish_Notation.htm?#Types), meaning it cannot get or set values from an [**Input Event**](https://docs.flightsimulator.com/html/Content_Configuration/Models/ModelBehaviors/Input_Event_Definitions.htm). fsmapper provides separate functions for setting value of an Input Event (i.e., issuing an Input Event). 
-For details on how to issue an Input Event, refer to [**Issuing an Input Event**](#issueing-an-input-event).
+For details on how to issue an Input Event, refer to [**Issuing an Input Event**](#issuing-an-input-event).
 :::
 
 ## Retrieving MSFS's Internal State

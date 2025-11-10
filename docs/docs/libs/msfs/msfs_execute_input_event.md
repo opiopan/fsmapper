@@ -24,5 +24,5 @@ This function doesn't return any value.
 
 ## See Also
 - [Interaction with MSFS](/guide/msfs)
-- [Issueing an Input Event](/guide/msfs#issueing-an-input-event)
+- [Issueing an Input Event](/guide/msfs#issuing-an-input-event)
 - [`msfs.input_event_executer()`](/libs/msfs/msfs_input_event_executer)
