@@ -292,4 +292,4 @@ Almost component can be activated with tapping it. Component in active state can
 A part of phisical buttons and knobs on SimHID G1000 will only affect component in active state.<br>
 For example, Course of CDI for NAV1 can be changed by rotationg course knob on SimHID G1000 only when CDI for NAV1 is activated.
 
-Other various components can be found at [here](https://github.com/opiopan/scripts_for_fsmapper/tree/main/simhid_g1000/fs2020/lib).
+Other various components can be found at [here](https://github.com/opiopan/scripts_for_fsmapper/tree/main/simhid_g1000/msfs/lib).
