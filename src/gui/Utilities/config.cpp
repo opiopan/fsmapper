@@ -31,6 +31,8 @@ static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
 static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
 static const auto* CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG = "touch_double_tap_on_drag";
 static const auto* CONFIG_TOUCH_DEADZONE_FOR_DRAG = "touch_deadzone_for_drag";
+static const auto* CONFIG_TOUCH_POINTER_JITTER = "touch_pointer_jitter";
+static const auto* CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE = "touch_move_trigger_distance";
 static const auto* CONFIG_CLI_LAUNCH_MINIMIZED = "cli_launch_minimized";
 static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 
@@ -39,6 +41,8 @@ static constexpr uint32_t default_touch_up_delay = 50;
 static constexpr uint32_t default_touch_drag_start_delay = 80;
 static constexpr bool default_touch_double_tap_on_drag = false;
 static constexpr uint32_t default_touch_deadzone_for_drag = 0;
+static constexpr uint32_t default_touch_pointer_jitter = 1;
+static constexpr uint32_t default_touch_move_trigger_distance = 0;
 
 using namespace fsmapper;
 using namespace nlohmann;
@@ -69,6 +73,8 @@ class config_imp : public config{
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
     bool touch_double_tap_on_drag{default_touch_double_tap_on_drag};
     uint32_t touch_deadzone_for_drag{default_touch_deadzone_for_drag};
+    uint32_t touch_pointer_jitter{default_touch_pointer_jitter};
+    uint32_t touch_move_trigger_distance{default_touch_move_trigger_distance};
 
     bool cli_launch_minimized{false};
     std::optional<std::filesystem::path> cli_script_path{std::nullopt};
@@ -169,6 +175,8 @@ public:
         reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
         reflect_bool(data, CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG, touch_double_tap_on_drag);
         reflect_number(data, CONFIG_TOUCH_DEADZONE_FOR_DRAG, touch_deadzone_for_drag);
+        reflect_number(data, CONFIG_TOUCH_POINTER_JITTER, touch_pointer_jitter);
+        reflect_number(data, CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE, touch_move_trigger_distance);
     }
 
     void save() override{
@@ -196,6 +204,8 @@ public:
                 {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
                 {CONFIG_TOUCH_DOUBLE_TAP_ON_DRAG, touch_double_tap_on_drag},
                 {CONFIG_TOUCH_DEADZONE_FOR_DRAG, touch_deadzone_for_drag},
+                {CONFIG_TOUCH_POINTER_JITTER, touch_pointer_jitter},
+                {CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE, touch_move_trigger_distance},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -321,12 +331,26 @@ public:
     void set_touch_deadzone_for_drag(uint32_t value) override{
         update_value(touch_deadzone_for_drag, value);
     }
+    uint32_t get_touch_pointer_jitter() override{
+        return touch_pointer_jitter;
+    }
+    void set_touch_pointer_jitter(uint32_t value) override{
+        update_value(touch_pointer_jitter, value);
+    }
+    uint32_t get_touch_move_trigger_distance() override{
+        return touch_move_trigger_distance;
+    }
+    void set_touch_move_trigger_distance(uint32_t value) override{
+        update_value(touch_move_trigger_distance, value);
+    }
     void reset_touch_delay() override{
         update_value(touch_down_delay, default_touch_down_delay);
         update_value(touch_up_delay, default_touch_up_delay);
         update_value(touch_drag_start_delay, default_touch_drag_start_delay);
         update_value(touch_double_tap_on_drag, default_touch_double_tap_on_drag);
         update_value(touch_deadzone_for_drag, default_touch_deadzone_for_drag);
+        update_value(touch_pointer_jitter, default_touch_pointer_jitter);
+        update_value(touch_move_trigger_distance, default_touch_move_trigger_distance);
     }
 
     void load_cli_params() override{

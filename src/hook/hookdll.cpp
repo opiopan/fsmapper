@@ -69,6 +69,8 @@ static uint32_t touch_up_delay{0};
 static uint32_t touch_start_delay{0};
 static bool     touch_double_tap_on_drag{false};
 static uint32_t touch_dead_zone_for_drag_start{0};
+static uint32_t touch_pointer_jitter{0};
+static uint32_t touch_move_triger_distance{0};
 #pragma data_seg()
 
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -340,9 +342,11 @@ protected:
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
         mouse_emu::milliseconds delay_drag;
-        int acceptable_delta = 5;
+        int acceptable_delta{5};
         bool double_tap_on_drag{false};
         int dead_zone_for_drag{0};
+        int pointer_jitter{1};
+        bool pointer_jitter_polarity{true};
         mouse_emu::clock::time_point last_ops_time = mouse_emu::clock::now();
         mouse_emu::clock::time_point last_down_time = mouse_emu::clock::now();
         mouse_emu::clock::time_point last_up_time = mouse_emu::clock::now();
@@ -425,6 +429,8 @@ public:
                 ctx.delay_drag = mouse_emu::milliseconds{0};
                 ctx.double_tap_on_drag = touch_double_tap_on_drag;
                 ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
+                ctx.pointer_jitter = static_cast<int>(touch_pointer_jitter);
+                ctx.acceptable_delta = static_cast<int>(touch_move_triger_distance);
                 RegisterTouchWindow(hWnd, 0);
             }
             if (ctx.need_to_modify_touch && !mouse_emulator){
@@ -766,4 +772,6 @@ DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
     touch_start_delay = config->start_delay;
     touch_double_tap_on_drag = config->double_tap_on_drag;
     touch_dead_zone_for_drag_start = config->dead_zone_for_drag_start;
+    touch_pointer_jitter = config->pointer_jitter;
+    touch_move_triger_distance = config->move_trigger_distance;
 }

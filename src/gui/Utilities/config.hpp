@@ -77,6 +77,10 @@ namespace fsmapper{
         virtual void set_touch_double_tap_on_drag(bool value) = 0;
         virtual uint32_t get_touch_deadzone_for_drag() = 0;
         virtual void set_touch_deadzone_for_drag(uint32_t value) = 0;
+        virtual uint32_t get_touch_pointer_jitter() = 0;
+        virtual void set_touch_pointer_jitter(uint32_t value) = 0;
+        virtual uint32_t get_touch_move_trigger_distance() = 0;
+        virtual void set_touch_move_trigger_distance(uint32_t value) = 0;
         virtual void reset_touch_delay() = 0;
 
         // For exchanging CLI parameters between processes

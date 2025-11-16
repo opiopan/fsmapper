@@ -254,6 +254,20 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_touch_deadzone_for_drag(value);
             save_config();
         }
+        int32_t TouchPointerJitter(){
+            return fsmapper::app_config.get_touch_pointer_jitter();
+        }
+        void TouchPointerJitter(int32_t value){
+            fsmapper::app_config.set_touch_pointer_jitter(value);
+            save_config();
+        }
+        int32_t TouchMoveTriggerDistance(){
+            return fsmapper::app_config.get_touch_move_trigger_distance();
+        }
+        void TouchMoveTriggerDistance(int32_t value){
+            fsmapper::app_config.set_touch_move_trigger_distance(value);
+            save_config();
+        }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
         void ClickResetTouchConfig(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
@@ -317,6 +331,8 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Args{L"TouchDragStartDelay"});
             property_changed(*this, Args{L"TouchDoubleTapOnDrag"});
             property_changed(*this, Args{L"TouchDeadzoneForDrag"});
+            property_changed(*this, Args{L"TouchPointerJitter"});
+            property_changed(*this, Args{L"TouchMoveTriggerDistance"});
         }
 
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);

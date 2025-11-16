@@ -24,6 +24,8 @@ typedef struct  _TOUCH_CONFIG{
     uint32_t start_delay;
     bool     double_tap_on_drag;
     uint32_t dead_zone_for_drag_start;
+    uint32_t pointer_jitter;
+    uint32_t move_trigger_distance;
 }TOUCH_CONFIG;
 
 typedef void (*WINDOW_CLOSE_CALLBACK)(HWND hWnd, void* context);
