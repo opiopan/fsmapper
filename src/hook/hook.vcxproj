@@ -175,11 +175,13 @@
   <ItemGroup>
     <ClCompile Include="apihook.cpp" />
     <ClCompile Include="hookdll.cpp" />
+    <ClCompile Include="hooklog.cpp" />
     <ClCompile Include="mouseemu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apihook.h" />
     <ClInclude Include="hookdll.h" />
+    <ClInclude Include="hooklog.h" />
     <ClInclude Include="mouseemu.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

@@ -4,6 +4,7 @@
 //
 
 #include "mouseemu.h"
+#include "hooklog.h"
 
 #include <thread>
 #include <mutex>
@@ -84,14 +85,15 @@ public:
                 }
 
                 #ifdef _DEBUG
-                    static clock::time_point base{clock::now()};
-                    std::ostringstream os;
-                    auto ref_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - base);
-                    os << "issueMouseEvent(" << ref_time;
-                    os << "): [" << static_cast<DWORD>(command.ev) << "] x:" << command.x << ", y:" << command.y;
-                    os << ", screen.x: " << primary_screen_x << ", screen.y: " << primary_screen_y; 
-                    os << std::endl;
-                    OutputDebugStringA(os.str().c_str());
+                    auto evt = command.ev == event::down ? "down" :
+                               command.ev == event::up ? "up" :
+                               command.ev == event::move ? "move" : 
+                               command.ev == event::recover ? "recover" :
+                               command.ev == event::cancel_recovery ? "cancel_recovery" : "unknown";
+                    auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - command.time).count();
+                    hooklog::get_logger().log(
+                        std::format("Mouse Event: {} x:{} y:{} with delay {} ms",
+                            evt, command.x, command.y, delay));
                 #endif
 
                 INPUT input;

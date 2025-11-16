@@ -242,6 +242,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="windowcapture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\hook\hooklog.cpp" />
     <ClCompile Include="..\hook\mouseemu.cpp" />
     <ClCompile Include="action.cpp" />
     <ClCompile Include="builtinDevices\dinputdev.cpp" />

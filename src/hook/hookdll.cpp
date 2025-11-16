@@ -21,6 +21,7 @@ using std::min;
 #include "apihook.h"
 #include "hookdll.h"
 #include "mouseemu.h"
+#include "hooklog.h"
 
 struct FatalException{
     DWORD error;
@@ -65,7 +66,7 @@ static UpdateCounter update_counter = {0, 0};
 static CapturedWindowContext captured_windows_ctx[MAX_CAPTURED_WINDOW] = {0};
 static uint32_t touch_down_delay{0};
 static uint32_t touch_up_delay{0};
-static uint32_t touch_drag_start_delay{0};
+static uint32_t touch_start_delay{0};
 static bool     touch_double_tap_on_drag{false};
 static uint32_t touch_dead_zone_for_drag_start{0};
 #pragma data_seg()
@@ -418,7 +419,7 @@ public:
             ctx.change_request_num = 0;
             if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
                 ctx.need_to_modify_touch = true;
-                ctx.delay_start = mouse_emu::milliseconds{touch_drag_start_delay};
+                ctx.delay_start = mouse_emu::milliseconds{touch_start_delay};
                 ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
                 ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
                 ctx.delay_drag = mouse_emu::milliseconds{0};
@@ -438,6 +439,11 @@ public:
                     ctx.saved_style ^(WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_DLGFRAME));
             }
             sharedFollowingManager->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
+
+            #ifdef _DEBUG
+                hooklog::allocate_logger();
+                hooklog::get_logger().log(std::format("Captured window: HWND=0x{:X}, option=0x{:X}", reinterpret_cast<uintptr_t>(hWnd), option));
+            #endif
         }
     };
 
@@ -464,6 +470,11 @@ public:
         if (captured_windows.size() == 0){
             mouse_emulator = nullptr;
         }
+
+        #ifdef _DEBUG
+            hooklog::get_logger().log(std::format("Released window: HWND=0x{:X}", reinterpret_cast<uintptr_t>(hWnd)));
+            hooklog::release_logger();
+        #endif
     };
 
     void changeWindowAttribute(HWND hWnd){
@@ -557,14 +568,13 @@ public:
             auto delta_y = current_point.y - pt.y;
             if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
                 delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
-                ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time);
+                ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time + ctx.delay_start);
                 mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
-                ctx.last_ops_time = ctx.last_ops_time + ctx.delay_down;
             }
             ctx.pointer_id = msg_pointer_id;
             ctx.is_touch_down = true;
             ctx.last_touch_point = pt;
-            ctx.last_ops_time = max(now,  max(ctx.last_ops_time, ctx.last_up_time + ctx.delay_down));
+            ctx.last_ops_time = max(now + ctx.delay_down,  max(ctx.last_ops_time + ctx.delay_down, ctx.last_up_time + ctx.delay_down));
             ctx.last_down_time = ctx.last_ops_time;
             mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
             return true;
@@ -753,7 +763,7 @@ DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type){
 DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
     touch_down_delay = config->down_delay;
     touch_up_delay = config->up_delay;
-    touch_drag_start_delay = config->drag_start_delay;
+    touch_start_delay = config->start_delay;
     touch_double_tap_on_drag = config->double_tap_on_drag;
     touch_dead_zone_for_drag_start = config->dead_zone_for_drag_start;
 }

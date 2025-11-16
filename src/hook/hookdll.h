@@ -21,7 +21,7 @@ extern "C" {
 typedef struct  _TOUCH_CONFIG{
     uint32_t down_delay;
     uint32_t up_delay;
-    uint32_t drag_start_delay;
+    uint32_t start_delay;
     bool     double_tap_on_drag;
     uint32_t dead_zone_for_drag_start;
 }TOUCH_CONFIG;
