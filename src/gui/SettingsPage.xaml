@@ -303,6 +303,22 @@
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchDragStartDelay, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
+                                <angel:SettingsCard Header="Cursor move trigger distance" Background="{ThemeResource SettingsCardBackground}"
+                                                    Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the distance (in pixel) beyond which a mouse move event is generated when a touch occurs away from the pointer.
+                                        A value of 0 always generates a mouse move event.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="1" LargeChange="10"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchMoveTriggerDistance, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
                                 <angel:SettingsCard Header="Touch to click delay" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>
@@ -335,6 +351,22 @@
                                                SmallChange="10" LargeChange="100"
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchUpDelay, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
+                                <angel:SettingsCard Header="Jitter amount" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the amount of cursor jitter applied during continuous taps.
+                                        When consecutive touches occur within the specified pixel range, the touch position is offset within this jitter amount.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="1" LargeChange="10"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchPointerJitter, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
                                 <angel:SettingsCard Header="Drag start delay" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}" Visibility="Collapsed">

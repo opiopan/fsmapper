@@ -354,6 +354,7 @@ protected:
         bool is_touch_down{false};
         bool is_dragging{false};
         POINT last_touch_point;
+        POINT last_jittered_point{0, 0};
     };
     struct ChangeRequest{
         bool change_position:1;
@@ -568,6 +569,19 @@ public:
         auto& pt = pointer_info.ptPixelLocation;
 
         if (msg == WM_POINTERDOWN && !ctx.is_touch_down){
+            auto jitter_delta_x = abs(pt.x - ctx.last_jittered_point.x);
+            auto jitter_delta_y = abs(pt.y - ctx.last_jittered_point.y);
+            if (jitter_delta_x <= ctx.pointer_jitter && jitter_delta_y <= ctx.pointer_jitter){
+                if (ctx.pointer_jitter_polarity){
+                    pt.x += ctx.pointer_jitter;
+                    pt.y += ctx.pointer_jitter;
+                }else{
+                    pt.x -= ctx.pointer_jitter;
+                    pt.y -= ctx.pointer_jitter;
+                }
+                ctx.pointer_jitter_polarity = !ctx.pointer_jitter_polarity;
+            }
+            ctx.last_jittered_point = pt;
             POINT current_point;
             ::GetCursorPos(&current_point);
             auto delta_x = current_point.x - pt.x;
