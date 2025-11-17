@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <Shlobj.h>
 
+namespace {
 
 class logger_impl : public hooklog::logger {
 protected:
@@ -70,6 +71,8 @@ class null_logger_impl : public hooklog::logger {
 public:
     void log(const char* message) override {}
 };
+
+}
 
 std::unique_ptr<hooklog::logger> global_logger;
 auto logger_count{0};

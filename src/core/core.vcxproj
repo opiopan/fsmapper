@@ -219,6 +219,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClInclude Include="dcs.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="devicemodifier.h" />
+    <ClInclude Include="devlog.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="fileops.h" />
@@ -255,6 +256,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="dcs.cpp" />
     <ClCompile Include="device.cpp" />
     <ClCompile Include="devicemodifier.cpp" />
+    <ClCompile Include="devlog.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="fileops.cpp" />

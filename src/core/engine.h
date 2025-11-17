@@ -21,6 +21,7 @@
 #include "event.h"
 #include "action.h"
 #include "tools.h"
+#include "devlog.h"
 
 class DeviceManager;
 class DeviceModifier;
@@ -60,6 +61,7 @@ protected :
     Callback callback;
     Logger logger;
     MAPPER_LOGMODE logmode;
+    std::unique_ptr<devlog::logger> dev_logger;
     TIME_POINT now = CLOCK::now();
     MapperOption options;
 
@@ -144,6 +146,7 @@ public:
 
     void putLog(MCONSOLE_MESSAGE_TYPE mtype, const std::string& msg){
         if (!callback_is_inhibited){
+            dev_logger->log(mtype, msg);
             if (mtype == MCONSOLE_DEBUG && !(logmode & MAPPER_LOG_DEBUG)){
                 return;
             }
