@@ -94,6 +94,19 @@
                            SpinButtonPlacementMode="Compact" SmallChange="100" LargeChange="1000" Width="120" HorizontalAlignment="Left"
                            Value="{x:Bind ViewModel.MessageLogSize, Mode=TwoWay}"/>
                     </angel:SettingsCard>
+
+                    <angel:SettingsCard Header="Enable debug logging">
+                        <angel:SettingsCard.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xebe8;"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <angel:SettingsCard.Description>
+                            Specifies whether internal debug logs are written to the user’s AppData directory (AppData\Roaming\fsmapper\logs\).
+                            These logs are intended for development and troubleshooting.
+                        </angel:SettingsCard.Description>
+                        <ToggleSwitch MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                      Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                      IsOn="{x:Bind ViewModel.DeveloperLog, Mode=TwoWay}"/>
+                    </angel:SettingsCard>
                 </StackPanel>
 
                 <!-- Scripting -->

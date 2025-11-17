@@ -91,6 +91,7 @@ typedef enum{
     MOPT_PLUGIN_FOLDER,         // string
     MOPT_STDLIB,                // integer
     MOPT_DCS_EXPORTER,          // integer (as boolean: 0 is false, other than 0 is true)
+    MOPT_LOGMODE,              //  integer (as boolean: 0 is false, other than 0 is true)
 }MAPPER_OPTION;
 
 typedef enum{

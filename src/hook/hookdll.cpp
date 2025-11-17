@@ -64,6 +64,7 @@ struct UpdateCounter{
 static HHOOK hookHandle = 0;
 static UpdateCounter update_counter = {0, 0};
 static CapturedWindowContext captured_windows_ctx[MAX_CAPTURED_WINDOW] = {0};
+static bool     enable_log{false};
 static uint32_t touch_down_delay{0};
 static uint32_t touch_up_delay{0};
 static uint32_t touch_start_delay{0};
@@ -338,6 +339,7 @@ protected:
         RECT saved_rect;
         int change_request_num;
         bool need_to_modify_touch{false};
+        bool enable_log{false};
         mouse_emu::milliseconds delay_start;
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
@@ -422,6 +424,7 @@ public:
             ctx.cy = 0;
             ctx.hWndInsertAfter = nullptr;
             ctx.change_request_num = 0;
+            ctx.enable_log = enable_log;
             if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
                 ctx.need_to_modify_touch = true;
                 ctx.delay_start = mouse_emu::milliseconds{touch_start_delay};
@@ -447,10 +450,10 @@ public:
             }
             sharedFollowingManager->SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
 
-            #ifdef _DEBUG
+            if (ctx.enable_log){
                 hooklog::allocate_logger();
                 hooklog::get_logger().log(std::format("Captured window: HWND=0x{:X}, option=0x{:X}", reinterpret_cast<uintptr_t>(hWnd), option));
-            #endif
+            }
         }
     };
 
@@ -478,10 +481,10 @@ public:
             mouse_emulator = nullptr;
         }
 
-        #ifdef _DEBUG
+        if (ctx.enable_log){
             hooklog::get_logger().log(std::format("Released window: HWND=0x{:X}", reinterpret_cast<uintptr_t>(hWnd)));
             hooklog::release_logger();
-        #endif
+        }
     };
 
     void changeWindowAttribute(HWND hWnd){
@@ -788,4 +791,8 @@ DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
     touch_dead_zone_for_drag_start = config->dead_zone_for_drag_start;
     touch_pointer_jitter = config->pointer_jitter;
     touch_move_triger_distance = config->move_trigger_distance;
+}
+
+DLLEXPORT void hookdll_setLogMode(bool enable){
+    enable_log = enable;
 }

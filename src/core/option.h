@@ -15,6 +15,7 @@ struct MapperOption{
     std::string plugin_folder;
     int64_t stdlib{0};
     bool is_dcs_exporter_enabled{false};
+    bool log_mode{false};
 
     bool set_value(MAPPER_OPTION type, const char* value);
     bool set_value(MAPPER_OPTION type, int64_t value);

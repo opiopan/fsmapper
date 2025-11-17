@@ -114,6 +114,13 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_message_buffer_size(value);
             save_config();
         }
+        bool DeveloperLog(){
+            return fsmapper::app_config.get_developer_log();
+        }
+        void DeveloperLog(bool value){
+            fsmapper::app_config.set_developer_log(value);
+            save_config();
+        }
         hstring PreRunScript(){
             tools::utf8_to_utf16_translator str{fsmapper::app_config.get_pre_run_script()};
             return str.get();

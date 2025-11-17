@@ -39,6 +39,7 @@ DLLEXPORT bool hookdll_changeWindowAtrribute(HWND hWnd, HWND hWndInsertAfter, in
 
 DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type);
 DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config);
+DLLEXPORT void hookdll_setLogMode(bool enable);
 
 #ifdef __cplusplus
 }

@@ -123,6 +123,7 @@ namespace winrt::gui::Models::implementation{
                 }
                 mapper_set_option_integer(mapper, MOPT_RENDERING_METHOD, fsmapper::app_config.get_rendering_method());
                 mapper_set_option_boolean(mapper, MOPT_ASYNC_MESSAGE_PUMPING, fsmapper::app_config.get_use_separated_ui_thread());
+                mapper_set_option_boolean(mapper, MOPT_LOGMODE, fsmapper::app_config.get_developer_log());
                 if (fsmapper::app_config.get_plugin_folder_is_default()){
                     mapper_set_option_string(mapper, MOPT_PLUGIN_FOLDER, fsmapper::app_config.get_default_plugin_folder().string().c_str());
                 }else{

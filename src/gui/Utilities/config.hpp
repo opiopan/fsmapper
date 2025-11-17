@@ -43,6 +43,8 @@ namespace fsmapper{
         virtual void set_is_starting_script_at_start_up(bool value) = 0;
         virtual uint32_t get_message_buffer_size() = 0;
         virtual void set_message_buffer_size(uint32_t value) = 0;
+        virtual bool get_developer_log() = 0;
+        virtual void set_developer_log(bool value) = 0;
         virtual const char* get_pre_run_script() = 0;
         virtual void set_pre_run_script(const char* value) = 0;
         virtual bool get_pre_run_script_is_valid() = 0;

@@ -73,6 +73,7 @@ namespace gui.ViewModels{
 
         Boolean RunScriptOnStartup;
         Int32 MessageLogSize;
+        Boolean DeveloperLog;
         Boolean LuaLibBaseIsEnable;
         Boolean LuaLibCoroutineIsEnable;
         Boolean LuaLibDebugIsEnable;

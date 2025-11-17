@@ -16,6 +16,7 @@ static const auto* CONFIG_WINDOW_HEIGHT = "window_height";
 static const auto* CONFIG_SCRIPT_PATH = "script_path";
 static const auto* CONFIG_STARTING_SCRIPT_AT_START = "starting_script_at_start";
 static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
+static const auto* CONFIG_DEVELOPER_LOG = "developer_log";
 static const auto* CONFIG_PRE_RUN_SCRIPT = "pre_run_script";
 static const auto* CONFIG_PRE_RUN_SCRIPT_IS_VALID = "pre_run_script_is_valid";
 static const auto* CONFIG_RENDERING_METHOD = "rendering_method";
@@ -58,6 +59,7 @@ class config_imp : public config{
     std::filesystem::path script_path;
     bool is_starting_script_at_start_up{true};
     uint32_t message_buffer_size{300};
+    bool developer_log{false};
     std::string pre_run_script;
     bool pre_run_script_is_valid{true};
     MAPPER_OPTION_RENDERING_METHOD rendering_method{MOPT_RENDERING_METHOD_CPU};
@@ -156,6 +158,7 @@ public:
         script_path = path;
         reflect_bool(data, CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up);
         reflect_number(data, CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size);
+        reflect_bool(data, CONFIG_DEVELOPER_LOG, developer_log);
         reflect_string(data, CONFIG_PRE_RUN_SCRIPT, pre_run_script);
         reflect_bool(data, CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid);
         reflect_number(data, CONFIG_RENDERING_METHOD, rendering_method);
@@ -189,6 +192,7 @@ public:
                 {CONFIG_SCRIPT_PATH, script_path.string()},
                 {CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up},
                 {CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size},
+                {CONFIG_DEVELOPER_LOG, developer_log},
                 {CONFIG_PRE_RUN_SCRIPT, pre_run_script},
                 {CONFIG_PRE_RUN_SCRIPT_IS_VALID, pre_run_script_is_valid},
                 {CONFIG_RENDERING_METHOD, rendering_method},
@@ -237,6 +241,12 @@ public:
     }
     void set_message_buffer_size(uint32_t value) override{
         update_value(message_buffer_size, value);
+    }
+    bool get_developer_log() override{
+        return developer_log;
+    }
+    void set_developer_log(bool value) override{
+        update_value(developer_log, value);
     }
     const char* get_pre_run_script() override{
         return pre_run_script.c_str();

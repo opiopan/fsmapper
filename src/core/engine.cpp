@@ -283,6 +283,7 @@ bool MapperEngine::run(std::string&& scriptPath){
         //-------------------------------------------------------------------------------
         // create environment for lua script
         //-------------------------------------------------------------------------------
+        hookdll_setLogMode(options.log_mode);
         putLog(MCONSOLE_INFO, "mapper-core: start event-action mapping");
         initScriptingEnv();
 
