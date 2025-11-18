@@ -42,7 +42,7 @@ static constexpr uint32_t default_touch_up_delay = 50;
 static constexpr uint32_t default_touch_drag_start_delay = 80;
 static constexpr bool default_touch_double_tap_on_drag = false;
 static constexpr uint32_t default_touch_deadzone_for_drag = 0;
-static constexpr uint32_t default_touch_pointer_jitter = 2;
+static constexpr uint32_t default_touch_pointer_jitter = 1;
 static constexpr uint32_t default_touch_move_trigger_distance = 0;
 
 using namespace fsmapper;

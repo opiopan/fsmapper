@@ -356,6 +356,7 @@ protected:
         bool is_touch_down{false};
         bool is_dragging{false};
         POINT last_touch_point;
+        POINT last_raw_down_point{0, 0};
         POINT last_jittered_point{0, 0};
     };
     struct ChangeRequest{
@@ -572,6 +573,7 @@ public:
         auto& pt = pointer_info.ptPixelLocation;
 
         if (msg == WM_POINTERDOWN && !ctx.is_touch_down){
+            ctx.last_raw_down_point = pt;
             auto jitter_delta_x = abs(pt.x - ctx.last_jittered_point.x);
             auto jitter_delta_y = abs(pt.y - ctx.last_jittered_point.y);
             if (jitter_delta_x <= ctx.pointer_jitter && jitter_delta_y <= ctx.pointer_jitter){
@@ -607,14 +609,18 @@ public:
             ctx.is_dragging = false;
             ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_up));
             ctx.last_up_time = ctx.last_ops_time;
+            auto delta_x = abs(ctx.last_raw_down_point.x - pt.x);
+            auto delta_y = abs(ctx.last_raw_down_point.y - pt.y);
+            if (delta_x <= ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
+                pt = ctx.last_raw_down_point;
+            }
             mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_ops_time);
             return true;
         }else if (msg == WM_POINTERUPDATE && ctx.is_touch_down){
             if (!ctx.is_dragging){
-                auto delta_x = ctx.last_touch_point.x - pt.x;
-                auto delta_y = ctx.last_touch_point.y - pt.y;
-                if (delta_x >= -ctx.dead_zone_for_drag && delta_x <= ctx.dead_zone_for_drag ||
-                    delta_y >= -ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
+                auto delta_x = abs(ctx.last_raw_down_point.x - pt.x);
+                auto delta_y = abs(ctx.last_raw_down_point.y - pt.y);
+                if (delta_x <= ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
                     return true;
                 }
                 ctx.is_dragging = true;
