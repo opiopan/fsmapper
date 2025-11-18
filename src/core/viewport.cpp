@@ -28,8 +28,8 @@ using std::max;
 
 #pragma comment(lib, "setupapi.lib")
 
-static constexpr auto touch_mask = 0xFFFFFF00;
-static constexpr auto touch_signature = 0xFF515700;
+static constexpr auto touch_mask = 0xFF000000;
+static constexpr auto touch_signature = 0xFF000000;
 
 static ViewPortManager* the_manager = nullptr;
 
@@ -364,7 +364,7 @@ static LRESULT CALLBACK mouseHookProc(int nCode, WPARAM wParam, LPARAM lParam){
         if (the_manager->findCapturedWindow({IntPoint{mouse->pt.x, mouse->pt.y}}, captured_window)){
             if ((mouse->dwExtraInfo & touch_mask) == touch_signature && captured_window.need_to_avoid_touch_probrems){
 #ifdef _DEBUG
-                OutputDebugStringA(std::format("ignore mouse: {}, {}\n", mouse->pt.x, mouse->pt.y).c_str());
+                OutputDebugStringA(std::format("ignore mouse: [{:x}] {}, {}\n", mouse->dwExtraInfo, mouse->pt.x, mouse->pt.y).c_str());
 #endif
                 return 1;
             }

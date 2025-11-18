@@ -538,6 +538,10 @@ public:
             update_counter.from_follower++;
             ::SetEvent(event);
         }
+        if (ctx.enable_log){
+            hooklog::get_logger().log(std::format("Closed window: HWND=0x{:X}", reinterpret_cast<uintptr_t>(hWnd)));
+            hooklog::release_logger();
+        }
         captured_windows.erase(hWnd);
     };
 
@@ -700,8 +704,6 @@ LRESULT hookWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
         if (followingManager->processTouchMessage(hwnd, msg, wparam, lparam)){
             return 0;
         }
-    }else if (msg == WM_MOUSEACTIVATE){
-        return MA_NOACTIVATE;
     }else if (msg == WM_DESTROY){
         followingManager->closeWindow(hwnd);
     }
