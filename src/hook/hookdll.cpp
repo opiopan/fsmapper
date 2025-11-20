@@ -355,7 +355,6 @@ protected:
         UINT32 pointer_id{0};
         bool is_touch_down{false};
         bool is_dragging{false};
-        POINT last_touch_point;
         POINT last_raw_down_point{0, 0};
         POINT last_jittered_point{0, 0};
     };
@@ -602,7 +601,6 @@ public:
             }
             ctx.pointer_id = msg_pointer_id;
             ctx.is_touch_down = true;
-            ctx.last_touch_point = pt;
             ctx.last_ops_time = max(now + ctx.delay_down,  max(ctx.last_ops_time + ctx.delay_down, ctx.last_up_time + ctx.delay_down));
             ctx.last_down_time = ctx.last_ops_time;
             mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
@@ -631,13 +629,12 @@ public:
                 if (ctx.double_tap_on_drag){
                     ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_up));
                     ctx.last_up_time = ctx.last_ops_time;
-                    mouse_emulator->emulate(mouse_emu::event::up, ctx.last_touch_point.x, ctx.last_touch_point.y, ctx.last_ops_time);
+                    mouse_emulator->emulate(mouse_emu::event::up, ctx.last_jittered_point.x, ctx.last_jittered_point.y, ctx.last_ops_time);
                     ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_up_time + ctx.delay_down));
                     ctx.last_down_time = ctx.last_ops_time;
-                    mouse_emulator->emulate(mouse_emu::event::down, ctx.last_touch_point.x, ctx.last_touch_point.y, ctx.last_ops_time);
+                    mouse_emulator->emulate(mouse_emu::event::down, ctx.last_jittered_point.x, ctx.last_jittered_point.y, ctx.last_ops_time);
                 }
             }
-            ctx.last_touch_point = pt;
             ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_drag));
             mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
             return true;
