@@ -282,6 +282,13 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_touch_move_trigger_distance(value);
             save_config();
         }
+        int32_t TouchMinimumInterval(){
+            return fsmapper::app_config.get_touch_minimum_interval();
+        }
+        void TouchMinimumInterval(int32_t value){
+            fsmapper::app_config.set_touch_minimum_interval(value);
+            save_config();
+        }
 
         winrt::Windows::Foundation::IAsyncAction ClickChangePluginPathButton(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
         void ClickResetTouchConfig(winrt::Windows::Foundation::IInspectable sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs args);
@@ -348,6 +355,7 @@ namespace winrt::gui::ViewModels::implementation
             property_changed(*this, Args{L"TouchDeadzoneForDrag"});
             property_changed(*this, Args{L"TouchPointerJitter"});
             property_changed(*this, Args{L"TouchMoveTriggerDistance"});
+            property_changed(*this, Args{L"TouchMinimumInterval"});
         }
 
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);

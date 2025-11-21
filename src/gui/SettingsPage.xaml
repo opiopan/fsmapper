@@ -444,6 +444,23 @@
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchDeadzoneForDrag, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
+                                <angel:SettingsCard Header="Minimum Interval" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies the minimum interval between the mouse-up emulation
+                                        and the next touch-triggered mouse action.
+                                        This helps prevent MSFS from missing events when taps occur in quick succession.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <NumberBox Minimum="0" MinWidth="{StaticResource SettingsCardContentMinWidth}" 
+                                               Margin="0 0 26 0"
+                                               SpinButtonPlacementMode="Compact"
+                                               SmallChange="10" LargeChange="100"
+                                               Width="120" HorizontalAlignment="Left"
+                                               Value="{x:Bind ViewModel.TouchMinimumInterval, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
                                 <angel:SettingsCard Header=" "
                                                     Style="{StaticResource SettingsBottomCardAltStyle}"
                                                     Background="{ThemeResource SettingsCardBackground}">

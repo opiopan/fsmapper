@@ -85,6 +85,8 @@ namespace fsmapper{
         virtual void set_touch_pointer_jitter(uint32_t value) = 0;
         virtual uint32_t get_touch_move_trigger_distance() = 0;
         virtual void set_touch_move_trigger_distance(uint32_t value) = 0;
+        virtual uint32_t get_touch_minimum_interval() = 0;
+        virtual void set_touch_minimum_interval(uint32_t value) = 0;
         virtual void reset_touch_delay() = 0;
 
         // For exchanging CLI parameters between processes

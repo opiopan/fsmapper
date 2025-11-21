@@ -73,6 +73,7 @@ static bool     touch_double_tap_on_drag{false};
 static uint32_t touch_dead_zone_for_drag_start{0};
 static uint32_t touch_pointer_jitter{0};
 static uint32_t touch_move_triger_distance{0};
+static uint32_t touch_minimum_interval{0};
 #pragma data_seg()
 
 LRESULT CALLBACK hookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -346,6 +347,8 @@ protected:
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
         mouse_emu::milliseconds delay_drag;
+        mouse_emu::milliseconds minimum_interval;
+        mouse_emu::milliseconds current_interval{0};
         int acceptable_delta{5};
         bool double_tap_on_drag{false};
         int dead_zone_for_drag{0};
@@ -435,6 +438,7 @@ public:
                 ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
                 ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
                 ctx.delay_drag = mouse_emu::milliseconds{0};
+                ctx.minimum_interval = mouse_emu::milliseconds{touch_minimum_interval};
                 ctx.double_tap_on_drag = touch_double_tap_on_drag;
                 ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
                 ctx.pointer_jitter = static_cast<int>(touch_pointer_jitter);
@@ -586,13 +590,15 @@ public:
             auto delta_y = current_point.y - pt.y;
             if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
                 delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
-                ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time + ctx.delay_start);
+                auto delta = max(ctx.delay_start, ctx.current_interval);
+                ctx.last_ops_time = max(now + delta, ctx.last_ops_time + delta);
                 mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+                ctx.current_interval = mouse_emu::milliseconds{0};
             }
-            ctx.last_ops_time = max(now + ctx.delay_down,  max(ctx.last_ops_time + ctx.delay_down, ctx.last_up_time + ctx.delay_down));
+            auto delta = max(ctx.delay_down, ctx.current_interval);
+            ctx.last_ops_time = max(now + delta, ctx.last_ops_time + delta);
             ctx.last_down_time = ctx.last_ops_time;
             mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
-
             ctx.is_delayed_emulation = false;
         };
 
@@ -635,6 +641,7 @@ public:
                 pt = ctx.last_raw_down_point;
             }
             mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_ops_time);
+            ctx.current_interval = ctx.minimum_interval;
             return true;
         }else if (msg == WM_POINTERUPDATE && ctx.is_touch_down){
             if (!ctx.is_dragging){
@@ -818,6 +825,7 @@ DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
     touch_dead_zone_for_drag_start = config->dead_zone_for_drag_start;
     touch_pointer_jitter = config->pointer_jitter;
     touch_move_triger_distance = config->move_trigger_distance;
+    touch_minimum_interval = config->minimum_interval;
 }
 
 DLLEXPORT void hookdll_setLogMode(bool enable){

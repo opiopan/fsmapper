@@ -140,6 +140,7 @@ namespace winrt::gui::Models::implementation{
                 tc.dead_zone_for_drag_start = fsmapper::app_config.get_touch_deadzone_for_drag();
                 tc.pointer_jitter = fsmapper::app_config.get_touch_pointer_jitter();
                 tc.move_trigger_distance = fsmapper::app_config.get_touch_move_trigger_distance();
+                tc.minimum_interval = fsmapper::app_config.get_touch_minimum_interval();
                 mapper_tools_SetTouchParameters(&tc);
                 lock.unlock();
                 auto result = mapper_run(mapper, path);

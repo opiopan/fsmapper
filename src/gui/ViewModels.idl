@@ -112,6 +112,7 @@ namespace gui.ViewModels{
         Int32 TouchDeadzoneForDrag;
         Int32 TouchPointerJitter;
         Int32 TouchMoveTriggerDistance;
+        Int32 TouchMinimumInterval;
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickResetTouchConfig(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
