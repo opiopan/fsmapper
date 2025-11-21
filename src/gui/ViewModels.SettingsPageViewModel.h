@@ -226,6 +226,13 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_touch_mouse_emulation_is_enable(value);
             save_config();
         }
+        bool TouchDelayMouseEmulation(){
+            return fsmapper::app_config.get_touch_delay_mouse_emulation();
+        }
+        void TouchDelayMouseEmulation(bool value){
+            fsmapper::app_config.set_touch_delay_mouse_emulation(value);
+            save_config();
+        }
         uint32_t TouchDownDelay(){
             return fsmapper::app_config.get_touch_down_delay();
         }
@@ -333,6 +340,7 @@ namespace winrt::gui::ViewModels::implementation
 
         void notify_touch_config_changed(){
             using Args = Microsoft::UI::Xaml::Data::PropertyChangedEventArgs;
+            property_changed(*this, Args{L"TouchDelayMouseEmulation"});
             property_changed(*this, Args{L"TouchDownDelay"});
             property_changed(*this, Args{L"TouchUpDelay"});
             property_changed(*this, Args{L"TouchDragStartDelay"});

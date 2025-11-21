@@ -19,6 +19,7 @@ extern "C" {
 #define CAPTURE_OPT_MODIFY_TOUCH        2
 
 typedef struct  _TOUCH_CONFIG{
+    bool delay_mouse_emulation;
     uint32_t down_delay;
     uint32_t up_delay;
     uint32_t start_delay;

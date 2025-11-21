@@ -27,6 +27,7 @@ static const auto* CONFIG_LUA_STANDARD_LIBRARIES = "lua_stdlib";
 static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
 static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
 static const auto* CONFIG_TOUCH_MOUSE_EMULATION = "touch_mouse_emulation";
+static const auto* CONFIG_TOUCH_DELAY_MOUSE_EMULATION = "touch_delay_mouse_emulation";
 static const auto* CONFIG_TOUCH_DOWN_DELAY = "touch_down_delay";
 static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
 static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
@@ -37,6 +38,7 @@ static const auto* CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE = "touch_move_trigger_dist
 static const auto* CONFIG_CLI_LAUNCH_MINIMIZED = "cli_launch_minimized";
 static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 
+static constexpr bool default_touch_delay_mouse_emulation = false;
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
 static constexpr uint32_t default_touch_drag_start_delay = 80;
@@ -70,6 +72,7 @@ class config_imp : public config{
     std::string skipped_version{"0.0"};
     dcs_exporter_mode dcs_exporter_mode_data{dcs_exporter_mode::unknown};
     bool touch_mouse_emulation{true};
+    bool touch_delay_mouse_emulation{default_touch_delay_mouse_emulation};
     uint32_t touch_down_delay{default_touch_down_delay};
     uint32_t touch_up_delay{default_touch_up_delay};
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
@@ -173,6 +176,7 @@ public:
         reflect_number(data, CONFIG_DCS_EXPORTER_MODE, dcs_exporter_mode_num);
         dcs_exporter_mode_data = static_cast<dcs_exporter_mode>(dcs_exporter_mode_num);
         reflect_bool(data, CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation);
+        reflect_bool(data, CONFIG_TOUCH_DELAY_MOUSE_EMULATION, touch_delay_mouse_emulation);
         reflect_number(data, CONFIG_TOUCH_DOWN_DELAY, touch_down_delay);
         reflect_number(data, CONFIG_TOUCH_UP_DELAY, touch_up_delay);
         reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
@@ -203,6 +207,7 @@ public:
                 {CONFIG_SKIPPED_VERSION, skipped_version},
                 {CONFIG_DCS_EXPORTER_MODE, static_cast<int>(dcs_exporter_mode_data)},
                 {CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation},
+                {CONFIG_TOUCH_DELAY_MOUSE_EMULATION, touch_delay_mouse_emulation},
                 {CONFIG_TOUCH_DOWN_DELAY, touch_down_delay},
                 {CONFIG_TOUCH_UP_DELAY, touch_up_delay},
                 {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
@@ -311,6 +316,12 @@ public:
     void set_touch_mouse_emulation_is_enable(bool value) override{
         update_value(touch_mouse_emulation, value);
     }
+    bool get_touch_delay_mouse_emulation() override{
+        return touch_delay_mouse_emulation;
+    }
+    void set_touch_delay_mouse_emulation(bool value) override{
+        update_value(touch_delay_mouse_emulation, value);
+    }
     uint32_t get_touch_down_delay() override{
         return touch_down_delay;
     }
@@ -354,6 +365,7 @@ public:
         update_value(touch_move_trigger_distance, value);
     }
     void reset_touch_delay() override{
+        update_value(touch_delay_mouse_emulation, default_touch_delay_mouse_emulation);
         update_value(touch_down_delay, default_touch_down_delay);
         update_value(touch_up_delay, default_touch_up_delay);
         update_value(touch_drag_start_delay, default_touch_drag_start_delay);

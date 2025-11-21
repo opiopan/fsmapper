@@ -65,6 +65,7 @@ static HHOOK hookHandle = 0;
 static UpdateCounter update_counter = {0, 0};
 static CapturedWindowContext captured_windows_ctx[MAX_CAPTURED_WINDOW] = {0};
 static bool     enable_log{false};
+static bool     touch_delay_mouse_emulation{false};
 static uint32_t touch_down_delay{0};
 static uint32_t touch_up_delay{0};
 static uint32_t touch_start_delay{0};
@@ -340,6 +341,7 @@ protected:
         int change_request_num;
         bool need_to_modify_touch{false};
         bool enable_log{false};
+        bool delay_mouse_emulation{false};
         mouse_emu::milliseconds delay_start;
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
@@ -353,6 +355,7 @@ protected:
         mouse_emu::clock::time_point last_down_time = mouse_emu::clock::now();
         mouse_emu::clock::time_point last_up_time = mouse_emu::clock::now();
         UINT32 pointer_id{0};
+        bool is_delayed_emulation{false};
         bool is_touch_down{false};
         bool is_dragging{false};
         POINT last_raw_down_point{0, 0};
@@ -426,6 +429,7 @@ public:
             ctx.change_request_num = 0;
             ctx.enable_log = enable_log;
             if (option & CAPTURE_OPT_MODIFY_TOUCH && !IsTouchWindow(hWnd, nullptr)) {
+                ctx.delay_mouse_emulation = touch_delay_mouse_emulation;
                 ctx.need_to_modify_touch = true;
                 ctx.delay_start = mouse_emu::milliseconds{touch_start_delay};
                 ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
@@ -575,7 +579,25 @@ public:
         ::GetPointerInfo(msg_pointer_id, &pointer_info);
         auto& pt = pointer_info.ptPixelLocation;
 
+        auto process_down = [this, msg_pointer_id, now](WindowContext& ctx, POINT& pt){
+            POINT current_point;
+            ::GetCursorPos(&current_point);
+            auto delta_x = current_point.x - pt.x;
+            auto delta_y = current_point.y - pt.y;
+            if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
+                delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
+                ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time + ctx.delay_start);
+                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+            }
+            ctx.last_ops_time = max(now + ctx.delay_down,  max(ctx.last_ops_time + ctx.delay_down, ctx.last_up_time + ctx.delay_down));
+            ctx.last_down_time = ctx.last_ops_time;
+            mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
+
+            ctx.is_delayed_emulation = false;
+        };
+
         if (msg == WM_POINTERDOWN && !ctx.is_touch_down){
+            hooklog::get_logger().log(std::format("Pointer down: id={}, x={}, y={}", msg_pointer_id, pt.x, pt.y));
             ctx.last_raw_down_point = pt;
             auto jitter_delta_x = abs(pt.x - ctx.last_jittered_point.x);
             auto jitter_delta_y = abs(pt.y - ctx.last_jittered_point.y);
@@ -590,22 +612,18 @@ public:
                 ctx.pointer_jitter_polarity = !ctx.pointer_jitter_polarity;
             }
             ctx.last_jittered_point = pt;
-            POINT current_point;
-            ::GetCursorPos(&current_point);
-            auto delta_x = current_point.x - pt.x;
-            auto delta_y = current_point.y - pt.y;
-            if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
-                delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
-                ctx.last_ops_time = max(now + ctx.delay_start, ctx.last_ops_time + ctx.delay_start);
-                mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+            if (ctx.delay_mouse_emulation){
+                ctx.is_delayed_emulation = true;
+            }else{
+                process_down(ctx, pt);
             }
             ctx.pointer_id = msg_pointer_id;
             ctx.is_touch_down = true;
-            ctx.last_ops_time = max(now + ctx.delay_down,  max(ctx.last_ops_time + ctx.delay_down, ctx.last_up_time + ctx.delay_down));
-            ctx.last_down_time = ctx.last_ops_time;
-            mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
             return true;
         }else if (msg == WM_POINTERUP && ctx.is_touch_down){
+            if (ctx.is_delayed_emulation){
+                process_down(ctx, ctx.last_jittered_point);
+            }
             ctx.pointer_id = 0;
             ctx.is_touch_down = false;
             ctx.is_dragging = false;
@@ -624,6 +642,9 @@ public:
                 auto delta_y = abs(ctx.last_raw_down_point.y - pt.y);
                 if (delta_x <= ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
                     return true;
+                }
+                if (ctx.is_delayed_emulation){
+                    process_down(ctx, ctx.last_jittered_point);
                 }
                 ctx.is_dragging = true;
                 if (ctx.double_tap_on_drag){
@@ -789,6 +810,7 @@ DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type){
 }
 
 DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
+    touch_delay_mouse_emulation = config->delay_mouse_emulation;
     touch_down_delay = config->down_delay;
     touch_up_delay = config->up_delay;
     touch_start_delay = config->start_delay;

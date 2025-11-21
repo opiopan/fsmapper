@@ -301,6 +301,21 @@
                                   IsOn="{x:Bind ViewModel.TouchMouseEmulationIsEnable, Mode=TwoWay}"/>
                         <angel:SettingsExpander.ExpanderContent>
                             <StackPanel>
+                                <angel:SettingsCard Header="Delay mouse emulation" Background="{ThemeResource SettingsCardBackground}"
+                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
+                                    <angel:SettingsCard.Description>
+                                        Specifies whether mouse emulation is delayed
+                                        until the touch is released or a drag gesture begins.
+                                        This prevents immediate mouse actions on initial contact.
+                                    </angel:SettingsCard.Description>
+                                    <angel:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph=" "/>
+                                    </angel:SettingsCard.HeaderIcon>
+                                    <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                   Margin="0 0 26 0"
+                                                   MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                                   IsOn="{x:Bind ViewModel.TouchDelayMouseEmulation, Mode=TwoWay}"/>
+                                </angel:SettingsCard>
                                 <angel:SettingsCard Header="Cursor move delay" Background="{ThemeResource SettingsCardBackground}"
                                                     Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>
