@@ -413,21 +413,6 @@
                                                Width="120" HorizontalAlignment="Left"
                                                Value="{x:Bind ViewModel.TouchDragStartDelay, Mode=TwoWay}"/>
                                 </angel:SettingsCard>
-                                <angel:SettingsCard Header="Insert dummy click on drag" Background="{ThemeResource SettingsCardBackground}"
-                                                Style="{StaticResource SettingsMiddleCardAltStyle}">
-                                    <angel:SettingsCard.Description>
-                                        Enable or disable the insertion of a dummy click when starting a drag operation.
-                                        When enabled, it mimics a double-tap action to initiate dragging,
-                                        which improves drag behavior in MSFS instruments.
-                                    </angel:SettingsCard.Description>
-                                    <angel:SettingsCard.HeaderIcon>
-                                        <FontIcon Glyph=" "/>
-                                    </angel:SettingsCard.HeaderIcon>
-                                    <ToggleSwitch  Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
-                                                   Margin="0 0 26 0"
-                                                   MinWidth="{StaticResource SettingsCardContentMinWidth}"
-                                                   IsOn="{x:Bind ViewModel.TouchDoubleTapOnDrag, Mode=TwoWay}"/>
-                                </angel:SettingsCard>
                                 <angel:SettingsCard Header="Drag dead zone" Background="{ThemeResource SettingsCardBackground}"
                                                 Style="{StaticResource SettingsMiddleCardAltStyle}">
                                     <angel:SettingsCard.Description>

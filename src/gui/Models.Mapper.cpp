@@ -136,7 +136,7 @@ namespace winrt::gui::Models::implementation{
                 tc.down_delay = fsmapper::app_config.get_touch_down_delay();
                 tc.up_delay = fsmapper::app_config.get_touch_up_delay();
                 tc.start_delay = fsmapper::app_config.get_touch_drag_start_delay();
-                tc.double_tap_on_drag = fsmapper::app_config.get_touch_double_tap_on_drag();
+                tc.double_tap_on_drag = false;
                 tc.dead_zone_for_drag_start = fsmapper::app_config.get_touch_deadzone_for_drag();
                 tc.pointer_jitter = fsmapper::app_config.get_touch_pointer_jitter();
                 tc.move_trigger_distance = fsmapper::app_config.get_touch_move_trigger_distance();
