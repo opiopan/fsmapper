@@ -39,7 +39,7 @@ static const auto* CONFIG_TOUCH_MINIMUM_INTERVAL = "touch_minimum_interval";
 static const auto* CONFIG_CLI_LAUNCH_MINIMIZED = "cli_launch_minimized";
 static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 
-static constexpr bool default_touch_delay_mouse_emulation = false;
+static constexpr bool default_touch_delay_mouse_emulation = true;
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
 static constexpr uint32_t default_touch_drag_start_delay = 80;
@@ -47,7 +47,7 @@ static constexpr bool default_touch_double_tap_on_drag = false;
 static constexpr uint32_t default_touch_deadzone_for_drag = 0;
 static constexpr uint32_t default_touch_pointer_jitter = 3;
 static constexpr uint32_t default_touch_move_trigger_distance = 0;
-static constexpr uint32_t default_touch_minimum_interval = 160;
+static constexpr uint32_t default_touch_minimum_interval = 200;
 
 using namespace fsmapper;
 using namespace nlohmann;

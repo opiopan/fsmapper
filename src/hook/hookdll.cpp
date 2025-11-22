@@ -586,17 +586,18 @@ public:
         auto process_down = [this, msg_pointer_id, now](WindowContext& ctx, POINT& pt){
             POINT current_point;
             ::GetCursorPos(&current_point);
-            auto delta_x = current_point.x - pt.x;
-            auto delta_y = current_point.y - pt.y;
-            if (delta_x < -ctx.acceptable_delta || delta_x > ctx.acceptable_delta ||
-                delta_y < -ctx.acceptable_delta || delta_y > ctx.acceptable_delta){
+            auto delta_x = abs(current_point.x - pt.x);
+            auto delta_y = abs(current_point.y - pt.y);
+            auto epoch = now;
+            if (delta_x >= ctx.acceptable_delta || delta_y >= ctx.acceptable_delta){
                 auto delta = max(ctx.delay_start, ctx.current_interval);
-                ctx.last_ops_time = max(now + delta, ctx.last_ops_time + delta);
+                ctx.last_ops_time = max(epoch + delta, ctx.last_ops_time + delta);
                 mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
                 ctx.current_interval = mouse_emu::milliseconds{0};
+                epoch = ctx.last_ops_time;
             }
             auto delta = max(ctx.delay_down, ctx.current_interval);
-            ctx.last_ops_time = max(now + delta, ctx.last_ops_time + delta);
+            ctx.last_ops_time = max(epoch + delta, ctx.last_ops_time + delta);
             ctx.last_down_time = ctx.last_ops_time;
             mouse_emulator->emulate(mouse_emu::event::down, pt.x, pt.y, ctx.last_ops_time);
             ctx.is_delayed_emulation = false;
@@ -627,6 +628,7 @@ public:
             ctx.is_touch_down = true;
             return true;
         }else if (msg == WM_POINTERUP && ctx.is_touch_down){
+            hooklog::get_logger().log(std::format("Pointer up: id={}, x={}, y={}", msg_pointer_id, pt.x, pt.y));
             if (ctx.is_delayed_emulation){
                 process_down(ctx, ctx.last_jittered_point);
             }
