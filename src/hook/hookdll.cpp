@@ -346,7 +346,7 @@ protected:
         mouse_emu::milliseconds delay_start;
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
-        mouse_emu::milliseconds delay_drag;
+        mouse_emu::milliseconds drag_delay{0};
         mouse_emu::milliseconds minimum_interval;
         mouse_emu::milliseconds current_interval{0};
         int acceptable_delta{5};
@@ -437,7 +437,6 @@ public:
                 ctx.delay_start = mouse_emu::milliseconds{touch_start_delay};
                 ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
                 ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
-                ctx.delay_drag = mouse_emu::milliseconds{0};
                 ctx.minimum_interval = mouse_emu::milliseconds{touch_minimum_interval};
                 ctx.double_tap_on_drag = touch_double_tap_on_drag;
                 ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
@@ -646,7 +645,9 @@ public:
             ctx.current_interval = ctx.minimum_interval;
             return true;
         }else if (msg == WM_POINTERUPDATE && ctx.is_touch_down){
+            auto delay = mouse_emu::milliseconds{0};
             if (!ctx.is_dragging){
+                delay = ctx.drag_delay;
                 auto delta_x = abs(ctx.last_raw_down_point.x - pt.x);
                 auto delta_y = abs(ctx.last_raw_down_point.y - pt.y);
                 if (delta_x <= ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
@@ -665,7 +666,7 @@ public:
                     mouse_emulator->emulate(mouse_emu::event::down, ctx.last_jittered_point.x, ctx.last_jittered_point.y, ctx.last_ops_time);
                 }
             }
-            ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_drag));
+            ctx.last_ops_time = max(now + delay, ctx.last_ops_time + delay);
             mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
             return true;
         }
