@@ -60,7 +60,7 @@ However, you can also build it yourself　by follow the steps below.
 
 1. **Requirements**<br>
 Make sure that the following softwares are installed in advance.
-    - Visual Studio 2022 whilch is instaled with folowing workloads:
+    - Visual Studio 2026 whilch is instaled with folowing workloads:
         - Universal Windows Platform development
         - C++ desktop development
         - C++ game development
@@ -70,7 +70,7 @@ Make sure that the following softwares are installed in advance.
 2. **Running a console**<br>
 Run ```cmd.exe``` or ```PowerShell.exe``` on any console. Note that environment variables must be set to complie x64 binaries.<br>
 The one of easiest way is using the following shortcut made when Visual Studio was installed.
-    - x64 Native Tools Command Prompt for VS 2022
+    - x64 Native Tools Command Prompt for VS
 
 3. **Downloading source codes**<br>
     ```shell

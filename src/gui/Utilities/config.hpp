@@ -97,6 +97,10 @@ namespace fsmapper{
         virtual void set_cli_launch_minimized(bool value) = 0;
         virtual const std::optional<std::filesystem::path>& get_cli_script_path() = 0;
         virtual void set_cli_script_path(const wchar_t* value) = 0;
+
+        // Migration evidence
+        virtual const char* get_migration_done_version() = 0;
+        virtual void set_migration_done_version(const char* value) = 0;
     };
 
     void init_app_config();

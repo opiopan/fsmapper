@@ -7,7 +7,10 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "config.hpp"
+#include "encoding.hpp"
 #include "appfs.hpp"
+#include "version_parser.hpp"
+#include "../.version.h"
 
 static const auto* CONFIG_WINDOW_TOP = "window_top";
 static const auto* CONFIG_WINDOW_LEFT = "window_left";
@@ -38,6 +41,7 @@ static const auto* CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE = "touch_move_trigger_dist
 static const auto* CONFIG_TOUCH_MINIMUM_INTERVAL = "touch_minimum_interval";
 static const auto* CONFIG_CLI_LAUNCH_MINIMIZED = "cli_launch_minimized";
 static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
+static const auto* CONFIG_MIGRATION_DONE_VERSION = "migration_done_version";
 
 static constexpr bool default_touch_delay_mouse_emulation = true;
 static constexpr uint32_t default_touch_down_delay = 50;
@@ -93,6 +97,7 @@ class config_imp : public config{
     uint32_t touch_pointer_jitter{default_touch_pointer_jitter};
     uint32_t touch_move_trigger_distance{default_touch_move_trigger_distance};
     uint32_t touch_minimum_interval{default_touch_minimum_interval};
+    std::string migration_done_version{"0.0"};
 
     bool cli_launch_minimized{false};
     std::optional<std::filesystem::path> cli_script_path{std::nullopt};
@@ -198,6 +203,7 @@ public:
         reflect_number(data, CONFIG_TOUCH_POINTER_JITTER, touch_pointer_jitter);
         reflect_number(data, CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE, touch_move_trigger_distance);
         reflect_number(data, CONFIG_TOUCH_MINIMUM_INTERVAL, touch_minimum_interval);
+        reflect_string(data, CONFIG_MIGRATION_DONE_VERSION, migration_done_version);
     }
 
     void save() override{
@@ -230,6 +236,7 @@ public:
                 {CONFIG_TOUCH_POINTER_JITTER, touch_pointer_jitter},
                 {CONFIG_TOUCH_MOVE_TRIGGER_DISTANCE, touch_move_trigger_distance},
                 {CONFIG_TOUCH_MINIMUM_INTERVAL, touch_minimum_interval},
+                {CONFIG_MIGRATION_DONE_VERSION, migration_done_version},
             };
             std::ofstream os(config_path.string());
             os << data;
@@ -243,6 +250,12 @@ public:
     }
     void set_window_rect(const rect& rect) override{
         update_value(window_rect, rect);
+    }
+    const char* get_migration_done_version() override{
+        return migration_done_version.c_str();
+    }
+    void set_migration_done_version(const char* value) override{
+        update_value(migration_done_version, value);
     }
     const std::filesystem::path& get_script_path() override{
         return script_path;
@@ -449,11 +462,30 @@ public:
     }
 };
 
+static void migrate_config(){
+    auto migration_done_str = tools::utf8_to_utf16_translator{fsmapper::app_config.get_migration_done_version()};
+    auto migration_done = utils::parsed_version{migration_done_str};
+    auto updated{false};
+
+    // 1.6.0: Reset touch delay settings to new defaults
+    auto msfs_touch_emulation = utils::parsed_version{L"1.6.0"};
+    if (migration_done < msfs_touch_emulation){
+        fsmapper::app_config.reset_touch_delay();
+        fsmapper::app_config.set_migration_done_version(VERSTR_FILE_VERSION);
+        updated = true;
+    }
+
+    if (updated){
+        fsmapper::app_config.save();
+    }
+}
+
 static config_imp the_config;
 
 namespace fsmapper{
     void init_app_config(){
         the_config.load();
+        migrate_config();
     }
 
     config& app_config = the_config;
