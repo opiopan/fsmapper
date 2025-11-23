@@ -49,6 +49,16 @@ static constexpr uint32_t default_touch_pointer_jitter = 3;
 static constexpr uint32_t default_touch_move_trigger_distance = 0;
 static constexpr uint32_t default_touch_minimum_interval = 200;
 
+static constexpr bool vdefault_touch_delay_mouse_emulation = false;
+static constexpr uint32_t vdefault_touch_down_delay = 50;
+static constexpr uint32_t vdefault_touch_up_delay = 50;
+static constexpr uint32_t vdefault_touch_drag_start_delay = 0;
+static constexpr bool vdefault_touch_double_tap_on_drag = false;
+static constexpr uint32_t vdefault_touch_deadzone_for_drag = 0;
+static constexpr uint32_t vdefault_touch_pointer_jitter = 3;
+static constexpr uint32_t vdefault_touch_move_trigger_distance = 0;
+static constexpr uint32_t vdefault_touch_minimum_interval = 0;
+
 using namespace fsmapper;
 using namespace nlohmann;
 
@@ -385,6 +395,17 @@ public:
         update_value(touch_pointer_jitter, default_touch_pointer_jitter);
         update_value(touch_move_trigger_distance, default_touch_move_trigger_distance);
         update_value(touch_minimum_interval, default_touch_minimum_interval);
+    }
+    void reset_touch_delay_for_remote() override{
+        update_value(touch_delay_mouse_emulation, vdefault_touch_delay_mouse_emulation);
+        update_value(touch_down_delay, vdefault_touch_down_delay);
+        update_value(touch_up_delay, vdefault_touch_up_delay);
+        update_value(touch_drag_start_delay, vdefault_touch_drag_start_delay);
+        update_value(touch_double_tap_on_drag, vdefault_touch_double_tap_on_drag);
+        update_value(touch_deadzone_for_drag, vdefault_touch_deadzone_for_drag);
+        update_value(touch_pointer_jitter, vdefault_touch_pointer_jitter);
+        update_value(touch_move_trigger_distance, vdefault_touch_move_trigger_distance);
+        update_value(touch_minimum_interval, vdefault_touch_minimum_interval);
     }
 
     void load_cli_params() override{

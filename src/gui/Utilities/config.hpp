@@ -88,6 +88,7 @@ namespace fsmapper{
         virtual uint32_t get_touch_minimum_interval() = 0;
         virtual void set_touch_minimum_interval(uint32_t value) = 0;
         virtual void reset_touch_delay() = 0;
+        virtual void reset_touch_delay_for_remote() = 0;
 
         // For exchanging CLI parameters between processes
         virtual void save_cli_params() = 0;

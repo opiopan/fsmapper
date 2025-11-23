@@ -452,10 +452,22 @@
                                     <angel:SettingsCard.HeaderIcon>
                                         <FontIcon Glyph=" "/>
                                     </angel:SettingsCard.HeaderIcon>
-                                    <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
-                                        Click="{x:Bind ViewModel.ClickResetTouchConfig}">
-                                        Reset to Default
-                                    </Button>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                                Click="{x:Bind ViewModel.ClickResetTouchConfig}">
+                                            <ToolTipService.ToolTip>
+                                                <ToolTip>Restore recommended settings for hardware-based touch displays.</ToolTip>
+                                            </ToolTipService.ToolTip>
+                                            Reset to Native Default
+                                        </Button>
+                                        <Button Margin="0 0 26 0" MinWidth="{StaticResource SettingsCardContentMinWidth}"
+                                                Click="{x:Bind ViewModel.ClickResetTouchConfigForRemote}">
+                                            <ToolTipService.ToolTip>
+                                                <ToolTip>Restore recommended settings for remote/software touch displays such as Duet Display.</ToolTip>
+                                            </ToolTipService.ToolTip>
+                                            Reset to Remote Default
+                                        </Button>
+                                    </StackPanel>
                                 </angel:SettingsCard>
                             </StackPanel>
                         </angel:SettingsExpander.ExpanderContent>

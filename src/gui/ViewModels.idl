@@ -116,6 +116,7 @@ namespace gui.ViewModels{
 
         Windows.Foundation.IAsyncAction ClickChangePluginPathButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickResetTouchConfig(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
+        void ClickResetTouchConfigForRemote(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
         void ClickDownloadNewReleaseButton(Object sender, Microsoft.UI.Xaml.RoutedEventArgs args);
     }
 }
