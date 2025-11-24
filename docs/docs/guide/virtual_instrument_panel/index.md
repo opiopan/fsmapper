@@ -408,10 +408,11 @@ It is well known that the popped out window of an instrument with touch operable
 fsmapper provides a workaround solution for this problem. 
 You will be able to operate popped out windows with touch operation if those windows are managed as CapturedWindow view elements.
 
-As explained in the following note, fsmapper emulates mouse actions at a timing that MSFS can recognize. 
+fsmapper emulates mouse actions at a timing that MSFS can recognize to address this problems. 
 The appropriate timing depends on the specifications of the touch panel display and the FPS of MSFS. 
 You can fine-tune this timing parameter on the Settings page.
-If touch interactions do not work as expected, try adjusting the settings.
+If touch interactions do not work as expected, try adjusting the settings.<br/>
+Please refer to the [**Mouse emulation to address MSFS issues**](/guide/virtual_instrument_panel/mouseemu/) section for details.
 
 If you want to stop this workaround, specify the value as false for `avoid_touch_problems` parameter of [`mapper.view_elements.captured_window()`](/libs/mapper/mapper_view_elements_captured_window).
 
