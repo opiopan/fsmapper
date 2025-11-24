@@ -69,6 +69,7 @@ static bool     touch_delay_mouse_emulation{false};
 static uint32_t touch_down_delay{0};
 static uint32_t touch_up_delay{0};
 static uint32_t touch_start_delay{0};
+static uint32_t touch_drag_delay{0};
 static bool     touch_double_tap_on_drag{false};
 static uint32_t touch_dead_zone_for_drag_start{0};
 static uint32_t touch_pointer_jitter{0};
@@ -346,7 +347,7 @@ protected:
         mouse_emu::milliseconds delay_start;
         mouse_emu::milliseconds delay_down;
         mouse_emu::milliseconds delay_up;
-        mouse_emu::milliseconds drag_delay{0};
+        mouse_emu::milliseconds delay_drag{0};
         mouse_emu::milliseconds minimum_interval;
         mouse_emu::milliseconds current_interval{0};
         int acceptable_delta{5};
@@ -437,6 +438,7 @@ public:
                 ctx.delay_start = mouse_emu::milliseconds{touch_start_delay};
                 ctx.delay_down = mouse_emu::milliseconds{touch_down_delay};
                 ctx.delay_up = mouse_emu::milliseconds{touch_up_delay};
+                ctx.delay_drag = mouse_emu::milliseconds{touch_drag_delay};
                 ctx.minimum_interval = mouse_emu::milliseconds{touch_minimum_interval};
                 ctx.double_tap_on_drag = touch_double_tap_on_drag;
                 ctx.dead_zone_for_drag = touch_dead_zone_for_drag_start;
@@ -647,7 +649,7 @@ public:
         }else if (msg == WM_POINTERUPDATE && ctx.is_touch_down){
             auto delay = mouse_emu::milliseconds{0};
             if (!ctx.is_dragging){
-                delay = ctx.drag_delay;
+                delay = ctx.delay_drag;
                 auto delta_x = abs(ctx.last_raw_down_point.x - pt.x);
                 auto delta_y = abs(ctx.last_raw_down_point.y - pt.y);
                 if (delta_x <= ctx.dead_zone_for_drag && delta_y <= ctx.dead_zone_for_drag){
@@ -821,9 +823,10 @@ DLLEXPORT void hookdll_setWindowForRecovery(HWND hwnd, int type){
 
 DLLEXPORT void hookdll_setTouchParameters(const TOUCH_CONFIG* config){
     touch_delay_mouse_emulation = config->delay_mouse_emulation;
+    touch_start_delay = config->start_delay;
     touch_down_delay = config->down_delay;
     touch_up_delay = config->up_delay;
-    touch_start_delay = config->start_delay;
+    touch_drag_delay = config->drag_delay;
     touch_double_tap_on_drag = config->double_tap_on_drag;
     touch_dead_zone_for_drag_start = config->dead_zone_for_drag_start;
     touch_pointer_jitter = config->pointer_jitter;

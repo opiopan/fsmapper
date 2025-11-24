@@ -105,6 +105,7 @@ namespace gui.ViewModels{
         Boolean DcsExporterIsEnabled;
         Boolean TouchMouseEmulationIsEnable;
         Boolean TouchDelayMouseEmulation;
+        Int32 TouchCursorDelay;
         Int32 TouchDownDelay;
         Int32 TouchUpDelay;
         Int32 TouchDragStartDelay;

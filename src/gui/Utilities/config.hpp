@@ -71,6 +71,8 @@ namespace fsmapper{
         virtual void set_touch_mouse_emulation_is_enable(bool value) = 0;
         virtual bool get_touch_delay_mouse_emulation() = 0;
         virtual void set_touch_delay_mouse_emulation(bool value) = 0;
+        virtual uint32_t get_touch_cursor_delay() = 0;
+        virtual void set_touch_cursor_delay(uint32_t value) = 0;
         virtual uint32_t get_touch_down_delay() = 0;
         virtual void set_touch_down_delay(uint32_t) = 0;
         virtual uint32_t get_touch_up_delay() = 0;

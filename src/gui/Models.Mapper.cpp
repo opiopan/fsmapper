@@ -133,9 +133,10 @@ namespace winrt::gui::Models::implementation{
                 mapper_set_option_boolean(mapper, MOPT_DCS_EXPORTER, fsmapper::app_config.get_dcs_exporter_mode() == fsmapper::config::dcs_exporter_mode::on);
                 TOUCH_CONFIG tc{};
                 tc.delay_mouse_emulation = fsmapper::app_config.get_touch_delay_mouse_emulation();
+                tc.start_delay = fsmapper::app_config.get_touch_cursor_delay();
                 tc.down_delay = fsmapper::app_config.get_touch_down_delay();
                 tc.up_delay = fsmapper::app_config.get_touch_up_delay();
-                tc.start_delay = fsmapper::app_config.get_touch_drag_start_delay();
+                tc.drag_delay = fsmapper::app_config.get_touch_drag_start_delay();
                 tc.double_tap_on_drag = false;
                 tc.dead_zone_for_drag_start = fsmapper::app_config.get_touch_deadzone_for_drag();
                 tc.pointer_jitter = fsmapper::app_config.get_touch_pointer_jitter();

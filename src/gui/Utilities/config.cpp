@@ -31,6 +31,7 @@ static const auto* CONFIG_SKIPPED_VERSION = "skipped_version";
 static const auto* CONFIG_DCS_EXPORTER_MODE = "dcs_exporter_mode";
 static const auto* CONFIG_TOUCH_MOUSE_EMULATION = "touch_mouse_emulation";
 static const auto* CONFIG_TOUCH_DELAY_MOUSE_EMULATION = "touch_delay_mouse_emulation";
+static const auto* CONFIG_TOUCH_CURSOR_DELAY = "touch_cursor_delay";
 static const auto* CONFIG_TOUCH_DOWN_DELAY = "touch_down_delay";
 static const auto* CONFIG_TOUCH_UP_DELAY = "touch_up_delay";
 static const auto* CONFIG_TOUCH_DRAG_START_DELAY = "touch_drag_start_delay";
@@ -44,9 +45,10 @@ static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 static const auto* CONFIG_MIGRATION_DONE_VERSION = "migration_done_version";
 
 static constexpr bool default_touch_delay_mouse_emulation = true;
+static constexpr uint32_t default_touch_cursor_delay = 80;
 static constexpr uint32_t default_touch_down_delay = 50;
 static constexpr uint32_t default_touch_up_delay = 50;
-static constexpr uint32_t default_touch_drag_start_delay = 80;
+static constexpr uint32_t default_touch_drag_start_delay = 0;
 static constexpr bool default_touch_double_tap_on_drag = false;
 static constexpr uint32_t default_touch_deadzone_for_drag = 0;
 static constexpr uint32_t default_touch_pointer_jitter = 3;
@@ -54,6 +56,7 @@ static constexpr uint32_t default_touch_move_trigger_distance = 0;
 static constexpr uint32_t default_touch_minimum_interval = 200;
 
 static constexpr bool vdefault_touch_delay_mouse_emulation = false;
+static constexpr uint32_t vdefault_touch_cursor_delay = 0;
 static constexpr uint32_t vdefault_touch_down_delay = 50;
 static constexpr uint32_t vdefault_touch_up_delay = 50;
 static constexpr uint32_t vdefault_touch_drag_start_delay = 0;
@@ -89,6 +92,7 @@ class config_imp : public config{
     dcs_exporter_mode dcs_exporter_mode_data{dcs_exporter_mode::unknown};
     bool touch_mouse_emulation{true};
     bool touch_delay_mouse_emulation{default_touch_delay_mouse_emulation};
+    uint32_t touch_cursor_delay{default_touch_cursor_delay};
     uint32_t touch_down_delay{default_touch_down_delay};
     uint32_t touch_up_delay{default_touch_up_delay};
     uint32_t touch_drag_start_delay{default_touch_drag_start_delay};
@@ -195,6 +199,7 @@ public:
         dcs_exporter_mode_data = static_cast<dcs_exporter_mode>(dcs_exporter_mode_num);
         reflect_bool(data, CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation);
         reflect_bool(data, CONFIG_TOUCH_DELAY_MOUSE_EMULATION, touch_delay_mouse_emulation);
+        reflect_number(data, CONFIG_TOUCH_CURSOR_DELAY, touch_cursor_delay);
         reflect_number(data, CONFIG_TOUCH_DOWN_DELAY, touch_down_delay);
         reflect_number(data, CONFIG_TOUCH_UP_DELAY, touch_up_delay);
         reflect_number(data, CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay);
@@ -228,6 +233,7 @@ public:
                 {CONFIG_DCS_EXPORTER_MODE, static_cast<int>(dcs_exporter_mode_data)},
                 {CONFIG_TOUCH_MOUSE_EMULATION, touch_mouse_emulation},
                 {CONFIG_TOUCH_DELAY_MOUSE_EMULATION, touch_delay_mouse_emulation},
+                {CONFIG_TOUCH_CURSOR_DELAY, touch_cursor_delay},
                 {CONFIG_TOUCH_DOWN_DELAY, touch_down_delay},
                 {CONFIG_TOUCH_UP_DELAY, touch_up_delay},
                 {CONFIG_TOUCH_DRAG_START_DELAY, touch_drag_start_delay},
@@ -350,6 +356,12 @@ public:
     void set_touch_delay_mouse_emulation(bool value) override{
         update_value(touch_delay_mouse_emulation, value);
     }
+    uint32_t get_touch_cursor_delay() override{
+        return touch_cursor_delay;
+    }
+    void set_touch_cursor_delay(uint32_t value) override{
+        update_value(touch_cursor_delay, value);
+    }
     uint32_t get_touch_down_delay() override{
         return touch_down_delay;
     }
@@ -400,6 +412,7 @@ public:
     }
     void reset_touch_delay() override{
         update_value(touch_delay_mouse_emulation, default_touch_delay_mouse_emulation);
+        update_value(touch_cursor_delay, default_touch_cursor_delay);
         update_value(touch_down_delay, default_touch_down_delay);
         update_value(touch_up_delay, default_touch_up_delay);
         update_value(touch_drag_start_delay, default_touch_drag_start_delay);
@@ -411,6 +424,7 @@ public:
     }
     void reset_touch_delay_for_remote() override{
         update_value(touch_delay_mouse_emulation, vdefault_touch_delay_mouse_emulation);
+        update_value(touch_cursor_delay, vdefault_touch_cursor_delay);
         update_value(touch_down_delay, vdefault_touch_down_delay);
         update_value(touch_up_delay, vdefault_touch_up_delay);
         update_value(touch_drag_start_delay, vdefault_touch_drag_start_delay);
