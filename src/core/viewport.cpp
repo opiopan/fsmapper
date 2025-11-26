@@ -819,10 +819,6 @@ ViewPort::ViewPort(ViewPortManager& manager, sol::object def_obj): manager(manag
                                                         "RAW";
                 OutputDebugStringA(std::format("POINTER_RAW: {}:{}/{}\n", msg_point_id, msgstr, typestr).c_str());
             #endif
-            if (pointer_type != PT_MOUSE && msg == WM_POINTERUPDATE && !is_touch_captured && msg_point_id != touch_id){
-                // For Luna Display: treat POINTERUPDATE before capture as POINTERDOWN
-                msg = WM_POINTERDOWN;
-            }
             if ((msg == WM_POINTERDOWN && !is_touch_captured) || 
                 ((msg == WM_POINTERUP || msg == WM_POINTERUPDATE) && is_touch_captured && touch_id == msg_point_id)){
                 #ifdef _DEBUG
