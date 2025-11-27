@@ -284,22 +284,29 @@ viweport_r= mapper.viewport{
 ```
 
 ## Z-order
-The z-order of objects related to the display content of a view is presented here. It indicates the sequence in which objects are displayed when they overlap, determining which object is brought to the foreground.
+All visual components shown inside a View — such as [Canvas](/libs/mapper/Canvas), [CapturedWindow](/libs/mapper/CapturedWindow), and [CapturedImage](/libs/mapper/CapturedImage) — are View Elements.  
+In addition to these, a View may also have its own [background image](#view).  
+Although these objects all belong to the View, their rendering order follows a fixed rule.
 
-Objects related to the view's display consist of four types: [`Canvas`](/libs/mapper/Canvas) view elements, [`CapturedWindow`](/libs/mapper/CapturedWindow) view elements, [`CapturedImage`](/libs/mapper/CapturedImage/) view element, and the [background image of the view](#view).
-These four types of objects have a defined order, and they are rendered from the foreground in the following sequence.
+The stacking order is defined **from back to front** as follows:
 
-1. Canvas view elements
-2. Background image of the view
-3. CapturedImage view elements
-4. CapturedWindow view elements
+1. **CapturedWindow** (farthest back)  
+2. **CapturedImage**  
+3. **Background image of the View**  
+4. **Canvas** (front-most)
 
-The ordering of same types of view elements reflects the sequence specified in the `elements` parameter during [view definition](#view).
-The element positioned at the beginning of the array appears in the forefront of the view.
+The View's background image belongs to the View itself, while all other components are View Elements.  
+Even though Canvas, CapturedImage, and CapturedWindow are all View Elements, their relative order is not determined by the element list but by the fixed z-order rule above.
+
+Canvas elements always appear in front of the background image, while CapturedWindow and CapturedImage elements always appear behind the background image.  
+This design ensures that the background image and Canvas handle the primary panel graphics, while CapturedWindow and CapturedImage are blended behind them as external visual sources (e.g., MSFS popped-out instruments or DCS exported images).
+
+When multiple elements of the same type exist, their internal order is determined by the sequence in the `elements` array of the [View definition](#view):  
+earlier elements appear in front of later ones.
 
 :::warning Note
-Note that the CapturedWindow view element and the CapturedImage view element appears behind the view's background image. Adjust the alpha value to a lower setting for the area corresponding to the placement of the CapturedWindow or CapturedImage within the view's background image to ensure transparency for the underlying CapturedWindow. <br/>
-Especially for CapturedWindows targeting pop-out instrument windows in Microsoft Flight Simulator with touch panel functionality such as Garmin G3X, an alpha value of 0 is necessary. As per Windows specifications, if a Layered Window has an alpha value other than 0 in the foreground, it won't receive touch or mouse-related messages.
+To make a CapturedWindow or CapturedImage visible, ensure that the corresponding region of the background image uses a sufficiently low alpha value (typically 0 for MSFS touch-enabled instruments such as Garmin G3X Touch).  
+Windows requires Layered Windows to have an alpha value of 0 in the foreground for touch and mouse input to pass through.
 :::
 
 ## Render on the View
