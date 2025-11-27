@@ -83,14 +83,14 @@ At this point, the crucial parameter is the information regarding which area of 
 -- Viewport that covers the entire the display 2
 local viewport1 = mapper.viewport{
     name = 'Viewport 1',
-    diplayno = 2,
+    displayno = 2,
 }
 
 -- Relative specification:
 -- Viewport that occupies the right half of the display 3
 local viewport2 = mapper.viewport{
     name = 'Viewport 2'
-    diplayno = 3,
+    displayno = 3,
     x = 0.5, y = 0,
     width = 0.5, height = 1,
 }
@@ -99,7 +99,7 @@ local viewport2 = mapper.viewport{
 -- Viewport that occupies a 100px x 100px area at the top-left of the display 3
 local viewport3 = mapper.viewport{
     name = 'Viewport 3'
-    diplayno = 3,
+    displayno = 3,
     coordinate = 'absolute',
     x = 0, y = 0,
     width = 100, height = 100,
@@ -323,8 +323,8 @@ local needle = graphics.bitmap('assets/hi_needle.png')
 needle:set_origin(5, 50)
 
 -- Define a canvas to render the needle
-local needle_canvas = mapper.canvas{
-    local_width = 100, local_height = 100,
+local needle_canvas = mapper.view_elements.canvas{
+    logical_width = 100, logical_height = 100,
     value = 0,
     renderer = function (rctx, value)
         rctx:draw_bitmap{bitmap=needle, x=50, y=50, rotation=value}
