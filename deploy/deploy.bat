@@ -45,6 +45,8 @@ New-Item $dest_sdk -ItemType Directory
 New-Item $dest_sdkinc -ItemType Directory
 New-Item $dest_sdklib -ItemType Directory
 Copy-Item "$($coresrc)\mapperplugin.h" $dest_sdkinc
+Copy-Item "$($coresrc)\mapperplugin_types.h" $dest_sdkinc
+Copy-Item "$($coresrc)\mapperplugin_luac.h" $dest_sdkinc
 Copy-Item "$($src)\fsmappercore.lib" $dest_sdklib
 Copy-Item "$($luasrc)\lua.h" $dest_sdkinc
 Copy-Item "$($luasrc)\luaconf.h" $dest_sdkinc
