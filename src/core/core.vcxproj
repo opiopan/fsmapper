@@ -264,6 +264,7 @@ copy $(SolutionDir)..\modules\vJoySDK\SDK\lib\amd64\vJoyInterface.dll $(TargetDi
     <ClCompile Include="fs2020.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="keyseq.cpp" />
+    <ClCompile Include="luac_mod.cpp" />
     <ClCompile Include="mappercore.cpp" />
     <ClCompile Include="mobiflight_wasm.cpp" />
     <ClCompile Include="option.cpp" />

@@ -218,6 +218,9 @@
     <ClCompile Include="devlog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="luac_mod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc">

@@ -241,6 +241,9 @@ void MapperEngine::clearScriptingEnv(){
 
     // destory lua environment
     scripting.lua_ptr = nullptr;
+
+    // cleanup lua cmodule async event sources
+    luac_mod::cleanup_async_sources();
 }
 
 //============================================================================================
@@ -555,6 +558,10 @@ bool MapperEngine::run(std::string&& scriptPath){
                 if (status != Status::running){
                     break;
                 }
+
+                if (scripting.luacmod_events){
+                    luac_mod::dispatch_async_events(lock);
+                }
             }
         }
         auto rc = status == Status::stop;
@@ -615,6 +622,10 @@ void MapperEngine::sendEvent(Event &&ev){
     std::lock_guard lock(mutex);
     event.queue.push(std::make_unique<Event>(std::move(ev)));
     notify_server();
+}
+
+void MapperEngine::sendEventNoLock(Event &&ev){
+    event.queue.push(std::make_unique<Event>(std::move(ev)));
 }
 
 //============================================================================================

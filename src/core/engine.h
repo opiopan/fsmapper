@@ -22,6 +22,7 @@
 #include "action.h"
 #include "tools.h"
 #include "devlog.h"
+#include "luac_mod.h"
 
 class DeviceManager;
 class DeviceModifier;
@@ -75,6 +76,7 @@ protected :
 
         sol::state& lua(){return *lua_ptr;};
         bool should_gc = true;
+        bool luacmod_events = false;
 
         uint32_t updated_flags = 0;
     }scripting;
@@ -159,10 +161,19 @@ public:
         scripting.should_gc = true;
     };
 
+    void notify_luacmod_event(_FSMAPPER_LUAC_ASYNC_SOURCE* source){
+        std::lock_guard lock(mutex);
+        scripting.luacmod_events = true;
+        if (luac_mod::mark_async_source_signaled(source)){
+            notify_server();
+        }
+    }
+
     uint64_t registerEvent(std::string&& name);
     void unregisterEvent(uint64_t evid);
     const char* getEventName(uint64_t evid) const;
     void sendEvent(Event&& event);
+    void sendEventNoLock(Event&& event);
     void sendHostEvent(MAPPER_EVENT event, int64_t data);
 
     void invokeActionIn(std::shared_ptr<Action> action, const Event& event, MILLISEC millisec);
