@@ -34,8 +34,8 @@ static void cleanup_older_version(){
             auto&& filename = entry.path().filename().string();
             if ((filename.rfind("fsmapperhook_") == 0 || filename == "fsmapperhook.dll") &&
                 filename.rfind("fsmapperhook_" VERSTR_TITLE_VERSION) != 0){
-                std::error_code ec;
-                std::filesystem::remove(entry.path(), ec);
+                std::error_code ec2;
+                std::filesystem::remove(entry.path(), ec2);
             }
         }
     }

@@ -212,9 +212,9 @@ void MapperEngine::initScriptingEnv(){
     scripting.lua()["mapper"]["script_dir"] = script_path.string();
     scripting.lua()["mapper"]["asset_path"] = script_path.string();
     if (options.stdlib & MOPT_STDLIB_PACKAGE){
-        auto&& path  = script_path / "?.lua";
         auto package = scripting.lua()["package"];
-        package["path"] = script_path.string();
+        auto&& path  = script_path / "?.lua";
+        package["path"] = path.string();
         auto&& cpath1 = script_path / "?.dll";
         auto&& cpath2 = std::filesystem::path{options.plugin_folder} / "?.dll";
         package["cpath"] = cpath1.string() + ";" + cpath2.string();
