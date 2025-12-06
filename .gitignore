@@ -14,3 +14,4 @@ release.dir
 *.aps
 .version.txt
 .version.h
+.version.props

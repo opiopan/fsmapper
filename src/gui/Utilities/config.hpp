@@ -35,6 +35,8 @@ namespace fsmapper{
     public:
         virtual void save() = 0;
 
+        virtual const std::filesystem::path& get_module_dir() = 0;
+
         virtual const rect& get_window_rect() = 0;
         virtual void set_window_rect(const rect& rect) = 0;
         virtual const std::filesystem::path& get_script_path() = 0;

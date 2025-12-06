@@ -30,7 +30,8 @@ appfs::appfs(const wchar_t* appname){
         }
         buf.resize(buf.size() + 256);
     }
-    default_plugin = &buf.at(0);
+    module_dir = &buf.at(0);
+    default_plugin = module_dir;
     default_plugin.remove_filename();
     default_plugin = default_plugin / "plugins";
 }

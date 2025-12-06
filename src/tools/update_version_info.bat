@@ -2,11 +2,9 @@
 @powershell -NoProfile -ExecutionPolicy Unrestricted "$s=[scriptblock]::create((gc \"%~f0\"|?{$_.readcount -gt 2})-join\"`n\");&$s" %*&goto:eof
 
 $target_dir = $env:TARGET_DIR
-if ($target_dir.Length -le 0){
-    throw 'No target directory is specified.'
-}
 $version_file = $target_dir + "\.version.txt"
 $header_file = $target_dir + "\.version.h"
+$props_file = $target_dir + "\.version.props"
 
 $commit_info_stopper = $False
 filter commit-info{
@@ -62,6 +60,11 @@ $ver_file_str = "{0}.{1}.{2}.{3}{4}" -f $v1, $v2, $v3, $v4, $suffix
 $ver_product_str = "{0}.{1}.{2} [{3}{4}]" -f $v1, $v2, $v3, $suffix_product, $commit
 $ver_title_str = "{0}.{1}.{2}{3}{4}" -f $v1, $v2, $v3, $v4str, $suffix
 
+if ($target_dir.Length -le 0){
+    '{0}' -f $ver_title_str
+    return
+}
+
 if (Test-Path $version_file){
     $saved_ver = Get-Content $version_file
     if ($saved_ver.count -gt 0 -and $saved_ver -eq $ver_file_str){
@@ -84,5 +87,13 @@ $ver_file_str > $version_file
 "#define VER_FILE_MODE {0}" -f $file_mode >> $header_file
 '#define COPYRIGHT_STR "{0}"' -f $copyright >> $header_file
 '#define COMMIT_STR "{0}"' -f $commit >> $header_file
+'#define HOOKLIBNAME fsmapperhook_{0}.lib' -f $ver_title_str >> $header_file
+'#define HOOKDLLNAME_STR "fsmapperhook_{0}.dll"' -f $ver_title_str >> $header_file
+
+'<Project>' > $props_file
+'  <PropertyGroup>' >> $props_file
+'    <FsmapperVersion>{0}</FsmapperVersion>' -f $ver_title_str >> $props_file
+'  </PropertyGroup>' >> $props_file
+'</Project>' >> $props_file
 
 "version files have been updated"

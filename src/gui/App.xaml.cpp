@@ -4,6 +4,7 @@
 #include "MainWindow.xaml.h"
 #include "config.hpp"
 #include  "cli_params.hpp"
+#include  "../.version.h"
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
@@ -21,6 +22,24 @@ using namespace Microsoft::UI::Xaml::Navigation;
 using namespace Microsoft::Windows::AppLifecycle;
 using namespace gui;
 using namespace gui::implementation;
+
+static void cleanup_older_version(){
+    auto&& module_dir = fsmapper::app_config.get_module_dir();
+    std::error_code ec;
+    for (const auto& entry : std::filesystem::directory_iterator(module_dir.parent_path(), ec)){
+        if (ec){
+            break;
+        }
+        if (entry.is_regular_file()){
+            auto&& filename = entry.path().filename().string();
+            auto&& extension = entry.path().extension().string();
+            if (((filename.rfind("fsmapperhook_") == 0 && extension == ".dll") || filename == "fsmapperhook.dll") &&
+                filename != HOOKDLLNAME_STR){
+                std::filesystem::remove(entry.path(), ec);
+            }
+        }
+    }
+}
 
 winrt::gui::Models::Mapper App::mapper{nullptr};
 winrt::Microsoft::UI::Xaml::Window App::window{nullptr};
@@ -63,6 +82,8 @@ winrt::fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&){
         ::ExitProcess(0);
         co_return;
     }
+
+    cleanup_older_version();
 
     mapper = winrt::make<gui::Models::implementation::Mapper>();
     window = make<MainWindow>();

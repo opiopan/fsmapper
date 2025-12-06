@@ -39,6 +39,7 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(SolutionDir).version.props" Condition="exists('$(SolutionDir).version.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -135,7 +136,7 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">call $(SolutionDir)tools\update_version_info.bat $(SolutionDir)</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy $(TargetDir)..\Debug\fsmapperhook.* $(TargetDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy $(TargetDir)..\Debug\fsmapperhook_*.* $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34622.214
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{0D63B476-F135-4E42-A9F4-AB874EFA4677}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -15,6 +15,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mockup", "mockup\mockup.vcx
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hook", "hook\hook.vcxproj", "{BAE570F4-EA42-43AD-81BB-613949159F81}"
+	ProjectSection(ProjectDependencies) = postProject
+		{87189597-45B7-418B-8AA6-CBFE359B0F43} = {87189597-45B7-418B-8AA6-CBFE359B0F43}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui\gui.vcxproj", "{8B952566-F559-4B46-AF59-BEBB8CBE1C24}"
 	ProjectSection(ProjectDependencies) = postProject

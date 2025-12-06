@@ -251,6 +251,10 @@ public:
         }
     }
 
+    const std::filesystem::path &get_module_dir() override{
+        return fs.get_module_dir();
+    }
+
     const rect& get_window_rect() override{
         return window_rect;
     }
