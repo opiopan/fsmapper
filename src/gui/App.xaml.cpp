@@ -32,9 +32,9 @@ static void cleanup_older_version(){
         }
         if (entry.is_regular_file()){
             auto&& filename = entry.path().filename().string();
-            auto&& extension = entry.path().extension().string();
-            if (((filename.rfind("fsmapperhook_") == 0 && extension == ".dll") || filename == "fsmapperhook.dll") &&
-                filename != HOOKDLLNAME_STR){
+            if ((filename.rfind("fsmapperhook_") == 0 || filename == "fsmapperhook.dll") &&
+                filename.rfind("fsmapperhook_" VERSTR_TITLE_VERSION) != 0){
+                std::error_code ec;
                 std::filesystem::remove(entry.path(), ec);
             }
         }

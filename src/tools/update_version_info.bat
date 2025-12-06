@@ -90,8 +90,6 @@ $ver_file_str > $version_file
 '#define HOOKLIBNAME fsmapperhook_{0}.lib' -f $ver_title_str >> $header_file
 '#define HOOKDLLNAME_STR "fsmapperhook_{0}.dll"' -f $ver_title_str >> $header_file
 
-'<Project><PropertyGroup>' > $props_file
-'    <FsmapperVersion>{0}</FsmapperVersion>' -f $ver_title_str >> $props_file
-'</PropertyGroup></Project>' >> $props_file
+'<Project><PropertyGroup><FsmapperVersion>{0}</FsmapperVersion></PropertyGroup></Project>' -f $ver_title_str > $props_file
 
 "version files have been updated"
