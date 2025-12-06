@@ -32,7 +32,7 @@ DLLEXPORT void fsmapper_luac_send_event_str(FSMAPPER_LUAC_CTX ctx, FSMAPPER_EVEN
 
 struct _FSMAPPER_LUAC_ASYNC_SOURCE;
 typedef struct _FSMAPPER_LUAC_ASYNC_SOURCE* FSMAPPER_LUAC_ASYNC_SOURCE;
-DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_LUAC_CTX ctx, lua_CFunction event_provider);
+DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_LUAC_CTX ctx, lua_State* L, lua_CFunction event_provider);
 DLLEXPORT void fsmapper_luac_release_async_source(FSMAPPER_LUAC_ASYNC_SOURCE source);
 DLLEXPORT void fsmapper_luac_async_source_signal(FSMAPPER_LUAC_ASYNC_SOURCE source);
 
