@@ -117,17 +117,18 @@ namespace {
     static luac_async_source::list async_sources;
 }
 
-DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_LUAC_CTX ctx, lua_State* L, lua_CFunction event_provider){
+DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_LUAC_CTX ctx, lua_State* L, lua_CFunction event_provider, int event_provider_arg){
     auto tctx = static_cast<fsmapper_luac_ctx *>(ctx);
     async_sources.emplace_back(*tctx->self, event_provider);
     auto source = std::prev(async_sources.end());
     source->self = source;
-    source->event_provider_arg = sol::make_reference(L, sol::stack_reference{L, -1});
-    lua_pop(L, 1);
+    if (event_provider_arg !=0){
+        source->event_provider_arg = sol::make_reference(L, sol::stack_reference{L, event_provider_arg});
+    }
     return &*source;
 }
 
-DLLEXPORT void fsmapper_luac_release_async_source(FSMAPPER_LUAC_ASYNC_SOURCE source){
+DLLEXPORT void fsmapper_luac_release_async_source(FSMAPPER_LUAC_ASYNC_SOURCE source, lua_State* L){
     auto tsource = static_cast<luac_async_source *>(source);
     async_sources.erase(tsource->self);
 }

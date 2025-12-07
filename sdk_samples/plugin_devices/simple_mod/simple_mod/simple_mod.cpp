@@ -1,5 +1,5 @@
 //
-// dinputdev.cpp: sample implementation of fsmapper device plugin
+// simple_mod.cpp: sample implementation of fsmapper device plugin
 //   Author: Hiroshi Murayama <opiopan@gmail.com>
 //
 
