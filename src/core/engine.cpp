@@ -512,7 +512,8 @@ bool MapperEngine::run(std::string&& scriptPath){
                 auto condition = [this, deferred_num]{
                     return event.queue.size() > 0 || event.deferred_actions.size() > deferred_num || 
                            status != Status::running || scripting.updated_flags || 
-                           event.need_update_viewports || event.touch_event_occurred;
+                           event.need_update_viewports || event.touch_event_occurred ||
+                           scripting.luacmod_events;
                 };
 
                 if (options.async_message_pumping){
@@ -563,6 +564,7 @@ bool MapperEngine::run(std::string&& scriptPath){
                 }
 
                 if (scripting.luacmod_events){
+                    scripting.luacmod_events = false;
                     luac_mod::dispatch_async_events(lock);
                 }
             }

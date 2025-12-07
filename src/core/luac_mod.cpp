@@ -184,6 +184,11 @@ namespace luac_mod{
                         // No event
                     }else if (result.return_count() >= 2){
                         // Single event
+                        sol::object r1 = result[0];
+                        if (r1.get_type() == sol::type::number){
+                            auto num = r1.as<FSMAPPER_EVENT_ID>();
+                            num += 1;
+                        }
                         auto maybe_evid = result[0].as<std::optional<FSMAPPER_EVENT_ID>>();
                         sol::object value = result[1];
                         if (maybe_evid.has_value()){
@@ -209,7 +214,7 @@ namespace luac_mod{
                                         sol::object value = event_table["value"];
                                         send_event(*maybe_evid, value);
                                     }else{
-                                        invalid_data;
+                                        invalid_data = true;
                                     }
                                 }
                             }
