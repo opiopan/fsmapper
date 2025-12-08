@@ -89,6 +89,13 @@ public:
                 if (direction != mode::stop){
                     // Notify fsmapper that an asynchronous event has occurred
                     // The event ID and event value are returned at the moment event_provider() is invoked.
+                    //
+                    // Note:
+                    // Unlocking the mutex here is very important.
+                    // fsmapper_luac_* functions may block due to inter-thread synchronization inside fsmapper.
+                    // Therefore, they must NOT be called while holding (i.e., blocking) the thread of any
+                    // Lua C function that is invoked as part of a running Lua script (i.e., functions that
+                    // receive a lua_State* L). Doing so can lead to a classic deadlock scenario.
                     lock.unlock();
                     fsmapper_luac_async_source_signal(async_source);
                     lock.lock();
