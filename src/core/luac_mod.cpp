@@ -114,10 +114,14 @@ namespace {
         luac_async_source& operator=(const luac_async_source&&) = delete;
     };
 
+    static bool async_sources_are_enable{false};
     static luac_async_source::list async_sources;
 }
 
 DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_LUAC_CTX ctx, lua_State* L, lua_CFunction event_provider, int event_provider_arg){
+    if (!async_sources_are_enable){
+        return nullptr;
+    }
     auto tctx = static_cast<fsmapper_luac_ctx *>(ctx);
     async_sources.emplace_back(*tctx->self, event_provider);
     auto source = std::prev(async_sources.end());
@@ -129,14 +133,18 @@ DLLEXPORT FSMAPPER_LUAC_ASYNC_SOURCE fsmapper_luac_create_async_source(FSMAPPER_
 }
 
 DLLEXPORT void fsmapper_luac_release_async_source(FSMAPPER_LUAC_ASYNC_SOURCE source, lua_State* L){
-    auto tsource = static_cast<luac_async_source *>(source);
-    async_sources.erase(tsource->self);
+    if (async_sources_are_enable){
+        auto tsource = static_cast<luac_async_source *>(source);
+        async_sources.erase(tsource->self);
+    }
 }
 
 DLLEXPORT void fsmapper_luac_async_source_signal(FSMAPPER_LUAC_ASYNC_SOURCE source){
-    auto tsource = static_cast<luac_async_source *>(source);
-    auto engine = mapper_EngineInstance();
-    engine->notify_luacmod_event(source);
+    if (async_sources_are_enable){
+        auto tsource = static_cast<luac_async_source *>(source);
+        auto engine = mapper_EngineInstance();
+        engine->notify_luacmod_event(source);
+    }
 }
 
 namespace luac_mod{
@@ -236,7 +244,12 @@ namespace luac_mod{
         }
     }
 
+    void enable_async_sources(){
+        async_sources_are_enable = true;
+    }
+
     void cleanup_async_sources(){
+        async_sources_are_enable = false;
         async_sources.clear();
     }
 }

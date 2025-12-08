@@ -230,6 +230,11 @@ void MapperEngine::initScriptingEnv(){
     SHGetKnownFolderPath(FOLDERID_SavedGames, 0, nullptr, &path);
     std::filesystem::path saved_games_path{path};
     scripting.lua()["mapper"]["saved_games_dir"] = saved_games_path.string();
+
+    //-------------------------------------------------------------------------------
+    // enable unsynchronous event source for Lua C modules
+    //-------------------------------------------------------------------------------
+    luac_mod::enable_async_sources();
 }
 
 void MapperEngine::clearScriptingEnv(){
@@ -242,11 +247,11 @@ void MapperEngine::clearScriptingEnv(){
         scripting.viewportManager->reset_viewports();
     }
 
-    // destory lua environment
-    scripting.lua_ptr = nullptr;
-
     // cleanup lua cmodule async event sources
     luac_mod::cleanup_async_sources();
+
+    // dtop & destroy the Lua VM
+    scripting.lua_ptr = nullptr;
 }
 
 //============================================================================================
