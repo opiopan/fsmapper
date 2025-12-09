@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <sstream>
+#include <format>
 #include "simhidconnection.h"
 
 #if defined(_WIN64) || defined(_WIN32)
@@ -197,13 +198,19 @@ void SimHIDConnection::processReceivedData_S(){
         msg << "] cannot be recognized";
         fsmapper_putLog(mapper, FSMLOG_WARNING, msg.str().c_str());
     }
-    auto& def = defs[defindex[parser.params[0].strvalue]];
-    auto value = parser.params[1].numvalue;
-    if (def.index >= 0){
+    try{
         std::unique_lock lock(mutex);
-        for (const auto& device : devices){
-            fsmapper_raiseEvent(mapper, device.second->getDevice(), def.index, value);
+        auto index = defindex.at(parser.params[0].strvalue);
+        auto &def = defs[index];
+        auto value = parser.params[1].numvalue;
+        if (def.index >= 0){
+            for (const auto& device : devices){
+                fsmapper_raiseEvent(mapper, device.second->getDevice(), def.index, value);
+            }
         }
+    }catch(std::out_of_range&){
+        auto msg = std::format("Unit value update nortification on unknown unit has been received.: [{}]", parser.params[0].strvalue);
+        fsmapper_putLog(mapper, FSMLOG_WARNING, msg.c_str());
     }
 }
 
