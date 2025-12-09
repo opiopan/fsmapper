@@ -773,7 +773,9 @@ public:
                     }else if (signaled_event > WAIT_OBJECT_0 && signaled_event <= WAIT_OBJECT_0 + devices.size()){
                         auto device = devices[signaled_event - WAIT_OBJECT_0 - 1];
                         ::ResetEvent(device->get_event());
+                        lock.unlock();
                         device->process_event();
+                        lock.lock();
                     }
                 }
             }catch (std::runtime_error& e){
