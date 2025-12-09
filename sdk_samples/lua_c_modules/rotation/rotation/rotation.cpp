@@ -73,8 +73,13 @@ protected:
 
 
 public:
-    emitter(FSMAPPER_LUAC_CTX fsmapper, FSMAPPER_EVENT_ID event_id, double rpm, double side_length) :
-        fsmapper(fsmapper), event_id(event_id), rpm(rpm), radius(side_length / 2.){
+    //--------------------------------------------------------------------------------------------
+    // Constructor & Destructor
+    // The emitter object creates a thread in its constructor to periodically notify fsmapper of 
+    // the coordinates of a point in circular motion.
+    // The destructor handles joining and cleaning up this thread.
+    //--------------------------------------------------------------------------------------------
+    emitter(FSMAPPER_LUAC_CTX fsmapper, FSMAPPER_EVENT_ID event_id, double rpm, double side_length) : fsmapper(fsmapper), event_id(event_id), rpm(rpm), radius(side_length / 2.){
         worker = std::thread([this]{
             std::unique_lock lock{mutex};
             while(true){
@@ -93,9 +98,9 @@ public:
                     // Note:
                     // Unlocking the mutex here is very important.
                     // fsmapper_luac_* functions may block due to inter-thread synchronization inside fsmapper.
-                    // Therefore, they must NOT be called while holding (i.e., blocking) the thread of any
-                    // Lua C function that is invoked as part of a running Lua script (i.e., functions that
-                    // receive a lua_State* L). Doing so can lead to a classic deadlock scenario.
+                    // Therefore, you must NOT call these functions while holding (i.e., blocking) the thread
+                    // of any Lua C function that is invoked as part of a running Lua script (i.e., functions
+                    // that receive a lua_State* L). Doing so can lead to a classic deadlock scenario.
                     lock.unlock();
                     fsmapper_luac_async_source_signal(async_source);
                     lock.lock();

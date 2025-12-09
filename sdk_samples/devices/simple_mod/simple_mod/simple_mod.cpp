@@ -113,8 +113,17 @@ public:
                     prev_time = now;
 
                     // Raise value change event for the X axis and the Y axis
+                    //
+                    // Note:
+                    // Unlocking the mutex here is very important.
+                    // fsmapper_* functions may block due to inter-thread synchronization inside fsmapper.
+                    // Therefore, you must NOT call these functions while holding (i.e., blocking) the
+                    // thread of any function exposed to fsmapper as a plugin module. Doing so can lead to a 
+                    // classic deadlock scenario.
+                    lock.unlock();
                     fsmapper_raiseEvent(this->mapper, this->device_handle, unit_x, static_cast<int>(std::round(x)));
                     fsmapper_raiseEvent(this->mapper, this->device_handle, unit_y, static_cast<int>(std::round(y)));
+                    lock.lock();
                 }
             }
         }));
