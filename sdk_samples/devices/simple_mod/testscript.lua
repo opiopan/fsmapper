@@ -38,7 +38,7 @@ local message_font = graphics.system_font{family_name = 'Segoe Print', height = 
 local message_color = graphics.color("SkyBlue")
 local is_moving = 1
 local direction = 1
-canvas_size = m_radius * 2 + s_radius * 2
+local canvas_size = m_radius * 2 + s_radius * 2
 local canvas = mapper.view_elements.canvas{
     logical_width = canvas_size,
     logical_height = canvas_size,
