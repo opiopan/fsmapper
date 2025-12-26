@@ -89,12 +89,23 @@ public:
                                command.ev == event::up ? "up" :
                                command.ev == event::move ? "move" : 
                                command.ev == event::recover ? "recover" :
+                               command.ev == event::recover_immediate ? "recover_immediate" :
                                command.ev == event::cancel_recovery ? "cancel_recovery" : "unknown";
                     auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - command.time).count();
                     hooklog::get_logger().log(
                         std::format("Mouse Event: {} x:{} y:{} with delay {} ms",
                             evt, command.x, command.y, delay));
                 #endif
+
+                if (command.ev == event::recover_immediate){
+                    lock.lock();
+                    command_top++;
+                    pointer_is_on_primary_window = false;
+                    need_to_click = false;
+                    cv.notify_all();
+                    recover_pointer_position();
+                    continue;
+                }
 
                 INPUT input;
                 input.type = INPUT_MOUSE;
@@ -145,8 +156,14 @@ public:
         }
     }
 
-    void emulate(event ev, int32_t x, int32_t y, clock::time_point at) override{
+    clock::time_point emulate(event ev, int32_t x, int32_t y, clock::time_point at) override{
         std::unique_lock lock(mutex);
+        auto& prev = commands[(command_next - 1) & (ring_buff_size - 1)];
+        if (ev == event::move && command_next > command_top && prev.ev == event::move){
+            prev.x = x;
+            prev.y = y;
+            return prev.time;
+        }
         if (command_next - command_top >= ring_buff_size){
             cv.wait(lock, [this]{return command_next - command_top < ring_buff_size;});
         }
@@ -157,6 +174,8 @@ public:
         command.time = at;
         command_next++;
         cv.notify_all();
+
+        return at;
     };
 
 protected:

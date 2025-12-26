@@ -15,7 +15,8 @@ namespace mouse_emu{
         up = MOUSEEVENTF_LEFTUP,
         move = MOUSEEVENTF_MOVE,
         recover =-1,
-        cancel_recovery = -2,
+        recover_immediate = -2,
+        cancel_recovery = -3,
     };
 
     enum class recovery_type{
@@ -31,7 +32,7 @@ namespace mouse_emu{
     class emulator{
     public:
         virtual void set_window_for_recovery(HWND hwnd, recovery_type type) = 0;
-        virtual void emulate(event ev, int32_t x, int32_t y, clock::time_point at) = 0;
+        virtual clock::time_point emulate(event ev, int32_t x, int32_t y, clock::time_point at) = 0;
     };
 
     std::unique_ptr<emulator> create_emulator();

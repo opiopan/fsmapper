@@ -635,7 +635,6 @@ public:
             }
             ctx.pointer_id = 0;
             ctx.is_touch_down = false;
-            ctx.is_dragging = false;
             ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_down_time + ctx.delay_up));
             ctx.last_up_time = ctx.last_ops_time;
             auto delta_x = abs(ctx.last_raw_down_point.x - pt.x);
@@ -645,6 +644,11 @@ public:
             }
             mouse_emulator->emulate(mouse_emu::event::up, pt.x, pt.y, ctx.last_ops_time);
             ctx.current_interval = ctx.minimum_interval;
+            if (ctx.is_dragging){
+                ctx.last_ops_time = max(now, max(ctx.last_ops_time, ctx.last_up_time + ctx.minimum_interval));
+                mouse_emulator->emulate(mouse_emu::event::recover_immediate, 0, 0, ctx.last_ops_time);
+            }
+            ctx.is_dragging = false;
             return true;
         }else if (msg == WM_POINTERUPDATE && ctx.is_touch_down){
             auto delay = mouse_emu::milliseconds{0};
@@ -669,7 +673,7 @@ public:
                 }
             }
             ctx.last_ops_time = max(now + delay, ctx.last_ops_time + delay);
-            mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
+            ctx.last_ops_time = mouse_emulator->emulate(mouse_emu::event::move, pt.x, pt.y, ctx.last_ops_time);
             return true;
         }
 
