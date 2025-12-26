@@ -45,8 +45,8 @@ static const auto* CONFIG_CLI_SCRIPT_PATH = "cli_script_path";
 static const auto* CONFIG_MIGRATION_DONE_VERSION = "migration_done_version";
 
 static constexpr bool default_touch_delay_mouse_emulation = true;
-static constexpr uint32_t default_touch_cursor_delay = 80;
-static constexpr uint32_t default_touch_down_delay = 50;
+static constexpr uint32_t default_touch_cursor_delay = 50;
+static constexpr uint32_t default_touch_down_delay = 80;
 static constexpr uint32_t default_touch_up_delay = 50;
 static constexpr uint32_t default_touch_drag_start_delay = 0;
 static constexpr bool default_touch_double_tap_on_drag = false;
