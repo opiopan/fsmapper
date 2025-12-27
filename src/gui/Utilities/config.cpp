@@ -57,7 +57,7 @@ static constexpr uint32_t default_touch_minimum_interval = 200;
 
 static constexpr bool vdefault_touch_delay_mouse_emulation = false;
 static constexpr uint32_t vdefault_touch_cursor_delay = 0;
-static constexpr uint32_t vdefault_touch_down_delay = 50;
+static constexpr uint32_t vdefault_touch_down_delay = 80;
 static constexpr uint32_t vdefault_touch_up_delay = 50;
 static constexpr uint32_t vdefault_touch_drag_start_delay = 0;
 static constexpr bool vdefault_touch_double_tap_on_drag = false;
