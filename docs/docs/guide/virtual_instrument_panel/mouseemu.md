@@ -101,9 +101,9 @@ Use these as a starting point and adjust them as needed to match your environmen
 | ---------------------------- | :------------------: | :------------------: |
 | Delay mouse emulation        | On                   | Off                  |
 | Jitter amount                | 3                    | 3                    |
-| Cursor move delay            | 80                   | 0                    |
+| Cursor move delay            | 50                   | 0                    |
 | Cursor move trigger distance | 0                    | 0                    |
-| Touch to click delay         | 50                   | 50                   |
+| Touch to click delay         | 80                   | 80                   |
 | Touch to release delay       | 50                   | 50                   |
 | Drag start delay             | 0                    | 0                    |
 | Drag dead zone               | 0                    | 0                    |
