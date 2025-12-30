@@ -80,13 +80,13 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'guideSidebar',
             position: 'left',
-            label: 'Docs',
+            label: 'User Guide',
           },
           {
             type: 'docSidebar',
             sidebarId: 'sdkSidebar',
             position: 'left',
-            label: 'SDK',
+            label: 'Plugin SDK',
           },
           {
             href: Version.package,
