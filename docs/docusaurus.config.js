@@ -77,10 +77,10 @@ const config = {
         hideOnScroll: false,
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'guideSidebar',
-            position: 'left',
             label: 'User Guide',
+            to: '/intro',
+            position: 'left',
+            activeBaseRegex: '^/fsmapper/(?!$|sdk)',
           },
           {
             type: 'docSidebar',
