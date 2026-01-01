@@ -85,6 +85,7 @@ const config = {
           {
             type: 'docSidebar',
             sidebarId: 'sdkSidebar',
+            docsPluginId: 'sdkddocs',
             position: 'left',
             label: 'Plugin SDK',
           },
@@ -159,6 +160,15 @@ const config = {
         languages: ['en', 'de'] // language codes
       }
     ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'sdkddocs',
+        path: 'sdkdocs',
+        routeBasePath: 'sdk',
+        sidebarPath: require.resolve('./sidebars.js'),
+      }
+    ]
   ],
 };
 
