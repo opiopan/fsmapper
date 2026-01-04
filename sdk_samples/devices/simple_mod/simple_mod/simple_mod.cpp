@@ -247,7 +247,6 @@ static MAPPER_PLUGIN_DEVICE_OPS ops = {
     dev_get_unit_num,
     dev_get_unit_def,
     dev_send_unit_value,
-    nullptr  // this module does not provide the send function that accepts floating point numeric
 };
 
 extern "C" DLLEXPORT MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){

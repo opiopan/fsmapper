@@ -34,7 +34,6 @@ typedef struct FSMDEVICECTX* FSMDEVICE;
 DLLEXPORT void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
 DLLEXPORT void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
 DLLEXPORT void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
-DLLEXPORT void fsmapper_raiseEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value);
 
 //============================================================================================
 // LUA value accessor
@@ -93,9 +92,6 @@ typedef struct {
     size_t (*getUnitNum)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
     bool (*getUnitDef)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF* def);
     bool (*sendUnitValue)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
-    bool (*sendUnitValueF)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, double value);
-    // NOTE: Current fspammer does not yet support the following send funciton that accepts general Lua object 
-    bool (*sendUnitValueL)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, LUAVALUE value);
 } MAPPER_PLUGIN_DEVICE_OPS;
 
 // fsmapper will determine that plugin module has a device plugin capability

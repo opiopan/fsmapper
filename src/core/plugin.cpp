@@ -33,8 +33,7 @@ PluginManager::PluginManager(){
                 auto proc = reinterpret_cast<MAPPER_PLUGIN_DEVICE_OPS* (*)()>(::GetProcAddress(module, "getMapperPluginDeviceOps"));
                 auto ops = proc ? proc() : nullptr;
                 if (ops && ops->name && ops->init && ops->term && ops->open && ops->start &&
-                    ops->close && ops->getUnitNum && ops->getUnitDef &&
-                    (ops->sendUnitValue || ops->sendUnitValueF)){
+                    ops->close && ops->getUnitNum && ops->getUnitDef &&ops->sendUnitValue){
                     modules.emplace_back(file.path().filename().string(), module, ops);
                 }else{
                     std::ostringstream os;
