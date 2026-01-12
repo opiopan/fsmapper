@@ -1,6 +1,6 @@
 ---
 id: data_types
-sidebar_position: 2
+sidebar_position: 1000
 ---
 
 # Data Types

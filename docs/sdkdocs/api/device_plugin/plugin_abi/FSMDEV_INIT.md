@@ -1,6 +1,6 @@
 ---
 id: FSMDEV_INIT
-sidebar_position: 201
+sidebar_position: 101
 ---
 
 # FSMDEV_INIT callback function
