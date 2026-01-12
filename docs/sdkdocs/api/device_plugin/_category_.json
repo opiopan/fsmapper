@@ -1,0 +1,8 @@
+{
+    "label": "Custom Device Plugin API",
+    "position": 10,
+    "link": {
+        "type": "doc",
+        "id": "device_api_index"
+    }
+}

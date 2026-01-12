@@ -1,0 +1,8 @@
+{
+    "label": "Lua C Module API",
+    "position": 20,
+    "link": {
+        "type": "doc",
+        "id": "luacmod_api_index"
+    }
+}
