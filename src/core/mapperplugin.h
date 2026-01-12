@@ -81,17 +81,26 @@ typedef struct {
     int minValue;
 }FSMDEVUNITDEF;
 
+typedef bool (*FSMDEV_INIT)(FSMAPPER_HANDLE mapper);
+typedef bool (*FSMDEV_TERM)(FSMAPPER_HANDLE mapper);
+typedef bool (*FSMDEV_OPEN)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
+typedef bool (*FSMDEV_START)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef bool (*FSMDEV_CLOSE)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef size_t (*FSMDEV_GET_UNIT_NUM)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef bool (*FSMDEV_GET_UNIT_DEF)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF *def);
+typedef bool (*FSMDEV_SEND_UNIT_VALUE)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
+
 typedef struct {
     const char* name;
     const char* description;
-    bool (*init)(FSMAPPER_HANDLE mapper);
-    bool (*term)(FSMAPPER_HANDLE mapper);
-    bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
-    bool (*start)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    bool (*close)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    size_t (*getUnitNum)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    bool (*getUnitDef)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF* def);
-    bool (*sendUnitValue)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
+    FSMDEV_INIT init;
+    FSMDEV_TERM term;
+    FSMDEV_OPEN open;
+    FSMDEV_START start;
+    FSMDEV_CLOSE close;
+    FSMDEV_GET_UNIT_NUM getUnitNum;
+    FSMDEV_GET_UNIT_DEF getUnitDef;
+    FSMDEV_SEND_UNIT_VALUE sendUnitValue;
 } MAPPER_PLUGIN_DEVICE_OPS;
 
 // fsmapper will determine that plugin module has a device plugin capability
