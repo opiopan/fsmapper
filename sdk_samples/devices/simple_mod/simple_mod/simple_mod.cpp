@@ -192,19 +192,6 @@ static bool dev_open(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, LUAVALUE iden
     }
 }
 
-static bool dev_start(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
-    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
-    auto&& object = device::id_to_device(device_id);
-    object.change_mode(device::mode::cw);
-    return true;
-}
-
-static bool dev_close(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
-    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
-    device::close_device(device_id);
-    return true;
-}
-
 static size_t dev_get_unit_num(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
     return unit_num;
 }
@@ -217,6 +204,19 @@ static bool dev_get_unit_def(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, size_
         fsmapper_putLog(mapper, FSMLOG_ERROR, "invalid unit id");
         return false;
     }
+}
+
+static bool dev_start(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
+    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
+    auto&& object = device::id_to_device(device_id);
+    object.change_mode(device::mode::cw);
+    return true;
+}
+
+static bool dev_close(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
+    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
+    device::close_device(device_id);
+    return true;
 }
 
 static bool dev_send_unit_value(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, size_t index, int value){
@@ -236,7 +236,7 @@ static bool dev_send_unit_value(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, si
 //     fsmapper checks for the existence of this function and inspects the content returned by
 //     this function's MAPPER_PLUGIN_DEVICE_OPS object to determine if it's a valid plugin module.
 //============================================================================================
-extern "C" DLLEXPORT MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){
+extern "C" __declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){
     static MAPPER_PLUGIN_DEVICE_OPS ops = {
         "rotation", // string to specify in the 'type' parameter of mapper.device() in Lua script
         "SDK sample device that provide rotating coodinates",

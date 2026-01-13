@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 //============================================================================================
-// Funcitons to interuct with fsmapper
+// Funcitons to interact with fsmapper
 //============================================================================================
 typedef struct FSMAPPERCTX* FSMAPPER_HANDLE;
 DLLEXPORT void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
@@ -105,7 +105,7 @@ typedef struct {
 
 // fsmapper will determine that plugin module has a device plugin capability
 // if a module exports this function.
-DLLEXPORT MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
+DLLEXPORT const MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
 
 #ifdef __cplusplus
 }
