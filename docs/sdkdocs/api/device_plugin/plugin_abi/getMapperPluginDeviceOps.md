@@ -1,13 +1,13 @@
 ---
 id: getMapperPluginDeviceOps
-sidebar_position: 200
+sidebar_position: 100
 ---
 
 # getMapperPluginDeviceOps function
 
 ## Syntax
 ```c
-__declspec(dllexport) MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
+__declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
 ```
 
 ## Parameters

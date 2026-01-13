@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Plugin ABI
 
-## Plugin Callback Execution Flow
+## Plugin Callback Execution Flow {#flow}
 The following sequence diagram illustrates when and in what order the plugin callback functions are invoked in response to Lua script execution and device operations.
 
 ```mermaid
@@ -26,8 +26,10 @@ sequenceDiagram
     Lua->>FSM: mapper.device(...)
     FSM->>PLG: FSMDEV_OPEN
     FSM->>PLG: FSMDEV_GET_UNIT_NUM
+    PLG-->>FSM: Number of device units
     loop For each device unit
         FSM->>PLG: FSMDEV_GET_UNIT_DEF
+        PLG-->>FSM: Device unit definition
     end
 
     FSM->>PLG: FSMDEV_START

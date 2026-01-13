@@ -154,6 +154,9 @@ const config = {
         darkTheme: prismThemes.dracula,
         additionalLanguages: ['lua'],
       },
+      mermaid: {
+        theme: {light: 'forest', dark: 'dark'},
+      },
     }),
 
   plugins: [
