@@ -21,7 +21,7 @@ typedef bool (*FSMDEV_TERM)(
 
 |Parameter|Type| Description|
 |--|--|--|
-|mapper|[`FSMAPPER_HANDLE`](../data_types)| A handle representing the fsmapper runtime instance associated with the current Lua script execution. The same handle value passed to `FSMDEV_INIT` is provided here.
+|mapper|[`FSMAPPER_HANDLE`](../data_types)| A handle representing the fsmapper runtime instance associated with the current Lua script execution.
 
 ## Return Values
 
@@ -36,10 +36,10 @@ Returns `false` if an error occurred during termination. The plugin module will 
 
 * This callback is guaranteed to be invoked after the corresponding [`FSMDEV_INIT`](FSMDEV_INIT) callback and before the plugin module is unloaded.
 
-* The `mapper` parameter is the same opaque handle that was provided to `FSMDEV_INIT`.
+* The `mapper` parameter is the same opaque handle that was provided to [`FSMDEV_INIT`](FSMDEV_INIT).
   Any plugin-specific context previously associated with this handle using fsmapper runtime service functions should be retrieved and released at this point.
 
-* Plugins should release all module-level dynamic resources allocated during `FSMDEV_INIT`, including memory, threads, and other OS or runtime resources.
+* Plugins should release all module-level dynamic resources allocated during [`FSMDEV_INIT`](FSMDEV_INIT), including memory, threads, and other OS or runtime resources.
 
 * After this callback returns, the plugin module must not assume that any fsmapper runtime services remain available.
 
