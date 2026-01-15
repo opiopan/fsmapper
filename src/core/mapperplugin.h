@@ -11,12 +11,6 @@
 
 #include <mapperplugin_types.h>
 
-#if defined(_WIN64) || defined(_WIN32)
-#   define DLLEXPORT __declspec(dllexport)
-#else
-#   define DLLEXPORT
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,15 +19,15 @@ extern "C" {
 // Funcitons to interact with fsmapper
 //============================================================================================
 typedef struct FSMAPPERCTX* FSMAPPER_HANDLE;
-DLLEXPORT void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
-DLLEXPORT void fsmapper_abort(FSMAPPER_HANDLE mapper);
-DLLEXPORT void fsmapper_setContext(FSMAPPER_HANDLE mapper, void *context);
-DLLEXPORT void *fsmapper_getContext(FSMAPPER_HANDLE mapper);
+__declspec(dllexport) void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
+__declspec(dllexport) void fsmapper_abort(FSMAPPER_HANDLE mapper);
+__declspec(dllexport) void fsmapper_setContext(FSMAPPER_HANDLE mapper, void *context);
+__declspec(dllexport) void *fsmapper_getContext(FSMAPPER_HANDLE mapper);
 
 typedef struct FSMDEVICECTX* FSMDEVICE;
-DLLEXPORT void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
-DLLEXPORT void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-DLLEXPORT void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
+__declspec(dllexport) void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
+__declspec(dllexport) void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+__declspec(dllexport) void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
 
 //============================================================================================
 // LUA value accessor
@@ -49,14 +43,14 @@ typedef enum {
     LV_OTHERS,
 }LVTYPE;
 
-DLLEXPORT LVTYPE luav_getType(LUAVALUE lv);
-DLLEXPORT bool luav_isNull(LUAVALUE lv);
-DLLEXPORT bool luav_asBool(LUAVALUE lv);
-DLLEXPORT int64_t luav_asInt(LUAVALUE lv);
-DLLEXPORT double luav_asDouble(LUAVALUE lv);
-DLLEXPORT const char* luav_asString(LUAVALUE lv);
-DLLEXPORT LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
-DLLEXPORT LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
+__declspec(dllexport) LVTYPE luav_getType(LUAVALUE lv);
+__declspec(dllexport) bool luav_isNull(LUAVALUE lv);
+__declspec(dllexport) bool luav_asBool(LUAVALUE lv);
+__declspec(dllexport) int64_t luav_asInt(LUAVALUE lv);
+__declspec(dllexport) double luav_asDouble(LUAVALUE lv);
+__declspec(dllexport) const char* luav_asString(LUAVALUE lv);
+__declspec(dllexport) LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
+__declspec(dllexport) LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
 
 //============================================================================================
 // Device plugin functions to export
@@ -105,7 +99,7 @@ typedef struct {
 
 // fsmapper will determine that plugin module has a device plugin capability
 // if a module exports this function.
-DLLEXPORT const MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
+__declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
 
 #ifdef __cplusplus
 }
