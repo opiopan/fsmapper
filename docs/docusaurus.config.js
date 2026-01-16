@@ -6,6 +6,8 @@
 
 import {themes as prismThemes} from 'prism-react-renderer';
 import {Version} from './.version.js';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -50,6 +52,8 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
+          remarkPlugins: [remarkMath],
+          rehypePlugins: [rehypeKatex],
           async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
             const sidebarItems = await defaultSidebarItemsGenerator(args);
             return sidebarItems.filter(
@@ -172,8 +176,19 @@ const config = {
         path: 'sdkdocs',
         routeBasePath: 'sdk',
         sidebarPath: require.resolve('./sidebars.js'),
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
       }
     ]
+  ],
+  stylesheets: [
+    {
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+      type: 'text/css',
+      integrity:
+        'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+      crossorigin: 'anonymous',
+    },
   ],
 };
 
