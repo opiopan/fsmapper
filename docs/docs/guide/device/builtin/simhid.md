@@ -32,7 +32,6 @@ Here, I'll focus on explaining the [**Device Unit**](/guide/device/#device-unit)
 |Name|The SimHID devices use predefined names directly, meaning they are device-dependent.
 |Direction|***Input***
 |Value Type|***Absolute***
-|Precision|32-bit integer
 |Value Range|1 for ON, 0 for OFF
 
 ### Rotary Encoders
@@ -41,5 +40,4 @@ Here, I'll focus on explaining the [**Device Unit**](/guide/device/#device-unit)
 |Name|The SimHID devices use predefined names directly, meaning they are device-dependent.
 |Direction|***Input***
 |Value Type|***Absolute***
-|Precision|32-bit integer
 |Value Range|When rotating clockwise, the number of clicks is represented by positive integers, when rotating counterclockwise, it's represented by negative integers.

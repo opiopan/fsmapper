@@ -50,7 +50,6 @@ DirectInput game devices consist solely of ***Input*** type [**Device Unit**](/g
 |Name|DirectInput supports a maximum of eight analog axes, each with the following names:<br/>`'x'`, `'y'`, `'z'`, `'rx'`, `'ry'`, `'rz'`, `'slider1'`, `'slider2'`<br/>Which axes are supported depends on the device.
 |Direction|***Input***
 |Value Type|***Absolute***
-|Precision|32-bit integre
 |Value Range|-50,000 to 50,000
 
 ### Buttons
@@ -59,7 +58,6 @@ DirectInput game devices consist solely of ***Input*** type [**Device Unit**](/g
 |Name|The naming convention for the button type [**Device Unit**](/guide/device/#device-unit) involves appending a number starting from 1 after the word `button`.<br/>For instance, it would be named as `button1` or `button2`.
 |Direction|***Input***
 |Value Type|***Absolute***
-|Precision|32-bit integer
 |Value Range|1 for ON, 0 for OFF
 
 ### POVs
@@ -68,5 +66,4 @@ DirectInput game devices consist solely of ***Input*** type [**Device Unit**](/g
 |Name|The naming convention for the POV type [**Device Unit**](/guide/device/#device-unit) involves appending a number starting from 1 after the word `pov`.<br/>For instance, it would be named as `pov1` or `pov2`.
 |Direction|***Input***
 |Value Type|***Absolute***
-|Precision|32-bit integer
 |Value Range|The direction of POV expressed in degrees, meaning values ranging from 0 to less than 360.<br/>If no direction is selected, it is represented as -1.

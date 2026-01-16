@@ -54,7 +54,7 @@ For devices provided by plugin modules, refer to the description of those respec
 
 ## Device Unit
 **Device Unit** refers to the constituent elements of devices with changing states, such as buttons or analog axes on a joystick.
-Each **Device Unit** owns attributes including **Name**, **Direction**, **Value Type**, **Precision**, **Value Range**.
+Each **Device Unit** owns attributes including **Name**, **Direction**, **Value Type**, **Value Range**.
 
 - **Name**<br/>
     **Name** corresponds to the ID of each **Device Unit**, and the naming convention depends on the device type.
@@ -65,9 +65,6 @@ Each **Device Unit** owns attributes including **Name**, **Direction**, **Value 
 
 - **Value Type**<br/>
     **Value Type** can be ***Absolute*** or ***Relative***. ***Absolute*** refers to instances where the value of the **Device Unit** directly corresponds to its position, such as analog axes on joysticks. ***Relative*** describes cases like a mouse, where the change in value represents the **Device Unit**'s value.
-
-- **Precision**<br/>
-    **Precision** signifies the precision of the **Device Unit**'s state value, represented by either a 32-bit integer or a 64-bit floating-point number.
 
 - **Values Range**<br/>
     **Value Range** indicate the range within which the **Device Unit** can express values.
