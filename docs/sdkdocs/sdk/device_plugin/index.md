@@ -4,78 +4,93 @@ sidebar_position: 1
 ---
 
 # Custom Device Plugin
-This section documents the Custom Device Plugin API provided by fsmapper.
-It is intended for developers implementing native plugin modules that extend fsmapper with custom devices and integrate them with Lua scripts.
 
-The API is organized into three categories, each addressing a different aspect of the interaction between fsmapper, plugin modules, and Lua scripts.
-Together, they form a layered interface ranging from low-level binary contracts to high-level helper utilities.
+This section provides a comprehensive reference for developers who want to implement Custom Device Plugin modules for fsmapper.
 
-## Headers and Libraries
+It is intended for readers who are already familiar with fsmapper usage and have experience with C or C++ development.
+Rather than a step-by-step tutorial, this documentation focuses on the interfaces, conventions, and design concepts required to extend fsmapper with custom device implementations.
 
-To use the Custom Device Plugin API, plugin modules must include the following header file and link against the corresponding library provided by fsmapper.
+## What Is a Custom Device Plugin?
 
-### Required Header
-```c title="C / C++"
-#include <mapperplugin.h>
-```
+In fsmapper, a *device* is an abstract representation of an input/output source exposed to Lua scripts through [`mapper.device()`](/libs/mapper/mapper_device).
 
-This header declares all public types, constants, and function interfaces required to implement a custom device plugin.
+A Custom Device Plugin is a native module that implements the behavior of a specific device type within this abstraction.
+By implementing such a module, fsmapper can be extended to support physical devices, virtual devices, or external systems that are not supported out of the box.
 
-### Required Library
+From the plugin’s perspective, interaction with fsmapper is centered around [**device units**](/guide/device#device-unit) and occurs in two directions:
 
-When building a plugin module, link against the following library:
-- fsmappercore.lib
+- **Upstream (plugin → fsmapper)**  
+  The plugin reports changes in device unit values to fsmapper.
+  fsmapper interprets these value changes and, based on user configuration, determines which Lua-visible events should be generated and when.
 
-On Microsoft Visual C++, the library can also be specified directly in source code using a pragma directive:
+- **Downstream (fsmapper → plugin)**  
+  Lua scripts request changes to output-type device units.
+  fsmapper delivers these requests to the plugin via callback functions, allowing the plugin to apply the requested state changes.
 
-```c title="C / C++"
-#pragma comment(lib, "fsmappercore.lib")
-```
+The plugin itself does not generate Lua events directly.
+Instead, it focuses on reporting and applying device unit state changes, while fsmapper handles event interpretation and delivery.
 
-## Plugin ABI
-The Plugin ABI defines the binary interface between fsmapper and a custom device plugin module.
+For a conceptual overview of how devices are modeled and used in fsmapper, see the [Device Handling](/guide/device) section
 
-A plugin module exposes an entry point function that returns a pointer to a structure containing function pointers. These functions are invoked by fsmapper in response to device operations initiated from Lua scripts, such as opening, closing, or updating a device.
+This reference documents all interfaces and conventions required to implement Custom Device Plugin modules, including the plugin ABI, runtime services provided by fsmapper, and helper APIs for interpreting Lua-provided configuration data.
 
-This layer is intentionally low-level and language-agnostic, making it suitable for implementation in C or C++ and stable across compiler and runtime boundaries.
+## Implementing Plugin Modules
 
-Use this section when you want to:
-- Implement a new custom device plugin module
-- Understand the lifecycle and callbacks of a device
-- Verify ABI compatibility requirements
+The Custom Device Plugin API is defined using a **C-compatible binary interface**.
+Both the plugin ABI and the runtime services provided by fsmapper are exposed using C linkage.
 
-## fsmapper Runtime Services
+As a result, plugin modules are typically implemented in C or C++.
+This design prioritizes binary compatibility and long-term stability.
 
-The fsmapper Runtime Services API provides functions that allow a plugin module to interact with the fsmapper runtime environment.
+While the reference documentation assumes C or C++ usage, it does not intentionally exclude other languages.
+Any language capable of interoperating with a C-compatible binary interface may be used.
 
-These services include facilities such as logging, message output, event notification, and asynchronous interaction with the host.
-They are callable from within plugin callbacks and serve as the primary communication channel from the plugin back to fsmapper.
+## Required Headers and Libraries
 
-This layer abstracts the internal mechanisms of fsmapper while offering enough control for advanced device behavior.
+To implement a Custom Device Plugin module, the following files are required:
 
-Use this section when you want to:
-	•	Output diagnostic or informational messages
-	•	Emit events or notifications to fsmapper
-	•	Interact with the runtime from within plugin code
+- **Header file**  
+  `mapperplugin.h`  
+  Defines the plugin ABI, callback function types, and related data structures.
 
-## Lua Value Access Helpers
+  ```c title='C/C++'
+  #incude mapperplugin.h
+  ```
 
-The Lua Value Access Helpers provide a high-level API for interpreting Lua values passed to a plugin module, typically as device options specified at device open time.
+- **Library file**  
+  `fsmappercore.lib`  
+  Provides access to fsmapper runtime services used by plugin modules.   
+  When using C or C++, the library can be linked either via project settings or explicitly using a pragma directive:
 
-These helpers are designed for developers who are not familiar with the Lua C API or its stack-based programming model.
-They allow plugin code to access Lua tables, objects, and primitive values safely and consistently, without directly manipulating the Lua stack or lua_State.
+	```c title='C/C++'
+	#pragma comment(lib, "fsmappercore.lib")
+	```
 
-This layer improves readability, reduces boilerplate code, and helps avoid common errors when handling Lua values in native code.
+## Plugin Module Placement
 
-Use this section when you want to:
-	•	Read device options specified from Lua scripts
-	•	Access Lua tables and objects in a type-safe manner
-	•	Avoid direct use of the Lua C API
+Custom Device Plugin modules are distributed as dynamic libraries (DLLs).
+
+By default, fsmapper scans the following locations for plugin modules:
+
+- The `plugins` directory under the fsmapper installation folder
+- The `AppData\Roaming\fsmapper\plugins` directory under the user’s folder
+
+Additional plugin directories can be specified via the fsmapper Settings Page.
+Placing a plugin module in any of these locations allows fsmapper to discover and load it automatically.
 
 ## How to Read This Reference
 
-If you are new to fsmapper plugin development, it is recommended to start with Plugin ABI to understand the overall structure and lifecycle of a plugin module.
-Then, refer to fsmapper Runtime Services to learn how plugins communicate with the host.
-Finally, consult Lua Value Access Helpers when implementing option parsing or configuration handling.
+This reference is organized to guide plugin developers from required specifications to supporting utilities.
 
-Each API entry is documented with its purpose, parameters, return values, and usage notes where applicable.
+The recommended reading order is:
+
+1. [**Plugin ABI**](./plugin_abi/)  
+   Defines the mandatory entry point, callback functions, and execution flow that determine whether a module is recognized as a Custom Device Plugin.
+
+2. [**fsmapper Runtime Service**](./runtime_service/)  
+   Describes the runtime APIs provided by fsmapper for plugin modules, including logging, context management, script control, and device unit state notification.
+
+3. [**Lua Value Access Helper**](./lua_helper/)  
+   Explains helper functions for interpreting Lua objects passed to plugins—most notably the `identifier` and `options` parameters received by device open callbacks—without directly using the Lua C API.
+
+Together, these sections provide all information required to design, implement, and integrate a Custom Device Plugin module into fsmapper.
