@@ -3,7 +3,7 @@ id: device_api_index
 sidebar_position: 1
 ---
 
-# Custom Device Plugin API
+# Custom Device Plugin
 This section documents the Custom Device Plugin API provided by fsmapper.
 It is intended for developers implementing native plugin modules that extend fsmapper with custom devices and integrate them with Lua scripts.
 
