@@ -14,7 +14,7 @@ Rather than prescribing how a plugin must be implemented internally, the Plugin 
 
 ## Plugin Entry Point
 
-A plugin module is a dynamically loaded library (DLL) that exports a single required entry point function: `getMapperPluginDeviceOps`.
+A plugin module is a dynamically loaded library (DLL) that exports a single required entry point function: [`getMapperPluginDeviceOps`](getMapperPluginDeviceOps).
 
 This function allows fsmapper to discover the plugin’s capabilities by returning a structure that contains pointers to all required callback functions.
 If this function is present and correctly exported, fsmapper treats the DLL as a valid plugin module.
@@ -79,12 +79,12 @@ sequenceDiagram
 
     Note over Lua,FSM: Device operation
 
-    Lua->>FSM: Device::send(unit, value)
+    Lua->>FSM: Device:send(unit, value)
     FSM->>PLG: FSMDEV_SEND_UNIT_VALUE
 
     Note over Lua,FSM: Device destruction
 
-    Lua->>FSM: Device::close() or GC
+    Lua->>FSM: Device:close() or GC
     FSM->>PLG: FSMDEV_CLOSE
 
     Note over Lua,FSM: Script termination
