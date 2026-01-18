@@ -34,7 +34,7 @@ As a result, worker threads cannot directly call Lua APIs such as [`mapper.raise
 ## Lua Version and Build Requirements
 
 fsmapper embeds [**Lua 5.4**](https://www.lua.org/manual/5.4/) as its scripting engine.  
-All Lua C modules intended to be used with fsmapper **must be built against [the Lua 5.4 C API](https://www.lua.org/manual/5.4/manual.html#4)**.
+All Lua C modules intended to be used with fsmapper **must be built against the [Lua 5.4 C API](https://www.lua.org/manual/5.4/manual.html#4)**.
 
 The fsmapper Plugin SDK provides the required Lua C API header files, such as `lua.h` and `lauxlib.h`, under the following directory:
 
