@@ -60,7 +60,7 @@ To implement a Custom Device Plugin module, the following files are required:
 - **Library file**  
   `fsmappercore.lib`  
   Provides access to fsmapper runtime services used by plugin modules.   
-  When using C or C++, the library can be linked either via project settings or explicitly using a pragma directive:
+  When using MSVC, the library can be linked either via project settings or explicitly using a pragma directive:
 
 	```c title='C/C++'
 	#pragma comment(lib, "fsmappercore.lib")
