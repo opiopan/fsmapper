@@ -29,7 +29,7 @@ In such cases, Lua C modules typically create worker threads.
 This introduces a fundamental limitation of the Lua threading model:  
 a [`lua_State`](https://www.lua.org/manual/5.4/manual.html#lua_State) may only be accessed safely from the Lua script execution thread, and only while a Lua C function is being executed.
 
-As a result, worker threads cannot directly call Lua APIs such as `mapper.raise_event()`.
+As a result, worker threads cannot directly call Lua APIs such as [`mapper.raise_event()`](/libs/mapper/mapper_raise_event).
 
 ## Lua Version and Build Requirements
 

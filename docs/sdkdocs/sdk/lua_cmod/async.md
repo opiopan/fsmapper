@@ -129,6 +129,18 @@ Each table entry must contain:
 
 If the provider returns data in any other form, no events are emitted.
 
+:::info Event ID Registration
+Event IDs used by Lua C modules must be registered using [`mapper.register_event()`](/libs/mapper/mapper_register_event) on the Lua side.
+
+How and where this registration occurs is intentionally flexible:
+
+- A Lua C module may be designed to **receive event IDs from Lua scripts**, allowing the script to control event registration explicitly.
+- Alternatively, a Lua C module may **call [`mapper.register_event()`](/libs/mapper/mapper_register_event) internally** (for example, during module initialization) and manage the resulting event IDs on its own.
+
+Both approaches are valid.  
+The choice depends on how much control over event definition and configuration is intended to be exposed to Lua scripts versus encapsulated within the Lua C module.
+:::
+
 
 ## Releasing an Asynchronous Event Source
 
