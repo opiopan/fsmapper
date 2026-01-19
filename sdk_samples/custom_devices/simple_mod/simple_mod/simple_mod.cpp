@@ -1,6 +1,19 @@
 //
-// simple_mod.cpp: sample implementation of fsmapper device plugin
-//   Author: Hiroshi Murayama <opiopan@gmail.com>
+// simple_mod.cpp
+//
+// Copyright 2023 Hiroshi Murayama <opiopan@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 #define NOMINMAX
@@ -239,7 +252,7 @@ static bool dev_send_unit_value(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, si
 extern "C" __declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){
     static MAPPER_PLUGIN_DEVICE_OPS ops = {
         "rotation", // string to specify in the 'type' parameter of mapper.device() in Lua script
-        "SDK sample device that provide rotating coodinates",
+        "SDK sample device that provide rotating coordinates",
         dev_init,
         dev_term,
         dev_open,
