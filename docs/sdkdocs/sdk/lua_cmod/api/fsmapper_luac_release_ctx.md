@@ -27,7 +27,7 @@ This function does not return a value.
 - This function releases the fsmapper-side resources associated with the specified [`FSMAPPER_LUAC_CTX`](../data_types).
 - Each service context must be released exactly once. Releasing the same handle more than once results in undefined behavior.
 - A service context must be released no later than script termination.
-- Lua does not provide an explicit notification when a script terminates. A common pattern is to associate the service context with a userdata object and call this function from the userdata’s [`__gc`]((https://www.lua.org/manual/5.4/manual.html#2.5.3)) metamethod.
+- Lua does not provide an explicit notification when a script terminates. A common pattern is to associate the service context with a userdata object and call this function from the userdata’s [`__gc`](https://www.lua.org/manual/5.4/manual.html#2.5.3) metamethod.
 - After this function is called, the released [`FSMAPPER_LUAC_CTX`](../data_types) handle must not be used with any other service API.
 
 ## See Also

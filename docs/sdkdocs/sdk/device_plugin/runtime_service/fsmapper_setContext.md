@@ -20,7 +20,7 @@ void fsmapper_setContext(FSMAPPER_HANDLE mapper, void *context);
 
 | Parameter | Type | Description |
 |--|--|--|
-| `mapper` | [`FSMAPPER_HANDLE`](../plugin_abi/data_types) | A handle representing the fsmapper runtime environment associated with the current plugin execution. |
+| `mapper` | [`FSMAPPER_HANDLE`](../data_types) | A handle representing the fsmapper runtime environment associated with the current plugin execution. |
 | `context` | `void*` | A plugin-defined pointer to arbitrary module-level context data to be associated with the mapper handle. |
 
 

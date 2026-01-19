@@ -167,4 +167,4 @@ Especially when dealing solely with ***Input*** type [**Device Units**](/guide/d
 This is why in the code samples provided in this documentation, the [`Device`](/libs/mapper/Device) object is bound to a global variable.
 
 ## Supporting Custom Devices
-Creating a plugin driver module enables handling devices other than the built-in [**Device Types**](#device-type). For more details, refer to the [**Plugin SDK**](/sdk).
+Creating a plugin driver module enables handling devices other than the built-in [**Device Types**](#device-type). For more details, refer to the [**Plugin SDK**](/sdk/).

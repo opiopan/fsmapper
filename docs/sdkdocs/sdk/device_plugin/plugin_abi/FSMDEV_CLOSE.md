@@ -35,7 +35,7 @@ The plugin should report the reason for the failure using the fsmapper logging f
 ## Remarks
 
 * This callback represents the end of the lifetime of a specific device instance.
-* After this callback is invoked, the plugin must not raise any further asynchronous events for the device, as the [`FSMDEVICE`](../data_type) handle becomes invalid and must no longer be used.
+* After this callback is invoked, the plugin must not raise any further asynchronous events for the device, as the [`FSMDEVICE`](../data_types) handle becomes invalid and must no longer be used.
 * All device-specific resources associated with the `device` handle should be released in this callback.
 * If a plugin has associated a custom context with the device using [`fsmapper_setContextForDevice`](../runtime_service/fsmapper_setContextForDevice), it should be cleaned up here.
 * This callback may be invoked even if device startup was only partially completed.
