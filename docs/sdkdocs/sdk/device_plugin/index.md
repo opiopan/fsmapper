@@ -84,13 +84,13 @@ This reference is organized to guide plugin developers from required specificati
 
 The recommended reading order is:
 
-1. [**Plugin ABI**](./plugin_abi/)  
+1. [**Plugin ABI**](./plugin_abi)  
    Defines the mandatory entry point, callback functions, and execution flow that determine whether a module is recognized as a Custom Device Plugin.
 
-2. [**fsmapper Runtime Service**](./runtime_service/)  
+2. [**fsmapper Runtime Service**](./runtime_service)  
    Describes the runtime APIs provided by fsmapper for plugin modules, including logging, context management, script control, and device unit state notification.
 
-3. [**Lua Value Access Helper**](./lua_helper/)  
+3. [**Lua Value Access Helper**](./lua_helper)  
    Explains helper functions for interpreting Lua objects passed to plugins—most notably the `identifier` and `options` parameters received by device open callbacks—without directly using the Lua C API.
 
 Together, these sections provide all information required to design, implement, and integrate a Custom Device Plugin module into fsmapper.

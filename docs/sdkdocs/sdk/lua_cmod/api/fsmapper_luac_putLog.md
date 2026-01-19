@@ -19,7 +19,7 @@ void fsmapper_luac_putLog(
 | Parameter | Type | Description |
 | --- | --- | --- |
 | ctx | [`FSMAPPER_LUAC_CTX`](../data_types) | A service context identifying the Lua C module that emits the log message. |
-| type | [`FSMAPPER_LOG_TYPE`](../../device_plugin/runtime_service/FSMAPPER_LOG_TYPE) | The log message category or severity, such as error, warning, or informational messages. |
+| type | [`FSMAPPER_LOG_TYPE`](../../device_plugin/api/FSMAPPER_LOG_TYPE) | The log message category or severity, such as error, warning, or informational messages. |
 | msg | `const char*` | A null-terminated UTF-8 string containing the log message to be output. |
 
 ## Return Values
