@@ -1,6 +1,4 @@
 //
-// mapperplugin.h
-//
 // Copyright 2021 Hiroshi Murayama <opiopan@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,6 +1,4 @@
 //
-// simple_mod.cpp
-//
 // Copyright 2023 Hiroshi Murayama <opiopan@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
