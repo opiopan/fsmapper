@@ -89,6 +89,8 @@ typedef enum{
     MOPT_ASYNC_MESSAGE_PUMPING, // interger (as boolean: 0 is false, other than 0 is true)
     MOPT_RENDERING_METHOD,      // integer
     MOPT_PLUGIN_FOLDER,         // string
+    MOPT_APP_PLUGIN_FOLDER,     // string
+    MOPT_USER_PLUGIN_FOLDER,    // string
     MOPT_STDLIB,                // integer
     MOPT_DCS_EXPORTER,          // integer (as boolean: 0 is false, other than 0 is true)
     MOPT_LOGMODE,              //  integer (as boolean: 0 is false, other than 0 is true)
