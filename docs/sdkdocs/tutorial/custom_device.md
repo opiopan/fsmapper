@@ -3,7 +3,7 @@ id: custom_device
 sidebar_position: 100
 ---
 
-# Tutorial: Custom Device Plugin
+# Custom Device Plugin Tutorial
 
 This tutorial walks through a minimal but practical example of a **Custom Device Plugin** for fsmapper.
 
@@ -545,9 +545,19 @@ local canvas = mapper.view_elements.canvas{
     logical_height = canvas_size,
     value = {0, 0},
     renderer = function (ctx, value)
+        ctx.brush = circle_color;
         ctx:fill_geometry{
             geometry = circle,
             x = value[1], y = value[2],
+        }
+        ctx.font = message_font
+        ctx.brush = message_color
+        ctx:draw_string{
+            string = messages[(is_moving - 1) * direction +2],
+            x = 0, y =0,
+            width = canvas_size, height = canvas_size,
+            horizontal_alignment = 'center',
+            vertical_alignment = 'center',
         }
     end
 }
@@ -608,3 +618,14 @@ From the Lua script’s perspective, the Custom Device Plugin behaves like any o
 - Views and mappings connect events to visualization and user interaction
 
 This separation allows the device logic to remain in the plugin, while Lua focuses on event handling and presentation.
+
+## Next steps
+
+In this tutorial, you saw how a Custom Device Plugin is implemented, exposed to fsmapper through the Plugin ABI, and used from a Lua script in an event-driven way.
+
+From here, you can explore the [Plugin SDK Reference](../sdk/device_plugin/) to learn more about:
+- The complete Plugin ABI and callback semantics
+- Runtime services provided by fsmapper
+- Advanced device unit definitions and event handling patterns
+
+These references provide the detailed specifications needed to build your own custom devices beyond this sample.
