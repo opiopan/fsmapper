@@ -1,12 +1,24 @@
 //
-// simple_mod.cpp: sample implementation of fsmapper device plugin
-//   Author: Hiroshi Murayama <opiopan@gmail.com>
+// Copyright 2023 Hiroshi Murayama <opiopan@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
+#define NOMINMAX
 #include <windows.h>
 #include <mapperplugin.h>
 #include <memory>
-#include <unordered_map>
+#include <list>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -34,7 +46,6 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason_for_call, LPVOID){
 //============================================================================================
 // Device unit definition
 //============================================================================================
-#undef max
 static FSMDEVUNITDEF unit_def[] ={
     {"x", FSMDU_DIR_INPUT, FSMDU_TYPE_ABSOLUTE, std::numeric_limits<int>::max(), 0},
     {"y", FSMDU_DIR_INPUT, FSMDU_TYPE_ABSOLUTE, std::numeric_limits<int>::max(), 0},
@@ -53,7 +64,9 @@ public:
     enum class mode{cw, ccw, stop,};
 
 protected:
-    static std::unordered_map<uint64_t, std::unique_ptr<device>> devices;
+    using list = std::list<device>;
+    static inline list devices;
+    list::iterator self;
     std::mutex mutex;
     std::condition_variable cv;
     bool should_be_stopped{false};
@@ -69,14 +82,14 @@ protected:
 
 public:
     static uint64_t create_device(FSMAPPER_HANDLE mapper, FSMDEVICE device_handle, double rpm, double side_length){
-        auto new_device = std::make_unique<device>(mapper, device_handle, rpm, side_length);
-        auto device_id = reinterpret_cast<uint64_t>(new_device.get());
-        devices[device_id] = std::move(new_device);
-        return device_id;
+        devices.emplace_back(mapper, device_handle, rpm, side_length);
+        auto new_device = std::prev(devices.end());
+        new_device->self = new_device;
+        return reinterpret_cast<uint64_t>(&(*new_device));
     }
 
     static void close_device(uint64_t device_id){
-        devices.erase(device_id);
+        devices.erase(id_to_device(device_id).self);
     }
 
     static void close_all_devices(){
@@ -84,7 +97,7 @@ public:
     }
 
     static device& id_to_device(uint64_t device_id){
-        return *devices[device_id];
+        return *reinterpret_cast<device*>(device_id);
     }
 
     device() = delete;
@@ -136,8 +149,6 @@ public:
         cv.notify_all();
     }
 };
-
-std::unordered_map<uint64_t, std::unique_ptr<device>> device::devices;
 
 //============================================================================================
 // plugin interfaces that expose to fsmapper
@@ -192,19 +203,6 @@ static bool dev_open(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, LUAVALUE iden
     }
 }
 
-static bool dev_start(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
-    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
-    auto& object = device::id_to_device(device_id);
-    object.change_mode(device::mode::cw);
-    return true;
-}
-
-static bool dev_close(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
-    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
-    device::close_device(device_id);
-    return true;
-}
-
 static size_t dev_get_unit_num(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
     return unit_num;
 }
@@ -219,10 +217,23 @@ static bool dev_get_unit_def(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, size_
     }
 }
 
+static bool dev_start(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
+    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
+    auto&& object = device::id_to_device(device_id);
+    object.change_mode(device::mode::cw);
+    return true;
+}
+
+static bool dev_close(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle){
+    auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
+    device::close_device(device_id);
+    return true;
+}
+
 static bool dev_send_unit_value(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, size_t index, int value){
     if (index == unit_mode){
         auto device_id = reinterpret_cast<uint64_t>(fsmapper_getContextForDevice(mapper, dev_handle));
-        auto& object = device::id_to_device(device_id);
+        auto&& object = device::id_to_device(device_id);
         object.change_mode(value == 0 ? device::mode::stop : value > 0 ? device::mode::cw : device::mode::ccw);
         return true;
     }else{
@@ -236,20 +247,18 @@ static bool dev_send_unit_value(FSMAPPER_HANDLE mapper, FSMDEVICE dev_handle, si
 //     fsmapper checks for the existence of this function and inspects the content returned by
 //     this function's MAPPER_PLUGIN_DEVICE_OPS object to determine if it's a valid plugin module.
 //============================================================================================
-static MAPPER_PLUGIN_DEVICE_OPS ops = {
-    "rotation", // string to specify in the 'type' parameter of mapper.device() in Lua script
-    "SDK sample device that provide rotating coodinates",
-    dev_init,
-    dev_term,
-    dev_open,
-    dev_start,
-    dev_close,
-    dev_get_unit_num,
-    dev_get_unit_def,
-    dev_send_unit_value,
-    nullptr  // this module does not provide the send function that accepts floating point numeric
-};
-
-extern "C" DLLEXPORT MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){
+extern "C" __declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS *getMapperPluginDeviceOps(){
+    static MAPPER_PLUGIN_DEVICE_OPS ops = {
+        "rotation", // string to specify in the 'type' parameter of mapper.device() in Lua script
+        "SDK sample device that provide rotating coordinates",
+        dev_init,
+        dev_term,
+        dev_open,
+        dev_start,
+        dev_close,
+        dev_get_unit_num,
+        dev_get_unit_def,
+        dev_send_unit_value,
+    };
     return &ops;
 }

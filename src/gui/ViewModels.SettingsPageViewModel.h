@@ -13,6 +13,7 @@
 #include "version_parser.hpp"
 #include "../.version.h"
 #include <chrono>
+#include <format>
 
 namespace winrt::gui::ViewModels::implementation
 {
@@ -153,21 +154,32 @@ namespace winrt::gui::ViewModels::implementation
             fsmapper::app_config.set_use_separated_ui_thread(value);
             save_config();
         }
-        int32_t PluginFolderType(){
-            return fsmapper::app_config.get_plugin_folder_is_default() ? 0 : 1;
+        hstring PluginSearchPath(){
+            if (fsmapper::app_config.get_plugin_folder_is_default()) {
+                return format(L"{0}\n{1}",
+                    fsmapper::app_config.get_default_plugin_folder2().wstring().c_str(),
+                    fsmapper::app_config.get_default_plugin_folder().wstring().c_str()).c_str();
+            }else{
+                return format(L"{0}\n{1}\n{2}",
+                    fsmapper::app_config.get_custom_plugin_folder().wstring().c_str(),
+                    fsmapper::app_config.get_default_plugin_folder2().wstring().c_str(),
+                    fsmapper::app_config.get_default_plugin_folder().wstring().c_str()).c_str();
+            }
         }
-        void PluginFolderType(int32_t value){
-            if (value == 1 && fsmapper::app_config.get_custom_plugin_folder().string().length() == 0){
+        bool UserPluginPathIsEnable(){
+            return !fsmapper::app_config.get_plugin_folder_is_default();
+        }
+        void UserPluginPathIsEnable(bool value){
+            if (value && fsmapper::app_config.get_custom_plugin_folder().string().length() == 0){
                 ClickChangePluginPathButton(nullptr, nullptr);
-            }else if (value >= 0){
-                fsmapper::app_config.set_plugin_folder_is_default(value == 0);
+            }else{
+                fsmapper::app_config.set_plugin_folder_is_default(!value);
                 save_config();
                 notify_plugin_folder_changed();
             }
         }
-        hstring PluginPath(){
-            return fsmapper::app_config.get_plugin_folder_is_default() ? fsmapper::app_config.get_default_plugin_folder().wstring().c_str() :
-                                                                         fsmapper::app_config.get_custom_plugin_folder().wstring().c_str();
+        hstring UserPluginPath(){
+            return fsmapper::app_config.get_custom_plugin_folder().wstring().c_str();
         }
         hstring DefaultPluginPath(){
             return fsmapper::app_config.get_default_plugin_folder().wstring().c_str();
@@ -344,8 +356,9 @@ namespace winrt::gui::ViewModels::implementation
 
         void notify_plugin_folder_changed(){
             using Args = Microsoft::UI::Xaml::Data::PropertyChangedEventArgs;
-            property_changed(*this, Args{L"PluginFolderType"});
-            property_changed(*this, Args{L"PluginPath"});
+            property_changed(*this, Args{L"PluginSearchPath"});
+            property_changed(*this, Args{L"UserPluginPathIsEnable"});
+            property_changed(*this, Args{L"UserPluginPath"});
             property_changed(*this, Args{L"DefaultPluginPath"});
             property_changed(*this, Args{L"DefaultPluginPathColor"});
             property_changed(*this, Args{L"UserSpecifiedPluginPath"});

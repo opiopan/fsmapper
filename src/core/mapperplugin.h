@@ -1,6 +1,17 @@
 //
-// mapperplugin.h
-//  Author: Hiroshi Murayama <opiopan@gmail.com>
+// Copyright 2021 Hiroshi Murayama <opiopan@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 #pragma once
@@ -11,30 +22,23 @@
 
 #include <mapperplugin_types.h>
 
-#if defined(_WIN64) || defined(_WIN32)
-#   define DLLEXPORT __declspec(dllexport)
-#else
-#   define DLLEXPORT
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 //============================================================================================
-// Funcitons to interuct with fsmapper
+// Funcitons to interact with fsmapper
 //============================================================================================
 typedef struct FSMAPPERCTX* FSMAPPER_HANDLE;
-DLLEXPORT void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
-DLLEXPORT void fsmapper_abort(FSMAPPER_HANDLE mapper);
-DLLEXPORT void fsmapper_setContext(FSMAPPER_HANDLE mapper, void *context);
-DLLEXPORT void *fsmapper_getContext(FSMAPPER_HANDLE mapper);
+__declspec(dllexport) void fsmapper_putLog(FSMAPPER_HANDLE mapper, FSMAPPER_LOG_TYPE type, const char* msg);
+__declspec(dllexport) void fsmapper_abort(FSMAPPER_HANDLE mapper);
+__declspec(dllexport) void fsmapper_setContext(FSMAPPER_HANDLE mapper, void *context);
+__declspec(dllexport) void *fsmapper_getContext(FSMAPPER_HANDLE mapper);
 
 typedef struct FSMDEVICECTX* FSMDEVICE;
-DLLEXPORT void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
-DLLEXPORT void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-DLLEXPORT void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
-DLLEXPORT void fsmapper_raiseEventF(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, double value);
+__declspec(dllexport) void fsmapper_setContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device, void* context);
+__declspec(dllexport) void* fsmapper_getContextForDevice(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+__declspec(dllexport) void fsmapper_raiseEvent(FSMAPPER_HANDLE mapper, FSMDEVICE device, int index, int value);
 
 //============================================================================================
 // LUA value accessor
@@ -50,14 +54,14 @@ typedef enum {
     LV_OTHERS,
 }LVTYPE;
 
-DLLEXPORT LVTYPE luav_getType(LUAVALUE lv);
-DLLEXPORT bool luav_isNull(LUAVALUE lv);
-DLLEXPORT bool luav_asBool(LUAVALUE lv);
-DLLEXPORT int64_t luav_asInt(LUAVALUE lv);
-DLLEXPORT double luav_asDouble(LUAVALUE lv);
-DLLEXPORT const char* luav_asString(LUAVALUE lv);
-DLLEXPORT LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
-DLLEXPORT LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
+__declspec(dllexport) LVTYPE luav_getType(LUAVALUE lv);
+__declspec(dllexport) bool luav_isNull(LUAVALUE lv);
+__declspec(dllexport) bool luav_asBool(LUAVALUE lv);
+__declspec(dllexport) int64_t luav_asInt(LUAVALUE lv);
+__declspec(dllexport) double luav_asDouble(LUAVALUE lv);
+__declspec(dllexport) const char* luav_asString(LUAVALUE lv);
+__declspec(dllexport) LUAVALUE luav_getItemWithKey(LUAVALUE lv, const char* key);
+__declspec(dllexport) LUAVALUE luav_getItemWithIndex(LUAVALUE lv, size_t index);
 
 //============================================================================================
 // Device plugin functions to export
@@ -82,25 +86,31 @@ typedef struct {
     int minValue;
 }FSMDEVUNITDEF;
 
+typedef bool (*FSMDEV_INIT)(FSMAPPER_HANDLE mapper);
+typedef bool (*FSMDEV_TERM)(FSMAPPER_HANDLE mapper);
+typedef bool (*FSMDEV_OPEN)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
+typedef bool (*FSMDEV_START)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef bool (*FSMDEV_CLOSE)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef size_t (*FSMDEV_GET_UNIT_NUM)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
+typedef bool (*FSMDEV_GET_UNIT_DEF)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF *def);
+typedef bool (*FSMDEV_SEND_UNIT_VALUE)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
+
 typedef struct {
     const char* name;
     const char* description;
-    bool (*init)(FSMAPPER_HANDLE mapper);
-    bool (*term)(FSMAPPER_HANDLE mapper);
-    bool (*open)(FSMAPPER_HANDLE mapper, FSMDEVICE device, LUAVALUE identifier, LUAVALUE options);
-    bool (*start)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    bool (*close)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    size_t (*getUnitNum)(FSMAPPER_HANDLE mapper, FSMDEVICE device);
-    bool (*getUnitDef)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, FSMDEVUNITDEF* def);
-    bool (*sendUnitValue)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, int value);
-    bool (*sendUnitValueF)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, double value);
-    // NOTE: Current fspammer does not yet support the following send funciton that accepts general Lua object 
-    bool (*sendUnitValueL)(FSMAPPER_HANDLE mapper, FSMDEVICE device, size_t index, LUAVALUE value);
+    FSMDEV_INIT init;
+    FSMDEV_TERM term;
+    FSMDEV_OPEN open;
+    FSMDEV_START start;
+    FSMDEV_CLOSE close;
+    FSMDEV_GET_UNIT_NUM getUnitNum;
+    FSMDEV_GET_UNIT_DEF getUnitDef;
+    FSMDEV_SEND_UNIT_VALUE sendUnitValue;
 } MAPPER_PLUGIN_DEVICE_OPS;
 
 // fsmapper will determine that plugin module has a device plugin capability
 // if a module exports this function.
-DLLEXPORT MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
+__declspec(dllexport) const MAPPER_PLUGIN_DEVICE_OPS* getMapperPluginDeviceOps();
 
 #ifdef __cplusplus
 }

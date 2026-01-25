@@ -1003,7 +1003,6 @@ static MAPPER_PLUGIN_DEVICE_OPS dinputdev_ops = {
     dinputdev_getUnitNum,
     dinputdev_getUnitDef,
     dinputdev_sendUnitValue,
-    nullptr
 };
 
 MAPPER_PLUGIN_DEVICE_OPS* dinput_PluginDeviceOps = &dinputdev_ops;

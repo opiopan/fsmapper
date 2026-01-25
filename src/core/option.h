@@ -13,6 +13,8 @@ struct MapperOption{
     bool async_message_pumping {false};
     int64_t rendering_method {MOPT_RENDERING_METHOD_CPU};
     std::string plugin_folder;
+    std::string app_plugin_folder;
+    std::string user_plugin_folder;
     int64_t stdlib{0};
     bool is_dcs_exporter_enabled{false};
     bool log_mode{false};

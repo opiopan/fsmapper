@@ -88,9 +88,9 @@ namespace gui.ViewModels{
         Boolean PreRunScriptIsValid;
         Int32 RenderingMethod;
         Boolean UseSeparatedUIThread;
-        Int32 PluginFolderType;
-        String PluginPath{get;};
-        String DefaultPluginPath{get;};
+        String PluginSearchPath{get;};
+        Boolean UserPluginPathIsEnable;
+        String UserPluginPath{get;};
         Microsoft.UI.Xaml.Media.SolidColorBrush DefaultPluginPathColor{get;};
         String UserSpecifiedPluginPath{get;};
         Microsoft.UI.Xaml.Media.SolidColorBrush UserSpecifiedPluginPathColor{get;};

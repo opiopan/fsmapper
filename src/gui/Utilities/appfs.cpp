@@ -34,4 +34,6 @@ appfs::appfs(const wchar_t* appname){
     default_plugin = module_dir;
     default_plugin.remove_filename();
     default_plugin = default_plugin / "plugins";
+    default_plugin2 = appdata / "plugins";
+    std::filesystem::create_directories(default_plugin2);
 }

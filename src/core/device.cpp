@@ -93,25 +93,13 @@ void Device::sendUnitValue(size_t unitIndex, sol::object value){
             EventValue rval{value};
             if (rval.getType() == EventValue::Type::int_value){
                 auto value = rval.getAs<int64_t>();
-                if (deviceClass.plugin().sendUnitValue){
-                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
-                }else if (deviceClass.plugin().sendUnitValueF){
-                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
-                }
+                deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
             }else if (rval.getType() == EventValue::Type::double_value){
                 auto value = rval.getAs<double>();
-                if (deviceClass.plugin().sendUnitValueF){
-                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
-                }else if (deviceClass.plugin().sendUnitValue){
-                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, std::round(value));
-                }
+                deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, std::round(value));
             }else if (rval.getType() == EventValue::Type::bool_value){
                 auto value = rval.getAs<bool>() ? 1 : 0;
-                if (deviceClass.plugin().sendUnitValue){
-                    deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
-                }else if (deviceClass.plugin().sendUnitValueF){
-                    deviceClass.plugin().sendUnitValueF(deviceClass, *this, unitIndex, value);
-                }
+                deviceClass.plugin().sendUnitValue(deviceClass, *this, unitIndex, value);
             }
         });
     }
@@ -183,7 +171,7 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
         }else{
             std::ostringstream os;
             os << "device name of the plugin module \"" << pluginManager.get_file_name_at(i)
-               << "\" is confict with other device, this module is ignored";
+               << "\" is conflict with other device, this module is ignored";
             engine.putLog(MCONSOLE_WARNING, os.str().c_str());
         }
     }
