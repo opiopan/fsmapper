@@ -171,7 +171,7 @@ DeviceManager::DeviceManager(MapperEngine& engine): engine(engine), modifierMana
         }else{
             std::ostringstream os;
             os << "device name of the plugin module \"" << pluginManager.get_file_name_at(i)
-               << "\" is confict with other device, this module is ignored";
+               << "\" is conflict with other device, this module is ignored";
             engine.putLog(MCONSOLE_WARNING, os.str().c_str());
         }
     }

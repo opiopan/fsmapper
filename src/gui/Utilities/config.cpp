@@ -324,6 +324,9 @@ public:
     const std::filesystem::path &get_default_plugin_folder() override{
         return fs.get_default_plugin_path();
     }
+    const std::filesystem::path &get_default_plugin_folder2() override{
+        return fs.get_default_plugin_path2();
+    }
     const std::filesystem::path &get_custom_plugin_folder() override{
         return custom_plugin_folder;
     }

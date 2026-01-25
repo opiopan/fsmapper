@@ -57,17 +57,17 @@ PluginManager::PluginManager(){
         }
     };
 
-    list_modules(engine->getOptions().app_plugin_folder);
-    list_modules(engine->getOptions().user_plugin_folder);
     list_modules(engine->getOptions().plugin_folder);
+    list_modules(engine->getOptions().user_plugin_folder);
+    list_modules(engine->getOptions().app_plugin_folder);
 
     if (modules.size() == 0){
         engine->putLog(MCONSOLE_DEBUG, "plugin: no plugin modules are found");
     }else{
         std::ostringstream os;
-        os << "plugin: " << modules.size() << (modules.size() == 1 ? " plugin module is " : " plugin modules are ") << "found:\n";
+        os << "plugin: " << modules.size() << (modules.size() == 1 ? " plugin module is " : " plugin modules are ") << "found:";
         for (auto& module : modules){
-            os << "    " << module.ops->name << " : " << module.ops->description;
+            os << std::endl << "    " << module.ops->name << " : " << module.ops->description;
         }
         engine->putLog(MCONSOLE_DEBUG, os.str().c_str());
     }

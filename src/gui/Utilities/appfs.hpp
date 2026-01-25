@@ -13,6 +13,7 @@ namespace utils{
         std::filesystem::path appdata;
         std::filesystem::path localdata;
         std::filesystem::path default_plugin;
+        std::filesystem::path default_plugin2;
         std::filesystem::path module_dir;
 
     public:
@@ -24,6 +25,7 @@ namespace utils{
         const std::filesystem::path& get_appdata_path(){return appdata;}
         const std::filesystem::path& get_localdata_path(){return localdata;}
         const std::filesystem::path& get_default_plugin_path(){return default_plugin;}
+        const std::filesystem::path& get_default_plugin_path2(){return default_plugin2;}
         const std::filesystem::path& get_module_dir(){return module_dir;}
     };
 }
