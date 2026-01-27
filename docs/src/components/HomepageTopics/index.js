@@ -9,7 +9,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 const TopicList = [
     {
-        title: 'Get Started with Smaple scripts',
+        title: 'Get Started with Sample scripts',
         imagesrc: 'img/sample-execution.webp',
         imagewidth:1400,
         imageheight:768,
