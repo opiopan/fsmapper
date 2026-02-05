@@ -218,13 +218,13 @@ static int emitter::create_emitter(lua_State* L){
     // Create emitter object
     auto fsmapper = fsmapper_luac_open_ctx(L, userdata_name);
     emitters.emplace_back(fsmapper, event_id, rpm, side_length);
-    auto object = std::prev(emitters.end());
-    object->self = object;
+    auto object_ref = std::prev(emitters.end());
+    object_ref->self = object_ref;
 
     // Create Lua user data that holds a reference to the emitter object
-    auto udata_ptr = lua_newuserdatauv(L, sizeof(object), 1);
+    auto udata_ptr = lua_newuserdatauv(L, sizeof(emitter_ref), 1);
     auto udata = lua_gettop(L);
-    new(udata_ptr) emitter_ref(object);
+    new(udata_ptr) emitter_ref(object_ref);
 
     // Register the metatable for Lua user data (only on the first call)
     if (luaL_newmetatable(L, userdata_name)){
@@ -249,7 +249,7 @@ static int emitter::create_emitter(lua_State* L){
 
     // Create asynchronous event source and register event provider function
     // that will be called in the Lua scripting thread
-    object->async_source = fsmapper_luac_create_async_source(
+    object_ref->async_source = fsmapper_luac_create_async_source(
         fsmapper, L, event_provider, udata
     );
 
