@@ -6,6 +6,7 @@
 #include <sstream>
 #include <optional>
 #include <vector>
+#include <cmath>
 #include "engine.h"
 #include "tools.h"
 #include "devicemodifier.h"
@@ -15,9 +16,33 @@
 //============================================================================================
 class RawModifier : public DeviceModifier{
     uint64_t evid = 0;
+
+    int unit_max = 0;
+    int unit_min = 0;
+    int lastvalue = std::numeric_limits<int>::max();
+    int epsilon = 0;
+
+    double unit_maxf = 0.;
+    double unit_minf = 0.;
+    double lastvaluef = std::numeric_limits<double>::infinity();
+    double epsilonf = 0.;
+
 public:
     RawModifier(const RawModifier&) = default;
-    RawModifier(DeviceModifierManager& manager) : DeviceModifier(manager){};
+    RawModifier(DeviceModifierManager &manager) : DeviceModifier(manager){};
+    RawModifier(DeviceModifierManager &manager, sol::object &param) : DeviceModifier(manager) {
+        if (param.get_type() == sol::type::table){
+            auto table = param.as<sol::table>();
+            sol::object epsilon_obj = table["epsilon"];
+            if (epsilon_obj.get_type() != sol::type::lua_nil){
+                if (epsilon_obj.get_type() != sol::type::number){
+                    throw MapperException("Value of \"epsilon\" parameter for raw modifier must be number.");
+                }
+                epsilon = epsilon_obj.as<int>();
+                epsilonf = epsilon_obj.as<double>();
+            }
+        }
+    };
     ~RawModifier(){
         if (evid != 0){
             manager.getEngine().unregisterEvent(evid);
@@ -36,17 +61,41 @@ public:
         std::ostringstream os;
         os << devname << ":" << unit.name << ":change";
         instanse->evid = manager.getEngine().registerEvent(os.str());
+        instanse->unit_max = unit.maxValue;
+        instanse->unit_min = unit.minValue;
+        instanse->unit_maxf = unit.maxValue;
+        instanse->unit_minf = unit.minValue;
         return instanse;
     }
 
     virtual void processUnitValueChangeEvent(int value){
-        ::Event event(evid, static_cast<int64_t>(value));
-        manager.getEngine().sendEvent(std::move(event));
+        if (value > unit_max - epsilon){
+            value = unit_max;
+        }else if (value < unit_min + epsilon){
+            value = unit_min;
+        }else if (std::abs(value - lastvalue) <= epsilon){
+            return;
+        }
+        if (value != lastvalue){
+            lastvalue = value;
+            ::Event event(evid, static_cast<int64_t>(lastvalue));
+            manager.getEngine().sendEvent(std::move(event));
+        }
     }
 
     virtual void processUnitValueChangeEvent(double value){
-        ::Event event(evid, value);
-        manager.getEngine().sendEvent(std::move(event));
+        if (value > unit_maxf - epsilonf){
+            value = unit_maxf;
+        }else if (value < unit_minf + epsilonf){
+            value = unit_minf;
+        }else if (std::abs(value - lastvaluef) <= epsilonf){    
+            return;
+        }
+        if (value != lastvaluef){
+            lastvaluef = value;
+            ::Event event(evid, value);
+            manager.getEngine().sendEvent(std::move(event));
+        }
     }
 };
 
@@ -743,7 +792,7 @@ void DeviceModifierManager::makeRule(sol::object &def, DeviceModifierRule& rule)
                 sol::object modparam = itemdef["modparam"];
                 std::shared_ptr<DeviceModifier> modifier;
                 if (modtype == "raw"){
-                    modifier = std::make_shared<RawModifier>(*this);
+                    modifier = std::make_shared<RawModifier>(*this, modparam);
                 }else if (modtype == "button"){
                     modifier = std::make_shared<ButtonModifier>(*this, modparam);
                 }else if (modtype == "incdec"){

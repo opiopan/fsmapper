@@ -13,6 +13,7 @@
 #include <map>
 #include <unordered_map>
 #include <chrono>
+#define NOMINMAX
 #include <windows.h>
 #include <SimConnect.h>
 #include "simhost.h"

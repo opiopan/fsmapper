@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <sol/sol.hpp>
+#define NOMINMAX
 #include <windows.h>
 #include <dcomp.h>
 

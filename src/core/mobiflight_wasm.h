@@ -5,6 +5,7 @@
 
 #pragma once
 
+#define NOMINMAX
 #include <windows.h>
 #include <SimConnect.h>
 #include <sol/sol.hpp>

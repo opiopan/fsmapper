@@ -10,7 +10,8 @@
 #include <stddef.h>
 
 #if defined(_WIN64) || defined(_WIN32)
-#   include <windows.h>
+#   define NOMINMAX
+#   include<windows.h>
 #   define DLLEXPORT __declspec(dllexport)
 #else
 #   define HWND int
