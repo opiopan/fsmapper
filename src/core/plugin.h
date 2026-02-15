@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#define NOMINMAX
 #include <windows.h>
 #include "mapperplugin.h"
 

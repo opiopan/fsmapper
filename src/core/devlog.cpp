@@ -13,7 +13,6 @@
 #include <format>
 #include <exception>
 
-#define NOMINMAX
 #include <windows.h>
 #include <Shlobj.h>
 

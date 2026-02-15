@@ -15,7 +15,6 @@
 #include <cmath>
 #include <format>
 #include <sol/sol.hpp>
-#define NOMINMAX
 #include <windows.h>
 #include <public.h>
 #include <vjoyinterface.h>

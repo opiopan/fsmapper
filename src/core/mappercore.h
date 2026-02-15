@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 #if defined(_WIN64) || defined(_WIN32)
-#   define NOMINMAX
 #   include<windows.h>
 #   define DLLEXPORT __declspec(dllexport)
 #else
