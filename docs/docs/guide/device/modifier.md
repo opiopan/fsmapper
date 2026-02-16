@@ -23,7 +23,9 @@ This is the default modifier that doesn't make any changes to the event.
 |`change`|This event is triggered every time the value of the [**Device Unit**](/guide/device/#device-unit) changes.The [**Event Value**](/guide/event-action-mapping#event) is directly set as the value of the Device Unit.
 
 ### Options (modparam)
-There are currently no `modparam` available for the `raw` modifiers.
+|Key|Type|Default|Description|
+|---|----|-------|-----------|
+|`epsilon`|number|0|Specifies the minimum change required to generate a change event. If the absolute difference between the current Device Unit value and the value of the last emitted event is less than or equal to `epsilon`, the event is suppressed. This helps reduce excessive event generation caused by small fluctuations (noise) in analog input devices. When the value is within `epsilon` of the device’s minimum or maximum representable value, it may be clamped to the endpoint to ensure the full range remains reachable.
 
 ------
 ## button Modifier
