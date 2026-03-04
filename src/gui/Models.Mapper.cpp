@@ -270,6 +270,9 @@ namespace winrt::gui::Models::implementation{
                 } ctx;
                 ctx.self = this;
                 ::EnumWindows([](HWND hwnd, LPARAM lParam)->BOOL{
+                    if (!::IsWindowVisible(hwnd)){
+                        return true;
+                    }
                     auto ctx = reinterpret_cast<CONTEXT*>(lParam);
                     auto title = ctx->self->get_text<::GetWindowTextW>(hwnd);
                     auto range = ctx->self->cw_attrs.equal_range(title);
