@@ -23,6 +23,14 @@ This function creates a [`CapturedWindow`](/libs/mapper/CapturedWindow) view ele
 |omit_system_region|boolean|If this parameter is set to `true`, the title bar and window frame of the captured window will be hidden.<br/>The default is `true`.
 |avoid_touch_problems|boolean|If this parameter is set to `true`, it resolves the issue of touch operations not working in MSFS's pop-out instrument windows.<br/>The default is `true`.
 
+## Parameters Table
+|Key|Type|Description|
+|-|-|-|
+|name|string|The name given by the user to the [`CapturedWindow`](/libs/mapper/CapturedWindow) object.<br/>The name specified in this parameter will be displayed on the dashboard.<br/>This parameter is required.|
+|window_title|string|Title text of the window to be captured.<br/>This parameter is ignored if `window_titles` is specified.<br/>If neither `window_title` nor `window_titles` is specified, the automatic window capture feature will not operate.|
+|window_titles|table|An array of window title texts to be captured.<br/>If any of the specified strings matches the window title, the window will be selected as a capture target.<br/>This parameter allows specifying multiple candidates for window matching.<br/>If this parameter is provided, it takes precedence over `window_title`.<br/>If neither `window_title` nor `window_titles` is specified, the automatic window capture feature will not operate.|
+|omit_system_region|boolean|If this parameter is set to `true`, the title bar and window frame of the captured window will be hidden.<br/>The default is `true`.|
+|avoid_touch_problems|boolean|If this parameter is set to `true`, it resolves the issue of touch operations not working in MSFS's pop-out instrument windows.<br/>The default is `true`.|
 
 ## Return Values
 This function returens a [`CapturedWindow`](/libs/mapper/CapturedWindow) object.
