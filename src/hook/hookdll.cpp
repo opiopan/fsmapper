@@ -556,7 +556,7 @@ public:
     LRESULT callOriginalWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
         if (captured_windows.count(hwnd)){
             auto& ctx = captured_windows.at(hwnd);
-            return ctx.original_proc(hwnd, msg, wparam, lparam);
+            return ::CallWindowProcW(ctx.original_proc, hwnd, msg, wparam, lparam);
         }else{
             return 0;
         }
