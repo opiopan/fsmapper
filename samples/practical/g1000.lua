@@ -184,16 +184,26 @@ local viewport = mapper.viewport({
     x = 0, y =0, width = config.scale_horizontal, height = config.scale_vertical,
     aspect_ratio = 4.0 / 3.0,
 })
-local pfd = viewport:register_view({
+local pfd = viewport:register_view{
     name = "PFD",
-    elements = {{object = mapper.captured_window({name = "G1000 PFD", window_title="AS1000_PFD"})}},
+    elements = {{
+        object = mapper.captured_window{
+            name = "G1000 PFD", 
+            window_titles={"AS1000_PFD", "AS1000_PFD_1"},
+        }
+    }},
     mappings = pfd_maps,
-})
-local mfd = viewport:register_view({
+}
+local mfd = viewport:register_view{
     name = "MFD",
-    elements = {{object = mapper.captured_window({name = "G1000 MFD", window_title="AS1000_MFD"})}},
+    elements = {{
+        object = mapper.captured_window{
+            name = "G1000 MFD", 
+            window_titles={"AS1000_MFD", "AS1000_MFD_3"},
+        },
+    }},
     mappings = mfd_maps,
-})
+}
 
 local function toggle_view()
     if viewport.current_view == pfd then
