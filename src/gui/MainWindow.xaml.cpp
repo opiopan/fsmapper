@@ -11,6 +11,9 @@
 #include <winrt/Microsoft.UI.Input.h>
 #include <winrt/Microsoft.Windows.AppLifecycle.h>
 
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+
 #include <cmath>
 #include <chrono>
 
@@ -93,6 +96,13 @@ namespace winrt::gui::implementation
         auto this_instance = AppInstance::GetCurrent();
         activate_event_token = this_instance.Activated([this](const auto&, const AppActivationArguments&){
             activate_window();
+        });
+
+        ui_settings = winrt::Windows::UI::ViewManagement::UISettings();
+        color_changed_token = ui_settings.ColorValuesChanged([this](auto&&, auto&&){
+            this->DispatcherQueue().TryEnqueue([this]() {
+                update_title_bar_theme();
+            });
         });
 
         CheckAndInstallDCSExporter();
@@ -217,6 +227,31 @@ namespace winrt::gui::implementation
         SetForegroundWindow(hwnd);
         if (this_tid != current_tid){
             AttachThreadInput(this_tid, current_tid, false);
+        }
+    }
+
+    void MainWindow::update_title_bar_theme(){
+        auto hwnd = get_hwnd();
+        auto foreground = ui_settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Foreground);
+        bool is_dark = foreground.R > 128 && foreground.G > 128 && foreground.B > 128;
+        auto value = is_dark ? TRUE : FALSE;
+        ::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+        auto window_id = winrt::GetWindowIdFromWindow(hwnd);
+        auto app_window = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(window_id);
+        auto title_bar = app_window.TitleBar();
+        auto res = winrt::Microsoft::UI::Xaml::Application::Current().Resources();
+        auto get_color_from_res = [&](winrt::Windows::Foundation::IInspectable key){
+            auto color = res.Lookup(key);
+            return winrt::unbox_value<winrt::Windows::UI::Color>(color);
+        };
+        if (is_dark){
+            title_bar.ButtonForegroundColor(Windows::UI::Colors::White());
+            title_bar.ButtonBackgroundColor(Windows::UI::Colors::Transparent());
+            title_bar.ButtonHoverBackgroundColor(Windows::UI::ColorHelper::FromArgb(50, 255, 255, 255));
+        }else{
+            title_bar.ButtonForegroundColor(Windows::UI::Colors::Black());
+            title_bar.ButtonBackgroundColor(Windows::UI::Colors::Transparent());
+            title_bar.ButtonHoverBackgroundColor(Windows::UI::ColorHelper::FromArgb(50, 0, 0, 0));
         }
     }
 

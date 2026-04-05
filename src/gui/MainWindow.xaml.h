@@ -3,6 +3,7 @@
 #include "MainWindow.g.h"
 #include "ViewModels.MainWindowViewModel.h"
 #include <winrt/Microsoft.UI.Windowing.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 
@@ -42,6 +43,8 @@ namespace winrt::gui::implementation
         std::vector<page_data> pages;
         winrt::event_token closing_event_token;
         winrt::event_token activate_event_token;
+        winrt::Windows::UI::ViewManagement::UISettings ui_settings;
+        winrt::event_token color_changed_token;
 
         void set_region_for_title_bar();
 
@@ -57,6 +60,8 @@ namespace winrt::gui::implementation
         void restore_window_position();
 
         void activate_window();
+
+        void update_title_bar_theme();
     };
 }
 
