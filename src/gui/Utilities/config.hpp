@@ -31,6 +31,12 @@ namespace fsmapper{
         }
     };
 
+    enum class app_theme : int{
+        light = 1,
+        dark = 2,
+        system = 0
+    };
+
     class config{
     public:
         virtual void save() = 0;
@@ -41,6 +47,8 @@ namespace fsmapper{
         virtual void set_window_rect(const rect& rect) = 0;
         virtual const std::filesystem::path& get_script_path() = 0;
         virtual void set_script_path(std::filesystem::path&& path) = 0;
+        virtual app_theme get_app_theme() = 0;
+        virtual void set_app_theme(app_theme theme) = 0;
         virtual bool get_is_starting_script_at_start_up() = 0;
         virtual void set_is_starting_script_at_start_up(bool value) = 0;
         virtual uint32_t get_message_buffer_size() = 0;

@@ -71,6 +71,7 @@ namespace gui.ViewModels{
     runtimeclass SettingsPageViewModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged {
         SettingsPageViewModel();
 
+        Int32 AppTheme;
         Boolean RunScriptOnStartup;
         Int32 MessageLogSize;
         Boolean DeveloperLog;

@@ -17,6 +17,7 @@ static const auto* CONFIG_WINDOW_LEFT = "window_left";
 static const auto* CONFIG_WINDOW_WIDTH = "window_width";
 static const auto* CONFIG_WINDOW_HEIGHT = "window_height";
 static const auto* CONFIG_SCRIPT_PATH = "script_path";
+static const auto* CONFIG_APP_THEME = "app_theme";
 static const auto* CONFIG_STARTING_SCRIPT_AT_START = "starting_script_at_start";
 static const auto* CONFIG_MESSAGE_BUFFER_SIZE = "message_buffer_size";
 static const auto* CONFIG_DEVELOPER_LOG = "developer_log";
@@ -78,6 +79,7 @@ class config_imp : public config{
 
     rect window_rect = {0, 0, -1, -1};
     std::filesystem::path script_path;
+    app_theme app_theme_data{app_theme::system};
     bool is_starting_script_at_start_up{true};
     uint32_t message_buffer_size{300};
     bool developer_log{false};
@@ -181,6 +183,9 @@ public:
         std::string path;
         reflect_string(data, CONFIG_SCRIPT_PATH, path);
         script_path = path;
+        auto app_theme_num = static_cast<int>(app_theme::system);
+        reflect_number(data, CONFIG_APP_THEME, app_theme_num);
+        app_theme_data = static_cast<app_theme>(app_theme_num);
         reflect_bool(data, CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up);
         reflect_number(data, CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size);
         reflect_bool(data, CONFIG_DEVELOPER_LOG, developer_log);
@@ -220,6 +225,7 @@ public:
                 {CONFIG_WINDOW_HEIGHT, window_rect.height},
                 {CONFIG_SCRIPT_PATH, script_path.string()},
                 {CONFIG_STARTING_SCRIPT_AT_START, is_starting_script_at_start_up},
+                {CONFIG_APP_THEME, static_cast<int>(app_theme_data)},
                 {CONFIG_MESSAGE_BUFFER_SIZE, message_buffer_size},
                 {CONFIG_DEVELOPER_LOG, developer_log},
                 {CONFIG_PRE_RUN_SCRIPT, pre_run_script},
@@ -272,6 +278,12 @@ public:
     }
     void set_script_path(std::filesystem::path&& path) override{
         update_value(script_path, std::move(path));
+    }
+    app_theme get_app_theme() override{
+        return app_theme_data;
+    }
+    void set_app_theme(app_theme theme) override{
+        update_value(app_theme_data, theme);
     }
     bool get_is_starting_script_at_start_up() override{
         return is_starting_script_at_start_up;

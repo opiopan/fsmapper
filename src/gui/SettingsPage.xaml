@@ -55,6 +55,21 @@
         </StackPanel>
         <ScrollViewer Grid.Row="1">
             <StackPanel Style="{StaticResource SettingsStackStyle}" Margin="16, 0, 16, 24">
+                <!-- Appearance -->
+                <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
+                    <TextBlock Text="Appearance" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
+                    <angel:SettingsCard Header="App theme" Description="Select which app theme to display">
+                        <angel:SettingsCard.HeaderIcon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe790;"/>
+                        </angel:SettingsCard.HeaderIcon>
+                        <ComboBox MinWidth="{StaticResource SettingsCardContentMinWidth}" SelectedIndex="{x:Bind ViewModel.AppTheme, Mode=TwoWay}">
+                            <ComboBoxItem Content="Light"/>
+                            <ComboBoxItem Content="Dark"/>
+                            <ComboBoxItem Content="Use system setting"/>
+                        </ComboBox>
+                    </angel:SettingsCard>
+                </StackPanel>
+
                 <!-- Behavior -->
                 <StackPanel Style="{StaticResource SettingsGroupStackStyle}">
                     <TextBlock Text="Behavior" Style="{StaticResource SettingsSubHeaderBlockStyle}"/>
