@@ -547,7 +547,7 @@
                                     <HyperlinkButton Margin="-13, 0, 0, 0"
                                                      NavigateUri="https://opiopan.github.io/fsmapper/intro"
                                                      ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/intro"
-                                                     Content="User's Guide"/>
+                                                     Content="User Guide"/>
                                     <HyperlinkButton Margin="-13, 0, 0, 0"
                                                      NavigateUri="https://opiopan.github.io/fsmapper/"
                                                      ToolTipService.ToolTip="https://opiopan.github.io/fsmapper/"

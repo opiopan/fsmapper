@@ -57,15 +57,8 @@ namespace winrt::gui::implementation
             AppTitleBar().Loaded([this](auto, auto){set_region_for_title_bar();});
             AppTitleBar().SizeChanged([this](auto, auto){set_region_for_title_bar();});
             Activated([this](auto, WindowActivatedEventArgs args){
-                if (args.WindowActivationState() == WindowActivationState::Deactivated) {
-                    auto brush = unbox_value<Media::SolidColorBrush>(tools::AppResource(L"WindowCaptionForegroundDisabled"));
-                    AppTitle().Foreground(brush);
-                    AppVersion().Foreground(brush);
-                }else{
-                    auto brush = unbox_value<Media::SolidColorBrush>(tools::AppResource(L"WindowCaptionForeground"));
-                    AppTitle().Foreground(brush);
-                    AppVersion().Foreground(brush);
-                }
+                is_active = args.WindowActivationState() != WindowActivationState::Deactivated;
+                update_title_theme();
             });
         }
 
@@ -101,9 +94,12 @@ namespace winrt::gui::implementation
         ui_settings = winrt::Windows::UI::ViewManagement::UISettings();
         color_changed_token = ui_settings.ColorValuesChanged([this](auto&&, auto&&){
             this->DispatcherQueue().TryEnqueue([this]() {
-                update_title_bar_theme();
+                if (fsmapper::app_config.get_app_theme() == fsmapper::app_theme::system) {
+                    update_title_bar_theme();
+                }
             });
         });
+        ApplyTheme();
 
         CheckAndInstallDCSExporter();
     }
@@ -233,8 +229,18 @@ namespace winrt::gui::implementation
     void MainWindow::update_title_bar_theme(){
         auto hwnd = get_hwnd();
         auto foreground = ui_settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Foreground);
-        bool is_dark = foreground.R > 128 && foreground.G > 128 && foreground.B > 128;
-        auto value = is_dark ? TRUE : FALSE;
+        is_dark_mode = foreground.R > 128 && foreground.G > 128 && foreground.B > 128;
+        switch (fsmapper::app_config.get_app_theme()) {
+            case fsmapper::app_theme::light:
+                is_dark_mode = false;
+                break;
+                case fsmapper::app_theme::dark:
+                is_dark_mode = true;
+                break;
+            default:
+                break;
+        }
+        auto value = is_dark_mode ? TRUE : FALSE;
         ::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
         auto window_id = winrt::GetWindowIdFromWindow(hwnd);
         auto app_window = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(window_id);
@@ -244,7 +250,7 @@ namespace winrt::gui::implementation
             auto color = res.Lookup(key);
             return winrt::unbox_value<winrt::Windows::UI::Color>(color);
         };
-        if (is_dark){
+        if (is_dark_mode){
             title_bar.ButtonForegroundColor(Windows::UI::Colors::White());
             title_bar.ButtonBackgroundColor(Windows::UI::Colors::Transparent());
             title_bar.ButtonHoverBackgroundColor(Windows::UI::ColorHelper::FromArgb(50, 255, 255, 255));
@@ -253,6 +259,37 @@ namespace winrt::gui::implementation
             title_bar.ButtonBackgroundColor(Windows::UI::Colors::Transparent());
             title_bar.ButtonHoverBackgroundColor(Windows::UI::ColorHelper::FromArgb(50, 0, 0, 0));
         }
+        update_title_theme();
+    }
+
+    void MainWindow::update_title_theme(){
+        Windows::UI::Color color;
+        if (is_dark_mode){
+            if (is_active){
+                color = Windows::UI::Colors::White();
+            }else{
+                color = Windows::UI::ColorHelper::FromArgb(100, 255, 255, 255);
+            }
+        }else{
+            if (is_active){
+                color = Windows::UI::Colors::Black();
+            }else{
+                color = Windows::UI::ColorHelper::FromArgb(90, 0, 0, 0);
+            }
+        }
+        auto brush = Microsoft::UI::Xaml::Media::SolidColorBrush(color);
+        AppTitle().Foreground(brush);
+        MenuButton().Foreground(brush);
+        AppIcon().Opacity(is_active ? 1.0 : 0.6);
+    }
+
+    void MainWindow::ApplyTheme(){
+        auto theme = fsmapper::app_config.get_app_theme();
+        auto requested_theme = theme == fsmapper::app_theme::light ? ElementTheme::Light :
+                               theme == fsmapper::app_theme::dark ? ElementTheme::Dark :
+                               ElementTheme::Default;
+        this->Content().as<FrameworkElement>().RequestedTheme(requested_theme);
+        update_title_bar_theme();
     }
 
     winrt::Windows::Foundation::IAsyncAction MainWindow::CheckAndInstallDCSExporter(){

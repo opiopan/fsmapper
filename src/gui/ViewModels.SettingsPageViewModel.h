@@ -29,6 +29,7 @@ namespace winrt::gui::ViewModels::implementation
             auto theme = value == 0 ? fsmapper::app_theme::light : value == 1 ? fsmapper::app_theme::dark : fsmapper::app_theme::system;
             fsmapper::app_config.set_app_theme(theme);
             save_config();
+            ApplyTheme();
         }
         bool RunScriptOnStartup(){
             return fsmapper::app_config.get_is_starting_script_at_start_up();
@@ -390,6 +391,8 @@ namespace winrt::gui::ViewModels::implementation
         }
 
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDcsExporter(bool mode);
+
+        void ApplyTheme();
     };
 }
 namespace winrt::gui::ViewModels::factory_implementation

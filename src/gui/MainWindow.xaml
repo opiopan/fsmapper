@@ -92,7 +92,7 @@
                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xe946;"/>
                     <Button.Flyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="User's Guide" Click="{x:Bind ViewModel.GuideMenu_Click}">
+                            <MenuFlyoutItem Text="User Guide" Click="{x:Bind ViewModel.GuideMenu_Click}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe82d;"/>
                                 </MenuFlyoutItem.Icon>

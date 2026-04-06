@@ -7,6 +7,7 @@
 #include "ViewModels.SettingsPageViewModel.h"
 #include "ViewModels.SettingsPageViewModel.g.cpp"
 #include "App.xaml.h"
+#include "MainWindow.xaml.h"
 
 #include <thread>
 #include <shobjidl_core.h>
@@ -102,4 +103,9 @@ namespace winrt::gui::ViewModels::implementation
         update_property(L"DcsExporterIsEnabled");
     }
 
+    void SettingsPageViewModel::ApplyTheme(){
+        auto window = App::TopWindow();
+        auto main_window = window.as<winrt::gui::MainWindow>();
+        main_window.ApplyTheme();
+    }
 }

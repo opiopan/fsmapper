@@ -34,6 +34,7 @@ namespace winrt::gui::implementation
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ReleaseMenu_Click(
             winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ApplyTheme();
 
     private:
         winrt::Windows::Foundation::IAsyncAction CheckAndInstallDCSExporter();
@@ -45,6 +46,9 @@ namespace winrt::gui::implementation
         winrt::event_token activate_event_token;
         winrt::Windows::UI::ViewManagement::UISettings ui_settings;
         winrt::event_token color_changed_token;
+
+        bool is_active{true};
+        bool is_dark_mode{false};
 
         void set_region_for_title_bar();
 
@@ -62,6 +66,7 @@ namespace winrt::gui::implementation
         void activate_window();
 
         void update_title_bar_theme();
+        void update_title_theme();
     };
 }
 

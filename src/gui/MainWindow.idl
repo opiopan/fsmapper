@@ -6,5 +6,7 @@ namespace gui
     {
         MainWindow();
         gui.ViewModels.MainWindowViewModel ViewModel{get;};
+
+        void ApplyTheme();
     }
 }
