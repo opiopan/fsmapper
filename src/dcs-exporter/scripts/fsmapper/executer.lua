@@ -56,7 +56,7 @@ executer = {
     V_cmd_fmt = fsmapper.utils.struct('I4'),
     execute_chunk_with_string = function(self, cmd_body)
         local id = self.V_cmd_fmt:unpack(cmd_body)
-        argument = cmd_body:sub(self.V_cmd_fmt:packsize() + 1)
+        local argument = cmd_body:sub(self.V_cmd_fmt:packsize() + 1)
         if id then
             self:execute_chunk(id, argument)
         end

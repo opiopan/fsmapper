@@ -109,7 +109,7 @@ observer.chunk_value_observer = {
         if result then
             return return_value
         else
-            log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. error)
+            log.write('FSMAPPER.LUA', log.ERROR, 'An error occured during executing a cunk set as a filter for a observer: ' .. return_value)
         end
     end,
 }
@@ -162,9 +162,9 @@ observer.observer_list = {
         elseif type == 'G' then
             local value = self.G_sub_fmt:unpack(cmd, self.O_fmt:packsize() + 1)
             if value then
-                local ob = ob.observers[id]
+                local ob = self.observers[id]
                 if ob then
-                    ob.filter = self.filter or {}
+                    ob.filter = ob.filter or {}
                     ob.filter[value] = true
                     fsmapper.log("Added a string filter to the observer: id=" .. id .. " value=" .. value)
                 end
