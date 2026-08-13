@@ -31,11 +31,12 @@ inline std::string numeral(int num){
            std::format("{}th", num);
 }
 
-inline lua_Integer check_lua_arg_integer(lua_State* L, int index){
+inline int64_t check_lua_arg_integer(lua_State* L, int index){
     if (lua_type(L, index) != LUA_TNUMBER){
         throw std::runtime_error(std::format("the {} argument type must be number", numeral(index)));
     }
-    return lua_tointeger(L, index);
+    auto value = lua_tonumber(L, index);
+    return static_cast<int64_t>(value);
 }
 
 inline lua_Number check_lua_arg_number(lua_State* L, int index){
@@ -111,8 +112,8 @@ using unit_list = std::vector<std::unique_ptr<translation_unit>>;
 struct integer_unit : public translation_unit{
     int precision;
     bool is_signed;
-    void (*put_data)(char* to, lua_Integer value, int precision);
-    lua_Integer (*get_data)(const char* from, int precision);
+    void (*put_data)(char* to, int64_t value, int precision);
+    int64_t (*get_data)(const char* from, int precision);
 
     integer_unit(const integer_unit& ref) : translation_unit(ref){
         precision = ref.precision;
@@ -127,28 +128,28 @@ struct integer_unit : public translation_unit{
         alignment = (precision == 2 || precision == 4 || precision == 8) ? precision : 1;
         if (precision == 1 && is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<int8_t*>(to) = static_cast<int8_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const int8_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const int8_t*>(from));};
         }else if (precision == 1 && !is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<uint8_t*>(to) =  static_cast<uint8_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const uint8_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const uint8_t*>(from));};
         }else if (precision == 2 && is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<int16_t*>(to) = static_cast<int16_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const int16_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const int16_t*>(from));};
         }else if (precision == 2 && !is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<uint16_t*>(to) = static_cast<uint16_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const uint16_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const uint16_t*>(from));};
         }else if (precision == 4 && is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<int32_t*>(to) = static_cast<int32_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const int32_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const int32_t*>(from));};
         }else if (precision == 4 && !is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<uint32_t*>(to) = static_cast<uint32_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const uint32_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const uint32_t*>(from));};
         }else if (precision == 8 && is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<int64_t*>(to) = static_cast<int64_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const int64_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const int64_t*>(from));};
         }else if (precision == 8 && !is_signed){
             put_data = [](auto to, auto value, auto){*reinterpret_cast<uint64_t*>(to) = static_cast<uint64_t>(value);};
-            get_data = [](auto from, auto){return static_cast<lua_Integer>(*reinterpret_cast<const uint64_t*>(from));};
+            get_data = [](auto from, auto){return static_cast<int64_t>(*reinterpret_cast<const uint64_t*>(from));};
         }else if (precision < 8 && precision > 0){
             put_data = [](auto to, auto value, auto precision){
                 for (auto i = 0; i < precision; i++){
@@ -158,7 +159,7 @@ struct integer_unit : public translation_unit{
             };
             if (is_signed){
                 get_data = [](auto from, auto precision) {
-                    lua_Integer value{0};
+                    int64_t value{0};
                     auto value_p{reinterpret_cast<char*>(&value)};
                     auto i{0};
                     for (; i < precision; i++){
@@ -173,7 +174,7 @@ struct integer_unit : public translation_unit{
                 };
             }else{
                 get_data = [](auto from, auto precision) {
-                    lua_Integer value{0};
+                    int64_t value{0};
                     auto value_p{reinterpret_cast<char*>(&value)};
                     auto i{0};
                     for (; i < precision; i++){
