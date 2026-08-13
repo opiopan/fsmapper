@@ -346,7 +346,7 @@ public:
             length -= skip_len;
         }
         length = std::min(length, data_length - effective_length);
-        memcpy(&data_buf.at(0), in + skip_len, length);
+        memcpy(&data_buf.at(0) + effective_length, in + skip_len, length);
         effective_length += length;
         return length + skip_len;
     }
@@ -1068,7 +1068,6 @@ std::shared_ptr<NativeAction::Function> DCSWorld::lua_chunk_executer(uint32_t ch
                 send_invoke_chunk(chunk_id, value.c_str(), value.length());
             }
         };
-        send_invoke_chunk(chunk_id);
     }else if (type == sol::type::number){
         auto value = argument.as<float>();
         func_name = std::format("dcs.execute_chunk({}, {})", chunk_id, value);
