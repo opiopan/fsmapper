@@ -31,49 +31,6 @@ a [`lua_State`](https://www.lua.org/manual/5.4/manual.html#lua_State) may only b
 
 As a result, worker threads cannot directly call Lua APIs such as [`mapper.raise_event()`](/libs/mapper/mapper_raise_event).
 
-## Lua Version and Build Requirements
-
-fsmapper embeds [**Lua 5.4**](https://www.lua.org/manual/5.4/) as its scripting engine.  
-All Lua C modules intended to be used with fsmapper **must be built against the [Lua 5.4 C API](https://www.lua.org/manual/5.4/manual.html#4)**.
-
-The fsmapper Plugin SDK provides the required Lua C API header files, such as `lua.h` and `lauxlib.h`, under the following directory:
-
-- `sdk/include`
-
-Developers should use these headers instead of headers from other Lua packages distributed independently of fsmapper.
-
-To use the fsmapper service API for Lua C modules, the following header must also be included:
-
-- `mapperplugin_luac.h` (located in `sdk/include`)
-
-When using C++, Lua headers must be included with C linkage to avoid name mangling.  
-A typical include pattern is shown below:
-
-```c title="C++"
-extern "C" {
-    #include <lua.h>
-    #include <lauxlib.h>
-}
-#include <mapperplugin_luac.h>
-```
-
-Both the Lua C API symbols and the fsmapper Lua C module service API are provided by the following library:
-
-- `fsmappercore.lib` (located in `sdk/lib`)
-
-When building with MSVC, the library can be linked explicitly using a pragma directive:
-
-```c title="C/C++"
-#pragma comment(lib, "fsmappercore.lib")
-```
-
-:::caution Important
-fsmapper statically links Lua into its core library.  
-Do **not** link your Lua C module against Lua binaries or import libraries provided by other Lua packages.
-
-Lua C modules must be linked against `fsmappercore.lib` and dynamically linked to `fsmappercore.dll` at runtime.
-:::
-
 ## Service API for Lua C Modules
 
 To address the limitations imposed by the Lua threading model, fsmapper provides a **service API for Lua C modules**.
@@ -127,6 +84,49 @@ A detailed explanation of this mechanism, including provider function semantics,
 Lua C module–specific handle types used by the service API are documented here:
 
 - [`Data Types`](./data_types)
+
+## Lua Version and Build Requirements
+
+fsmapper embeds [**Lua 5.4**](https://www.lua.org/manual/5.4/) as its scripting engine.  
+All Lua C modules intended to be used with fsmapper **must be built against the [Lua 5.4 C API](https://www.lua.org/manual/5.4/manual.html#4)**.
+
+The fsmapper Plugin SDK provides the required Lua C API header files, such as `lua.h` and `lauxlib.h`, under the following directory:
+
+- `sdk/include`
+
+Developers should use these headers instead of headers from other Lua packages distributed independently of fsmapper.
+
+To use the fsmapper service API for Lua C modules, the following header must also be included:
+
+- `mapperplugin_luac.h` (located in `sdk/include`)
+
+When using C++, Lua headers must be included with C linkage to avoid name mangling.  
+A typical include pattern is shown below:
+
+```c title="C++"
+extern "C" {
+    #include <lua.h>
+    #include <lauxlib.h>
+}
+#include <mapperplugin_luac.h>
+```
+
+Both the Lua C API symbols and the fsmapper Lua C module service API are provided by the following library:
+
+- `fsmappercore.lib` (located in `sdk/lib`)
+
+When building with MSVC, the library can be linked explicitly using a pragma directive:
+
+```c title="C/C++"
+#pragma comment(lib, "fsmappercore.lib")
+```
+
+:::caution Important
+fsmapper statically links Lua into its core library.  
+Do **not** link your Lua C module against Lua binaries or import libraries provided by other Lua packages.
+
+Lua C modules must be linked against `fsmappercore.lib` and dynamically linked to `fsmappercore.dll` at runtime.
+:::
 
 ## How to Read This Reference
 
